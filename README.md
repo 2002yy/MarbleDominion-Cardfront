@@ -1,80 +1,86 @@
-# BallWar / 领土战争 (Marble Dominion Ricochet War)
+# Marble Dominion: Cardfront / 弹珠领土：卡牌前线
 
-A **Godot 4.6 + GDScript** 2D territory-control arcade prototype — four factions fight for grid dominance in a chaotic bullet arena.  
-一个基于 **Godot 4.6 + GDScript** 的 2D 四阵营领土争夺街机原型。
+**Godot 4.6 + GDScript** prototype built from the BallWar / Marble Dominion Ricochet War foundation.
 
-**Engine:** Godot 4.6 · **Language:** GDScript · **Tests:** 10 runners · GitHub Actions CI · **Platforms:** Windows / Android
+Cardfront is a controlled prototype branch for turning BallWar's marble territory-control arena into a strategy game:
+
+> 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
+
+The current milestone is **v2.2.0-cardfront-prototype**. It proves the new mode can live beside the stable BallWar runtime without deleting the original modes.
+
+## Current Slice / 当前阶段
+
+Implemented in this repository:
+
+- New `卡牌前线` game mode in the existing mode selector.
+- Player vs AI baseline: BLUE is player, RED is AI, the center starts neutral.
+- Cardfront battlefield reset via `Battlefield.reset_cardfront_duel()`.
+- Cardfront mode starts with only two turrets and two control chambers.
+- Event roulette is disabled in Cardfront mode; active card play will replace it later.
+- Cardfront win rules:
+  - 70% capture wins immediately.
+  - 8-minute timer ends by player/AI territory lead.
+  - Equal player/AI territory at timer is a draw.
+- New headless runner: `CardfrontModeSmokeTestRunner.gd`.
+
+Not implemented yet:
+
+- Region economy.
+- Deck / hand / card effect data.
+- AI Commander behavior.
+- Cardfront save schema.
+- Dedicated Cardfront HUD and card UI.
 
 ## Screenshots / 截图
 
-| 开始界面 | 游戏初始 | 游戏中场 | 事件画面 | 胜利结果 |
+These screenshots still show the inherited BallWar visual baseline while Cardfront systems are being added.
+
+| Start Menu | Initial Field | Mid Game | Event Screen | Result |
 |:--:|:--:|:--:|:--:|:--:|
 | ![](screenshots/%E5%BC%80%E5%A7%8B%E7%95%8C%E9%9D%A2.png) | ![](screenshots/%E6%B8%B8%E6%88%8F%E5%88%9D%E5%A7%8B.png) | ![](screenshots/%E6%B8%B8%E6%88%8F%E4%B8%AD%E5%9C%BA.png) | ![](screenshots/%E4%BA%8B%E4%BB%B6%E7%94%BB%E9%9D%A2.png) | ![](screenshots/%E4%B8%80%E6%96%B9%E8%83%9C%E5%88%A9%E7%BB%93%E6%9E%9C.png) |
 
-## Download Latest Release / 下载最新版本
-
-> **v2.1.11.1 (Latest Stable)** — [Windows zip](https://github.com/2002yy/BallWar/releases/tag/v2.1.11.1) · [Android APK](https://github.com/2002yy/BallWar/releases/tag/v2.1.11.1)  
-> All releases: [github.com/2002yy/BallWar/releases](https://github.com/2002yy/BallWar/releases)
-
-## Tech Highlights / 技术亮点
-
-- **10 headless CI runners** — smoke, wiring, coordinator, integration, layout tests via GitHub Actions
-- **Architecture layering** — `Main.gd` orchestration → coordinators, restore planners, save adapters ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md))
-- **Save/load with hardening** — slot-based saves, backup recovery, version checks, input sanitization ([docs/SAVE_SYSTEM.md](docs/SAVE_SYSTEM.md))
-- **Performance probes** — bullet pressure, frame time, trail cache metrics built into runtime ([docs/PERFORMANCE.md](docs/PERFORMANCE.md))
-- **Android export pipeline** — ETC2/ASTC validation, debug APK, PowerShell scripts ([docs/ANDROID_EXPORT.md](docs/ANDROID_EXPORT.md))
-- Four-faction territory control, chamber-driven firing rhythm, event roulette, multi-mode rules
-
 ## Architecture / 架构
 
-System layering (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)):
+Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
-- **`Main.gd`** — top-level lifecycle orchestration
-- **`SaveFlowController`** — continue/load flow (`prepare_*` / `apply_*`)
-- **`RestorePlan`** — active restore planning data through the continue path
-- **`SaveGameCodec`** + **`SaveStateApplier`** — validate, normalize, then apply
-- **`ControlChamber`**, **`Turret`**, **`Bullet`** — each owns `restore_from_state(...)`
-- Runtime-heavy: `Battlefield`, `BulletPool`, pooled trail internals
+- `scripts/cardfront/CardfrontRules.gd` — mode constants, duel factions, neutral owner, timer and capture target.
+- `scripts/cardfront/CardfrontMode.gd` — thin assembly layer used by `Main.gd`.
+- `scripts/Battlefield.gd` — still owns grid ownership and drawing; Cardfront adds a duel reset path.
+- `scripts/WinConditionEvaluator.gd` — adds Cardfront win evaluation beside the existing BallWar modes.
+- `scripts/Main.gd` — stays orchestration-only and delegates Cardfront rules to `scripts/cardfront/`.
 
-## Testing / 测试
+Detailed milestone note: [docs/history/README_v2_2_0_cardfront_prototype.md](docs/history/README_v2_2_0_cardfront_prototype.md)
 
-10 headless test runners run via GitHub Actions CI. Correctness baseline: **1083 checks**.
+## Validation / 验证
 
-| Runner | Checks |
-|---|---|
-| `LayoutSanityTestRunner.gd` | 376 |
-| `SmokeTestRunner.gd` | 218 |
-| `SaveFlowControllerTestRunner.gd` | 190 |
-| `IntegrationTestRunner.gd` | 133 |
-| `StartMenuSceneTestRunner.gd` | 55 |
-| `GameStateCoordinatorTestRunner.gd` | 50 |
-| `GameHUDSceneTestRunner.gd` | 27 |
-| `EventRouletteSceneTestRunner.gd` | 14 |
-| `RestorePlanTestRunner.gd` | 11 |
-| `SettingsPanelSceneTestRunner.gd` | 9 |
-
-Full guide: [docs/TESTING.md](docs/TESTING.md)
-
-## Development Setup / 开发环境
-
-Open `project.godot` with **Godot 4.6** in the editor.
+Run with Godot 4.6:
 
 ```powershell
-# Headless check examples:
-<godot_console> --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
-<godot_console> --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
-<godot_console> --headless --path . --script res://scripts/tests/LayoutSanityTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontModeSmokeTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Release packaging: [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md)
+Latest local validation:
 
-## Roadmap / 路线图
+- `CardfrontModeSmokeTestRunner.gd`: 29 checks passed.
+- `SmokeTestRunner.gd`: 218 checks passed.
+- `IntegrationTestRunner.gd`: 136 checks passed.
+- `StartMenuSceneTestRunner.gd`: 55 checks passed.
+- `GameHUDSceneTestRunner.gd`: 40 checks passed.
+- `LayoutSanityTestRunner.gd`: 376 checks passed.
+- `SaveFlowControllerTestRunner.gd`: 190 checks passed.
+- `EndToEndContinueMainTestRunner.gd`: 56 checks passed.
 
-Current direction: visual & audio polish, mobile layout verification, performance baselines.  
-当前方向：素材与音效接入、移动端布局验证、性能基线归档。
+## Next Milestone / 下一阶段
 
-See [docs/ROADMAP.md](docs/ROADMAP.md)
+`v2.2.1-region-economy`:
 
-## License / 许可
+- Add `RegionMap.gd`.
+- Add simple region visualization.
+- Add 1-second economy tick for energy and parts.
+- Keep economy out of `Battlefield.apply_bullet()` so the grid layer remains reusable.
 
-[MIT License](LICENSE)
+## License
+
+MIT License. See [LICENSE](LICENSE).

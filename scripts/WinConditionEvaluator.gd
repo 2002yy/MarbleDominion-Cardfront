@@ -1,6 +1,8 @@
 extends RefCounted
 class_name WinConditionEvaluator
 
+const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+
 static func _result(ended: bool, winner: int, draw: bool, sub_text: String, reason: String) -> Dictionary:
 	return {"ended": ended, "winner": winner, "draw": draw, "sub_text": sub_text, "reason": reason}
 
@@ -61,6 +63,28 @@ static func evaluate_timed(owner_counts: Dictionary, time_expired: bool) -> Dict
 		return _result(true, -1, true, "时间到", "timed")
 	return _result(true, best_id, false, "时间到", "timed")
 
+static func evaluate_cardfront(owner_counts: Dictionary, total_cells: int, time_expired: bool) -> Dictionary:
+	var player_count: int = int(owner_counts.get(CardfrontRulesScript.PLAYER_FACTION, 0))
+	var ai_count: int = int(owner_counts.get(CardfrontRulesScript.AI_FACTION, 0))
+	var neutral_count: int = int(owner_counts.get(CardfrontRulesScript.NEUTRAL_OWNER, 0))
+	if total_cells <= 0:
+		total_cells = player_count + ai_count + neutral_count
+	if total_cells <= 0:
+		return _result(false, -1, false, "", "cardfront")
+
+	if player_count * 100 >= total_cells * CardfrontRulesScript.CAPTURE_TARGET_PERCENT:
+		return _result(true, CardfrontRulesScript.PLAYER_FACTION, false, "前线压制", "cardfront")
+	if ai_count * 100 >= total_cells * CardfrontRulesScript.CAPTURE_TARGET_PERCENT:
+		return _result(true, CardfrontRulesScript.AI_FACTION, false, "前线压制", "cardfront")
+
+	if not time_expired:
+		return _result(false, -1, false, "", "cardfront")
+	if player_count == ai_count:
+		return _result(true, -1, true, "时间结算", "cardfront")
+	if player_count > ai_count:
+		return _result(true, CardfrontRulesScript.PLAYER_FACTION, false, "时间结算", "cardfront")
+	return _result(true, CardfrontRulesScript.AI_FACTION, false, "时间结算", "cardfront")
+
 static func evaluate(mode_name: String, turrets: Dictionary, owner_counts: Dictionary, total_cells: int, time_expired: bool) -> Dictionary:
 	match mode_name:
 		GameConfig.GAME_MODE_BASIC:
@@ -71,4 +95,6 @@ static func evaluate(mode_name: String, turrets: Dictionary, owner_counts: Dicti
 			return evaluate_timed(owner_counts, time_expired)
 		GameConfig.GAME_MODE_WILD:
 			return evaluate_basic(turrets)
+		GameConfig.GAME_MODE_CARDFRONT:
+			return evaluate_cardfront(owner_counts, total_cells, time_expired)
 	return _result(false, -1, false, "", "")

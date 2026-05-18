@@ -4,11 +4,14 @@ class_name Battlefield
 signal scores_changed(counts)
 
 const BattlefieldDecorLayerScript = preload("res://scripts/BattlefieldDecorLayer.gd")
+const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+
+const NEUTRAL_OWNER_ID: int = CardfrontRulesScript.NEUTRAL_OWNER
 
 var grid_size: int = GameConfig.GRID_SIZE
 var cell_size: int = GameConfig.CELL_SIZE
 var owners: Array = []
-var owner_counts: Dictionary = {0: 0, 1: 0, 2: 0, 3: 0}
+var owner_counts: Dictionary = _empty_owner_counts()
 var redraw_pending: bool = false
 var score_emit_pending: bool = false
 var redraw_elapsed: float = 0.0
@@ -95,7 +98,7 @@ func _ready() -> void:
 
 func reset_quadrants() -> void:
 	owners.clear()
-	owner_counts = {0: 0, 1: 0, 2: 0, 3: 0}
+	owner_counts = _empty_owner_counts()
 	var half_grid: int = grid_size >> 1
 	for x in range(grid_size):
 		var col: Array = []
@@ -112,13 +115,29 @@ func reset_quadrants() -> void:
 		owners.append(col)
 	_rebuild_cell_texture()
 
+func reset_cardfront_duel() -> void:
+	owners.clear()
+	owner_counts = _empty_owner_counts()
+	for x in range(grid_size):
+		var col: Array = []
+		for y in range(grid_size):
+			var owner_id: int = CardfrontRulesScript.duel_owner_for_cell(x, y, grid_size)
+			col.append(owner_id)
+			owner_counts[owner_id] = int(owner_counts.get(owner_id, 0)) + 1
+		owners.append(col)
+	_rebuild_cell_texture()
+	_request_visual_update()
+	scores_changed.emit(count_cells_by_team())
+
 func rebuild_owner_counts() -> void:
-	owner_counts = {0: 0, 1: 0, 2: 0, 3: 0}
+	owner_counts = _empty_owner_counts()
 	for x in range(grid_size):
 		for y in range(grid_size):
-			var cell_owner: int = clampi(int(owners[x][y]), 0, 3)
+			var cell_owner: int = int(owners[x][y])
+			if cell_owner != NEUTRAL_OWNER_ID:
+				cell_owner = clampi(cell_owner, 0, 3)
 			owners[x][y] = cell_owner
-			owner_counts[cell_owner] += 1
+			owner_counts[cell_owner] = int(owner_counts.get(cell_owner, 0)) + 1
 	_rebuild_cell_texture()
 
 func world_to_cell(world_position: Vector2) -> Vector2i:
@@ -135,8 +154,8 @@ func apply_bullet(cell: Vector2i, faction_id: int) -> String:
 	if old == faction_id:
 		return "SAME_CELL"
 	owners[cell.x][cell.y] = faction_id
-	owner_counts[old] -= 1
-	owner_counts[faction_id] += 1
+	owner_counts[old] = int(owner_counts.get(old, 0)) - 1
+	owner_counts[faction_id] = int(owner_counts.get(faction_id, 0)) + 1
 	_paint_cached_cell(cell, faction_id)
 	_request_visual_update()
 	_request_score_emit()
@@ -180,7 +199,18 @@ func _ensure_decor_layer() -> void:
 	decor_layer.z_index = 1
 	add_child(decor_layer)
 
+func _empty_owner_counts() -> Dictionary:
+	return {
+		NEUTRAL_OWNER_ID: 0,
+		GameConfig.Faction.BLUE: 0,
+		GameConfig.Faction.RED: 0,
+		GameConfig.Faction.GREEN: 0,
+		GameConfig.Faction.YELLOW: 0,
+	}
+
 func _owner_draw_color(owner_id: int) -> Color:
+	if owner_id == NEUTRAL_OWNER_ID:
+		return CardfrontRulesScript.NEUTRAL_COLOR
 	var c: Color = GameConfig.faction_color(owner_id).darkened(0.08)
 	c.a = 0.94
 	return c

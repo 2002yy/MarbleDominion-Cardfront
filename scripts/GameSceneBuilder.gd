@@ -40,7 +40,7 @@ static func create_battlefield(owner, game_layer: Node, grid_size: int, current_
         "chamber_scale": current_layout.get("chamber_scale", 0.80),
     }
 
-static func create_turrets(owner, game_layer: Node, battlefield, bullet_container, current_layout: Dictionary = {}) -> Dictionary:
+static func create_turrets(owner, game_layer: Node, battlefield, bullet_container, current_layout: Dictionary = {}, active_factions: Array = []) -> Dictionary:
     var turrets: Dictionary = {}
     var positions: Dictionary = current_layout.get("turret_positions", {})
     if positions.is_empty():
@@ -55,6 +55,8 @@ static func create_turrets(owner, game_layer: Node, battlefield, bullet_containe
         }
 
     for faction_id in positions.keys():
+        if not active_factions.is_empty() and not (faction_id in active_factions):
+            continue
         var turret = Turret.new()
         turret.setup(faction_id, positions[faction_id], battlefield, bullet_container)
         turret.name = "Turret_%s" % GameConfig.faction_name(faction_id)
@@ -69,7 +71,7 @@ static func create_turrets(owner, game_layer: Node, battlefield, bullet_containe
 
     return turrets
 
-static func create_control_chambers(owner, game_layer: Node, battlefield, turrets: Dictionary, current_layout: Dictionary, chamber_scale: float, view_size: Vector2) -> Dictionary:
+static func create_control_chambers(owner, game_layer: Node, battlefield, turrets: Dictionary, current_layout: Dictionary, chamber_scale: float, view_size: Vector2, active_factions: Array = []) -> Dictionary:
     var chambers: Dictionary = {}
     var probe_chamber = ControlChamber.new()
     var scaled_size: Vector2 = probe_chamber.chamber_size * chamber_scale
@@ -119,6 +121,8 @@ static func create_control_chambers(owner, game_layer: Node, battlefield, turret
         }
 
     for faction_id in chamber_positions.keys():
+        if not active_factions.is_empty() and not (faction_id in active_factions):
+            continue
         var chamber = ControlChamber.new()
         chamber.setup(faction_id, chamber_positions[faction_id])
         chamber.set_linked_turret(turrets.get(faction_id, null))

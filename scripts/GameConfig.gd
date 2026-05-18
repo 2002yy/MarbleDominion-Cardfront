@@ -25,6 +25,7 @@ const GAME_MODE_BASIC: String = "基础模式"
 const GAME_MODE_OCCUPATION: String = "占领模式"
 const GAME_MODE_TIMED: String = "限时模式"
 const GAME_MODE_WILD: String = "狂野模式"
+const GAME_MODE_CARDFRONT: String = "卡牌前线"
 const OCCUPATION_TARGET_PERCENT: int = 75
 const TIMED_MODE_MIN_MINUTES: int = 5
 const TIMED_MODE_MAX_MINUTES: int = 15
@@ -67,7 +68,7 @@ static func get_turret_max_health(grid_size: int) -> int:
 			return 30
 
 static func get_game_mode_names() -> Array:
-	return [GAME_MODE_BASIC, GAME_MODE_OCCUPATION, GAME_MODE_TIMED, GAME_MODE_WILD]
+	return [GAME_MODE_BASIC, GAME_MODE_OCCUPATION, GAME_MODE_TIMED, GAME_MODE_WILD, GAME_MODE_CARDFRONT]
 
 static func set_game_mode_by_name(name: String) -> void:
 	var normalized: String = _normalize_game_mode_name(name)
@@ -351,6 +352,8 @@ static func _normalize_game_mode_name(name: String) -> String:
 			return GAME_MODE_TIMED
 		GAME_MODE_WILD, "wild":
 			return GAME_MODE_WILD
+		GAME_MODE_CARDFRONT, "cardfront", "cardfront-prototype":
+			return GAME_MODE_CARDFRONT
 		_:
 			return name
 

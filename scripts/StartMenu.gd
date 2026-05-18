@@ -34,10 +34,12 @@ static func compact_slot_title(title_text: String) -> String:
 	compact_text = compact_text.replace("占领模式", "占领")
 	compact_text = compact_text.replace("限时模式", "限时")
 	compact_text = compact_text.replace("狂野模式", "狂野")
+	compact_text = compact_text.replace("卡牌前线", "卡前")
 	compact_text = compact_text.replace(GameConfig.GAME_MODE_BASIC, "基础")
 	compact_text = compact_text.replace(GameConfig.GAME_MODE_OCCUPATION, "占领")
 	compact_text = compact_text.replace(GameConfig.GAME_MODE_TIMED, "限时")
 	compact_text = compact_text.replace(GameConfig.GAME_MODE_WILD, "狂野")
+	compact_text = compact_text.replace(GameConfig.GAME_MODE_CARDFRONT, "卡前")
 	return compact_text
 
 
@@ -88,6 +90,8 @@ static func build_mode_tip_text(mode_name: String, time_limit_minutes: int) -> S
 			return "\u9650\u65f6\uff1a%d \u5206\u949f\u5012\u8ba1\u65f6\u7ed3\u675f\u540e\uff0c\u9886\u5730\u6700\u591a\u65b9\u83b7\u80dc" % time_limit_minutes
 		GameConfig.GAME_MODE_WILD:
 			return "\u72c2\u91ce\uff1a\u5168\u5c40 x3 \u500d\u7387\uff0c\u5355\u6b21\u4e0a\u9650\u66f4\u9ad8\uff0c\u4e8b\u4ef6\u66f4\u9891\u7e41"
+		GameConfig.GAME_MODE_CARDFRONT:
+			return "卡牌前线：玩家 vs AI，8 分钟结算，70% 占领压制"
 		_:
 			return ""
 
@@ -263,6 +267,8 @@ func _update_mode_tip() -> void:
 			mode_tip_label.text = "限时：%d 分钟倒计时结束，领地最多方获胜" % _owner.selected_time_limit_minutes
 		GameConfig.GAME_MODE_WILD:
 			mode_tip_label.text = "狂野：全局 ×3 倍率，单次上限更高，事件更频繁"
+		GameConfig.GAME_MODE_CARDFRONT:
+			mode_tip_label.text = "卡牌前线：玩家 vs AI，8 分钟结算，70% 占领压制"
 		_:
 			mode_tip_label.text = ""
 
@@ -283,6 +289,8 @@ func _compact_mode_name(mode_name: String) -> String:
 			return "限时"
 		"狂野模式", GameConfig.GAME_MODE_WILD:
 			return "狂野"
+		"卡牌前线", GameConfig.GAME_MODE_CARDFRONT:
+			return "卡前"
 		_:
 			return mode_name
 

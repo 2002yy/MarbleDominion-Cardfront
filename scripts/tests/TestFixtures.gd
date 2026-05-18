@@ -147,6 +147,12 @@ static func simulate_check_winner(mode_name: String, battlefield, mock_turrets: 
 			return _timed_winner(battlefield)
 		GameConfig.GAME_MODE_WILD:
 			return _basic_winner(mock_turrets)
+		GameConfig.GAME_MODE_CARDFRONT:
+			var total_cells: int = battlefield.grid_size * battlefield.grid_size if battlefield != null else 0
+			var result: Dictionary = WinConditionEvaluator.evaluate_cardfront(battlefield.count_cells_by_team(), total_cells, true)
+			if bool(result.get("draw", false)):
+				return -2
+			return int(result.get("winner", -1))
 	return -1
 
 static func get_occupation_winner(battlefield, target_percent: float = 0.75) -> int:

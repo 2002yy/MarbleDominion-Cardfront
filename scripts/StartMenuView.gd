@@ -302,10 +302,12 @@ static func _compact_slot_title(title_text: String) -> String:
 	compact_text = compact_text.replace("占领模式", "占领")
 	compact_text = compact_text.replace("限时模式", "限时")
 	compact_text = compact_text.replace("狂野模式", "狂野")
+	compact_text = compact_text.replace("卡牌前线", "卡前")
 	compact_text = compact_text.replace(GameConfig.GAME_MODE_BASIC, "基础")
 	compact_text = compact_text.replace(GameConfig.GAME_MODE_OCCUPATION, "占领")
 	compact_text = compact_text.replace(GameConfig.GAME_MODE_TIMED, "限时")
 	compact_text = compact_text.replace(GameConfig.GAME_MODE_WILD, "狂野")
+	compact_text = compact_text.replace(GameConfig.GAME_MODE_CARDFRONT, "卡前")
 	return compact_text
 
 
@@ -328,5 +330,7 @@ static func _update_fallback_mode_tip(tip_label: Label, owner) -> void:
 			tip_label.text = "限时：%d 分钟倒计时结束，领地最多方获胜" % owner.selected_time_limit_minutes
 		GameConfig.GAME_MODE_WILD:
 			tip_label.text = "狂野：全局 ×3 倍率，单次上限更高，事件更频繁"
+		GameConfig.GAME_MODE_CARDFRONT:
+			tip_label.text = "卡牌前线：玩家 vs AI，8 分钟结算，70% 占领压制"
 		_:
 			tip_label.text = ""

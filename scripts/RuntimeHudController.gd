@@ -1,6 +1,8 @@
 extends RefCounted
 class_name RuntimeHudController
 
+const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+
 static var performance_visible: bool = true
 
 static func set_performance_visible(value: bool) -> void:
@@ -21,6 +23,9 @@ static func current_stage_name(game_elapsed_time: float) -> String:
 		return "限时 %s" % format_time_text(remain)
 	if mode_name == GameConfig.GAME_MODE_WILD:
 		return "狂野 x3 / 上限 %d" % GameConfig.get_max_pending_count()
+	if mode_name == GameConfig.GAME_MODE_CARDFRONT:
+		var remain: float = maxf(0.0, CardfrontRulesScript.MATCH_DURATION_SECONDS - game_elapsed_time)
+		return "卡牌前线 %s" % format_time_text(remain)
 
 	if game_elapsed_time < 120.0:
 		return "前期扩张"
@@ -112,17 +117,19 @@ static func update_meta(timer_label, stage_label, leader_label, current_score_co
 	if stage_label != null and is_instance_valid(stage_label):
 		stage_label.text = current_stage_name(game_elapsed_time)
 	if leader_label != null and is_instance_valid(leader_label):
+		var tracked_owner_ids: Array = _score_owner_ids()
 		var total: int = 0
 		var best_count: int = -1
-		for faction_id in [GameConfig.Faction.BLUE, GameConfig.Faction.RED, GameConfig.Faction.GREEN, GameConfig.Faction.YELLOW]:
-			var c: int = int(current_score_counts.get(faction_id, 0))
+		for owner_id in tracked_owner_ids:
+			var c: int = int(current_score_counts.get(owner_id, 0))
 			total += c
-			best_count = maxi(best_count, c)
+			if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
+				best_count = maxi(best_count, c)
 
 		var leaders: Array = []
-		for faction_id in [GameConfig.Faction.BLUE, GameConfig.Faction.RED, GameConfig.Faction.GREEN, GameConfig.Faction.YELLOW]:
-			if int(current_score_counts.get(faction_id, 0)) == best_count:
-				leaders.append(faction_id)
+		for owner_id in tracked_owner_ids:
+			if owner_id != CardfrontRulesScript.NEUTRAL_OWNER and int(current_score_counts.get(owner_id, 0)) == best_count:
+				leaders.append(owner_id)
 
 		var percent: int = 0
 		if total > 0:
@@ -130,8 +137,8 @@ static func update_meta(timer_label, stage_label, leader_label, current_score_co
 
 		if leaders.size() == 1:
 			var leader_id: int = int(leaders[0])
-			leader_label.text = "领先：%s %d%%" % [GameConfig.faction_name(leader_id), percent]
-			leader_label.add_theme_color_override("font_color", GameConfig.faction_color(leader_id).lightened(0.42))
+			leader_label.text = "领先：%s %d%%" % [_owner_display_name(leader_id), percent]
+			leader_label.add_theme_color_override("font_color", _owner_display_color(leader_id).lightened(0.42))
 		else:
 			leader_label.text = "并列：%d%%" % percent
 			leader_label.add_theme_color_override("font_color", Color(0.92, 0.88, 0.72))
@@ -140,26 +147,42 @@ static func update_top_bar(counts: Dictionary, top_bar_segments: Dictionary, top
 	if top_bar_segments.size() == 0:
 		return
 
+	var segment_owner_map: Dictionary = _segment_owner_map()
+	var visible_segments: Array = []
+	for segment_id in [GameConfig.Faction.BLUE, GameConfig.Faction.RED, GameConfig.Faction.GREEN, GameConfig.Faction.YELLOW]:
+		if segment_owner_map.get(segment_id, null) != null:
+			visible_segments.append(segment_id)
+
 	var total: int = 0
-	for faction_id in [GameConfig.Faction.BLUE, GameConfig.Faction.RED, GameConfig.Faction.GREEN, GameConfig.Faction.YELLOW]:
-		total += int(counts.get(faction_id, 0))
+	for owner_id in _score_owner_ids():
+		total += int(counts.get(owner_id, 0))
 	if total <= 0:
 		total = 1
 
 	var running_x: float = 3.0
 	for faction_id in [GameConfig.Faction.BLUE, GameConfig.Faction.RED, GameConfig.Faction.GREEN, GameConfig.Faction.YELLOW]:
-		var ratio: float = float(counts.get(faction_id, 0)) / float(total)
-		var p: int = int(round(ratio * 100.0))
 		var segment: Panel = top_bar_segments[faction_id] as Panel
+		var owner_id = segment_owner_map.get(faction_id, null)
+		if owner_id == null:
+			segment.visible = false
+			if top_bar_labels.has(faction_id):
+				(top_bar_labels[faction_id] as Label).visible = false
+			if top_bar_name_labels.has(faction_id):
+				(top_bar_name_labels[faction_id] as Label).visible = false
+			continue
+
+		segment.visible = true
+		var ratio: float = float(counts.get(owner_id, 0)) / float(total)
+		var p: int = int(round(ratio * 100.0))
 		var seg_w: float = top_bar_total_width * ratio
-		if faction_id == GameConfig.Faction.YELLOW:
+		if faction_id == visible_segments.back():
 			seg_w = maxf(50.0, top_bar_total_width + 3.0 - running_x)
 		segment.position.x = running_x
 		segment.size.x = maxf(50.0, seg_w)
 
 		var fill: ColorRect = segment.get_node("Fill") as ColorRect
 		fill.size = Vector2(maxf(4.0, segment.size.x - 4.0), segment.size.y - 4.0)
-		fill.color = GameConfig.faction_color(faction_id)
+		fill.color = _owner_display_color(owner_id)
 		var gloss: ColorRect = segment.get_node("Gloss") as ColorRect
 		gloss.size = Vector2(maxf(4.0, segment.size.x - 4.0), maxf(5.0, (segment.size.y - 4.0) * 0.42))
 		var bottom_shadow: ColorRect = segment.get_node("BottomShadow") as ColorRect
@@ -172,9 +195,11 @@ static func update_top_bar(counts: Dictionary, top_bar_segments: Dictionary, top
 
 		var value_label: Label = top_bar_labels[faction_id] as Label
 		var name_label: Label = top_bar_name_labels[faction_id] as Label
+		value_label.visible = true
+		name_label.visible = true
 		value_label.text = "%d%%" % p
-		name_label.text = GameConfig.faction_name(faction_id)
-		name_label.add_theme_color_override("font_color", GameConfig.faction_color(faction_id).lightened(0.45))
+		name_label.text = _owner_display_name(owner_id)
+		name_label.add_theme_color_override("font_color", _owner_display_color(owner_id).lightened(0.45))
 		name_label.visible = true
 
 		if segment.size.x < 110.0:
@@ -199,3 +224,33 @@ static func update_top_bar(counts: Dictionary, top_bar_segments: Dictionary, top
 			value_label.add_theme_font_size_override("font_size", 18 if is_mobile_layout else 22)
 
 		running_x += segment.size.x
+
+static func _score_owner_ids() -> Array:
+	if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT:
+		return CardfrontRulesScript.get_score_owner_ids()
+	return [GameConfig.Faction.BLUE, GameConfig.Faction.RED, GameConfig.Faction.GREEN, GameConfig.Faction.YELLOW]
+
+static func _segment_owner_map() -> Dictionary:
+	if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT:
+		return {
+			GameConfig.Faction.BLUE: CardfrontRulesScript.PLAYER_FACTION,
+			GameConfig.Faction.RED: CardfrontRulesScript.AI_FACTION,
+			GameConfig.Faction.GREEN: CardfrontRulesScript.NEUTRAL_OWNER,
+			GameConfig.Faction.YELLOW: null,
+		}
+	return {
+		GameConfig.Faction.BLUE: GameConfig.Faction.BLUE,
+		GameConfig.Faction.RED: GameConfig.Faction.RED,
+		GameConfig.Faction.GREEN: GameConfig.Faction.GREEN,
+		GameConfig.Faction.YELLOW: GameConfig.Faction.YELLOW,
+	}
+
+static func _owner_display_name(owner_id: int) -> String:
+	if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT:
+		return CardfrontRulesScript.owner_display_name(owner_id)
+	return GameConfig.faction_name(owner_id)
+
+static func _owner_display_color(owner_id: int) -> Color:
+	if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT:
+		return CardfrontRulesScript.owner_color(owner_id)
+	return GameConfig.faction_color(owner_id)

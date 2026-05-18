@@ -21,6 +21,7 @@ const SAVE_SLOT_COUNT: int = 5
 const MENU_PREF_PATH: String = "user://menu_preferences.json"
 const GameRuntimeContextScript = preload("res://scripts/GameRuntimeContext.gd")
 const StartMenuUi = preload("res://scripts/StartMenu.gd")
+const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 
 var runtime = GameRuntimeContextScript.new()
 var current_score_counts: Dictionary = {0: 0, 1: 0, 2: 0, 3: 0}
@@ -82,6 +83,9 @@ func _sync_runtime_context(grid_size: int) -> void:
 		"time_limit_minutes": selected_time_limit_minutes,
 		"save_slot": selected_save_slot,
 	})
+
+func _is_cardfront_mode() -> bool:
+	return CardfrontModeScript.is_selected(selected_game_mode_name)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -233,24 +237,32 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_turrets()
 	_create_control_chambers()
 	_create_ui()
-	_create_event_roulette_system()
+	if not _is_cardfront_mode():
+		_create_event_roulette_system()
 	_create_control_buttons()
 	if not suppress_banner:
-		_show_center_banner("领土战争", "开战！", Color(1.0, 0.94, 0.48), true)
+		if _is_cardfront_mode():
+			_show_center_banner("卡牌前线", "玩家 vs AI 基线", Color(0.62, 0.90, 1.0), true)
+		else:
+			_show_center_banner("领土战争", "开战！", Color(1.0, 0.94, 0.48), true)
 
 func _create_battlefield(grid_size: int) -> void:
 	var scene_nodes: Dictionary = GameSceneBuilder.create_battlefield(self, game_layer, grid_size, runtime.current_layout, Vector2(VIEW_W, VIEW_H))
 	runtime.battlefield = scene_nodes.get("battlefield", null)
 	runtime.bullet_pool = scene_nodes.get("bullet_container", null)
 	chamber_scale = float(scene_nodes.get("chamber_scale", 0.80))
+	if _is_cardfront_mode():
+		CardfrontModeScript.configure_battlefield(runtime.battlefield)
 
 func _create_turrets() -> void:
-	runtime.turrets = GameSceneBuilder.create_turrets(self, game_layer, runtime.battlefield, runtime.bullet_pool, runtime.current_layout)
+	var active_factions: Array = CardfrontModeScript.get_active_factions() if _is_cardfront_mode() else []
+	runtime.turrets = GameSceneBuilder.create_turrets(self, game_layer, runtime.battlefield, runtime.bullet_pool, runtime.current_layout, active_factions)
 	if runtime.bullet_pool != null and is_instance_valid(runtime.bullet_pool) and runtime.bullet_pool.has_method("set_tracked_turrets"):
 		runtime.bullet_pool.set_tracked_turrets(runtime.turrets)
 
 func _create_control_chambers() -> void:
-	runtime.chambers = GameSceneBuilder.create_control_chambers(self, game_layer, runtime.battlefield, runtime.turrets, runtime.current_layout, chamber_scale, Vector2(VIEW_W, VIEW_H))
+	var active_factions: Array = CardfrontModeScript.get_active_factions() if _is_cardfront_mode() else []
+	runtime.chambers = GameSceneBuilder.create_control_chambers(self, game_layer, runtime.battlefield, runtime.turrets, runtime.current_layout, chamber_scale, Vector2(VIEW_W, VIEW_H), active_factions)
 	_sync_chamber_game_elapsed_time()
 
 func _create_ui() -> void:
@@ -373,7 +385,8 @@ func _check_winner() -> void:
 	if counts.is_empty() and runtime.battlefield != null and is_instance_valid(runtime.battlefield):
 		counts = runtime.battlefield.count_cells_by_team()
 
-	var time_expired: bool = mode_name == GameConfig.GAME_MODE_TIMED and game_elapsed_time >= GameConfig.get_time_limit_seconds()
+	var time_expired: bool = (mode_name == GameConfig.GAME_MODE_TIMED and game_elapsed_time >= GameConfig.get_time_limit_seconds()) \
+		or (mode_name == GameConfig.GAME_MODE_CARDFRONT and game_elapsed_time >= CardfrontModeScript.get_match_duration_seconds())
 	var total_cells: int = _runtime_grid_size() * _runtime_grid_size()
 
 	var result: Dictionary = WinConditionEvaluator.evaluate(mode_name, runtime.turrets, counts, total_cells, time_expired)
