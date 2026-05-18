@@ -28,6 +28,7 @@ Implemented in this repository:
 
 Not implemented yet:
 
+- Region instance ids and per-region control statistics.
 - 1-second region economy tick.
 - Deck / hand / card effect data.
 - AI Commander behavior.
@@ -84,10 +85,12 @@ Latest local validation:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.1-b-economy-tick`:
+`v0.1.1-b-region-instances`:
 
-- Add 1-second economy tick for energy and parts.
-- Keep economy out of `Battlefield.apply_bullet()` so the grid layer remains reusable.
+- Add stable `region_id` and explicit region instances.
+- Add per-region control statistics for player / AI / neutral ownership.
+- Keep this slice data-only: no economy tick, cards, or AI yet.
+- Full route is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 

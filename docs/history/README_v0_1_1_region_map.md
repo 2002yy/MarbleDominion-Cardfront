@@ -47,4 +47,4 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 
 ## Next Slice
 
-`v0.1.1-b-economy-tick` should consume `RegionMap` and Battlefield ownership counts to calculate resource income once per second. Keep that calculation outside `Battlefield.apply_bullet()`.
+`v0.1.1-b-region-instances` should add stable `region_id`, explicit region instances, and per-region control statistics. Keep it data-only: no economy tick, no cards, and no AI in that slice.

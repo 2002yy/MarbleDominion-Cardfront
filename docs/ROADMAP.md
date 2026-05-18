@@ -7,17 +7,39 @@ This file is the single place for project direction and phase status.
 
 ## 1. Current Line / 当前主线
 
-- Current line: `v2.1.x`
-- Latest Stable release: `v2.1.11.1`
-- Previous stable milestone: `v2.1.11`
-- Stable structural baseline: `v2.1.4`
+- Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
+- Current completed slice: `v0.1.1-a-region-map`
+- Next slice: `v0.1.1-b-region-instances`
+- Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
-  - UI hotfix release (complete)
-  - visual and audio polish (next)
-  - mobile layout verification
-  - performance baseline archiving
+  - region ownership as the strategic layer above Battlefield cell ownership
+  - economy and deployment rules built from region control, not from bullet internals
+  - card systems added only after region/yield/deployment boundaries are testable
+  - keep `Battlefield`, bullets, turrets, and chambers reusable for old BallWar modes
 
-## 2. Completed / 已完成
+## 2. Cardfront Version Plan / 卡牌前线版本规划
+
+| Version | Status | Scope |
+|---|---|---|
+| `v0.1.1-a-region-map` | Done / 已完成 | Region types, deterministic `RegionMap`, Cardfront-only overlay. No economy tick, cards, or AI. |
+| `v0.1.1-b-region-instances` | Next / 下一步 | Add `region_id`, explicit region instances, and region-control statistics. |
+| `v0.1.1-c-region-yield` | Planned / 计划中 | Region-control yield with 50% / 80% thresholds. |
+| `v0.1.2-region-morale` | Planned / 计划中 | Morale fluctuation system tied to region state. |
+| `v0.1.3-deployment-rules` | Planned / 计划中 | Deployment permission by owned region, owned border, and region control degree. |
+| `v0.1.4-fortify-layer` | Planned / 计划中 | Frontline fortification layer. |
+| `v0.1.5-card-core-lite` | Planned / 计划中 | Pseudo-card core: fixed hand and energy costs. |
+| `v0.1.6-first-card-effects` | Planned / 计划中 | First effects such as calibrated shot, pioneer beacon, and morale fluctuation. |
+| `v0.1.7-unit-devices` | Planned / 计划中 | Device-style systems for bullet absorber core, engineer robot, and pioneer beacon. |
+
+### Design Boundaries / 设计边界
+
+- `v0.1.1-b` should add region identity and control statistics only; no resource income yet.
+- `v0.1.1-c` is the first slice that may calculate region yield.
+- Economy calculation must stay outside `Battlefield.apply_bullet()`.
+- Card effects should wait until region/yield/deployment rules are already testable.
+- Do not modify `Bullet`, `BulletPool`, `Turret`, or `ControlChamber` for region planning slices unless a later slice explicitly requires it.
+
+## 3. Foundation Completed / 已完成基础
 
 ### Gameplay loop / 玩法闭环
 
@@ -70,7 +92,20 @@ This file is the single place for project direction and phase status.
 - 版本叙事三处统一（README / CHANGELOG / Releases 页面）
 - 历史版本文档全部归档到 `docs/history/`，根目录保持干净
 
-## 3. In Progress / 当前进行中
+## 4. In Progress / 当前进行中
+
+### Cardfront region model / 卡牌前线区域模型
+
+- `v0.1.1-a-region-map` 已完成：
+  - `RegionType.gd`
+  - `RegionMap.gd`
+  - `RegionOverlayLayer.gd`
+  - `RegionMapTestRunner.gd`
+- 当前下一刀是 `v0.1.1-b-region-instances`：
+  - 给区域层增加稳定 `region_id`
+  - 建立区域实例数据结构
+  - 统计每个区域内玩家/AI/中立控制度
+  - 暂不做经济 tick、卡牌和 AI
 
 ### Android export hardening / Android 导出固化
 
@@ -94,29 +129,34 @@ This file is the single place for project direction and phase status.
 - 性能探针脚本已存在
 - 仍需要补齐更成体系的基线记录，尤其是高压弹幕与较大网格场景
 
-## 4. Next / 下一步
+## 5. Next / 下一步
 
-1. **素材实际接入**：菜单背景、按钮皮肤、顶部占领条视觉增强（参考 `docs/design/ASSET_GAP_PLAN.md`）
-2. **音效系统第一版**：按钮点击、子弹发射、格子占领、事件触发、胜负判定全链路音效
-3. **移动端真机布局验证**：确保所有 UI 在真实 Android 设备上可用
-4. **性能基线归档**：覆盖常规模式、高压弹幕（满配四阵营同时发射）、较大网格场景
-5. **ControlChamber 第二阶段拆分**：继续拆出 `ChamberBallPhysics.gd` 的几何和绘制边界
+1. **`v0.1.1-b-region-instances`**：region_id、区域实例、区域控制度统计
+2. **`v0.1.1-c-region-yield`**：50% / 80% 控制度产出档位
+3. **`v0.1.2-region-morale`**：民心起伏系统
+4. **`v0.1.3-deployment-rules`**：部署权限：我方区域 / 我方边界 / 区域控制度
+5. **`v0.1.4-fortify-layer`**：前线加固层
 
-## 5. Later / 中期候选
+## 6. Later / 中期候选
 
+- `v0.1.5-card-core-lite`：伪卡牌、固定手牌、能量消耗
+- `v0.1.6-first-card-effects`：校准射击、拓荒信标、民心起伏等效果
+- `v0.1.7-unit-devices`：吸弹核心、工程机器人、拓荒信标装置化
 - 新手引导
 - 模式说明页
 - 更完整的结算统计
 - Android 签名包与商店发布流程
 
-## 6. Not Now / 暂不处理
+## 7. Not Now / 暂不处理
 
+- 在 `v0.1.1-b` 中提前做经济 tick
+- 在区域实例前做卡牌和 AI
 - 在性能基线不稳定前继续扩大弹幕规模
 - 把 UI 重新塞回纯代码动态生成
 - 把 `docs/history/README_v*.md` 当成当前真相入口
 - 在没有边界设计前大规模增加复杂特殊事件或特殊球
 
-## 7. Canonical Doc Split / 文档分工
+## 8. Canonical Doc Split / 文档分工
 
 - `README.md`
   - 项目入口，9 个区块链接到 `docs/`
