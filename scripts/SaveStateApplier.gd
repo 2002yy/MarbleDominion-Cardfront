@@ -1,6 +1,8 @@
 extends RefCounted
 class_name SaveStateApplier
 
+const NEUTRAL_OWNER_ID: int = -1
+
 static func apply_owners(battlefield, data: Dictionary, on_scores_changed: Callable = Callable()) -> void:
 	if battlefield == null:
 		return
@@ -15,7 +17,7 @@ static func apply_owners(battlefield, data: Dictionary, on_scores_changed: Calla
 				var raw_owner = 0
 				if src_col is Array and y < src_col.size():
 					raw_owner = src_col[y]
-				col.append(clampi(int(raw_owner), 0, 3))
+				col.append(_sanitize_owner_id(raw_owner))
 			loaded_owners.append(col)
 		battlefield.owners = loaded_owners
 		battlefield.rebuild_owner_counts()
@@ -57,3 +59,9 @@ static func apply_game_over_state(data: Dictionary, winner_label) -> bool:
 	if winner_label != null:
 		winner_label.text = str(data.get("winner_text", ""))
 	return is_game_over
+
+static func _sanitize_owner_id(raw_owner) -> int:
+	var owner_id: int = int(raw_owner)
+	if owner_id == NEUTRAL_OWNER_ID:
+		return NEUTRAL_OWNER_ID
+	return clampi(owner_id, 0, 3)

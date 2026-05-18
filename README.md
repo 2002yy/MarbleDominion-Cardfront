@@ -57,6 +57,7 @@ Run with Godot 4.6:
 
 ```powershell
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontModeSmokeTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
@@ -64,6 +65,7 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 Latest local validation:
 
 - `CardfrontModeSmokeTestRunner.gd`: 29 checks passed.
+- `NeutralOwnerCompatibilityTestRunner.gd`: 21 checks passed.
 - `SmokeTestRunner.gd`: 218 checks passed.
 - `IntegrationTestRunner.gd`: 136 checks passed.
 - `StartMenuSceneTestRunner.gd`: 55 checks passed.

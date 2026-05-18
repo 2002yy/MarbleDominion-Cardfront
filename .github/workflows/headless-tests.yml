@@ -53,6 +53,11 @@ jobs:
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/CardfrontModeSmokeTestRunner.gd"
 
+      - name: Neutral Owner Compatibility Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd"
+
       - name: Start Menu Scene Test
         shell: pwsh
         run: |
