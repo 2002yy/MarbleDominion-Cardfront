@@ -48,12 +48,52 @@ jobs:
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/SmokeTestRunner.gd"
 
+      - name: Cardfront Mode Smoke Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/CardfrontModeSmokeTestRunner.gd"
+
+      - name: Start Menu Scene Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/StartMenuSceneTestRunner.gd"
+
+      - name: Game HUD Scene Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/GameHUDSceneTestRunner.gd"
+
+      - name: Event Roulette Scene Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/EventRouletteSceneTestRunner.gd"
+
+      - name: Settings Panel Scene Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/SettingsPanelSceneTestRunner.gd"
+
+      - name: Game State Coordinator Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/GameStateCoordinatorTestRunner.gd"
+
       - name: Save Flow Test
         shell: pwsh
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/SaveFlowControllerTestRunner.gd"
 
+      - name: Restore Plan Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/RestorePlanTestRunner.gd"
+
       - name: Integration Test
         shell: pwsh
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/IntegrationTestRunner.gd"
+
+      - name: Layout Sanity Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/LayoutSanityTestRunner.gd"
