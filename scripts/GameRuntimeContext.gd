@@ -12,6 +12,7 @@ var event_view = null
 var region_map = null
 var region_overlay = null
 var economy_system = null
+var economy_debug_panel = null
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
@@ -29,6 +30,7 @@ func reset() -> void:
     region_map = null
     region_overlay = null
     economy_system = null
+    economy_debug_panel = null
     resource_states.clear()
     last_yield_snapshot.clear()
     current_config.clear()

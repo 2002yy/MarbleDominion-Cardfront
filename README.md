@@ -19,6 +19,7 @@ Implemented in this repository:
 - Stable `region_id` instances for contested `ENERGY`, `FACTORY`, and central `LAB` regions.
 - Per-region player / AI / neutral control statistics via `RegionControlCalculator.gd`.
 - Cardfront resource state, region yield rules, and 1-second economy tick.
+- Minimal Cardfront-only economy debug panel for resource and region-yield verification.
 - Cardfront-only translucent region overlay.
 - Cardfront mode starts with only two turrets and two control chambers.
 - Event roulette is disabled in Cardfront mode; active card play will replace it later.
@@ -53,7 +54,7 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 - `scripts/cardfront/CardfrontBattlefieldInitializer.gd` — player/AI/neutral initial owner-grid generation.
 - `scripts/cardfront/regions/RegionMap.gd` — deterministic region instance map used by Cardfront systems.
 - `scripts/cardfront/regions/RegionControlCalculator.gd` — per-region player / AI / neutral control statistics.
-- `scripts/cardfront/economy/` — resource state, region yield rules, yield calculator, and economy tick system.
+- `scripts/cardfront/economy/` — resource state, region yield rules, yield calculator, economy tick system, and debug panel.
 - `scripts/cardfront/regions/RegionOverlayLayer.gd` — lightweight Cardfront-only region visualization.
 - `scripts/cardfront/CardfrontMode.gd` — thin assembly layer used by `Main.gd`.
 - `scripts/Battlefield.gd` — owns generic owner grids, owner counts, painting, and draw color overrides.
@@ -84,7 +85,7 @@ Latest local validation:
 
 - `CardfrontModeSmokeTestRunner.gd`: 32 checks passed.
 - `NeutralOwnerCompatibilityTestRunner.gd`: 24 checks passed.
-- `EconomyTickTestRunner.gd`: 39 checks passed.
+- `EconomyTickTestRunner.gd`: 49 checks passed.
 - `RegionMapTestRunner.gd`: 3737 checks passed.
 - `SmokeTestRunner.gd`: 218 checks passed.
 - `IntegrationTestRunner.gd`: 133 checks passed.

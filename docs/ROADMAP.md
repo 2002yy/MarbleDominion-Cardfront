@@ -108,6 +108,7 @@ This file is the single place for project direction and phase status.
 - `v0.1.1-c-region-yield` 已完成：
   - 基于 50% / 80% 控制度档位计算区域产出
   - 已加入 1 秒经济 tick
+  - 已加入 Cardfront-only 最小经济调试面板
   - 经济逻辑保持独立于 `Battlefield.apply_bullet()`
 - 当前下一刀是 `v0.1.2-region-morale`：
   - 在区域状态之上加入民心起伏

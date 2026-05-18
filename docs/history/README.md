@@ -16,7 +16,7 @@ This folder keeps the detailed stage-by-stage BallWar history that used to live 
 ## 推荐入口 / Suggested entry points
 
 - `README_v0_1_1_region_yield.md`
-  - Cardfront region-yield slice / resource state, yield rules, yield calculator, and 1-second economy tick
+  - Cardfront region-yield slice / resource state, yield rules, yield calculator, economy tick, and debug panel
 - `README_v0_1_1_region_instances.md`
   - Cardfront region-instance slice / region_id, explicit region instances, and per-region control statistics
 - `README_v0_1_1_region_map.md`

@@ -7,6 +7,7 @@ const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
 const RegionOverlayLayerScript = preload("res://scripts/cardfront/regions/RegionOverlayLayer.gd")
 const CardfrontResourceStateScript = preload("res://scripts/cardfront/economy/CardfrontResourceState.gd")
 const EconomyTickSystemScript = preload("res://scripts/cardfront/economy/EconomyTickSystem.gd")
+const CardfrontEconomyDebugPanelScript = preload("res://scripts/cardfront/economy/CardfrontEconomyDebugPanel.gd")
 
 
 static func is_selected(mode_name: String) -> bool:
@@ -75,9 +76,13 @@ static func create_economy(game_layer: Node, battlefield, region_map) -> Diction
 	var economy_system = EconomyTickSystemScript.new()
 	economy_system.setup(region_map, battlefield, resource_states)
 	game_layer.add_child(economy_system)
+	var debug_panel = CardfrontEconomyDebugPanelScript.new()
+	debug_panel.setup(region_map, battlefield, economy_system, resource_states, GameConfig.GAME_MODE_CARDFRONT)
+	game_layer.add_child(debug_panel)
 
 	return {
 		"configured": true,
 		"economy_system": economy_system,
 		"resource_states": resource_states,
+		"economy_debug_panel": debug_panel,
 	}

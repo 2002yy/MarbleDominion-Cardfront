@@ -270,6 +270,7 @@ func _create_cardfront_regions() -> void:
 
 func _create_cardfront_economy() -> void:
 	runtime.economy_system = null
+	runtime.economy_debug_panel = null
 	runtime.resource_states.clear()
 	runtime.last_yield_snapshot.clear()
 	if not _is_cardfront_mode():
@@ -279,6 +280,7 @@ func _create_cardfront_economy() -> void:
 		push_warning("Cardfront economy setup failed: %s" % str(economy_setup.get("reason", "unknown")))
 		return
 	runtime.economy_system = economy_setup.get("economy_system", null)
+	runtime.economy_debug_panel = economy_setup.get("economy_debug_panel", null)
 	runtime.resource_states = economy_setup.get("resource_states", {})
 	if runtime.economy_system != null and is_instance_valid(runtime.economy_system):
 		var yield_callable := Callable(self, "_on_cardfront_yield_tick")

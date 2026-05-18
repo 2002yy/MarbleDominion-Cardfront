@@ -28,6 +28,11 @@ Create a small economy layer that reads `RegionMap` and `Battlefield` ownership,
   - reads only `region_map` and `battlefield`
   - writes only configured `CardfrontResourceState` instances
   - emits `resources_changed` and `yield_tick`
+- Added `scripts/cardfront/economy/CardfrontEconomyDebugPanel.gd`:
+  - visible only in Cardfront mode
+  - shows player energy and parts
+  - lists controllable regions with player / AI control percent and current yield tier output
+  - remains a development verification tool, not the final Cardfront HUD
 - Wired Cardfront economy creation through `CardfrontMode.create_economy(...)` and `Main._create_cardfront_economy()`.
 - Added `scripts/tests/EconomyTickTestRunner.gd`.
 
@@ -41,6 +46,7 @@ Create a small economy layer that reads `RegionMap` and `Battlefield` ownership,
 - No changes to `Bullet`, `BulletPool`, `Turret`, or `ControlChamber`.
 - No economy logic in `Battlefield.apply_bullet()`.
 - No large HUD or UI refactor.
+- The economy debug panel is temporary developer feedback, not final UI.
 
 ## Validation
 
