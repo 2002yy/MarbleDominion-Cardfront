@@ -13,9 +13,10 @@ The v0.1.0 slice intentionally stops before card data, economy, AI strategy, sav
 ## Implemented
 
 - Added `scripts/cardfront/CardfrontRules.gd` for Cardfront constants, duel factions, neutral owner rules, match timer, and target percentage.
+- Added `scripts/cardfront/CardfrontBattlefieldInitializer.gd` for player/AI/neutral owner-grid generation.
 - Added `scripts/cardfront/CardfrontMode.gd` as the thin mode assembly layer used by `Main.gd`.
 - Added `GameConfig.GAME_MODE_CARDFRONT` and exposed it through the existing mode selector.
-- Added `Battlefield.reset_cardfront_duel()`:
+- Added Cardfront battlefield initialization through `Battlefield.replace_owners()`:
   - BLUE = player side.
   - RED = AI side.
   - `-1` = neutral center territory.

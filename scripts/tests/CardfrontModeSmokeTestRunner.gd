@@ -2,6 +2,7 @@ extends SceneTree
 
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const CardfrontBattlefieldInitializerScript = preload("res://scripts/cardfront/CardfrontBattlefieldInitializer.gd")
 
 var _assert: TestAssert
 
@@ -54,8 +55,10 @@ func _test_battlefield_duel_reset() -> void:
 	var bf := Battlefield.new()
 	bf.configure(40)
 	get_root().add_child(bf)
+	_assert.that(not bf.has_method("reset_cardfront_duel"), "battlefield architecture: Battlefield should not expose Cardfront reset")
 	var setup: Dictionary = CardfrontModeScript.configure_battlefield(bf)
 	_assert.that(bool(setup.get("configured", false)), "battlefield reset: CardfrontMode should configure Battlefield")
+	_assert.eq(int(setup.get("spawn_columns", 0)), CardfrontBattlefieldInitializerScript.get_spawn_columns(40), "battlefield reset: initializer should report spawn width")
 
 	var counts: Dictionary = bf.count_cells_by_team()
 	var total: int = int(counts.get(CardfrontRulesScript.PLAYER_FACTION, 0)) \
@@ -68,6 +71,7 @@ func _test_battlefield_duel_reset() -> void:
 	_assert.eq(bf.owners[0][0], CardfrontRulesScript.PLAYER_FACTION, "battlefield reset: left edge belongs to player")
 	_assert.eq(bf.owners[39][0], CardfrontRulesScript.AI_FACTION, "battlefield reset: right edge belongs to AI")
 	_assert.eq(bf.owners[20][20], CardfrontRulesScript.NEUTRAL_OWNER, "battlefield reset: center starts neutral")
+	_assert.eq(CardfrontBattlefieldInitializerScript.duel_owner_for_cell(20, 20, 40), CardfrontRulesScript.NEUTRAL_OWNER, "battlefield reset: initializer owns neutral cell rule")
 
 	var before_neutral: int = int(counts.get(CardfrontRulesScript.NEUTRAL_OWNER, 0))
 	var result: String = bf.apply_bullet(Vector2i(20, 20), CardfrontRulesScript.PLAYER_FACTION)

@@ -22,21 +22,6 @@ static func get_score_owner_ids() -> Array:
 	return [PLAYER_FACTION, AI_FACTION, NEUTRAL_OWNER]
 
 
-static func get_spawn_columns(grid_size: int) -> int:
-	var safe_size: int = maxi(4, grid_size)
-	var desired: int = int(round(float(safe_size) * 0.20))
-	return clampi(desired, 2, maxi(2, (safe_size / 2) - 1))
-
-
-static func duel_owner_for_cell(x: int, _y: int, grid_size: int) -> int:
-	var spawn_columns: int = get_spawn_columns(grid_size)
-	if x < spawn_columns:
-		return PLAYER_FACTION
-	if x >= grid_size - spawn_columns:
-		return AI_FACTION
-	return NEUTRAL_OWNER
-
-
 static func owner_display_name(owner_id: int) -> String:
 	match owner_id:
 		PLAYER_FACTION:

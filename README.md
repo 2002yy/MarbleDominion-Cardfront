@@ -14,7 +14,7 @@ Implemented in this repository:
 
 - New `卡牌前线` game mode in the existing mode selector.
 - Player vs AI baseline: BLUE is player, RED is AI, the center starts neutral.
-- Cardfront battlefield reset via `Battlefield.reset_cardfront_duel()`.
+- Cardfront battlefield layout via `scripts/cardfront/CardfrontBattlefieldInitializer.gd`.
 - Cardfront mode starts with only two turrets and two control chambers.
 - Event roulette is disabled in Cardfront mode; active card play will replace it later.
 - Cardfront win rules:
@@ -44,8 +44,9 @@ These screenshots still show the inherited BallWar visual baseline while Cardfro
 Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
 - `scripts/cardfront/CardfrontRules.gd` — mode constants, duel factions, neutral owner, timer and capture target.
+- `scripts/cardfront/CardfrontBattlefieldInitializer.gd` — player/AI/neutral initial owner-grid generation.
 - `scripts/cardfront/CardfrontMode.gd` — thin assembly layer used by `Main.gd`.
-- `scripts/Battlefield.gd` — still owns grid ownership and drawing; Cardfront adds a duel reset path.
+- `scripts/Battlefield.gd` — owns generic owner grids, owner counts, painting, and draw color overrides.
 - `scripts/WinConditionEvaluator.gd` — adds Cardfront win evaluation beside the existing BallWar modes.
 - `scripts/Main.gd` — stays orchestration-only and delegates Cardfront rules to `scripts/cardfront/`.
 
@@ -64,10 +65,10 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 
 Latest local validation:
 
-- `CardfrontModeSmokeTestRunner.gd`: 29 checks passed.
-- `NeutralOwnerCompatibilityTestRunner.gd`: 21 checks passed.
+- `CardfrontModeSmokeTestRunner.gd`: 32 checks passed.
+- `NeutralOwnerCompatibilityTestRunner.gd`: 24 checks passed.
 - `SmokeTestRunner.gd`: 218 checks passed.
-- `IntegrationTestRunner.gd`: 136 checks passed.
+- `IntegrationTestRunner.gd`: 133 checks passed.
 - `StartMenuSceneTestRunner.gd`: 55 checks passed.
 - `GameHUDSceneTestRunner.gd`: 40 checks passed.
 - `LayoutSanityTestRunner.gd`: 376 checks passed.

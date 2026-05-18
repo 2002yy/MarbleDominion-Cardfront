@@ -16,6 +16,7 @@ func _run() -> void:
 	await process_frame
 
 	_test_quadrant_reset_has_no_neutral_cells()
+	_test_battlefield_replace_owners_accepts_generic_owner_ids()
 	_test_cardfront_reset_uses_neutral_cells()
 	_test_save_validation_preserves_neutral_owner()
 	_test_save_restore_preserves_neutral_owner()
@@ -49,6 +50,25 @@ func _test_quadrant_reset_has_no_neutral_cells() -> void:
 	_assert.eq(total, 1600, "quadrants: four faction counts should cover the full grid")
 	_assert.eq(int(counts.get(CardfrontRulesScript.NEUTRAL_OWNER, 0)), 0, "quadrants: neutral owner count should stay zero")
 	_assert.eq(_count_owner_cells(bf, CardfrontRulesScript.NEUTRAL_OWNER), 0, "quadrants: no cell should be neutral")
+	TestFixtures.cleanup_node(bf)
+
+
+func _test_battlefield_replace_owners_accepts_generic_owner_ids() -> void:
+	var bf := Battlefield.new()
+	bf.configure(10)
+	get_root().add_child(bf)
+	var owner_grid: Array = []
+	for x in range(10):
+		var col: Array = []
+		for y in range(10):
+			col.append(42)
+		owner_grid.append(col)
+	owner_grid[0][0] = CardfrontRulesScript.NEUTRAL_OWNER
+
+	_assert.that(bf.replace_owners(owner_grid, false), "replace owners: generic owner grid should be accepted")
+	var counts: Dictionary = bf.count_cells_by_team()
+	_assert.eq(int(counts.get(42, 0)), 99, "replace owners: arbitrary int owner should be counted")
+	_assert.eq(int(counts.get(CardfrontRulesScript.NEUTRAL_OWNER, 0)), 1, "replace owners: neutral int owner should be counted")
 	TestFixtures.cleanup_node(bf)
 
 
