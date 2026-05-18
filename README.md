@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current milestone is **v0.1.0-cardfront-prototype**. It proves the new mode can live beside the stable BallWar runtime without deleting the original modes.
+The current milestone is **v0.1.1-a-region-map**. It proves the new mode can add a deterministic region layer without changing the BallWar capture runtime.
 
 ## Current Slice / 当前阶段
 
@@ -15,6 +15,8 @@ Implemented in this repository:
 - New `卡牌前线` game mode in the existing mode selector.
 - Player vs AI baseline: BLUE is player, RED is AI, the center starts neutral.
 - Cardfront battlefield layout via `scripts/cardfront/CardfrontBattlefieldInitializer.gd`.
+- Deterministic Cardfront region layer with `NORMAL`, `ENERGY`, `FACTORY`, and `LAB` cells.
+- Cardfront-only translucent region overlay.
 - Cardfront mode starts with only two turrets and two control chambers.
 - Event roulette is disabled in Cardfront mode; active card play will replace it later.
 - Cardfront win rules:
@@ -22,10 +24,11 @@ Implemented in this repository:
   - 8-minute timer ends by player/AI territory lead.
   - Equal player/AI territory at timer is a draw.
 - New headless runner: `CardfrontModeSmokeTestRunner.gd`.
+- New headless runner: `RegionMapTestRunner.gd`.
 
 Not implemented yet:
 
-- Region economy.
+- 1-second region economy tick.
 - Deck / hand / card effect data.
 - AI Commander behavior.
 - Cardfront save schema.
@@ -45,6 +48,8 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
 - `scripts/cardfront/CardfrontRules.gd` — mode constants, duel factions, neutral owner, timer and capture target.
 - `scripts/cardfront/CardfrontBattlefieldInitializer.gd` — player/AI/neutral initial owner-grid generation.
+- `scripts/cardfront/regions/RegionMap.gd` — deterministic region-type grid used by Cardfront systems.
+- `scripts/cardfront/regions/RegionOverlayLayer.gd` — lightweight Cardfront-only region visualization.
 - `scripts/cardfront/CardfrontMode.gd` — thin assembly layer used by `Main.gd`.
 - `scripts/Battlefield.gd` — owns generic owner grids, owner counts, painting, and draw color overrides.
 - `scripts/WinConditionEvaluator.gd` — adds Cardfront win evaluation beside the existing BallWar modes.
@@ -59,6 +64,7 @@ Run with Godot 4.6:
 ```powershell
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontModeSmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMapTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
@@ -67,6 +73,7 @@ Latest local validation:
 
 - `CardfrontModeSmokeTestRunner.gd`: 32 checks passed.
 - `NeutralOwnerCompatibilityTestRunner.gd`: 24 checks passed.
+- `RegionMapTestRunner.gd`: 2108 checks passed.
 - `SmokeTestRunner.gd`: 218 checks passed.
 - `IntegrationTestRunner.gd`: 133 checks passed.
 - `StartMenuSceneTestRunner.gd`: 55 checks passed.
@@ -77,10 +84,8 @@ Latest local validation:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.1-region-economy`:
+`v0.1.1-b-economy-tick`:
 
-- Add `RegionMap.gd`.
-- Add simple region visualization.
 - Add 1-second economy tick for energy and parts.
 - Keep economy out of `Battlefield.apply_bullet()` so the grid layer remains reusable.
 

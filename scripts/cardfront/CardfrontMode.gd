@@ -3,6 +3,8 @@ class_name CardfrontMode
 
 const Rules = preload("res://scripts/cardfront/CardfrontRules.gd")
 const BattlefieldInitializer = preload("res://scripts/cardfront/CardfrontBattlefieldInitializer.gd")
+const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
+const RegionOverlayLayerScript = preload("res://scripts/cardfront/regions/RegionOverlayLayer.gd")
 
 
 static func is_selected(mode_name: String) -> bool:
@@ -33,3 +35,24 @@ static func configure_battlefield(battlefield) -> Dictionary:
 		"capture_target_percent": Rules.CAPTURE_TARGET_PERCENT,
 	}, true)
 	return result
+
+
+static func create_regions(game_layer: Node, battlefield) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if battlefield == null or not is_instance_valid(battlefield):
+		return {"configured": false, "reason": "missing_battlefield"}
+
+	var region_map = RegionMapScript.new()
+	region_map.configure(int(battlefield.grid_size))
+	region_map.generate_default_layout()
+
+	var overlay = RegionOverlayLayerScript.new()
+	overlay.setup(region_map, battlefield, GameConfig.GAME_MODE_CARDFRONT)
+	game_layer.add_child(overlay)
+
+	return {
+		"configured": true,
+		"region_map": region_map,
+		"region_overlay": overlay,
+	}

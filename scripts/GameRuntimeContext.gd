@@ -9,6 +9,8 @@ var hud: Dictionary = {}
 var ui_runtime: Dictionary = {}
 var event_controller = null
 var event_view = null
+var region_map = null
+var region_overlay = null
 var current_config: Dictionary = {}
 var current_layout: Dictionary = {}
 
@@ -21,6 +23,8 @@ func reset() -> void:
     ui_runtime.clear()
     event_controller = null
     event_view = null
+    region_map = null
+    region_overlay = null
     current_config.clear()
     current_layout.clear()
 

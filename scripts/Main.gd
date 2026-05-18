@@ -234,6 +234,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	add_child(game_layer)
 
 	_create_battlefield(grid_size)
+	_create_cardfront_regions()
 	_create_turrets()
 	_create_control_chambers()
 	_create_ui()
@@ -253,6 +254,18 @@ func _create_battlefield(grid_size: int) -> void:
 	chamber_scale = float(scene_nodes.get("chamber_scale", 0.80))
 	if _is_cardfront_mode():
 		CardfrontModeScript.configure_battlefield(runtime.battlefield)
+
+func _create_cardfront_regions() -> void:
+	runtime.region_map = null
+	runtime.region_overlay = null
+	if not _is_cardfront_mode():
+		return
+	var region_setup: Dictionary = CardfrontModeScript.create_regions(game_layer, runtime.battlefield)
+	if not bool(region_setup.get("configured", false)):
+		push_warning("Cardfront region setup failed: %s" % str(region_setup.get("reason", "unknown")))
+		return
+	runtime.region_map = region_setup.get("region_map", null)
+	runtime.region_overlay = region_setup.get("region_overlay", null)
 
 func _create_turrets() -> void:
 	var active_factions: Array = CardfrontModeScript.get_active_factions() if _is_cardfront_mode() else []
