@@ -8,6 +8,8 @@ Detailed stage notes now live under [docs/history/](docs/history/README.md).
 
 ## Release Reading Rule / Release 分层
 
+- Cardfront Prototype: `v0.1.0`
+  - new repository baseline, with Cardfront mode entry, player-vs-AI duel baseline, and headless smoke coverage
 - Latest Stable: `v2.1.11.1`
   - recommended public download, with Windows zip and Android debug APK assets
 - Milestone Releases: `v2.1.10`, `v2.1.9`, `v2.1.8`, `v2.1.4`, `v2.0.3`

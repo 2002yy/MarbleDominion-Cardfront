@@ -15,7 +15,7 @@ This folder keeps the detailed stage-by-stage BallWar history that used to live 
 
 ## 推荐入口 / Suggested entry points
 
-- `README_v2_2_0_cardfront_prototype.md`
+- `README_v0_1_0_cardfront_prototype.md`
   - Cardfront prototype branch entry / 卡牌前线原型分支入口：新模式、双阵营基线、8 分钟结算
 - `README_v2_1_11_1_ui_hotfix.md`
   - Latest Stable / 当前稳定版：控制仓门文字裁切热修复

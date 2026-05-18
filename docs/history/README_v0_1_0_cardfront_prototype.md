@@ -1,4 +1,4 @@
-# v2.2.0-cardfront-prototype
+# v0.1.0-cardfront-prototype
 
 Date: 2026-05-18
 
@@ -8,7 +8,7 @@ This branch starts the controlled Cardfront prototype beside the stable BallWar 
 
 Create the first safe entry point for **Marble Dominion: Cardfront / 弹珠领土：卡牌前线** without deleting the existing BallWar modes.
 
-The v2.2.0 slice intentionally stops before card data, economy, AI strategy, save migration, and new UI art. Its job is to prove that Cardfront can live as a separate mode and reuse the BallWar runtime foundation.
+The v0.1.0 slice intentionally stops before card data, economy, AI strategy, save migration, and new UI art. Its job is to prove that Cardfront can live as a separate mode and reuse the BallWar runtime foundation.
 
 ## Implemented
 
@@ -48,4 +48,4 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 
 ## Next Slice
 
-`v2.2.1-region-economy` should add `RegionMap.gd`, a lightweight region overlay, and a 1-second economy tick. Keep it separate from `Battlefield.apply_bullet()` so territory ownership remains the base layer.
+`v0.1.1-region-economy` should add `RegionMap.gd`, a lightweight region overlay, and a 1-second economy tick. Keep it separate from `Battlefield.apply_bullet()` so territory ownership remains the base layer.
