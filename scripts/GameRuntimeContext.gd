@@ -11,6 +11,9 @@ var event_controller = null
 var event_view = null
 var region_map = null
 var region_overlay = null
+var economy_system = null
+var resource_states: Dictionary = {}
+var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
 var current_layout: Dictionary = {}
 
@@ -25,6 +28,9 @@ func reset() -> void:
     event_view = null
     region_map = null
     region_overlay = null
+    economy_system = null
+    resource_states.clear()
+    last_yield_snapshot.clear()
     current_config.clear()
     current_layout.clear()
 

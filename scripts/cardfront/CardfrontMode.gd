@@ -5,6 +5,8 @@ const Rules = preload("res://scripts/cardfront/CardfrontRules.gd")
 const BattlefieldInitializer = preload("res://scripts/cardfront/CardfrontBattlefieldInitializer.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
 const RegionOverlayLayerScript = preload("res://scripts/cardfront/regions/RegionOverlayLayer.gd")
+const CardfrontResourceStateScript = preload("res://scripts/cardfront/economy/CardfrontResourceState.gd")
+const EconomyTickSystemScript = preload("res://scripts/cardfront/economy/EconomyTickSystem.gd")
 
 
 static func is_selected(mode_name: String) -> bool:
@@ -55,4 +57,27 @@ static func create_regions(game_layer: Node, battlefield) -> Dictionary:
 		"configured": true,
 		"region_map": region_map,
 		"region_overlay": overlay,
+	}
+
+
+static func create_economy(game_layer: Node, battlefield, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if battlefield == null or not is_instance_valid(battlefield):
+		return {"configured": false, "reason": "missing_battlefield"}
+	if region_map == null:
+		return {"configured": false, "reason": "missing_region_map"}
+
+	var resource_states: Dictionary = {
+		Rules.PLAYER_FACTION: CardfrontResourceStateScript.new(),
+		Rules.AI_FACTION: CardfrontResourceStateScript.new(),
+	}
+	var economy_system = EconomyTickSystemScript.new()
+	economy_system.setup(region_map, battlefield, resource_states)
+	game_layer.add_child(economy_system)
+
+	return {
+		"configured": true,
+		"economy_system": economy_system,
+		"resource_states": resource_states,
 	}

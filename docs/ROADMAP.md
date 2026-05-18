@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.1-b-region-instances`
-- Next slice: `v0.1.1-c-region-yield`
+- Current completed slice: `v0.1.1-c-region-yield`
+- Next slice: `v0.1.2-region-morale`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
@@ -23,8 +23,8 @@ This file is the single place for project direction and phase status.
 |---|---|---|
 | `v0.1.1-a-region-map` | Done / 已完成 | Region types, deterministic `RegionMap`, Cardfront-only overlay. No economy tick, cards, or AI. |
 | `v0.1.1-b-region-instances` | Done / 已完成 | Add `region_id`, explicit region instances, and region-control statistics. |
-| `v0.1.1-c-region-yield` | Next / 下一步 | Region-control yield with 50% / 80% thresholds. |
-| `v0.1.2-region-morale` | Planned / 计划中 | Morale fluctuation system tied to region state. |
+| `v0.1.1-c-region-yield` | Done / 已完成 | Region-control yield with 50% / 80% thresholds. |
+| `v0.1.2-region-morale` | Next / 下一步 | Morale fluctuation system tied to region state. |
 | `v0.1.3-deployment-rules` | Planned / 计划中 | Deployment permission by owned region, owned border, and region control degree. |
 | `v0.1.4-fortify-layer` | Planned / 计划中 | Frontline fortification layer. |
 | `v0.1.5-card-core-lite` | Planned / 计划中 | Pseudo-card core: fixed hand and energy costs. |
@@ -34,7 +34,7 @@ This file is the single place for project direction and phase status.
 ### Design Boundaries / 设计边界
 
 - `v0.1.1-b` adds region identity and control statistics only; no resource income yet.
-- `v0.1.1-c` is the first slice that may calculate region yield.
+- `v0.1.1-c` adds region yield and the first 1-second economy tick.
 - Economy calculation must stay outside `Battlefield.apply_bullet()`.
 - Card effects should wait until region/yield/deployment rules are already testable.
 - Do not modify `Bullet`, `BulletPool`, `Turret`, or `ControlChamber` for region planning slices unless a later slice explicitly requires it.
@@ -105,10 +105,13 @@ This file is the single place for project direction and phase status.
   - 区域层已有稳定 `region_id`
   - 已建立区域实例数据结构
   - 已能统计每个区域内玩家/AI/中立控制度
-  - 未加入经济 tick、卡牌和 AI
-- 当前下一刀是 `v0.1.1-c-region-yield`：
+- `v0.1.1-c-region-yield` 已完成：
   - 基于 50% / 80% 控制度档位计算区域产出
-  - 保持经济逻辑独立于 `Battlefield.apply_bullet()`
+  - 已加入 1 秒经济 tick
+  - 经济逻辑保持独立于 `Battlefield.apply_bullet()`
+- 当前下一刀是 `v0.1.2-region-morale`：
+  - 在区域状态之上加入民心起伏
+  - 暂不做卡牌、单位、AI 和前线加固
 
 ### Android export hardening / Android 导出固化
 
@@ -134,10 +137,9 @@ This file is the single place for project direction and phase status.
 
 ## 5. Next / 下一步
 
-1. **`v0.1.1-c-region-yield`**: 50% / 80% region-control yield tiers.
-2. **`v0.1.2-region-morale`**: morale fluctuation system.
-3. **`v0.1.3-deployment-rules`**: deployment permission by owned region, owned border, and region control degree.
-4. **`v0.1.4-fortify-layer`**: frontline fortification layer.
+1. **`v0.1.2-region-morale`**: morale fluctuation system.
+2. **`v0.1.3-deployment-rules`**: deployment permission by owned region, owned border, and region control degree.
+3. **`v0.1.4-fortify-layer`**: frontline fortification layer.
 
 ## 6. Later / 中期候选
 
@@ -151,7 +153,7 @@ This file is the single place for project direction and phase status.
 
 ## 7. Not Now / 暂不处理
 
-- 在 `v0.1.1-b` 中提前做经济 tick
+- 在 `v0.1.1-c` 中提前做民心、卡牌、单位或 AI
 - 在区域实例前做卡牌和 AI
 - 在性能基线不稳定前继续扩大弹幕规模
 - 把 UI 重新塞回纯代码动态生成

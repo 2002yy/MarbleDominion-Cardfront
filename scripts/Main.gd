@@ -235,6 +235,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 
 	_create_battlefield(grid_size)
 	_create_cardfront_regions()
+	_create_cardfront_economy()
 	_create_turrets()
 	_create_control_chambers()
 	_create_ui()
@@ -266,6 +267,26 @@ func _create_cardfront_regions() -> void:
 		return
 	runtime.region_map = region_setup.get("region_map", null)
 	runtime.region_overlay = region_setup.get("region_overlay", null)
+
+func _create_cardfront_economy() -> void:
+	runtime.economy_system = null
+	runtime.resource_states.clear()
+	runtime.last_yield_snapshot.clear()
+	if not _is_cardfront_mode():
+		return
+	var economy_setup: Dictionary = CardfrontModeScript.create_economy(game_layer, runtime.battlefield, runtime.region_map)
+	if not bool(economy_setup.get("configured", false)):
+		push_warning("Cardfront economy setup failed: %s" % str(economy_setup.get("reason", "unknown")))
+		return
+	runtime.economy_system = economy_setup.get("economy_system", null)
+	runtime.resource_states = economy_setup.get("resource_states", {})
+	if runtime.economy_system != null and is_instance_valid(runtime.economy_system):
+		var yield_callable := Callable(self, "_on_cardfront_yield_tick")
+		if not runtime.economy_system.yield_tick.is_connected(yield_callable):
+			runtime.economy_system.yield_tick.connect(yield_callable)
+
+func _on_cardfront_yield_tick(owner_id: int, yield_data: Dictionary) -> void:
+	runtime.last_yield_snapshot[owner_id] = yield_data
 
 func _create_turrets() -> void:
 	var active_factions: Array = CardfrontModeScript.get_active_factions() if _is_cardfront_mode() else []

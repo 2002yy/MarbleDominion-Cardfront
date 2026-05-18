@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current milestone is **v0.1.1-b-region-instances**. It upgrades the deterministic region layer into explicit region instances with per-region control statistics, without changing the BallWar capture runtime.
+The current milestone is **v0.1.1-c-region-yield**. It turns per-region control tiers into Cardfront resource yield without changing the BallWar capture runtime.
 
 ## Current Slice / 当前阶段
 
@@ -18,6 +18,7 @@ Implemented in this repository:
 - Deterministic Cardfront region layer with `NORMAL`, `ENERGY`, `FACTORY`, and `LAB` cells.
 - Stable `region_id` instances for contested `ENERGY`, `FACTORY`, and central `LAB` regions.
 - Per-region player / AI / neutral control statistics via `RegionControlCalculator.gd`.
+- Cardfront resource state, region yield rules, and 1-second economy tick.
 - Cardfront-only translucent region overlay.
 - Cardfront mode starts with only two turrets and two control chambers.
 - Event roulette is disabled in Cardfront mode; active card play will replace it later.
@@ -30,9 +31,8 @@ Implemented in this repository:
 
 Not implemented yet:
 
-- 1-second region economy tick.
-- Region-control yield application.
 - Deck / hand / card effect data.
+- Morale fluctuation system.
 - AI Commander behavior.
 - Cardfront save schema.
 - Dedicated Cardfront HUD and card UI.
@@ -53,6 +53,7 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 - `scripts/cardfront/CardfrontBattlefieldInitializer.gd` — player/AI/neutral initial owner-grid generation.
 - `scripts/cardfront/regions/RegionMap.gd` — deterministic region instance map used by Cardfront systems.
 - `scripts/cardfront/regions/RegionControlCalculator.gd` — per-region player / AI / neutral control statistics.
+- `scripts/cardfront/economy/` — resource state, region yield rules, yield calculator, and economy tick system.
 - `scripts/cardfront/regions/RegionOverlayLayer.gd` — lightweight Cardfront-only region visualization.
 - `scripts/cardfront/CardfrontMode.gd` — thin assembly layer used by `Main.gd`.
 - `scripts/Battlefield.gd` — owns generic owner grids, owner counts, painting, and draw color overrides.
@@ -62,6 +63,7 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 Detailed milestone notes:
 
 - [docs/history/README_v0_1_1_region_instances.md](docs/history/README_v0_1_1_region_instances.md)
+- [docs/history/README_v0_1_1_region_yield.md](docs/history/README_v0_1_1_region_yield.md)
 - [docs/history/README_v0_1_1_region_map.md](docs/history/README_v0_1_1_region_map.md)
 - [docs/history/README_v0_1_0_cardfront_prototype.md](docs/history/README_v0_1_0_cardfront_prototype.md)
 
@@ -72,6 +74,7 @@ Run with Godot 4.6:
 ```powershell
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontModeSmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EconomyTickTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMapTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
@@ -81,6 +84,7 @@ Latest local validation:
 
 - `CardfrontModeSmokeTestRunner.gd`: 32 checks passed.
 - `NeutralOwnerCompatibilityTestRunner.gd`: 24 checks passed.
+- `EconomyTickTestRunner.gd`: 39 checks passed.
 - `RegionMapTestRunner.gd`: 3737 checks passed.
 - `SmokeTestRunner.gd`: 218 checks passed.
 - `IntegrationTestRunner.gd`: 133 checks passed.
@@ -92,11 +96,11 @@ Latest local validation:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.1-c-region-yield`:
+`v0.1.2-region-morale`:
 
-- Turn per-region control tiers into resource yield rules.
-- Keep yield calculation outside `Battlefield.apply_bullet()`.
-- Still defer morale, cards, units, fortification, and AI Commander behavior.
+- Add morale fluctuation on top of region state.
+- Keep morale outside bullet capture and economy storage internals.
+- Still defer cards, units, fortification, and AI Commander behavior.
 - Full route is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
