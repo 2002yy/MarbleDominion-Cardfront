@@ -15,6 +15,8 @@ This folder keeps the detailed stage-by-stage BallWar history that used to live 
 
 ## 推荐入口 / Suggested entry points
 
+- `README_v0_1_1_region_instances.md`
+  - Cardfront region-instance slice / region_id, explicit region instances, and per-region control statistics
 - `README_v0_1_1_region_map.md`
   - Cardfront region-map slice / 卡牌前线区域层：RegionMap、区域覆盖层、无经济 tick
 - `README_v0_1_0_cardfront_prototype.md`

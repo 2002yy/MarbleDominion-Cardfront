@@ -3,6 +3,7 @@ extends SceneTree
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
 const RegionOverlayLayerScript = preload("res://scripts/cardfront/regions/RegionOverlayLayer.gd")
+const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontBattlefieldInitializerScript = preload("res://scripts/cardfront/CardfrontBattlefieldInitializer.gd")
 
@@ -25,7 +26,10 @@ func _run() -> void:
 	_test_spawn_edges_do_not_create_labs(60)
 	_test_default_layout_is_deterministic(40)
 	_test_default_layout_is_deterministic(60)
+	_test_region_instances(40)
+	_test_region_instance_reverse_lookup(40)
 	_test_owned_region_cell_count()
+	_test_region_control_calculator()
 	_test_overlay_visibility_by_mode()
 	await _test_main_region_overlay_integration()
 	await _flush()
@@ -79,6 +83,39 @@ func _test_default_layout_is_deterministic(grid_size: int) -> void:
 	_assert.eq(first_snapshot, second_snapshot, "region map %d: default layout should be deterministic" % grid_size)
 
 
+func _test_region_instances(grid_size: int) -> void:
+	var region_map = _make_region_map(grid_size)
+	var energy_ids: Array = region_map.get_region_ids_by_type(RegionTypeScript.ENERGY)
+	var factory_ids: Array = region_map.get_region_ids_by_type(RegionTypeScript.FACTORY)
+	var lab_ids: Array = region_map.get_region_ids_by_type(RegionTypeScript.LAB)
+	_assert.that(energy_ids is Array, "region instances: ENERGY ids should be an Array")
+	_assert.that(factory_ids is Array, "region instances: FACTORY ids should be an Array")
+	_assert.that(lab_ids is Array, "region instances: LAB ids should be an Array")
+	_assert.gte(energy_ids.size(), 2, "region instances: ENERGY should have at least two independent region ids")
+	_assert.gte(factory_ids.size(), 2, "region instances: FACTORY should have at least two independent region ids")
+	_assert.eq(lab_ids.size(), 1, "region instances: central LAB should be one independent region")
+	_assert.neq(int(lab_ids[0]), RegionMapScript.NORMAL_REGION_ID, "region instances: LAB should not use the NORMAL region id")
+
+	for region_id in energy_ids:
+		_assert.eq(region_map.get_region_type_by_id(int(region_id)), RegionTypeScript.ENERGY, "region instances: ENERGY id should resolve to ENERGY")
+	for region_id in factory_ids:
+		_assert.eq(region_map.get_region_type_by_id(int(region_id)), RegionTypeScript.FACTORY, "region instances: FACTORY id should resolve to FACTORY")
+	for region_id in lab_ids:
+		_assert.eq(region_map.get_region_type_by_id(int(region_id)), RegionTypeScript.LAB, "region instances: LAB id should resolve to LAB")
+
+	var controllable_ids: Array = region_map.get_controllable_region_ids()
+	_assert.eq(controllable_ids.size(), energy_ids.size() + factory_ids.size() + lab_ids.size(), "region instances: controllable ids should include every non-NORMAL region")
+
+
+func _test_region_instance_reverse_lookup(grid_size: int) -> void:
+	var region_map = _make_region_map(grid_size)
+	for region_id in region_map.get_all_region_ids():
+		var cells: Array = region_map.get_region_cells(int(region_id))
+		_assert.gt(cells.size(), 0, "region instances: region %d should own at least one cell" % int(region_id))
+		for cell in cells:
+			_assert.eq(region_map.get_region_id(cell), int(region_id), "region instances: cell should reverse-map to its region id")
+
+
 func _test_owned_region_cell_count() -> void:
 	var region_map = _make_region_map(40)
 	var bf := Battlefield.new()
@@ -100,6 +137,44 @@ func _test_owned_region_cell_count() -> void:
 	_assert.gt(energy_cells, 0, "owned region count: ENERGY fixture should contain cells")
 	_assert.eq(region_map.count_owned_region_cells(bf, CardfrontRulesScript.PLAYER_FACTION, RegionTypeScript.ENERGY), energy_cells, "owned region count: player should own all ENERGY cells")
 	_assert.eq(region_map.count_owned_region_cells(bf, CardfrontRulesScript.AI_FACTION, RegionTypeScript.ENERGY), 0, "owned region count: AI should own no ENERGY cells")
+	TestFixtures.cleanup_node(bf)
+
+
+func _test_region_control_calculator() -> void:
+	var region_map = _make_region_map(40)
+	var energy_ids: Array = region_map.get_region_ids_by_type(RegionTypeScript.ENERGY)
+	_assert.gte(energy_ids.size(), 2, "region control: fixture should expose multiple ENERGY regions")
+	var region_id: int = int(energy_ids[0])
+	var cells: Array = region_map.get_region_cells(region_id)
+	_assert.gt(cells.size(), 0, "region control: selected region should contain cells")
+
+	var bf := Battlefield.new()
+	bf.configure(40)
+	get_root().add_child(bf)
+	var owners: Array = _make_owner_grid(40, CardfrontRulesScript.NEUTRAL_OWNER)
+	var player_count: int = maxi(1, int(ceil(float(cells.size()) * 0.50)))
+	var ai_count: int = maxi(1, int(floor(float(cells.size()) * 0.30)))
+	_assign_region_fixture_owners(owners, cells, player_count, ai_count)
+	bf.replace_owners(owners, false)
+
+	var control: Dictionary = RegionControlCalculatorScript.calculate(region_map, bf, region_id)
+	var neutral_count: int = cells.size() - player_count - ai_count
+	_assert.eq(int(control["owner_counts"].get(CardfrontRulesScript.PLAYER_FACTION, -1)), player_count, "region control: player cell count should match fixture")
+	_assert.eq(int(control["owner_counts"].get(CardfrontRulesScript.AI_FACTION, -1)), ai_count, "region control: AI cell count should match fixture")
+	_assert.eq(int(control["owner_counts"].get(CardfrontRulesScript.NEUTRAL_OWNER, -1)), neutral_count, "region control: neutral cell count should match fixture")
+	_assert.eq(RegionControlCalculatorScript.get_yield_tier(control, CardfrontRulesScript.PLAYER_FACTION), 1, "region control: 50 percent ownership should be tier 1")
+	_assert.eq(RegionControlCalculatorScript.get_yield_tier(control, CardfrontRulesScript.AI_FACTION), 0, "region control: below 50 percent ownership should be tier 0")
+	_assert.eq(RegionControlCalculatorScript.get_region_status(control), RegionControlCalculatorScript.STATUS_INFLUENCED, "region control: 50 percent ownership should be influenced, not fully controlled")
+
+	owners = _make_owner_grid(40, CardfrontRulesScript.NEUTRAL_OWNER)
+	player_count = maxi(1, int(ceil(float(cells.size()) * 0.80)))
+	ai_count = maxi(0, int(floor(float(cells.size()) * 0.10)))
+	_assign_region_fixture_owners(owners, cells, player_count, ai_count)
+	bf.replace_owners(owners, false)
+	control = RegionControlCalculatorScript.calculate(region_map, bf, region_id)
+	_assert.eq(RegionControlCalculatorScript.get_yield_tier(control, CardfrontRulesScript.PLAYER_FACTION), 2, "region control: 80 percent ownership should be tier 2")
+	_assert.eq(RegionControlCalculatorScript.get_region_status(control), RegionControlCalculatorScript.STATUS_CONTROLLED, "region control: 80 percent ownership should be controlled")
+
 	TestFixtures.cleanup_node(bf)
 
 
@@ -168,3 +243,22 @@ func _count_all_valid_cells(region_map) -> int:
 			if RegionTypeScript.is_valid(region_map.get_region_type(Vector2i(x, y))):
 				total += 1
 	return total
+
+
+func _make_owner_grid(grid_size: int, owner_id: int) -> Array:
+	var owners: Array = []
+	for x in range(grid_size):
+		var col: Array = []
+		for y in range(grid_size):
+			col.append(owner_id)
+		owners.append(col)
+	return owners
+
+
+func _assign_region_fixture_owners(owners: Array, cells: Array, player_count: int, ai_count: int) -> void:
+	for index in range(cells.size()):
+		var cell: Vector2i = cells[index]
+		if index < player_count:
+			owners[cell.x][cell.y] = CardfrontRulesScript.PLAYER_FACTION
+		elif index < player_count + ai_count:
+			owners[cell.x][cell.y] = CardfrontRulesScript.AI_FACTION
