@@ -55,7 +55,8 @@ Not implemented yet:
 - Deck draw, discard, shuffle, and deckbuilding.
 - AI Commander behavior.
 - Cardfront save schema.
-- Full unit-device systems such as bullet absorber core, engineer robot, and durable beacon entities.
+- Unit-device systems beyond current lite effects, such as engineer robot and durable beacon entities.
+- Finalized absorber core visuals, tuning, and save/load integration.
 
 ## Screenshots / 截图
 

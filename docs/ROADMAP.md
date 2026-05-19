@@ -177,10 +177,9 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. **`v0.1.7b-absorber-core-lite`**: Bullet absorber core device on device core layer.
-2. **`v0.1.7c-engineer-bot-lite`**: Engineer robot device on device core layer.
-3. **`v0.1.7d-durable-pioneer-beacon`**: Durable pioneer beacon device on device core layer.
-4. Keep formal card UI, deck flow, HUD shot-guide text migration, and AI Commander deferred until the device boundary is stable.
+1. **`v0.1.7c-engineer-bot-lite`**: Engineer robot device on device core layer.
+2. **`v0.1.7d-durable-pioneer-beacon`**: Durable pioneer beacon device on device core layer.
+3. Keep formal card UI, deck flow, HUD shot-guide text migration, and AI Commander deferred until the device boundary is stable.
 
 ### Cardfront Save Schema
 
