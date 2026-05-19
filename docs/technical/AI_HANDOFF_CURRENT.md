@@ -27,19 +27,19 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 
 ## 3. Just Completed / 刚完成的内容
 
-- Decoupled Cardfront from legacy control chambers and +ball buttons.
-- Added Cardfront HUD status text for automatic/card-directed fire.
-- Split FireDirector per-second shot cap into `max_total_shots_per_second` and `max_owner_shots_per_second`.
-- Added `CardfrontControlChamberDecouplingTestRunner.gd`.
-- Updated Cardfront smoke and FireDirector coverage for the control-chamber decoupling and fairness budget paths.
-- Updated README, roadmap, changelog, history index, and v0.1.6.2 history docs.
+- Device core layer: `DeviceLayer.gd` with place/remove/tick/snapshot/restore.
+- `DeviceRegistry.gd` with 3 device types (absorber core, engineer bot, pioneer beacon).
+- `DevicePlacementRequest.gd` / `DevicePlacementResult.gd` for placement pipeline.
+- `DeviceCoreTestRunner.gd` (10 tests, 31 checks).
+- `CardfrontRuntimeSnapshot.gd` save schema shape defined.
+- No concrete device effects yet (no bullet absorption, no auto-repair, no durable beacon).
 
 ## 4. Next Steps / 下一步
 
-1. `v0.1.7-unit-devices`: design the first durable unit-device boundary after the logic-only Pioneer Beacon and fire-director slices are stable.
-2. Decide how device-style systems should interact with FireDirector target scoring and per-owner budgets without pushing strategy logic into `Turret`, `Bullet`, or `BulletPool`.
-3. Keep formal card UI, draw/discard/shuffle, and AI Commander deferred.
-4. If another Cardfront effect is added, preserve the current rollback contract: failed effect resolution must restore resources and hand state.
+1. `v0.1.7b-absorber-core-lite`: bullet absorber core device that actually absorbs incoming bullets.
+2. `v0.1.7c-engineer-bot-lite`: engineer robot device that auto-repairs/fortifies.
+3. `v0.1.7d-durable-pioneer-beacon`: durable pioneer beacon that periodically converts cells.
+4. Keep formal card UI, draw/discard/shuffle, and AI Commander deferred.
 
 ## 5. Do Not Do / 不要做什么
 

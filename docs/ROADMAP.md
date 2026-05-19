@@ -177,15 +177,14 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. **`v0.1.7a-device-core`**: `DeviceSlot`, `DeviceEffect`, `DeviceLayer` foundation; shared deployment/tick/teardown pipeline. Do NOT add full absorber/beacon/robot yet.
-2. **`v0.1.7b-absorber-core-lite`**: Bullet absorber core device on device core layer.
-3. **`v0.1.7c-engineer-bot-lite`**: Engineer robot device on device core layer.
-4. **`v0.1.7d-durable-pioneer-beacon`**: Durable pioneer beacon device on device core layer.
-5. Keep formal card UI, deck flow, HUD shot-guide text migration, and AI Commander deferred until the device boundary is stable.
+1. **`v0.1.7b-absorber-core-lite`**: Bullet absorber core device on device core layer.
+2. **`v0.1.7c-engineer-bot-lite`**: Engineer robot device on device core layer.
+3. **`v0.1.7d-durable-pioneer-beacon`**: Durable pioneer beacon device on device core layer.
+4. Keep formal card UI, deck flow, HUD shot-guide text migration, and AI Commander deferred until the device boundary is stable.
 
-### Cardfront Save Schema (before or alongside device layer)
+### Cardfront Save Schema
 
-By `v0.1.7a`, define `CardfrontRuntimeSnapshot` fields needed for save/restore:
+`CardfrontRuntimeSnapshot.gd` was added in v0.1.7a with fields for:
 - resource state (energy, parts per player/AI)
 - used card IDs
 - fortify stacks grid
