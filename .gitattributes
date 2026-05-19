@@ -3,6 +3,7 @@
 *.gd text eol=lf
 *.tscn text eol=lf
 *.tres text eol=lf
+*.import text eol=lf
 *.uid text eol=lf
 *.md text eol=lf
 *.txt text eol=lf
