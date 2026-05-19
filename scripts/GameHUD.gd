@@ -140,6 +140,7 @@ func get_static_parts() -> Dictionary:
 		"stage_label": stage_label,
 		"event_label": event_label,
 		"event_log_label": event_log_label,
+		"event_log_toggle": event_log_toggle_btn,
 	}
 
 func setup_side_buttons(controller_ref) -> void:

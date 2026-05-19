@@ -337,7 +337,7 @@ static func create_runtime_ui(owner, game_layer: Node, _battlefield, current_lay
 		"timer_label": timer_label,
 		"stage_label": stage_label,
 		"event_label": event_label,
-		"event_log_label": event_log_label,
+		"event_log_toggle": el_toggle_btn,
 	}
 
 static func _create_pause_overlay(owner, view_size: Vector2) -> Control:
