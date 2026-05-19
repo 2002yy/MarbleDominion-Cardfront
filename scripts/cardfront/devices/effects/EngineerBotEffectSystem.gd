@@ -14,6 +14,7 @@ var device_layer = null
 var fortify_layer = null
 var battlefield = null
 var region_map = null
+var vfx_layer = null
 
 var _elapsed: float = 0.0
 
@@ -22,11 +23,12 @@ func _init() -> void:
 	name = "EngineerBotEffectSystem"
 
 
-func setup(new_device_layer, new_fortify_layer, new_battlefield, new_region_map) -> void:
+func setup(new_device_layer, new_fortify_layer, new_battlefield, new_region_map, new_vfx_layer = null) -> void:
 	device_layer = new_device_layer
 	fortify_layer = new_fortify_layer
 	battlefield = new_battlefield
 	region_map = new_region_map
+	vfx_layer = new_vfx_layer
 	_elapsed = 0.0
 	set_process(true)
 
@@ -72,6 +74,8 @@ func _repair_for_owner(owner_id: int, devices: Array) -> void:
 					continue
 				fortify_layer.add_fortify_stack(cell, 1)
 				repaired_this_tick += 1
+				if vfx_layer != null and is_instance_valid(vfx_layer) and vfx_layer.has_method("play_energy_ripple"):
+					vfx_layer.play_energy_ripple(cell)
 				break
 		if repaired_this_tick >= PER_TICK_CAP:
 			return

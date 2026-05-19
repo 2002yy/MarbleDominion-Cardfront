@@ -12,21 +12,22 @@ var device_layer = null
 var bullet_pool = null
 var resource_states: Dictionary = {}
 var battlefield = null
+var vfx_layer = null
 
 var _elapsed: float = 0.0
 var _absorbed_this_second: int = 0
 var _second_elapsed: float = 0.0
 
-
 func _init() -> void:
 	name = "AbsorberCoreEffectSystem"
 
 
-func setup(new_device_layer, new_bullet_pool, new_resource_states: Dictionary, new_battlefield) -> void:
+func setup(new_device_layer, new_bullet_pool, new_resource_states: Dictionary, new_battlefield, new_vfx_layer = null) -> void:
 	device_layer = new_device_layer
 	bullet_pool = new_bullet_pool
 	resource_states = new_resource_states.duplicate(false)
 	battlefield = new_battlefield
+	vfx_layer = new_vfx_layer
 	_elapsed = 0.0
 	_absorbed_this_second = 0
 	_second_elapsed = 0.0
@@ -77,6 +78,8 @@ func _absorb_for_owner(owner_id: int, devices: Array) -> void:
 			var state = resource_states.get(owner_id, null)
 			if state != null:
 				state.add_energy(1)
+			if vfx_layer != null and is_instance_valid(vfx_layer) and vfx_layer.has_method("play_energy_ripple"):
+				vfx_layer.play_energy_ripple(cell)
 			break
 
 

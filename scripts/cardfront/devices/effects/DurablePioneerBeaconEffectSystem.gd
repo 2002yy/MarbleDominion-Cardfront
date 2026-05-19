@@ -16,6 +16,7 @@ const NEIGHBOR_OFFSETS: Array[Vector2i] = [
 var device_layer = null
 var battlefield = null
 var region_map = null
+var vfx_layer = null
 
 var _elapsed: float = 0.0
 
@@ -24,7 +25,11 @@ func _init() -> void:
 	name = "DurablePioneerBeaconEffectSystem"
 
 
-func setup(new_device_layer, new_battlefield, new_region_map) -> void:
+func setup(new_device_layer, new_battlefield, new_region_map, new_vfx_layer = null) -> void:
+	device_layer = new_device_layer
+	battlefield = new_battlefield
+	region_map = new_region_map
+	vfx_layer = new_vfx_layer
 	device_layer = new_device_layer
 	battlefield = new_battlefield
 	region_map = new_region_map
@@ -65,6 +70,8 @@ func _convert_for_owner(owner_id: int, devices: Array, max_convert: int) -> int:
 			var result: String = str(battlefield.apply_owner_change(cell, owner_id, "durable_pioneer_beacon"))
 			if result == "OWNER_CHANGED":
 				converted += 1
+				if vfx_layer != null and is_instance_valid(vfx_layer) and vfx_layer.has_method("play_energy_ripple"):
+					vfx_layer.play_energy_ripple(cell)
 	return converted
 
 

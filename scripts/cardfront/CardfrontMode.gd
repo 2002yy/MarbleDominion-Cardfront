@@ -22,6 +22,7 @@ const EngineerBotEffectSystemScript = preload("res://scripts/cardfront/devices/e
 const DurablePioneerBeaconEffectSystemScript = preload("res://scripts/cardfront/devices/effects/DurablePioneerBeaconEffectSystem.gd")
 const CardfrontDeviceOverlayLayerScript = preload("res://scripts/cardfront/devices/CardfrontDeviceOverlayLayer.gd")
 const CardfrontVfxLayerScript = preload("res://scripts/cardfront/vfx/CardfrontVfxLayer.gd")
+const CardfrontDebugActionPanelScript = preload("res://scripts/cardfront/debug/CardfrontDebugActionPanel.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -239,7 +240,7 @@ static func create_device_layer(game_layer: Node, battlefield, region_map) -> Di
 	}
 
 
-static func create_absorber_core_effect_system(game_layer: Node, device_layer, bullet_pool, resource_states: Dictionary, battlefield) -> Dictionary:
+static func create_absorber_core_effect_system(game_layer: Node, device_layer, bullet_pool, resource_states: Dictionary, battlefield, vfx_layer = null) -> Dictionary:
 	if game_layer == null or not is_instance_valid(game_layer):
 		return {"configured": false, "reason": "missing_game_layer"}
 	if device_layer == null:
@@ -248,7 +249,7 @@ static func create_absorber_core_effect_system(game_layer: Node, device_layer, b
 		return {"configured": false, "reason": "missing_bullet_pool"}
 
 	var absorber_system = AbsorberCoreEffectSystemScript.new()
-	absorber_system.setup(device_layer, bullet_pool, resource_states, battlefield)
+	absorber_system.setup(device_layer, bullet_pool, resource_states, battlefield, vfx_layer)
 	game_layer.add_child(absorber_system)
 
 	return {
@@ -257,7 +258,7 @@ static func create_absorber_core_effect_system(game_layer: Node, device_layer, b
 	}
 
 
-static func create_engineer_bot_effect_system(game_layer: Node, device_layer, fortify_layer, battlefield, region_map) -> Dictionary:
+static func create_engineer_bot_effect_system(game_layer: Node, device_layer, fortify_layer, battlefield, region_map, vfx_layer = null) -> Dictionary:
 	if game_layer == null or not is_instance_valid(game_layer):
 		return {"configured": false, "reason": "missing_game_layer"}
 	if device_layer == null:
@@ -266,7 +267,7 @@ static func create_engineer_bot_effect_system(game_layer: Node, device_layer, fo
 		return {"configured": false, "reason": "missing_fortify_layer"}
 
 	var engineer_system = EngineerBotEffectSystemScript.new()
-	engineer_system.setup(device_layer, fortify_layer, battlefield, region_map)
+	engineer_system.setup(device_layer, fortify_layer, battlefield, region_map, vfx_layer)
 	game_layer.add_child(engineer_system)
 
 	return {
@@ -275,14 +276,14 @@ static func create_engineer_bot_effect_system(game_layer: Node, device_layer, fo
 	}
 
 
-static func create_durable_pioneer_beacon_effect_system(game_layer: Node, device_layer, battlefield, region_map) -> Dictionary:
+static func create_durable_pioneer_beacon_effect_system(game_layer: Node, device_layer, battlefield, region_map, vfx_layer = null) -> Dictionary:
 	if game_layer == null or not is_instance_valid(game_layer):
 		return {"configured": false, "reason": "missing_game_layer"}
 	if device_layer == null:
 		return {"configured": false, "reason": "missing_device_layer"}
 
 	var beacon_system = DurablePioneerBeaconEffectSystemScript.new()
-	beacon_system.setup(device_layer, battlefield, region_map)
+	beacon_system.setup(device_layer, battlefield, region_map, vfx_layer)
 	game_layer.add_child(beacon_system)
 
 	return {
@@ -307,6 +308,20 @@ static func create_vfx_layer(game_layer: Node, battlefield, region_map) -> Dicti
 	}
 
 
+static func create_debug_action_panel(game_layer: Node, device_layer, card_system, battlefield, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+
+	var panel = CardfrontDebugActionPanelScript.new()
+	panel.setup(device_layer, card_system, battlefield, region_map, GameConfig.GAME_MODE_CARDFRONT)
+	game_layer.add_child(panel)
+
+	return {
+		"configured": true,
+		"debug_action_panel": panel,
+	}
+
+
 static func configure_runtime_hud(hud_nodes: Dictionary) -> void:
 	var event_label = hud_nodes.get("event_label", null)
 	if event_label == null or not is_instance_valid(event_label):
@@ -315,3 +330,16 @@ static func configure_runtime_hud(hud_nodes: Dictionary) -> void:
 	event_label.tooltip_text = "Cardfront FireDirector active; cards can bias target selection."
 	event_label.add_theme_color_override("font_color", Color(0.62, 0.90, 1.0))
 	event_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+
+	var fps_label = hud_nodes.get("fps_label", null)
+	if fps_label != null and is_instance_valid(fps_label):
+		fps_label.visible = false
+
+	RuntimeHudController.set_performance_visible(false)
+
+
+static func restore_ballwar_hud(hud_nodes: Dictionary) -> void:
+	var fps_label = hud_nodes.get("fps_label", null)
+	if fps_label != null and is_instance_valid(fps_label):
+		fps_label.visible = true
+	RuntimeHudController.set_performance_visible(true)
