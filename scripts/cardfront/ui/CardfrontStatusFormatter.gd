@@ -9,7 +9,16 @@ static func build_status_text(runtime) -> String:
 	parts.append(_device_text(runtime))
 	parts.append(_card_text(runtime))
 	parts.append(_bias_text(runtime))
-	return " | ".join(parts)
+	parts.append("VFX ON" if _vfx_enabled(runtime) else "")
+	var result: String = ""
+	for p in parts:
+		if str(p) != "":
+			result += (" | " if result != "" else "") + str(p)
+	return result
+
+
+static func _vfx_enabled(runtime) -> bool:
+	return runtime.cardfront_vfx_layer != null and is_instance_valid(runtime.cardfront_vfx_layer) and runtime.cardfront_vfx_layer.visible
 
 
 static func _device_text(runtime) -> String:

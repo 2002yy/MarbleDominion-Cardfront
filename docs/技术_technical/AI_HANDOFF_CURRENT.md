@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.1.x` Cardfront prototype
-- Current completed slice: `v0.1.8d-cardfront-bottom-hud-visible-bridge`
-- Next slice: TBD
+- Current completed slice: `v0.1.8e-bottom-hud-status-polish`
+- Next slice: TBD (v0.1.9 direction)
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
