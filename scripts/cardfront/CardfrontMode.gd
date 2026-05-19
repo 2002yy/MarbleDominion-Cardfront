@@ -19,6 +19,7 @@ const CardfrontShotGuideLayerScript = preload("res://scripts/cardfront/effects/C
 const DeviceLayerScript = preload("res://scripts/cardfront/devices/DeviceLayer.gd")
 const AbsorberCoreEffectSystemScript = preload("res://scripts/cardfront/devices/effects/AbsorberCoreEffectSystem.gd")
 const EngineerBotEffectSystemScript = preload("res://scripts/cardfront/devices/effects/EngineerBotEffectSystem.gd")
+const DurablePioneerBeaconEffectSystemScript = preload("res://scripts/cardfront/devices/effects/DurablePioneerBeaconEffectSystem.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -264,6 +265,22 @@ static func create_engineer_bot_effect_system(game_layer: Node, device_layer, fo
 	return {
 		"configured": true,
 		"engineer_bot_effect_system": engineer_system,
+	}
+
+
+static func create_durable_pioneer_beacon_effect_system(game_layer: Node, device_layer, battlefield, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if device_layer == null:
+		return {"configured": false, "reason": "missing_device_layer"}
+
+	var beacon_system = DurablePioneerBeaconEffectSystemScript.new()
+	beacon_system.setup(device_layer, battlefield, region_map)
+	game_layer.add_child(beacon_system)
+
+	return {
+		"configured": true,
+		"durable_pioneer_beacon_effect_system": beacon_system,
 	}
 
 

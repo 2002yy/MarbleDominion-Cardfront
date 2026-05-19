@@ -23,6 +23,7 @@ var shot_guide_layer = null
 var device_layer = null
 var absorber_core_effect_system = null
 var engineer_bot_effect_system = null
+var durable_pioneer_beacon_effect_system = null
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
@@ -51,6 +52,7 @@ func reset() -> void:
     device_layer = null
     absorber_core_effect_system = null
     engineer_bot_effect_system = null
+    durable_pioneer_beacon_effect_system = null
     resource_states.clear()
     last_yield_snapshot.clear()
     current_config.clear()

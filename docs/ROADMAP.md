@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.7c-engineer-bot-lite`
-- Next slice: `v0.1.7d-durable-pioneer-beacon`
+- Current completed slice: `v0.1.7d-durable-pioneer-beacon`
+- Next slice: TBD (device tetralogy complete)
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
@@ -39,7 +39,7 @@ This file is the single place for project direction and phase status.
 | `v0.1.7a-device-core` | Done / 已完成 | Device core layer: placement, tick, snapshot; 3 types registered, no effects. |
 | `v0.1.7b-absorber-core-lite` | Done / 已完成 | Absorber core: absorbs enemy bullets within radius, grants energy. |
 | `v0.1.7c-engineer-bot-lite` | Done / 已完成 | Engineer bot: reinforces nearby owned border cells with fortify stacks. |
-| `v0.1.7d-durable-pioneer-beacon` | Next / 下一步 | Durable pioneer beacon device on device core layer. |
+| `v0.1.7d-durable-pioneer-beacon` | Done / 已完成 | Durable pioneer beacon: periodically converts nearby neutral cells. Device tetralogy complete. |
 
 ## 3. Design Boundaries / 设计边界
 
@@ -177,8 +177,8 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. **`v0.1.7d-durable-pioneer-beacon`**: Durable pioneer beacon device on device core layer.
-2. Keep formal card UI, deck flow, HUD shot-guide text migration, and AI Commander deferred until the device boundary is stable.
+1. Device tetralogy (v0.1.7a-d) is complete. Next direction TBD.
+2. Keep formal card UI, deck flow, HUD shot-guide text migration, and AI Commander deferred.
 
 ### Cardfront Save Schema
 

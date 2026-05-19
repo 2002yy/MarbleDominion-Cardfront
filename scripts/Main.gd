@@ -246,6 +246,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_cardfront_device_layer()
 	_create_cardfront_absorber_core_effect()
 	_create_cardfront_engineer_bot_effect()
+	_create_cardfront_durable_pioneer_beacon_effect()
 	_create_control_chambers()
 	_create_ui()
 	if not _is_cardfront_mode():
@@ -401,6 +402,16 @@ func _create_cardfront_engineer_bot_effect() -> void:
 	if not bool(engineer_setup.get("configured", false)):
 		return
 	runtime.engineer_bot_effect_system = engineer_setup.get("engineer_bot_effect_system", null)
+
+
+func _create_cardfront_durable_pioneer_beacon_effect() -> void:
+	runtime.durable_pioneer_beacon_effect_system = null
+	if not _is_cardfront_mode():
+		return
+	var beacon_setup: Dictionary = CardfrontModeScript.create_durable_pioneer_beacon_effect_system(game_layer, runtime.device_layer, runtime.battlefield, runtime.region_map)
+	if not bool(beacon_setup.get("configured", false)):
+		return
+	runtime.durable_pioneer_beacon_effect_system = beacon_setup.get("durable_pioneer_beacon_effect_system", null)
 
 
 func _create_control_chambers() -> void:

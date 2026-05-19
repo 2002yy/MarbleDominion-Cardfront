@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.1.x` Cardfront prototype
-- Current completed slice: `v0.1.7c-engineer-bot-lite`
-- Next slice: `v0.1.7d-durable-pioneer-beacon`
+- Current completed slice: `v0.1.7d-durable-pioneer-beacon`
+- Next slice: TBD (device tetralogy complete)
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -27,15 +27,14 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 
 ## 3. Just Completed / 刚完成的内容
 
-- `EngineerBotEffectSystem.gd` — scans active engineer bots, reinforces nearby owned border cells with fortify stacks.
-- Repairs only border cells below `MAX_FORTIFY_STACKS`, one per tick (cap per tick prevents snowball).
-- `EngineerBotLiteTestRunner.gd` (8 tests, 10 checks).
-- `AbsorberCoreEffectSystem.gd` and device core layer remain from v0.1.7a/b.
+- `DurablePioneerBeaconEffectSystem.gd` — periodically converts nearby neutral cells via `apply_owner_change`.
+- All three device-lite effects (absorber core, engineer bot, durable beacon) are wired on the device core layer.
+- `DurablePioneerBeaconTestRunner.gd` (9 tests, 9 checks).
+- One-shot `PioneerBeaconLiteEffect` card pulse remains unchanged.
 
 ## 4. Next Steps / 下一步
 
-1. `v0.1.7d-durable-pioneer-beacon`: durable pioneer beacon device that periodically converts cells on device core layer.
-2. Keep formal card UI, draw/discard/shuffle, and AI Commander deferred.
+Device tetralogy (v0.1.7a-d) is complete. Next direction TBD per ROADMAP.
 
 ## 5. Do Not Do / 不要做什么
 
