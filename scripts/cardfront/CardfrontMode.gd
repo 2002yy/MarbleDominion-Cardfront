@@ -18,6 +18,7 @@ const CardfrontFireDirectorScript = preload("res://scripts/cardfront/fire/Cardfr
 const CardfrontShotGuideLayerScript = preload("res://scripts/cardfront/effects/CardfrontShotGuideLayer.gd")
 const DeviceLayerScript = preload("res://scripts/cardfront/devices/DeviceLayer.gd")
 const AbsorberCoreEffectSystemScript = preload("res://scripts/cardfront/devices/effects/AbsorberCoreEffectSystem.gd")
+const EngineerBotEffectSystemScript = preload("res://scripts/cardfront/devices/effects/EngineerBotEffectSystem.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -245,6 +246,24 @@ static func create_absorber_core_effect_system(game_layer: Node, device_layer, b
 	return {
 		"configured": true,
 		"absorber_core_effect_system": absorber_system,
+	}
+
+
+static func create_engineer_bot_effect_system(game_layer: Node, device_layer, fortify_layer, battlefield, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if device_layer == null:
+		return {"configured": false, "reason": "missing_device_layer"}
+	if fortify_layer == null:
+		return {"configured": false, "reason": "missing_fortify_layer"}
+
+	var engineer_system = EngineerBotEffectSystemScript.new()
+	engineer_system.setup(device_layer, fortify_layer, battlefield, region_map)
+	game_layer.add_child(engineer_system)
+
+	return {
+		"configured": true,
+		"engineer_bot_effect_system": engineer_system,
 	}
 
 

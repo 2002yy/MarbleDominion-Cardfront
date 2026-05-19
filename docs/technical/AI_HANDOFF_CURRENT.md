@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.1.x` Cardfront prototype
-- Current completed slice: `v0.1.7b-absorber-core-lite`
-- Next slice: `v0.1.7c-engineer-bot-lite`
+- Current completed slice: `v0.1.7c-engineer-bot-lite`
+- Next slice: `v0.1.7d-durable-pioneer-beacon`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -27,17 +27,15 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 
 ## 3. Just Completed / 刚完成的内容
 
-- `AbsorberCoreEffectSystem.gd` — scans active absorber devices, absorbs enemy bullets within 3-cell radius.
-- Absorbed bullets are recycled via `bullet_pool.recycle_bullet()` and grant owner +1 energy.
-- Per-tick cap (1 per device) and per-second global cap (3) prevent runaway resource gain.
-- `AbsorberCoreLiteTestRunner.gd` (8 tests, 11 checks).
-- Device core layer, `DeviceRegistry.gd`, `DeviceCoreTestRunner.gd`, and `CardfrontRuntimeSnapshot.gd` remain from v0.1.7a.
+- `EngineerBotEffectSystem.gd` — scans active engineer bots, reinforces nearby owned border cells with fortify stacks.
+- Repairs only border cells below `MAX_FORTIFY_STACKS`, one per tick (cap per tick prevents snowball).
+- `EngineerBotLiteTestRunner.gd` (8 tests, 10 checks).
+- `AbsorberCoreEffectSystem.gd` and device core layer remain from v0.1.7a/b.
 
 ## 4. Next Steps / 下一步
 
-1. `v0.1.7c-engineer-bot-lite`: engineer robot device that auto-repairs/fortifies on device core layer.
-2. `v0.1.7d-durable-pioneer-beacon`: durable pioneer beacon that periodically converts cells.
-3. Keep formal card UI, draw/discard/shuffle, and AI Commander deferred.
+1. `v0.1.7d-durable-pioneer-beacon`: durable pioneer beacon device that periodically converts cells on device core layer.
+2. Keep formal card UI, draw/discard/shuffle, and AI Commander deferred.
 
 ## 5. Do Not Do / 不要做什么
 

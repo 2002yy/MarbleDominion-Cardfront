@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.7b-absorber-core-lite**. Absorber core devices now absorb nearby enemy bullets in real-time and grant energy.
+The current completed slice is **v0.1.7c-engineer-bot-lite**. Engineer bot devices now periodically reinforce nearby owned border cells with fortify stacks.
 
 ## Current Slice / 当前阶段
 
@@ -149,9 +149,9 @@ Latest local validation for the v0.1.6.2 required subset:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.7c-engineer-bot-lite`:
+`v0.1.7d-durable-pioneer-beacon`:
 
-- Engineer robot device that auto-repairs/fortifies the surrounding cells on device core layer.
+- Durable pioneer beacon device that periodically converts nearby cells on device core layer.
 - Full route is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
