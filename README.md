@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.7d-durable-pioneer-beacon**. All three device-lite effects (absorber, engineer, beacon) are wired on the device core layer.
+The current completed slice is **v0.1.8a-device-visual-layer**. Device sprites load from runtime PNGs and render on the battlefield via DeviceOverlayLayer, backed by DeviceVisualRegistry.
 
 ## Current Slice / 当前阶段
 
@@ -149,9 +149,9 @@ Latest local validation for the v0.1.6.2 required subset:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.8` (direction to be determined):
+`v0.1.8b-device-visual-validation`:
 
-- Device tetralogy complete. Next direction tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
+- Add tests and polish for device visual layer, overlay draw boundary, and missing texture fallback.
 
 ## License
 

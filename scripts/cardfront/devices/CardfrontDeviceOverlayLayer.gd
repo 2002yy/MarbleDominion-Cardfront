@@ -3,13 +3,17 @@ class_name CardfrontDeviceOverlayLayer
 
 var device_layer = null
 var battlefield = null
+var device_visual_registry = null
 var _texture_cache: Dictionary = {}
 var _dirty: bool = true
+
+const DeviceVisualRegistryScript = preload("res://scripts/cardfront/devices/DeviceVisualRegistry.gd")
 
 
 func _init() -> void:
 	name = "CardfrontDeviceOverlayLayer"
 	z_index = 5
+	device_visual_registry = DeviceVisualRegistryScript.new()
 	set_process(false)
 
 
@@ -39,34 +43,25 @@ func _draw() -> void:
 
 	for instance in device_layer.get_all_active_devices():
 		var tex = _get_texture(str(instance.device_type))
-		if tex == null:
-			continue
 		var cell: Vector2i = instance.cell
 		var cell_size: int = int(battlefield.cell_size)
 		var rect := Rect2(Vector2(cell.x * cell_size, cell.y * cell_size), Vector2(cell_size, cell_size))
-		draw_texture_rect(tex, rect, false)
+		if tex != null:
+			draw_texture_rect(tex, rect, false)
+		else:
+			var fallback: Color = device_visual_registry.get_fallback_color(str(instance.device_type))
+			draw_rect(rect, Color(fallback.r, fallback.g, fallback.b, 0.55), true)
+			draw_rect(rect, fallback.lightened(0.3), false, 1.5)
 
 
 func _get_texture(device_type: String) -> Texture2D:
 	if _texture_cache.has(device_type):
 		return _texture_cache[device_type]
-	var path: String = _texture_path(device_type)
+	var path: String = device_visual_registry.get_texture_path(str(device_type))
 	if path == "" or not ResourceLoader.exists(path):
+		_texture_cache[device_type] = null
 		return null
 	var tex: Texture2D = load(path)
 	_texture_cache[device_type] = tex
 	return tex
 
-
-func _texture_path(device_type: String) -> String:
-	var base := "res://assets/cardfront_runtime/装置精灵_devices/96/"
-	match device_type:
-		"absorber_core":
-			return base + "吸弹核心_absorber_core_v01.png"
-		"engineer_bot":
-			return base + "工程机器人_engineer_bot_v01.png"
-		"pioneer_beacon":
-			return base + "拓荒信标_pioneer_beacon_v01.png"
-		"temporary_reflector":
-			return base + "临时反弹板_temporary_reflector_v01.png"
-	return ""

@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.1.x` Cardfront prototype
-- Current completed slice: `v0.1.7d-durable-pioneer-beacon`
-- Next slice: TBD (device tetralogy complete)
+- Current completed slice: `v0.1.8a-device-visual-layer`
+- Next slice: `v0.1.8b-device-visual-validation`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -27,14 +27,16 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 
 ## 3. Just Completed / 刚完成的内容
 
-- `DurablePioneerBeaconEffectSystem.gd` — periodically converts nearby neutral cells via `apply_owner_change`.
-- All three device-lite effects (absorber core, engineer bot, durable beacon) are wired on the device core layer.
-- `DurablePioneerBeaconTestRunner.gd` (9 tests, 9 checks).
-- One-shot `PioneerBeaconLiteEffect` card pulse remains unchanged.
+- `DeviceVisualRegistry.gd` — maps device_type → texture path, fallback color, display label.
+- `CardfrontDeviceOverlayLayer.gd` — draws device sprites (96×96) on battlefield cells with fallback to colored rect.
+- 11 runtime PNGs exported from 1024 sources via `tools/process_cardfront_assets.py`.
+- `DeviceOverlayLayerTestRunner.gd` (6 tests, 14 checks).
+- Device logic tetralogy (v0.1.7a-d) complete.
 
 ## 4. Next Steps / 下一步
 
-Device tetralogy (v0.1.7a-d) is complete. Next direction TBD per ROADMAP.
+1. `v0.1.8b-device-visual-validation`: tests and polish for device visual layer.
+2. Keep formal card UI, draw/discard/shuffle, and AI Commander deferred.
 
 ## 5. Do Not Do / 不要做什么
 
