@@ -82,6 +82,20 @@ Credits rule:
 - imported content:
   - `Background.jpg`
 
+### `assets/cardfront/`
+
+- source: AI-generated project-specific Cardfront assets
+- generated for: Marble Dominion: Cardfront
+- usage: card illustrations, device sprites, VFX textures
+- restriction: do not use as third-party source pack; project-specific generated assets
+- manifest: `assets/cardfront/提示词_prompts/generated_asset_manifest_v01.md`
+- current status: staged but NOT wired into runtime (v0.1.x is logic-only)
+- imported content (11 files):
+  - 卡牌插图_cards_illustrations/ (3 card illustrations)
+  - 装置地图精灵_devices_map_sprites/ (4 device sprites)
+  - 装置图标_devices_icons/ (1 status icon)
+  - 特效纹理_vfx_textures/ (3 VFX textures)
+
 ## 4. Not Mirrored Into `assets/` / 未直接镜像进 `assets/` 的素材
 
 ### Cat's Tooth free sci-fi backgrounds
