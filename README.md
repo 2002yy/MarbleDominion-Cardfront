@@ -54,9 +54,8 @@ Not implemented yet:
 - Formal card UI / HUD.
 - Deck draw, discard, shuffle, and deckbuilding.
 - AI Commander behavior.
-- Cardfront save schema.
-- Unit-device systems beyond current lite effects, especially durable beacon entities and finalized device visuals/tuning.
-- Finalized absorber core / engineer bot visuals, balance tuning, and save/load integration.
+- Cardfront save/load integration.
+- Final device tuning, animation polish, and save/load integration.
 
 ## Screenshots / 截图
 
@@ -111,6 +110,11 @@ Detailed milestone notes:
 Run with Godot 4.6:
 
 ```powershell
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeviceOverlayLayerTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeviceCoreTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/AbsorberCoreLiteTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EngineerBotLiteTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DurablePioneerBeaconTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/FortifyLayerTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardCoreLiteTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardFirstEffectsTestRunner.gd
@@ -131,15 +135,18 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for the v0.1.6.2 required subset:
+Latest local validation for the v0.1.8b required subset:
 
+- `DeviceOverlayLayerTestRunner.gd`: 21 checks passed.
+- `DeviceCoreTestRunner.gd`: 31 checks passed.
+- `AbsorberCoreLiteTestRunner.gd`: 11 checks passed.
+- `EngineerBotLiteTestRunner.gd`: 10 checks passed.
+- `DurablePioneerBeaconTestRunner.gd`: 9 checks passed.
 - `CardfrontControlChamberDecouplingTestRunner.gd`: 7 checks passed.
 - `CardfrontFireDirectorTestRunner.gd`: 21 checks passed.
 - `PioneerBeaconLiteTestRunner.gd`: 37 checks passed.
 - `CardCoreLiteTestRunner.gd`: 40 checks passed.
 - `CardFirstEffectsTestRunner.gd`: 35 checks passed.
-- `CardfrontTargetBiasTestRunner.gd`: 13 checks passed.
-- `RegionMoraleTestRunner.gd`: 24 checks passed.
 - `FortifyLayerTestRunner.gd`: 469 checks passed.
 - `DeploymentRulesTestRunner.gd`: 26 checks passed.
 - `EconomyTickTestRunner.gd`: 50 checks passed.
@@ -149,9 +156,8 @@ Latest local validation for the v0.1.6.2 required subset:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.8b-device-visual-validation`:
+`v0.1.9` (direction TBD).
 
-- 
-## License
+Full route is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 MIT License. See [LICENSE](LICENSE).
