@@ -66,8 +66,10 @@ func _test_overlay_created_in_cardfront() -> void:
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
 
-	var overlay = main.runtime.device_layer  # check if device_layer exists
-	_assert.that(overlay != null, "overlay: Cardfront should have device_layer")
+	_assert.that(main.runtime.device_layer != null, "overlay: Cardfront should have device_layer")
+	_assert.that(main.runtime.device_overlay_layer != null, "overlay: Cardfront should have device_overlay_layer")
+	if main.runtime.device_overlay_layer != null:
+		_assert.that(main.runtime.device_overlay_layer.visible, "overlay: Cardfront device_overlay_layer should be visible")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

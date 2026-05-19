@@ -376,12 +376,14 @@ func _create_cardfront_shot_guide() -> void:
 
 func _create_cardfront_device_layer() -> void:
 	runtime.device_layer = null
+	runtime.device_overlay_layer = null
 	if not _is_cardfront_mode():
 		return
 	var device_setup: Dictionary = CardfrontModeScript.create_device_layer(game_layer, runtime.battlefield, runtime.region_map)
 	if not bool(device_setup.get("configured", false)):
 		return
 	runtime.device_layer = device_setup.get("device_layer", null)
+	runtime.device_overlay_layer = device_setup.get("device_overlay", null)
 
 
 func _create_cardfront_absorber_core_effect() -> void:
