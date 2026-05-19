@@ -23,6 +23,7 @@ const GameRuntimeContextScript = preload("res://scripts/GameRuntimeContext.gd")
 const StartMenuUi = preload("res://scripts/StartMenu.gd")
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const CardfrontStatusFormatterScript = preload("res://scripts/cardfront/ui/CardfrontStatusFormatter.gd")
 
 var runtime = GameRuntimeContextScript.new()
 var current_score_counts: Dictionary = {0: 0, 1: 0, 2: 0, 3: 0}
@@ -580,44 +581,11 @@ func _on_turret_destroyed(faction_id: int) -> void:
 func _update_cardfront_status_label() -> void:
 	var event_label = _hud_ref("event_label")
 	if event_label != null and is_instance_valid(event_label) and _is_cardfront_mode():
-		event_label.text = _build_cardfront_status_text()
+		event_label.text = CardfrontStatusFormatterScript.build_status_text(runtime)
 
 
 func _build_cardfront_status_text() -> String:
-	var parts: Array[String] = []
-	if runtime.battlefield != null and is_instance_valid(runtime.battlefield):
-		parts.append("射击ON")
-
-	var device_info := ""
-	if runtime.device_layer != null and is_instance_valid(runtime.device_layer) and runtime.device_layer.has_method("get_all_active_devices"):
-		var devices = runtime.device_layer.get_all_active_devices()
-		var counts: Dictionary = {}
-		for d in devices:
-			var t: String = str(d.device_type)
-			counts[t] = int(counts.get(t, 0)) + 1
-		if not counts.is_empty():
-			var entries: Array[String] = []
-			if counts.has("absorber_core"): entries.append("吸弹%d" % int(counts.absorber_core))
-			if counts.has("engineer_bot"): entries.append("工程%d" % int(counts.engineer_bot))
-			if counts.has("pioneer_beacon"): entries.append("信标%d" % int(counts.pioneer_beacon))
-			device_info = " | 设备 " + " ".join(entries)
-
-	var card_info := ""
-	if runtime.card_system != null and is_instance_valid(runtime.card_system) and runtime.card_system.has_method("get_available_card_data"):
-		var available = runtime.card_system.get_available_card_data()
-		if available.size() > 0:
-			card_info = " | 卡牌%d手" % available.size()
-
-	var bias_info := ""
-	if runtime.target_bias_system != null and is_instance_valid(runtime.target_bias_system) and runtime.target_bias_system.has_method("get_biased_region"):
-		var biased: int = runtime.target_bias_system.get_biased_region(CardfrontRulesScript.PLAYER_FACTION)
-		if biased >= 0:
-			var remaining: float = 0.0
-			if runtime.target_bias_system.has_method("get_bias_remaining"):
-				remaining = runtime.target_bias_system.get_bias_remaining(CardfrontRulesScript.PLAYER_FACTION)
-			bias_info = " | 校准#%d %.0fs" % [biased, remaining]
-
-	return " ".join(parts) + device_info + card_info + bias_info
+	return CardfrontStatusFormatterScript.build_status_text(runtime)
 
 
 func _check_winner() -> void:

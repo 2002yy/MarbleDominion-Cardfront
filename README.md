@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.8d-cardfront-bottom-hud-visible-bridge**. Device effects, VFX, debug panel, and HUD status are all wired and visible in real-time.
+The current completed slice is **v0.1.8e-bottom-hud-status-polish**. Bottom HUD shows live device counts and card effects; dirty-redraw optimizations verified; performance smoke test in place.
 
 ## Current Slice / 当前阶段
 

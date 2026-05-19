@@ -8,7 +8,7 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.8d-cardfront-bottom-hud-visible-bridge`
+- Current completed slice: `v0.1.8e-bottom-hud-status-polish`
 - Next slice: TBD
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
