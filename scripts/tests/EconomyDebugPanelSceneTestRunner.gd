@@ -44,8 +44,14 @@ func _test_cardfront_panel_visible_and_compact() -> void:
 	_assert.that(panel.visible, "economy debug panel: Cardfront mode should be visible")
 	_assert.that(panel_box != null, "economy debug panel: should create panel node")
 	if panel_box != null:
-		_assert.that(panel_box.size.x <= 280.0, "economy debug panel: width should stay compact")
-		_assert.that(panel_box.size.y <= 170.0, "economy debug panel: height should stay compact")
+		var vp: Viewport = panel.get_viewport()
+		var view_size: Vector2 = GameConfig.get_safe_screen_size() if vp == null else vp.get_visible_rect().size
+		_assert.that(panel_box.size.x <= 300.0, "economy debug panel: width should stay compact (<= 300)")
+		_assert.that(panel_box.size.y <= 170.0, "economy debug panel: height should stay compact (<= 170)")
+		_assert.gte(int(panel_box.position.y), 450, "economy debug panel: should be placed near bottom (y >= 450)")
+		_assert.that(panel_box.position.x >= 0.0 and panel_box.position.y >= 0.0, "economy debug panel: position should not be negative")
+		_assert.that(panel_box.position.x + panel_box.size.x <= view_size.x + 4.0, "economy debug panel: should fit within viewport width")
+		_assert.that(panel_box.position.y + panel_box.size.y <= view_size.y + 4.0, "economy debug panel: should fit within viewport height")
 	_assert.that(panel.get_debug_text().find("本tick") >= 0, "economy debug panel: compact text should include tick summary")
 	_assert.that(_count_region_lines(panel.get_debug_text()) <= 3, "economy debug panel: compact text should show at most three region lines")
 

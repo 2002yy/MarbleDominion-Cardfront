@@ -7,6 +7,9 @@ const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd"
 const RegionYieldCalculatorScript = preload("res://scripts/cardfront/economy/RegionYieldCalculator.gd")
 
 const MAX_REGION_LINES: int = 3
+const PANEL_SIZE: Vector2 = Vector2(280.0, 150.0)
+const PANEL_MARGIN: Vector2 = Vector2(20.0, 30.0)
+const PANEL_PLACEMENT: String = "bottom_right"
 
 var region_map = null
 var battlefield = null
@@ -56,10 +59,13 @@ func get_debug_text() -> String:
 func _ensure_ui() -> void:
 	if _panel != null:
 		return
+	var viewport = get_viewport()
+	var view_size: Vector2 = GameConfig.get_safe_screen_size() if viewport == null else viewport.get_visible_rect().size
+
 	_panel = Panel.new()
 	_panel.name = "EconomyDebugPanel"
-	_panel.position = Vector2(8.0, 118.0)
-	_panel.size = Vector2(260.0, 150.0)
+	_panel.size = PANEL_SIZE
+	_panel.position = _resolve_panel_position(view_size)
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.z_index = 100
 	var style := StyleBoxFlat.new()
@@ -73,7 +79,7 @@ func _ensure_ui() -> void:
 	_label = Label.new()
 	_label.name = "EconomyDebugLabel"
 	_label.position = Vector2(8.0, 6.0)
-	_label.size = Vector2(244.0, 138.0)
+	_label.size = Vector2(PANEL_SIZE.x - 16.0, PANEL_SIZE.y - 12.0)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label.add_theme_font_size_override("font_size", 12)
@@ -81,6 +87,14 @@ func _ensure_ui() -> void:
 	_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.55))
 	_label.add_theme_constant_override("outline_size", 2)
 	_panel.add_child(_label)
+
+
+func _resolve_panel_position(view_size: Vector2) -> Vector2:
+	match PANEL_PLACEMENT:
+		"bottom_left":
+			return Vector2(PANEL_MARGIN.x, view_size.y - PANEL_SIZE.y - PANEL_MARGIN.y)
+		_:
+			return Vector2(view_size.x - PANEL_SIZE.x - PANEL_MARGIN.x, view_size.y - PANEL_SIZE.y - PANEL_MARGIN.y)
 
 
 func _connect_economy_signals() -> void:
