@@ -55,7 +55,7 @@ static func _select_target(region_map, battlefield, owner_id: int, preferred_reg
 static func _score_cell(region_map, battlefield, owner_id: int, cell: Vector2i, owner_at_cell: int, region_type: String, enemy_resource_region: bool, preferred_region: bool) -> int:
 	var score: int = 0
 	if preferred_region:
-		score += 1000
+		score += int(300 * FireRulesScript.TARGET_BIAS_STRENGTH)
 	if owner_at_cell == CardfrontRulesScript.NEUTRAL_OWNER:
 		score += 120
 		if _touches_owner(region_map, battlefield, cell, owner_id):

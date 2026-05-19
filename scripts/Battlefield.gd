@@ -177,6 +177,25 @@ func apply_bullet(cell: Vector2i, faction_id: int) -> String:
 	_request_score_emit()
 	return "HIT_ENEMY_CELL"
 
+
+func apply_owner_change(cell: Vector2i, new_owner_id: int, source_reason: String = "card_effect") -> String:
+	if not is_inside(cell):
+		return "OUTSIDE"
+	var old: int = owners[cell.x][cell.y]
+	if old == new_owner_id:
+		return "SAME_OWNER"
+	if capture_interceptor != null and is_instance_valid(capture_interceptor) and capture_interceptor.has_method("should_block_capture"):
+		if capture_interceptor.should_block_capture(cell, new_owner_id, old):
+			return "BLOCKED_BY_FORTIFY"
+	owners[cell.x][cell.y] = new_owner_id
+	_add_owner_count(old, -1)
+	_add_owner_count(new_owner_id, 1)
+	_paint_cached_cell(cell, new_owner_id)
+	_request_visual_update()
+	_request_score_emit()
+	return "OWNER_CHANGED"
+
+
 func count_cells_by_team() -> Dictionary:
 	return owner_counts.duplicate()
 

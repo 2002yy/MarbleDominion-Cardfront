@@ -23,7 +23,7 @@ const NEIGHBOR_OFFSETS: Array[Vector2i] = [
 
 
 static func apply(region_map, battlefield, owner_id: int, target_cell: Vector2i, max_cells: int = MAX_CONVERTED_CELLS) -> Dictionary:
-	if region_map == null or battlefield == null or not battlefield.has_method("apply_bullet"):
+	if region_map == null or battlefield == null or not battlefield.has_method("apply_owner_change"):
 		return _result(false, REASON_MISSING_SYSTEM, [])
 	if not DeploymentRulesScript.is_owned_border(region_map, battlefield, target_cell, owner_id):
 		return _result(false, REASON_INVALID_TARGET, [])
@@ -37,8 +37,8 @@ static func apply(region_map, battlefield, owner_id: int, target_cell: Vector2i,
 	for cell in neutral_neighbors:
 		if converted_cells.size() >= limit:
 			break
-		var hit_result: String = str(battlefield.apply_bullet(cell, owner_id))
-		if hit_result == "HIT_ENEMY_CELL":
+		var result: String = str(battlefield.apply_owner_change(cell, owner_id, "pioneer_beacon"))
+		if result == "OWNER_CHANGED":
 			converted_cells.append(cell)
 
 	if converted_cells.is_empty():
