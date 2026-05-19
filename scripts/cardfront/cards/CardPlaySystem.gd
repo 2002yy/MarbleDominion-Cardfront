@@ -9,6 +9,7 @@ const DeploymentRulesScript = preload("res://scripts/cardfront/deployment/Deploy
 const FortifyRulesScript = preload("res://scripts/cardfront/fortify/FortifyRules.gd")
 const FortifyTargetSelectorScript = preload("res://scripts/cardfront/fortify/FortifyTargetSelector.gd")
 const RegionMoraleRulesScript = preload("res://scripts/cardfront/morale/RegionMoraleRules.gd")
+const PioneerBeaconLiteEffectScript = preload("res://scripts/cardfront/effects/PioneerBeaconLiteEffect.gd")
 
 const CALIBRATED_SHOT_BIAS_DURATION: float = 6.0
 
@@ -112,6 +113,8 @@ func _resolve_effect(req, card):
 			return _resolve_calibrated_shot(req, card)
 		"morale_fluctuation":
 			return _resolve_morale_fluctuation(req, card)
+		"pioneer_beacon_lite":
+			return _resolve_pioneer_beacon_lite(req, card)
 		_:
 			return CardPlayResultScript.fail(CardPlayResultScript.REASON_STUB, card.card_name)
 
@@ -155,6 +158,20 @@ func _resolve_morale_fluctuation(req, card):
 	))
 	if not applied:
 		return CardPlayResultScript.fail(CardPlayResultScript.REASON_INVALID_TARGET, card.card_name)
+
+	return CardPlayResultScript.ok(card.card_name)
+
+
+func _resolve_pioneer_beacon_lite(req, card):
+	var effect_result: Dictionary = PioneerBeaconLiteEffectScript.apply(region_map, battlefield, int(req.owner_id), req.target_cell)
+	if not bool(effect_result.get("success", false)):
+		var reason: String = str(effect_result.get("reason", PioneerBeaconLiteEffectScript.REASON_INVALID_TARGET))
+		if reason == PioneerBeaconLiteEffectScript.REASON_MISSING_SYSTEM:
+			return CardPlayResultScript.fail(CardPlayResultScript.REASON_MISSING_SYSTEM, card.card_name)
+		return CardPlayResultScript.fail(CardPlayResultScript.REASON_INVALID_TARGET, card.card_name)
+
+	if region_overlay != null and is_instance_valid(region_overlay) and region_overlay.has_method("mark_dirty"):
+		region_overlay.mark_dirty()
 
 	return CardPlayResultScript.ok(card.card_name)
 

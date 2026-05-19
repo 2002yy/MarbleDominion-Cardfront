@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.6-first-card-effects**. It turns the two v0.1.5 stub cards into first real, testable effects: Morale Fluctuation now schedules a region morale effect, and Calibrated Shot now records a Cardfront-only target bias state.
+The current completed slice is **v0.1.6.1-cardfront-fire-director**. It adds a Cardfront-only automatic fire director so turrets keep low-frequency pressure without relying on control chambers, while also keeping the logic-only Pioneer Beacon card as a small compatible card-effect slice.
 
 ## Current Slice / 当前阶段
 
@@ -23,11 +23,17 @@ Implemented in this repository:
 - Cardfront-only low-pressure bullet visual policy that keeps richer marble effects while old BallWar modes keep their original degradation rules.
 - Region-local morale system for support and unrest ownership shifts.
 - Deployment permission rules for owned cells, owned borders, and controlled regions.
-- Minimal card play pipeline with a fixed 3-card hand, resource cost deduction, target validation, and rollback on effect failure.
+- Minimal card play pipeline with a fixed 4-card hand, resource cost deduction, target validation, and rollback on effect failure.
 - Working first cards:
   - Frontline Fortify adds real `FortifyLayer` stacks.
   - Morale Fluctuation calls `RegionMoraleSystem.apply_morale(...)`.
   - Calibrated Shot registers a testable target-region bias for the player.
+  - Pioneer Beacon converts up to 3 neutral neighbors around an owned border cell.
+- Cardfront fire director:
+  - Generates low-frequency `CardfrontFireIntent` records.
+  - Prioritizes target bias from Calibrated Shot when present.
+  - Falls back to neutral-boundary and resource-region scoring.
+  - Enforces a hard per-second shot budget.
 - Cardfront-only translucent region overlay.
 - Cardfront mode starts with only two turrets and two control chambers.
 - Event roulette is disabled in Cardfront mode; active card play will replace it later.
@@ -38,6 +44,8 @@ Implemented in this repository:
 - New headless runner: `CardfrontModeSmokeTestRunner.gd`.
 - New headless runner: `RegionMapTestRunner.gd`.
 - New headless runner: `DeploymentRulesTestRunner.gd`.
+- New headless runner: `CardfrontFireDirectorTestRunner.gd`.
+- New headless runner: `PioneerBeaconLiteTestRunner.gd`.
 
 Not implemented yet:
 
@@ -45,7 +53,7 @@ Not implemented yet:
 - Deck draw, discard, shuffle, and deckbuilding.
 - AI Commander behavior.
 - Cardfront save schema.
-- Unit-device effects such as pioneer beacon, bullet absorber core, and engineer robot.
+- Full unit-device systems such as bullet absorber core, engineer robot, and durable beacon entities.
 
 ## Screenshots / 截图
 
@@ -69,6 +77,8 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 - `scripts/cardfront/morale/` — region-local morale rules and deterministic morale tick system.
 - `scripts/cardfront/cards/` — fixed-hand card catalog, play request/result, cost checks, target validation, effect dispatch, and rollback.
 - `scripts/cardfront/effects/CardfrontTargetBiasSystem.gd` — Cardfront-only target-region bias state used by Calibrated Shot.
+- `scripts/cardfront/effects/PioneerBeaconLiteEffect.gd` — one-shot Pioneer Beacon neutral-cell pulse logic.
+- `scripts/cardfront/fire/` — Cardfront-only fire rules, target scoring, fire intent data, and fire director.
 - `scripts/cardfront/regions/RegionOverlayLayer.gd` — lightweight Cardfront-only region visualization.
 - `scripts/cardfront/CardfrontMode.gd` — thin assembly layer used by `Main.gd`.
 - `scripts/Battlefield.gd` — owns generic owner grids, owner counts, painting, and draw color overrides.
@@ -78,6 +88,8 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 Detailed milestone notes:
 
 - [docs/history/README_v0_1_6_first_card_effects.md](docs/history/README_v0_1_6_first_card_effects.md)
+- [docs/history/README_v0_1_6_1_cardfront_fire_director.md](docs/history/README_v0_1_6_1_cardfront_fire_director.md)
+- [docs/history/README_v0_1_6_1_pioneer_beacon_lite.md](docs/history/README_v0_1_6_1_pioneer_beacon_lite.md)
 - [docs/history/README_v0_1_5_card_core_lite.md](docs/history/README_v0_1_5_card_core_lite.md)
 - [docs/history/README_v0_1_4_fortify_layer.md](docs/history/README_v0_1_4_fortify_layer.md)
 - [docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md](docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md)
@@ -98,6 +110,8 @@ Run with Godot 4.6:
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/FortifyLayerTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardCoreLiteTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardFirstEffectsTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFireDirectorTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/PioneerBeaconLiteTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontTargetBiasTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontModeSmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd
@@ -112,24 +126,26 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for the v0.1.6 required subset:
+Latest local validation for the v0.1.6.1 required subset:
 
-- `CardCoreLiteTestRunner.gd`: 35 checks passed.
+- `CardfrontFireDirectorTestRunner.gd`: 18 checks passed.
+- `PioneerBeaconLiteTestRunner.gd`: 37 checks passed.
+- `CardCoreLiteTestRunner.gd`: 40 checks passed.
 - `CardFirstEffectsTestRunner.gd`: 35 checks passed.
 - `CardfrontTargetBiasTestRunner.gd`: 13 checks passed.
 - `RegionMoraleTestRunner.gd`: 24 checks passed.
 - `FortifyLayerTestRunner.gd`: 469 checks passed.
 - `DeploymentRulesTestRunner.gd`: 26 checks passed.
 - `EconomyTickTestRunner.gd`: 50 checks passed.
-- `CardfrontModeSmokeTestRunner.gd`: 35 checks passed.
+- `CardfrontModeSmokeTestRunner.gd`: 36 checks passed.
 - `SmokeTestRunner.gd`: 218 checks passed.
 - `IntegrationTestRunner.gd`: 133 checks passed.
 
 ## Next Milestone / 下一阶段
 
-`v0.1.6.1-pioneer-beacon-lite`:
+`v0.1.7-unit-devices`:
 
-- Add the smallest useful Pioneer Beacon slice while keeping formal card UI, AI Commander, and full unit-device systems deferred.
+- Start the real unit-device layer only after the logic-only Pioneer Beacon and fire-director slices remain stable.
 - Full route is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License

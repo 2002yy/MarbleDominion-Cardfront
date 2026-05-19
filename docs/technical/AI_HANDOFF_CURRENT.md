@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.1.x` Cardfront prototype
-- Current completed slice: `v0.1.6-first-card-effects`
-- Next slice: `v0.1.6.1-pioneer-beacon-lite`
+- Current completed slice: `v0.1.6.1-cardfront-fire-director`
+- Next slice: `v0.1.7-unit-devices`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -18,24 +18,26 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
   - Frontline Fortify / `fortify_border`: adds stacks through `FortifyLayer`.
   - Calibrated Shot / `calibrated_shot`: registers `CardfrontTargetBiasSystem` region bias.
   - Morale Fluctuation / `morale_fluctuation`: calls `RegionMoraleSystem.apply_morale(..., SUPPORT_PLAYER)`.
-- `CardfrontTargetBiasSystem.gd` is Cardfront-only state. It is testable now, but it does not yet steer turret aim.
-- `GameRuntimeContext.gd` has `target_bias_system`; `Main.gd` only creates and passes it through.
-- Old BallWar modes should not create or depend on Cardfront card/effect systems.
+  - Pioneer Beacon / `pioneer_beacon_lite`: converts up to 3 nearby neutral cells from an owned border target.
+- `CardfrontTargetBiasSystem.gd` is Cardfront-only state and now feeds the Cardfront fire director target selection.
+- `CardfrontFireDirector.gd` is Cardfront-only. It ticks independently, builds `CardfrontFireIntent` records, and requests directed turret bursts.
+- `GameRuntimeContext.gd` has `target_bias_system` and `fire_director`; `Main.gd` only creates and passes them through.
+- Old BallWar modes should not create or depend on Cardfront card/effect/fire systems.
 
 ## 3. Just Completed / 刚完成的内容
 
-- Implemented real Morale Fluctuation effect with failure handling for missing morale system, invalid region id, and `apply_morale(...) == false`.
-- Implemented Calibrated Shot first effect by adding a duration-based target-bias system.
-- Added rollback coverage for effect failures after resource payment and hand-used marking.
-- Added `CardFirstEffectsTestRunner.gd` and `CardfrontTargetBiasTestRunner.gd`.
-- Updated `CardCoreLiteTestRunner.gd` and `CardfrontModeSmokeTestRunner.gd` for v0.1.6 behavior.
-- Updated `README.md`, `docs/ROADMAP.md`, and `docs/history/README_v0_1_6_first_card_effects.md`.
+- Added logic-only Pioneer Beacon card `1004` with `PioneerBeaconLiteEffect.gd`.
+- Added Cardfront fire director layer with fire rules, target scorer, intent object, and target-bias aware selection.
+- Added minimal `Turret` directed-fire seam while preserving old `fire_burst(...)`.
+- Added `PioneerBeaconLiteTestRunner.gd` and `CardfrontFireDirectorTestRunner.gd`.
+- Updated Cardfront smoke coverage so old BallWar mode remains without `fire_director`, while Cardfront mode creates one.
+- Updated README, roadmap, changelog, history index, and v0.1.6.1 history docs.
 
 ## 4. Next Steps / 下一步
 
-1. `v0.1.6.1-pioneer-beacon-lite`: define the smallest Pioneer Beacon effect with explicit state and tests.
-2. Decide whether Calibrated Shot should later influence turret target selection or a separate aiming adapter; keep that integration outside `Bullet`, `BulletPool`, `Turret`, and `ControlChamber` until the seam is clear.
-3. Keep formal card UI, draw/discard/shuffle, AI Commander, and full unit devices deferred.
+1. `v0.1.7-unit-devices`: design the first durable unit-device boundary after the logic-only Pioneer Beacon and fire-director slices are stable.
+2. Decide how device-style systems should interact with FireDirector target scoring without pushing strategy logic into `Turret`, `Bullet`, or `BulletPool`.
+3. Keep formal card UI, draw/discard/shuffle, and AI Commander deferred.
 4. If another Cardfront effect is added, preserve the current rollback contract: failed effect resolution must restore resources and hand state.
 
 ## 5. Do Not Do / 不要做什么
@@ -47,6 +49,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - Do not use AI-generated images for this work.
 - Do not change old BallWar mode rules to satisfy Cardfront tests.
 - Do not push effect logic into `Main.gd`.
+- Do not turn Pioneer Beacon Lite into a durable map entity until the unit-device slice explicitly owns that work.
 
 ## 6. Required Tests / 当前必跑测试
 
@@ -55,6 +58,8 @@ Cardfront first-effect baseline:
 - `CardCoreLiteTestRunner.gd`
 - `CardFirstEffectsTestRunner.gd`
 - `CardfrontTargetBiasTestRunner.gd`
+- `PioneerBeaconLiteTestRunner.gd`
+- `CardfrontFireDirectorTestRunner.gd`
 - `RegionMoraleTestRunner.gd`
 - `FortifyLayerTestRunner.gd`
 - `DeploymentRulesTestRunner.gd`
@@ -84,6 +89,8 @@ Performance probes are separate from correctness:
 - `README.md` — current project entrypoint / 项目入口
 - `docs/ROADMAP.md` — main progress board and next slice / 进度板与下一切片
 - `docs/history/README_v0_1_6_first_card_effects.md` — v0.1.6 detailed stage record
+- `docs/history/README_v0_1_6_1_pioneer_beacon_lite.md` — Pioneer Beacon Lite stage record
+- `docs/history/README_v0_1_6_1_cardfront_fire_director.md` — Cardfront Fire Director stage record
 - `docs/history/README.md` — historical stage index / 历史阶段索引
 - `docs/technical/AI_HANDOFF_CURRENT.md` — quick takeover card for the next AI / Codex session
 - `docs/TESTING.md` — test ownership, baseline, and run guidance

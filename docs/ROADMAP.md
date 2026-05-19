@@ -8,13 +8,14 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.6-first-card-effects`
-- Next slice: `v0.1.6.1-pioneer-beacon-lite`
+- Current completed slice: `v0.1.6.1-cardfront-fire-director`
+- Next slice: `v0.1.7-unit-devices`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
   - economy and deployment rules built from region control, not from bullet internals
   - card systems added only after region, yield, morale, and deployment boundaries are testable
+  - Cardfront battlefield should keep moving through a Cardfront-only fire director even before formal card UI exists
   - keep `Battlefield`, bullets, turrets, and chambers reusable for old BallWar modes
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
@@ -32,7 +33,8 @@ This file is the single place for project direction and phase status.
 | `v0.1.4-fortify-layer` | Done / 已完成 | Frontline fortification layer above deployment rules. |
 | `v0.1.5-card-core-lite` | Done / 已完成 | Minimal card play pipeline: 3-card hand, costs, target validation, Fortify effect. |
 | `v0.1.6-first-card-effects` | Done / 已完成 | First real effects for Calibrated Shot target bias and Morale Fluctuation morale support. |
-| `v0.1.6.1-pioneer-beacon-lite` | Next / 下一步 | Smallest Pioneer Beacon effect slice without formal unit-device systems. |
+| `v0.1.6.1-pioneer-beacon-lite` | Done / 已完成 | Logic-only Pioneer Beacon pulse: owned border cell converts up to 3 nearby neutral cells. |
+| `v0.1.6.1-cardfront-fire-director` | Done / 已完成 | Cardfront-only automatic fire director, target scoring, fire intents, and Calibrated Shot bias integration. |
 | `v0.1.7-unit-devices` | Planned / 计划中 | Device-style systems for bullet absorber core, engineer robot, and pioneer beacon. |
 
 ## 3. Design Boundaries / 设计边界
@@ -45,6 +47,7 @@ This file is the single place for project direction and phase status.
 - Deployment rules must not mutate `Battlefield` owners or `RegionMap`.
 - Card effects must stay behind `CardPlaySystem` and small effect systems; `Main.gd` stays assembly-only.
 - Do not modify `Bullet`, `BulletPool`, `Turret`, or `ControlChamber` for region planning slices unless a later slice explicitly requires it.
+- Cardfront Fire Director may use a minimal `Turret` directed-fire seam, but old `fire_burst(...)` and old BallWar control-chamber behavior must remain intact.
 
 ## 4. Foundation Completed / 已完成基础
 
@@ -145,11 +148,25 @@ This file is the single place for project direction and phase status.
   - Calibrated Shot registers a target-region bias; turret aiming integration remains deferred
   - effect failures roll back resource payment and hand used state
   - `CardFirstEffectsTestRunner.gd` and `CardfrontTargetBiasTestRunner.gd`
+- `v0.1.6.1-pioneer-beacon-lite`
+  - `CardCatalog.gd` adds card `1004` / Pioneer Beacon to the fixed hand
+  - `PioneerBeaconLiteEffect.gd` keeps neutral-neighbor search and conversion outside `CardPlaySystem.gd`
+  - Pioneer Beacon validates an owned border target and converts up to 3 adjacent neutral cells
+  - failure paths preserve the card rollback contract
+  - no durable map entity, no duration, no full unit/device system
+  - `PioneerBeaconLiteTestRunner.gd`
+- `v0.1.6.1-cardfront-fire-director`
+  - `CardfrontFireRules.gd`, `CardfrontFireIntent.gd`, `CardfrontTargetScorer.gd`, `CardfrontFireDirector.gd`
+  - Cardfront turrets keep low-frequency automatic pressure without using control chambers as the shooting driver
+  - `CardfrontFireDirector` reads `CardfrontTargetBiasSystem`; Calibrated Shot can steer the next generated intent toward its biased region
+  - `Turret.gd` keeps old `fire_burst(...)` and adds a minimal directed-fire seam
+  - old BallWar modes do not create `fire_director`
+  - `CardfrontFireDirectorTestRunner.gd`
 
 ## 6. Next / 下一步
 
-1. **`v0.1.6.1-pioneer-beacon-lite`**: smallest Pioneer Beacon effect path, still no formal card UI or full unit system.
-2. **`v0.1.7-unit-devices`**: device-style systems for bullet absorber core, engineer robot, and pioneer beacon.
+1. **`v0.1.7-unit-devices`**: device-style systems for bullet absorber core, engineer robot, and pioneer beacon.
+2. Keep formal card UI, deck flow, and AI Commander deferred until the unit-device boundary is stable.
 
 ## 7. Later / 中期候选
 

@@ -17,6 +17,22 @@ Detailed stage notes now live under [docs/history/](docs/history/README.md).
 - Historical Releases: `v1.9.x`, `v0.1.0-mvp`
   - reconstructed history, not the recommended download path
 
+## `v0.1.6.1-cardfront-fire-director` — Cardfront 射击导演层
+
+- Added Cardfront-only `CardfrontFireDirector`, `CardfrontFireIntent`, `CardfrontTargetScorer`, and `CardfrontFireRules`.
+- Cardfront turrets now emit low-frequency automatic directed bursts without depending on control chambers as the shooting driver.
+- Calibrated Shot target bias now influences the next FireDirector target selection.
+- Preserved old BallWar `fire_burst(...)` behavior and kept Bullet/BulletPool core physics unchanged.
+- Added `CardfrontFireDirectorTestRunner.gd`.
+
+## `v0.1.6.1-pioneer-beacon-lite` — 拓荒信标轻效果
+
+- Added card `1004` / Pioneer Beacon to the fixed Cardfront hand.
+- Added `PioneerBeaconLiteEffect.gd` so neutral-neighbor search and conversion stay outside `CardPlaySystem.gd`.
+- Owned-border target converts up to 3 adjacent neutral cells with normal card rollback on failure.
+- No durable beacon entity, duration, formal card UI, or full unit-device system in this slice.
+- Added `PioneerBeaconLiteTestRunner.gd`.
+
 ## `v2.1.11.1` — UI Hotfix / 控制仓文字热修复
 
 - Fixed control-chamber bottom gate label clipping / 修复控制仓底部门文字裁切

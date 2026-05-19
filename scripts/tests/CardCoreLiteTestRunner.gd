@@ -29,7 +29,7 @@ func _run() -> void:
 	print("[CardCoreLiteTest] Starting Cardfront card core lite tests")
 	await process_frame
 
-	_test_fixed_hand_has_three_cards()
+	_test_fixed_hand_has_four_cards()
 	_test_card_data_correct()
 	_test_fortify_success_on_owned_border()
 	_test_insufficient_energy_rejected()
@@ -115,10 +115,10 @@ func _make_system_with_battlefield(energy: int = 100, parts: int = 50):
 	}
 
 
-func _test_fixed_hand_has_three_cards() -> void:
+func _test_fixed_hand_has_four_cards() -> void:
 	var system = _make_system()
 	var available = system.get_available_card_data()
-	_assert.eq(available.size(), 3, "card core: fixed hand should have 3 cards")
+	_assert.eq(available.size(), 4, "card core: fixed hand should have 4 cards")
 
 
 func _test_card_data_correct() -> void:
@@ -137,6 +137,14 @@ func _test_card_data_correct() -> void:
 
 	var morale_card = _find_by_id(available, CardCatalogScript.CARD_MORALE_FLUCTUATION)
 	_assert.that(morale_card != null, "card core: should have morale fluctuation card")
+
+	var beacon_card = _find_by_id(available, CardCatalogScript.CARD_PIONEER_BEACON)
+	_assert.that(beacon_card != null, "card core: should have pioneer beacon card")
+	if beacon_card != null:
+		_assert.eq(str(beacon_card.get("card_name", "")), "拓荒信标", "card core: pioneer beacon card name")
+		_assert.eq(int(beacon_card.get("energy_cost", 0)), 8, "card core: pioneer beacon energy cost")
+		_assert.eq(int(beacon_card.get("parts_cost", 0)), 4, "card core: pioneer beacon parts cost")
+		_assert.eq(str(beacon_card.get("target_type", "")), CardTargetTypeScript.OWNED_BORDER, "card core: pioneer beacon target type")
 
 
 func _test_fortify_success_on_owned_border() -> void:

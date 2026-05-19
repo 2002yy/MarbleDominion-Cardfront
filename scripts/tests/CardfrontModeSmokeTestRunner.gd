@@ -133,6 +133,7 @@ func _test_main_enters_cardfront_mode() -> void:
 	_assert.that(main.runtime.target_bias_system != null and is_instance_valid(main.runtime.target_bias_system), "main entry: Cardfront should create target bias system")
 	_assert.that(main.runtime.card_system != null, "main entry: Cardfront should create card play system")
 	_assert.eq(main.runtime.card_system.target_bias_system, main.runtime.target_bias_system, "main entry: card play system should receive target bias system")
+	_assert.that(main.runtime.fire_director != null and is_instance_valid(main.runtime.fire_director), "main entry: Cardfront should create fire director")
 
 	var counts: Dictionary = main.runtime.battlefield.count_cells_by_team()
 	_assert.gt(int(counts.get(CardfrontRulesScript.NEUTRAL_OWNER, 0)), 0, "main entry: Cardfront battlefield should retain neutral territory")

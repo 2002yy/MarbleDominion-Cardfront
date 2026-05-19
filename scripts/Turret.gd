@@ -28,6 +28,9 @@ var burst_timer: float = 0.0
 var burst_locked: bool = false
 var burst_index: int = 0
 var burst_origin_angle: float = 0.0
+var burst_directed: bool = false
+var burst_directed_angle: float = 0.0
+var burst_directed_spread: float = 0.0
 var burst_progress_emit_timer: float = 0.0
 var burst_last_reported_remaining: int = -1
 var _bullet_container_can_spawn: bool = false
@@ -71,6 +74,8 @@ func _process(delta: float) -> void:
 				burst_timer += _next_burst_interval()
 			else:
 				burst_total = 0
+				burst_directed = false
+				burst_directed_spread = 0.0
 				_emit_burst_progress(true)
 				_set_burst_locked(false)
 
@@ -114,10 +119,40 @@ func fire_burst(count: int) -> void:
 	burst_timer = 0.0
 	burst_index = 0
 	burst_origin_angle = rotation
+	burst_directed = false
+	burst_directed_angle = rotation
+	burst_directed_spread = 0.0
 	burst_progress_emit_timer = 0.0
 	burst_last_reported_remaining = burst_remaining
 	burst_progress.emit(faction_id, burst_remaining)
 	_set_burst_locked(true)
+
+func request_directed_burst(intent) -> bool:
+	if intent == null:
+		return false
+	return fire_directed(int(intent.shot_count), float(intent.angle), float(intent.spread))
+
+func fire_directed(count: int, angle: float, spread: float = 0.0) -> bool:
+	if is_destroyed:
+		return false
+	if battlefield == null or bullet_container == null:
+		return false
+	if burst_remaining > 0:
+		return false
+
+	burst_remaining = clampi(count, 1, GameConfig.get_max_pending_count())
+	burst_total = burst_remaining
+	burst_timer = 0.0
+	burst_index = 0
+	burst_origin_angle = float(angle)
+	burst_directed = true
+	burst_directed_angle = float(angle)
+	burst_directed_spread = maxf(0.0, float(spread))
+	burst_progress_emit_timer = 0.0
+	burst_last_reported_remaining = burst_remaining
+	burst_progress.emit(faction_id, burst_remaining)
+	_set_burst_locked(true)
+	return true
 
 func cancel_burst() -> int:
 	var remaining: int = burst_remaining
@@ -125,6 +160,8 @@ func cancel_burst() -> int:
 	burst_total = 0
 	burst_index = 0
 	burst_timer = 0.0
+	burst_directed = false
+	burst_directed_spread = 0.0
 	burst_progress_emit_timer = 0.0
 	burst_last_reported_remaining = 0
 	burst_progress.emit(faction_id, 0)
@@ -140,6 +177,9 @@ func restore_from_state(state: Dictionary) -> void:
 	sweep_phase = float(state.get("turret_sweep_phase", sweep_phase))
 	rotation = float(state.get("turret_rotation", rotation))
 	burst_origin_angle = rotation
+	burst_directed = false
+	burst_directed_angle = rotation
+	burst_directed_spread = 0.0
 	burst_remaining = clampi(int(state.get("turret_burst_remaining", 0)), 0, GameConfig.get_max_pending_count())
 	burst_total = clampi(int(state.get("turret_burst_total", burst_remaining)), burst_remaining, GameConfig.get_max_pending_count())
 	burst_index = clampi(int(state.get("turret_burst_index", 0)), 0, GameConfig.get_max_pending_count())
@@ -155,6 +195,8 @@ func restore_from_state(state: Dictionary) -> void:
 		burst_total = 0
 		burst_index = 0
 		burst_timer = 0.0
+		burst_directed = false
+		burst_directed_spread = 0.0
 		burst_last_reported_remaining = 0
 		_set_burst_locked(false)
 
@@ -263,6 +305,12 @@ func _spawn_bullet() -> void:
 		bullet_container.add_child(bullet)
 
 func _current_burst_shot_angle() -> float:
+	if burst_directed:
+		if burst_total <= 1:
+			return burst_directed_angle
+		var denominator: float = maxf(1.0, float(burst_total - 1))
+		var t: float = float(burst_index) / denominator
+		return burst_directed_angle + lerpf(-burst_directed_spread * 0.5, burst_directed_spread * 0.5, t)
 	# v1.9.6 修正：
 	# 子弹方向直接使用当前炮塔可见 rotation。
 	# 之前这里用 fan_start/fan_end 重新计算并混合 rotation，

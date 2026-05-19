@@ -15,6 +15,10 @@ This folder keeps the detailed stage-by-stage BallWar history that used to live 
 
 ## 推荐入口 / Suggested entry points
 
+- `README_v0_1_6_1_cardfront_fire_director.md`
+  - Cardfront fire director / automatic low-frequency firing, FireIntent, target scorer, Calibrated Shot target-bias steering
+- `README_v0_1_6_1_pioneer_beacon_lite.md`
+  - Pioneer Beacon Lite / logic-only owned-border pulse converting up to 3 nearby neutral cells
 - `README_v0_1_6_first_card_effects.md`
   - Cardfront first card effects / Morale Fluctuation real morale effect, Calibrated Shot target bias, rollback tests
 - `README_v0_1_5_card_core_lite.md`

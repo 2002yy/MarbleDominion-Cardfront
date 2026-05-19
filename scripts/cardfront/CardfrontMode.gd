@@ -14,6 +14,7 @@ const FortifyOverlayLayerScript = preload("res://scripts/cardfront/fortify/Forti
 const CardfrontCaptureInterceptorScript = preload("res://scripts/cardfront/fortify/CardfrontCaptureInterceptor.gd")
 const CardPlaySystemScript = preload("res://scripts/cardfront/cards/CardPlaySystem.gd")
 const CardfrontTargetBiasSystemScript = preload("res://scripts/cardfront/effects/CardfrontTargetBiasSystem.gd")
+const CardfrontFireDirectorScript = preload("res://scripts/cardfront/fire/CardfrontFireDirector.gd")
 
 
 static func is_selected(mode_name: String) -> bool:
@@ -161,4 +162,24 @@ static func create_card_system(resource_states: Dictionary, region_map, battlefi
 	return {
 		"configured": true,
 		"card_system": card_system,
+	}
+
+
+static func create_fire_director(game_layer: Node, region_map, battlefield, turrets: Dictionary, target_bias_system = null) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if region_map == null:
+		return {"configured": false, "reason": "missing_region_map"}
+	if battlefield == null or not is_instance_valid(battlefield):
+		return {"configured": false, "reason": "missing_battlefield"}
+	if turrets.is_empty():
+		return {"configured": false, "reason": "missing_turrets"}
+
+	var fire_director = CardfrontFireDirectorScript.new()
+	fire_director.setup(region_map, battlefield, turrets, target_bias_system, get_active_factions())
+	game_layer.add_child(fire_director)
+
+	return {
+		"configured": true,
+		"fire_director": fire_director,
 	}

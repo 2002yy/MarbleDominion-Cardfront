@@ -8,6 +8,7 @@ const CardTargetTypeScript = preload("res://scripts/cardfront/cards/CardTargetTy
 const CARD_FRONTLINE_FORTIFY: int = 1001
 const CARD_CALIBRATED_SHOT: int = 1002
 const CARD_MORALE_FLUCTUATION: int = 1003
+const CARD_PIONEER_BEACON: int = 1004
 
 var catalog: Dictionary = {}
 
@@ -16,6 +17,7 @@ func _init() -> void:
 	_register(_make_card(CARD_FRONTLINE_FORTIFY, "前线加固", CardTypeScript.FORTIFY, 10, 3, CardTargetTypeScript.OWNED_BORDER, "fortify_border"))
 	_register(_make_card(CARD_CALIBRATED_SHOT, "校准射击", CardTypeScript.CALIBRATED_SHOT, 8, 5, CardTargetTypeScript.ENEMY_REGION, "calibrated_shot"))
 	_register(_make_card(CARD_MORALE_FLUCTUATION, "民心起伏", CardTypeScript.MORALE_FLUCTUATION, 5, 2, CardTargetTypeScript.OWNED_REGION, "morale_fluctuation"))
+	_register(_make_card(CARD_PIONEER_BEACON, "拓荒信标", CardTypeScript.PIONEER_BEACON, 8, 4, CardTargetTypeScript.OWNED_BORDER, "pioneer_beacon_lite"))
 
 
 func _make_card(id: int, card_name: String, card_type: String, energy_cost: int, parts_cost: int, target_type: String, effect_id: String = ""):
@@ -39,4 +41,4 @@ func get_card(card_id: int):
 
 
 func get_default_hand_ids() -> Array[int]:
-	return [CARD_FRONTLINE_FORTIFY, CARD_CALIBRATED_SHOT, CARD_MORALE_FLUCTUATION]
+	return [CARD_FRONTLINE_FORTIFY, CARD_CALIBRATED_SHOT, CARD_MORALE_FLUCTUATION, CARD_PIONEER_BEACON]

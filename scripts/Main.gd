@@ -241,6 +241,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_cardfront_target_bias()
 	_create_cardfront_card_system()
 	_create_turrets()
+	_create_cardfront_fire_director()
 	_create_control_chambers()
 	_create_ui()
 	if not _is_cardfront_mode():
@@ -346,6 +347,16 @@ func _create_turrets() -> void:
 	runtime.turrets = GameSceneBuilder.create_turrets(self, game_layer, runtime.battlefield, runtime.bullet_pool, runtime.current_layout, active_factions)
 	if runtime.bullet_pool != null and is_instance_valid(runtime.bullet_pool) and runtime.bullet_pool.has_method("set_tracked_turrets"):
 		runtime.bullet_pool.set_tracked_turrets(runtime.turrets)
+
+func _create_cardfront_fire_director() -> void:
+	runtime.fire_director = null
+	if not _is_cardfront_mode():
+		return
+	var fire_setup: Dictionary = CardfrontModeScript.create_fire_director(game_layer, runtime.region_map, runtime.battlefield, runtime.turrets, runtime.target_bias_system)
+	if not bool(fire_setup.get("configured", false)):
+		push_warning("Cardfront fire director setup failed: %s" % str(fire_setup.get("reason", "unknown")))
+		return
+	runtime.fire_director = fire_setup.get("fire_director", null)
 
 func _create_control_chambers() -> void:
 	var active_factions: Array = CardfrontModeScript.get_active_factions() if _is_cardfront_mode() else []
