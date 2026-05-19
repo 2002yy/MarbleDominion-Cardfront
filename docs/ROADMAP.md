@@ -8,7 +8,7 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.8b-device-visual-validation`
+- Current completed slice: `v0.1.8c-cardfront-vfx-feedback-lite`
 - Next slice: TBD
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
@@ -42,6 +42,7 @@ This file is the single place for project direction and phase status.
 | `v0.1.7d-durable-pioneer-beacon` | Done / 已完成 | Durable pioneer beacon: periodically converts nearby neutral cells. Device tetralogy complete. |
 | `v0.1.8a-device-visual-layer` | Done / 已完成 | Device sprites from runtime PNGs, DeviceOverlayLayer, DeviceVisualRegistry. |
 | `v0.1.8b-device-visual-validation` | Done / 已完成 | Full test coverage for device overlay: draw items, fallback, expiry, removal, BallWar isolation. |
+| `v0.1.8c-cardfront-vfx-feedback-lite` | Done / 已完成 | CardfrontVfxLayer: energy ripple, shield crack, region pulse with fade-out. |
 
 ## 3. Design Boundaries / 设计边界
 
@@ -179,7 +180,7 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. Device visual layer and validation (v0.1.8a-b) complete. Next direction TBD.
+1. Device visual layer, validation, and VFX feedback (v0.1.8a-c) complete. Next direction TBD.
 2. Keep formal card UI, deck flow, HUD shot-guide text migration, and AI Commander deferred.
 
 ### Cardfront Save Schema

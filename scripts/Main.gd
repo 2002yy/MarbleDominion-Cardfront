@@ -244,6 +244,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_cardfront_fire_director()
 	_create_cardfront_shot_guide()
 	_create_cardfront_device_layer()
+	_create_cardfront_vfx_layer()
 	_create_cardfront_absorber_core_effect()
 	_create_cardfront_engineer_bot_effect()
 	_create_cardfront_durable_pioneer_beacon_effect()
@@ -384,6 +385,16 @@ func _create_cardfront_device_layer() -> void:
 		return
 	runtime.device_layer = device_setup.get("device_layer", null)
 	runtime.device_overlay_layer = device_setup.get("device_overlay", null)
+
+
+func _create_cardfront_vfx_layer() -> void:
+	runtime.cardfront_vfx_layer = null
+	if not _is_cardfront_mode():
+		return
+	var vfx_setup: Dictionary = CardfrontModeScript.create_vfx_layer(game_layer, runtime.battlefield, runtime.region_map)
+	if not bool(vfx_setup.get("configured", false)):
+		return
+	runtime.cardfront_vfx_layer = vfx_setup.get("vfx_layer", null)
 
 
 func _create_cardfront_absorber_core_effect() -> void:

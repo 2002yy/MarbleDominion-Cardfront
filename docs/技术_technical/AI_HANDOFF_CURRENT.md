@@ -6,7 +6,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.1.x` Cardfront prototype
-- Current completed slice: `v0.1.8b-device-visual-validation`
+- Current completed slice: `v0.1.8c-cardfront-vfx-feedback-lite`
 - Next slice: TBD
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 

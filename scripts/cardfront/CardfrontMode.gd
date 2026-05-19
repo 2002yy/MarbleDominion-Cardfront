@@ -21,6 +21,7 @@ const AbsorberCoreEffectSystemScript = preload("res://scripts/cardfront/devices/
 const EngineerBotEffectSystemScript = preload("res://scripts/cardfront/devices/effects/EngineerBotEffectSystem.gd")
 const DurablePioneerBeaconEffectSystemScript = preload("res://scripts/cardfront/devices/effects/DurablePioneerBeaconEffectSystem.gd")
 const CardfrontDeviceOverlayLayerScript = preload("res://scripts/cardfront/devices/CardfrontDeviceOverlayLayer.gd")
+const CardfrontVfxLayerScript = preload("res://scripts/cardfront/vfx/CardfrontVfxLayer.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -287,6 +288,22 @@ static func create_durable_pioneer_beacon_effect_system(game_layer: Node, device
 	return {
 		"configured": true,
 		"durable_pioneer_beacon_effect_system": beacon_system,
+	}
+
+
+static func create_vfx_layer(game_layer: Node, battlefield, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if battlefield == null or not is_instance_valid(battlefield):
+		return {"configured": false, "reason": "missing_battlefield"}
+
+	var vfx_layer = CardfrontVfxLayerScript.new()
+	vfx_layer.setup(battlefield, region_map, GameConfig.GAME_MODE_CARDFRONT)
+	game_layer.add_child(vfx_layer)
+
+	return {
+		"configured": true,
+		"vfx_layer": vfx_layer,
 	}
 
 

@@ -22,6 +22,7 @@ var card_system = null
 var shot_guide_layer = null
 var device_layer = null
 var device_overlay_layer = null
+var cardfront_vfx_layer = null
 var absorber_core_effect_system = null
 var engineer_bot_effect_system = null
 var durable_pioneer_beacon_effect_system = null
@@ -52,6 +53,7 @@ func reset() -> void:
     shot_guide_layer = null
     device_layer = null
     device_overlay_layer = null
+    cardfront_vfx_layer = null
     absorber_core_effect_system = null
     engineer_bot_effect_system = null
     durable_pioneer_beacon_effect_system = null
