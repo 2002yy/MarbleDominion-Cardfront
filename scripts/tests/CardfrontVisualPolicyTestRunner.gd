@@ -11,15 +11,17 @@ func _initialize() -> void:
 
 func _run() -> void:
 	_assert = TestAssert.new()
-	print("[CardfrontVisualPolicyTest] Starting Cardfront visual policy tests")
+	print("[CardfrontVisualPolicyTest] Starting Cardfront visual policy tests (v0.1.3.1 rebalance)")
 	await process_frame
 
-	_test_cardfront_low_pressure_keeps_full_effects()
-	_test_ballwar_mid_pressure_keeps_original_strategy()
-	_test_cardfront_high_pressure_can_still_degrade()
-
-	GameConfig.reset_runtime_defaults()
-	await _flush()
+	_test_cardfront_low_active_full_effects()
+	_test_cardfront_low_active_high_queue_still_low()
+	_test_cardfront_moderate_active_high_queue_not_simple()
+	_test_cardfront_severity_1_at_250_active()
+	_test_cardfront_severity_2_at_700_active()
+	_test_cardfront_severity_3_at_1500_active()
+	_test_cardfront_low_fps_extreme()
+	_test_cardfront_idle_full_effects()
 
 	_assert.report("[CardfrontVisualPolicyTest]")
 	if _assert.failures.is_empty():
@@ -28,48 +30,89 @@ func _run() -> void:
 		quit(1)
 
 
-func _flush() -> void:
-	await process_frame
-	await process_frame
+func _resolve(pool, active_count: int, fps: int, queue_total: int, trail_segments: int = 0, trail_redraws: int = 0) -> Dictionary:
+	return pool.resolve_visual_profile_for_tests(active_count, fps, queue_total, trail_segments, trail_redraws, GameConfig.GAME_MODE_CARDFRONT)
 
 
-func _test_cardfront_low_pressure_keeps_full_effects() -> void:
-	GameConfig.reset_runtime_defaults()
-	GameConfig.set_quality_by_name(GameConfig.QUALITY_MEDIUM)
-	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
+func _test_cardfront_low_active_full_effects() -> void:
 	var pool = BulletPoolScript.new()
-	pool.set_visual_pressure_fps_override_for_tests(60)
-	var profile: Dictionary = pool._resolve_visual_profile(GameConfig.get_mid_pressure_threshold())
+	var profile: Dictionary = _resolve(pool, 8, 60, 0)
 
-	_assert.eq(bool(profile.get("simple_draw", true)), false, "visual policy: Cardfront low pressure should not enable simple_draw")
-	_assert.eq(bool(profile.get("reduce_visual_effects", true)), false, "visual policy: Cardfront low pressure should not reduce effects")
-	_assert.gte(int(profile.get("trail_points", 0)), 10, "visual policy: Cardfront low pressure should keep at least ten trail points")
-	_assert.eq(int(profile.get("trail_pressure_severity", -1)), 1, "visual policy: Cardfront mid threshold should still report mid pressure")
+	_assert.eq(int(profile.get("trail_pressure_severity", -1)), 0, "CF: severity should be 0 (active=8, q=0, fps=60)")
+	_assert.eq(bool(profile.get("simple_draw", true)), false, "CF: simple_draw should be false (active=8)")
+	_assert.eq(bool(profile.get("reduce_visual_effects", true)), false, "CF: reduce_visual_effects should be false (active=8)")
+	_assert.eq(int(profile.get("trail_points", -1)), 12, "CF: trail_points should be 12 (active=8)")
 	pool.free()
 
 
-func _test_ballwar_mid_pressure_keeps_original_strategy() -> void:
-	GameConfig.reset_runtime_defaults()
-	GameConfig.set_quality_by_name(GameConfig.QUALITY_MEDIUM)
-	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_BASIC)
+func _test_cardfront_low_active_high_queue_still_low() -> void:
 	var pool = BulletPoolScript.new()
-	pool.set_visual_pressure_fps_override_for_tests(60)
-	var profile: Dictionary = pool._resolve_visual_profile(GameConfig.get_mid_pressure_threshold())
+	var profile: Dictionary = _resolve(pool, 8, 60, 1200)
 
-	_assert.eq(bool(profile.get("simple_draw", true)), false, "visual policy: BallWar mid pressure should not force simple_draw")
-	_assert.eq(bool(profile.get("reduce_visual_effects", false)), true, "visual policy: BallWar mid pressure should still reduce effects")
-	_assert.eq(int(profile.get("trail_points", -1)), GameConfig.get_mid_trail_points(), "visual policy: BallWar mid pressure should keep the original trail budget")
+	_assert.eq(int(profile.get("trail_pressure_severity", -1)), 0, "CF: severity should stay 0 even with high queue when active is low")
+	_assert.eq(bool(profile.get("simple_draw", true)), false, "CF: simple_draw should be false (active=8, q=1200)")
+	_assert.eq(bool(profile.get("reduce_visual_effects", true)), false, "CF: reduce should be false (active=8, q=1200)")
 	pool.free()
 
 
-func _test_cardfront_high_pressure_can_still_degrade() -> void:
-	GameConfig.reset_runtime_defaults()
-	GameConfig.set_quality_by_name(GameConfig.QUALITY_MEDIUM)
-	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
+func _test_cardfront_moderate_active_high_queue_not_simple() -> void:
 	var pool = BulletPoolScript.new()
-	pool.set_visual_pressure_fps_override_for_tests(60)
-	var profile: Dictionary = pool._resolve_visual_profile(GameConfig.get_high_pressure_threshold())
+	var profile: Dictionary = _resolve(pool, 80, 60, 2000)
 
-	_assert.eq(bool(profile.get("reduce_visual_effects", false)), true, "visual policy: Cardfront high pressure should still allow reduced effects")
-	_assert.eq(int(profile.get("trail_pressure_severity", -1)), 2, "visual policy: Cardfront high threshold should report high pressure")
+	var sev: int = int(profile.get("trail_pressure_severity", -1))
+	_assert.eq(sev, 0, "CF: severity should be 0 (active=80 < 220, q doesn't participate)")
+	_assert.eq(bool(profile.get("simple_draw", true)), false, "CF: simple_draw should be false (active=80, q=2000)")
+	pool.free()
+
+
+func _test_cardfront_severity_1_at_250_active() -> void:
+	var pool = BulletPoolScript.new()
+	var profile: Dictionary = _resolve(pool, 250, 60, 0)
+
+	_assert.eq(int(profile.get("trail_pressure_severity", -1)), 1, "CF: severity should be 1 (active=250 >= 220)")
+	_assert.eq(bool(profile.get("simple_draw", true)), false, "CF: simple_draw should be false (severity 1)")
+	_assert.eq(bool(profile.get("reduce_visual_effects", true)), false, "CF: reduce should be false (severity 1)")
+	_assert.eq(int(profile.get("trail_points", -1)), 8, "CF: trail_points should be 8 (severity 1)")
+	pool.free()
+
+
+func _test_cardfront_severity_2_at_700_active() -> void:
+	var pool = BulletPoolScript.new()
+	var profile: Dictionary = _resolve(pool, 700, 60, 0)
+
+	_assert.eq(int(profile.get("trail_pressure_severity", -1)), 2, "CF: severity should be 2 (active=700 >= 650)")
+	_assert.eq(bool(profile.get("simple_draw", true)), false, "CF: simple_draw should be false (severity 2)")
+	_assert.eq(bool(profile.get("reduce_visual_effects", false)), true, "CF: reduce should be true (severity 2)")
+	_assert.eq(int(profile.get("trail_points", -1)), 4, "CF: trail_points should be 4 (severity 2)")
+	pool.free()
+
+
+func _test_cardfront_severity_3_at_1500_active() -> void:
+	var pool = BulletPoolScript.new()
+	var profile: Dictionary = _resolve(pool, 1500, 60, 0)
+
+	_assert.eq(int(profile.get("trail_pressure_severity", -1)), 3, "CF: severity should be 3 (active=1500 >= 1400)")
+	_assert.eq(bool(profile.get("simple_draw", false)), true, "CF: simple_draw should be true (severity 3)")
+	_assert.eq(int(profile.get("trail_points", -1)), 0, "CF: trail_points should be 0 (severity 3)")
+	pool.free()
+
+
+func _test_cardfront_low_fps_extreme() -> void:
+	var pool = BulletPoolScript.new()
+	var profile: Dictionary = _resolve(pool, 8, 24, 0)
+
+	_assert.gte(int(profile.get("trail_pressure_severity", -1)), 3, "CF: severity should be >= 3 when fps=24")
+	_assert.eq(bool(profile.get("simple_draw", false)), true, "CF: simple_draw should be true (fps extreme)")
+	pool.free()
+
+
+func _test_cardfront_idle_full_effects() -> void:
+	var pool = BulletPoolScript.new()
+	var profile: Dictionary = _resolve(pool, 8, 60, 0, 0, 0)
+
+	_assert.eq(int(profile.get("trail_pressure_severity", -1)), 0, "CF: idle should have severity 0")
+	_assert.eq(bool(profile.get("simple_draw", true)), false, "CF: idle should not simple_draw")
+	_assert.eq(bool(profile.get("reduce_visual_effects", true)), false, "CF: idle should not reduce")
+	_assert.eq(int(profile.get("trail_points", -1)), 12, "CF: idle trail_points should be 12")
+	_assert.eq(str(profile.get("trail_degrade_reason", "?")), "none", "CF: idle reason should be none")
 	pool.free()

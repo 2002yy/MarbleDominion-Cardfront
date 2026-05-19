@@ -34,7 +34,7 @@ var last_visual_profile: Dictionary = {
 const VISUAL_PRESSURE_UPDATE_INTERVAL: float = 0.35
 const PRIORITY: Dictionary = {
 	"none": 0,
-	"queue_high": 1,
+	"queue_forecast": 1,
 	"active_bullets_high": 2,
 	"trail_redraw_high": 3,
 	"trail_segments_high": 4,
@@ -225,6 +225,13 @@ func _resolve_visual_profile(active_count: int) -> Dictionary:
 	if trail_layer != null and is_instance_valid(trail_layer) and trail_layer.has_method("get_debug_metrics"):
 		trail_redraws = int(trail_layer.get_debug_metrics().get("redraw_calls_per_second", 0))
 
+	if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT:
+		return _resolve_cardfront_visual_profile(active_count, fps, queue_total, trail_segments, trail_redraws)
+
+	return _resolve_legacy_visual_profile(active_count, fps, queue_total, trail_segments, trail_redraws)
+
+
+func _resolve_legacy_visual_profile(active_count: int, fps: int, queue_total: int, trail_segments: int, trail_redraws: int) -> Dictionary:
 	var severity: int = 0
 	var reason: String = "none"
 
@@ -238,15 +245,16 @@ func _resolve_visual_profile(active_count: int) -> Dictionary:
 		severity = maxi(severity, 1)
 		reason = _prefer_reason(reason, "active_bullets_high", 1, severity)
 
-	if queue_total >= 1500:
-		severity = maxi(severity, 3)
-		reason = _prefer_reason(reason, "queue_high", 3, severity)
-	elif queue_total >= 1000:
-		severity = maxi(severity, 2)
-		reason = _prefer_reason(reason, "queue_high", 2, severity)
-	elif queue_total >= 500:
-		severity = maxi(severity, 1)
-		reason = _prefer_reason(reason, "queue_high", 1, severity)
+	if active_count >= 80:
+		if active_count >= 600 and queue_total >= 2200:
+			severity = maxi(severity, 3)
+			reason = _prefer_reason(reason, "queue_forecast", 3, severity)
+		elif active_count >= 250 and queue_total >= 1500:
+			severity = maxi(severity, 2)
+			reason = _prefer_reason(reason, "queue_forecast", 2, severity)
+		elif queue_total >= 1000:
+			severity = maxi(severity, 1)
+			reason = _prefer_reason(reason, "queue_forecast", 1, severity)
 
 	if trail_segments >= GameConfig.get_trail_extreme_segments_threshold():
 		severity = maxi(severity, 3)
@@ -295,11 +303,6 @@ func _resolve_visual_profile(active_count: int) -> Dictionary:
 			elif active_count >= GameConfig.get_mid_pressure_threshold():
 				trail_points = GameConfig.get_mid_trail_points()
 
-	if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT and severity <= 1:
-		use_reduced_effects = false
-		use_simple_draw = false
-		trail_points = maxi(trail_points, 10)
-
 	return {
 		"simple_draw": use_simple_draw,
 		"reduce_visual_effects": use_reduced_effects,
@@ -308,6 +311,81 @@ func _resolve_visual_profile(active_count: int) -> Dictionary:
 		"trail_pressure_severity": severity,
 		"trail_degrade_reason": reason,
 	}
+
+
+func _resolve_cardfront_visual_profile(active_count: int, fps: int, queue_total: int, trail_segments: int, trail_redraws: int) -> Dictionary:
+	var severity: int = 0
+	var reason: String = "none"
+
+	if active_count >= 1400:
+		severity = maxi(severity, 3)
+		reason = _prefer_reason(reason, "active_bullets_high", 3, severity)
+	elif active_count >= 650:
+		severity = maxi(severity, 2)
+		reason = _prefer_reason(reason, "active_bullets_high", 2, severity)
+	elif active_count >= 220:
+		severity = maxi(severity, 1)
+		reason = _prefer_reason(reason, "active_bullets_high", 1, severity)
+
+	if active_count >= 220:
+		if active_count >= 650 and queue_total >= 2500:
+			severity = maxi(severity, 2)
+			reason = _prefer_reason(reason, "queue_forecast", 2, severity)
+		elif queue_total >= 1500:
+			severity = maxi(severity, 1)
+			reason = _prefer_reason(reason, "queue_forecast", 1, severity)
+
+	if trail_segments >= 2200:
+		severity = maxi(severity, 3)
+		reason = _prefer_reason(reason, "trail_segments_high", 3, severity)
+	elif trail_segments >= 1600:
+		severity = maxi(severity, 2)
+		reason = _prefer_reason(reason, "trail_segments_high", 2, severity)
+	elif trail_segments >= 900:
+		severity = maxi(severity, 1)
+		reason = _prefer_reason(reason, "trail_segments_high", 1, severity)
+
+	if fps > 0:
+		if fps < 25:
+			severity = maxi(severity, 3)
+			reason = _prefer_reason(reason, "fps_low", 3, severity)
+		elif fps < 35:
+			severity = maxi(severity, 2)
+			reason = _prefer_reason(reason, "fps_low", 2, severity)
+		elif fps < 45 and active_count >= 120:
+			severity = maxi(severity, 1)
+			reason = _prefer_reason(reason, "fps_low", 1, severity)
+
+	var trail_points: int = 12
+	var use_simple_draw: bool = false
+	var use_reduced_effects: bool = false
+	match severity:
+		3:
+			use_simple_draw = true
+			use_reduced_effects = true
+			trail_points = 0
+		2:
+			trail_points = 4
+			use_reduced_effects = true
+		1:
+			trail_points = 8
+		_:
+			pass
+
+	return {
+		"simple_draw": use_simple_draw,
+		"reduce_visual_effects": use_reduced_effects,
+		"trail_points": trail_points,
+		"trail_pressure_level": _severity_to_level(severity),
+		"trail_pressure_severity": severity,
+		"trail_degrade_reason": reason,
+	}
+
+
+func resolve_visual_profile_for_tests(active_count: int, fps: int, queue_total: int, trail_segments: int, trail_redraws: int, mode_name: String) -> Dictionary:
+	if mode_name == GameConfig.GAME_MODE_CARDFRONT:
+		return _resolve_cardfront_visual_profile(active_count, fps, queue_total, trail_segments, trail_redraws)
+	return _resolve_legacy_visual_profile(active_count, fps, queue_total, trail_segments, trail_redraws)
 
 func _severity_to_level(severity: int) -> String:
 	match severity:
