@@ -17,6 +17,7 @@ const CardfrontTargetBiasSystemScript = preload("res://scripts/cardfront/effects
 const CardfrontFireDirectorScript = preload("res://scripts/cardfront/fire/CardfrontFireDirector.gd")
 const CardfrontShotGuideLayerScript = preload("res://scripts/cardfront/effects/CardfrontShotGuideLayer.gd")
 const DeviceLayerScript = preload("res://scripts/cardfront/devices/DeviceLayer.gd")
+const AbsorberCoreEffectSystemScript = preload("res://scripts/cardfront/devices/effects/AbsorberCoreEffectSystem.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -226,6 +227,24 @@ static func create_device_layer(game_layer: Node, battlefield, region_map) -> Di
 	return {
 		"configured": true,
 		"device_layer": device_layer,
+	}
+
+
+static func create_absorber_core_effect_system(game_layer: Node, device_layer, bullet_pool, resource_states: Dictionary, battlefield) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if device_layer == null:
+		return {"configured": false, "reason": "missing_device_layer"}
+	if bullet_pool == null:
+		return {"configured": false, "reason": "missing_bullet_pool"}
+
+	var absorber_system = AbsorberCoreEffectSystemScript.new()
+	absorber_system.setup(device_layer, bullet_pool, resource_states, battlefield)
+	game_layer.add_child(absorber_system)
+
+	return {
+		"configured": true,
+		"absorber_core_effect_system": absorber_system,
 	}
 
 

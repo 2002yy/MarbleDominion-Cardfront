@@ -21,6 +21,7 @@ var fire_director = null
 var card_system = null
 var shot_guide_layer = null
 var device_layer = null
+var absorber_core_effect_system = null
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
@@ -47,6 +48,7 @@ func reset() -> void:
     card_system = null
     shot_guide_layer = null
     device_layer = null
+    absorber_core_effect_system = null
     resource_states.clear()
     last_yield_snapshot.clear()
     current_config.clear()

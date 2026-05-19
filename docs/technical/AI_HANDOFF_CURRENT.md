@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.1.x` Cardfront prototype
-- Current completed slice: `v0.1.7a-device-core`
-- Next slice: `v0.1.7b-absorber-core-lite`
+- Current completed slice: `v0.1.7b-absorber-core-lite`
+- Next slice: `v0.1.7c-engineer-bot-lite`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -58,6 +58,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 Cardfront first-effect baseline:
 
 - `DeviceCoreTestRunner.gd`
+- `AbsorberCoreLiteTestRunner.gd`
 - `CardCoreLiteTestRunner.gd`
 - `CardFirstEffectsTestRunner.gd`
 - `CardfrontTargetBiasTestRunner.gd`

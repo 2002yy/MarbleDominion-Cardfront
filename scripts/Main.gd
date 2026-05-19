@@ -244,6 +244,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_cardfront_fire_director()
 	_create_cardfront_shot_guide()
 	_create_cardfront_device_layer()
+	_create_cardfront_absorber_core_effect()
 	_create_control_chambers()
 	_create_ui()
 	if not _is_cardfront_mode():
@@ -379,6 +380,16 @@ func _create_cardfront_device_layer() -> void:
 	if not bool(device_setup.get("configured", false)):
 		return
 	runtime.device_layer = device_setup.get("device_layer", null)
+
+
+func _create_cardfront_absorber_core_effect() -> void:
+	runtime.absorber_core_effect_system = null
+	if not _is_cardfront_mode():
+		return
+	var absorber_setup: Dictionary = CardfrontModeScript.create_absorber_core_effect_system(game_layer, runtime.device_layer, runtime.bullet_pool, runtime.resource_states, runtime.battlefield)
+	if not bool(absorber_setup.get("configured", false)):
+		return
+	runtime.absorber_core_effect_system = absorber_setup.get("absorber_core_effect_system", null)
 
 
 func _create_control_chambers() -> void:
