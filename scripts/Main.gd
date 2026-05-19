@@ -60,6 +60,10 @@ func _runtime_grid_size() -> int:
 func _hud_ref(key: String, default_value = null):
 	return runtime.hud_ref(key, default_value)
 
+func _cardfront_status_label():
+	# semantic alias: Cardfront uses event_label as status bar; BallWar keeps event log
+	return _hud_ref("event_label")
+
 func _set_hud_ref(key: String, value) -> void:
 	runtime.set_hud_ref(key, value)
 
