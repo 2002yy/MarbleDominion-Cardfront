@@ -5,6 +5,7 @@ const FortifyRulesScript = preload("res://scripts/cardfront/fortify/FortifyRules
 
 var grid_size: int = 0
 var stacks: Array = []
+var overlay_dirty_callback = null
 
 
 func configure(new_grid_size: int) -> void:
@@ -27,12 +28,14 @@ func set_fortify_stack(cell: Vector2i, value: int) -> void:
 	if not _is_inside(cell):
 		return
 	stacks[cell.x][cell.y] = clampi(value, 0, FortifyRulesScript.MAX_FORTIFY_STACKS)
+	_notify_overlay()
 
 
 func add_fortify_stack(cell: Vector2i, amount: int = 1) -> void:
 	if not _is_inside(cell):
 		return
 	stacks[cell.x][cell.y] = clampi(int(stacks[cell.x][cell.y]) + amount, 0, FortifyRulesScript.MAX_FORTIFY_STACKS)
+	_notify_overlay()
 
 
 func clear_fortify_stack(cell: Vector2i) -> void:
@@ -98,3 +101,8 @@ func _is_inside(cell: Vector2i) -> bool:
 	if grid_size <= 0 or stacks.is_empty():
 		return false
 	return cell.x >= 0 and cell.y >= 0 and cell.x < grid_size and cell.y < grid_size
+
+
+func _notify_overlay() -> void:
+	if overlay_dirty_callback != null and overlay_dirty_callback is Callable and overlay_dirty_callback.is_valid():
+		overlay_dirty_callback.call()

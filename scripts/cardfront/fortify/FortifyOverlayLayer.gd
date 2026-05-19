@@ -31,7 +31,7 @@ func mark_dirty() -> void:
 
 
 func _draw() -> void:
-	if not visible:
+	if not visible or not _dirty:
 		return
 	if fortify_layer == null:
 		return
@@ -45,19 +45,12 @@ func _draw() -> void:
 			var stack: int = fortify_layer.get_fortify_stack(cell)
 			if stack <= 0:
 				continue
-			_draw_fortify_cell(x, y, stack)
-
-
-func _draw_fortify_cell(x: int, y: int, stack: int) -> void:
-	var rect := Rect2(Vector2(x * cell_size, y * cell_size), Vector2(cell_size, cell_size))
-	var alpha: float = 0.30 + float(stack) * 0.15
-	var border_color: Color
-	match stack:
-		3:
-			border_color = Color(0.20, 0.60, 1.0, alpha)
-		2:
-			border_color = Color(0.30, 0.55, 0.90, alpha)
-		_:
-			border_color = Color(0.40, 0.50, 0.80, alpha)
-	draw_rect(rect.grow(-0.5), Color(0.05, 0.08, 0.16, alpha * 0.5), true)
-	draw_rect(rect.grow(-1.2), border_color, false, maxf(1.0, float(cell_size) * 0.15))
+			var rect := Rect2(Vector2(x * cell_size, y * cell_size), Vector2(cell_size, cell_size))
+			var alpha: float = 0.30 + float(stack) * 0.15
+			var border_color: Color
+			match stack:
+				3: border_color = Color(0.20, 0.60, 1.0, alpha)
+				2: border_color = Color(0.30, 0.55, 0.90, alpha)
+				_: border_color = Color(0.40, 0.50, 0.80, alpha)
+			draw_rect(rect.grow(-0.5), Color(0.05, 0.08, 0.16, alpha * 0.5), true)
+			draw_rect(rect.grow(-1.2), border_color, false, maxf(1.0, float(cell_size) * 0.15))

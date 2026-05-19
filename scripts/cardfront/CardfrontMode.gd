@@ -141,6 +141,7 @@ static func create_fortify(game_layer: Node, battlefield, region_map) -> Diction
 	var overlay = FortifyOverlayLayerScript.new()
 	overlay.setup(fortify_layer, battlefield, GameConfig.GAME_MODE_CARDFRONT)
 	game_layer.add_child(overlay)
+	fortify_layer.overlay_dirty_callback = Callable(overlay, "mark_dirty")
 
 	var interceptor = CardfrontCaptureInterceptorScript.new()
 	interceptor.setup(fortify_layer)

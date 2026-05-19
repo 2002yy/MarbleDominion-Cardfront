@@ -31,7 +31,7 @@ func mark_dirty() -> void:
 
 
 func _draw() -> void:
-	if not visible:
+	if not visible or not _dirty:
 		return
 	if region_map == null:
 		return
@@ -44,18 +44,14 @@ func _draw() -> void:
 			var region_type: String = region_map.get_region_type(Vector2i(x, y))
 			if region_type == RegionTypeScript.NORMAL:
 				continue
-			_draw_region_cell(x, y, region_type)
-
-
-func _draw_region_cell(x: int, y: int, region_type: String) -> void:
-	var rect := Rect2(Vector2(x * cell_size, y * cell_size), Vector2(cell_size, cell_size))
-	match region_type:
-		RegionTypeScript.ENERGY:
-			draw_rect(rect.grow(-1.0), Color(0.35, 0.82, 1.0, 0.18), true)
-			draw_circle(rect.get_center(), maxf(1.2, float(cell_size) * 0.16), Color(0.65, 0.95, 1.0, 0.42))
-		RegionTypeScript.FACTORY:
-			draw_rect(rect.grow(-1.0), Color(1.0, 0.64, 0.22, 0.17), true)
-			draw_rect(Rect2(rect.position + Vector2(cell_size * 0.28, cell_size * 0.28), Vector2(cell_size * 0.44, cell_size * 0.44)), Color(1.0, 0.78, 0.38, 0.34), false, 1.0)
-		RegionTypeScript.LAB:
-			draw_rect(rect.grow(-1.0), Color(0.72, 0.45, 1.0, 0.20), true)
-			draw_circle(rect.get_center(), maxf(1.5, float(cell_size) * 0.22), Color(0.88, 0.74, 1.0, 0.45))
+			var rect := Rect2(Vector2(x * cell_size, y * cell_size), Vector2(cell_size, cell_size))
+			match region_type:
+				RegionTypeScript.ENERGY:
+					draw_rect(rect.grow(-1.0), Color(0.35, 0.82, 1.0, 0.18), true)
+					draw_circle(rect.get_center(), maxf(1.2, float(cell_size) * 0.16), Color(0.65, 0.95, 1.0, 0.42))
+				RegionTypeScript.FACTORY:
+					draw_rect(rect.grow(-1.0), Color(1.0, 0.64, 0.22, 0.17), true)
+					draw_rect(Rect2(rect.position + Vector2(cell_size * 0.28, cell_size * 0.28), Vector2(cell_size * 0.44, cell_size * 0.44)), Color(1.0, 0.78, 0.38, 0.34), false, 1.0)
+				RegionTypeScript.LAB:
+					draw_rect(rect.grow(-1.0), Color(0.72, 0.45, 1.0, 0.20), true)
+					draw_circle(rect.get_center(), maxf(1.5, float(cell_size) * 0.22), Color(0.88, 0.74, 1.0, 0.45))
