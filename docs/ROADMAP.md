@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.6.2-cardfront-control-chamber-decoupling`
-- Next slice: `v0.1.7a-device-core`
+- Current completed slice: `v0.1.7a-device-core`
+- Next slice: `v0.1.7b-absorber-core-lite`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
@@ -36,8 +36,8 @@ This file is the single place for project direction and phase status.
 | `v0.1.6.1-pioneer-beacon-lite` | Done / 已完成 | Logic-only Pioneer Beacon pulse: owned border cell converts up to 3 nearby neutral cells. |
 | `v0.1.6.1-cardfront-fire-director` | Done / 已完成 | Cardfront-only automatic fire director, target scoring, fire intents, and Calibrated Shot bias integration. |
 | `v0.1.6.2-cardfront-control-chamber-decoupling` | Done / 已完成 | Cardfront skips legacy control chambers and +ball buttons, adds HUD fire status, and splits FireDirector shot budgets into global + per-owner caps. |
-| `v0.1.7a-device-core` | Next / 下一步 | Device core layer: `DeviceSlot`, `DeviceEffect`, `DeviceLayer` foundation; shared deployment/tick/teardown pipeline. Do NOT add full absorber/beacon/robot yet. |
-| `v0.1.7b-absorber-core-lite` | Planned / 计划中 | Bullet absorber core device on device core layer. |
+| `v0.1.7a-device-core` | Done / 已完成 | Device core layer: placement, tick, snapshot; 3 types registered, no effects. |
+| `v0.1.7b-absorber-core-lite` | Next / 下一步 | Bullet absorber core device on device core layer. |
 | `v0.1.7c-engineer-bot-lite` | Planned / 计划中 | Engineer robot device on device core layer. |
 | `v0.1.7d-durable-pioneer-beacon` | Planned / 计划中 | Durable pioneer beacon device on device core layer. |
 

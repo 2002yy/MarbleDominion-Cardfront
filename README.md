@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.6.2-cardfront-control-chamber-decoupling**. Cardfront now presents FireDirector as the primary shooting layer: old control chambers and +ball buttons are not created in Cardfront mode, the HUD says automatic/card-directed fire is active, and FireDirector uses both global and per-owner shot budgets.
+The current completed slice is **v0.1.7a-device-core**. It adds a shared device placement/tick/snapshot layer with 3 device types, no concrete effects yet. Next is v0.1.7b-absorber-core-lite.
 
 ## Current Slice / 当前阶段
 
@@ -148,9 +148,9 @@ Latest local validation for the v0.1.6.2 required subset:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.7-unit-devices`:
+`v0.1.7b-absorber-core-lite`:
 
-- Start the real unit-device layer only after the logic-only Pioneer Beacon and fire-director slices remain stable.
+- Bullet absorber core device on device core layer; absorbs incoming bullets near the device.
 - Full route is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License

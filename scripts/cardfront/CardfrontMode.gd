@@ -16,6 +16,7 @@ const CardPlaySystemScript = preload("res://scripts/cardfront/cards/CardPlaySyst
 const CardfrontTargetBiasSystemScript = preload("res://scripts/cardfront/effects/CardfrontTargetBiasSystem.gd")
 const CardfrontFireDirectorScript = preload("res://scripts/cardfront/fire/CardfrontFireDirector.gd")
 const CardfrontShotGuideLayerScript = preload("res://scripts/cardfront/effects/CardfrontShotGuideLayer.gd")
+const DeviceLayerScript = preload("res://scripts/cardfront/devices/DeviceLayer.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -207,6 +208,24 @@ static func create_shot_guide(game_layer: Node, battlefield, target_bias_system,
 	return {
 		"configured": true,
 		"shot_guide_layer": guide_layer,
+	}
+
+
+static func create_device_layer(game_layer: Node, battlefield, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if battlefield == null or not is_instance_valid(battlefield):
+		return {"configured": false, "reason": "missing_battlefield"}
+	if region_map == null:
+		return {"configured": false, "reason": "missing_region_map"}
+
+	var device_layer = DeviceLayerScript.new()
+	device_layer.setup(battlefield, region_map)
+	game_layer.add_child(device_layer)
+
+	return {
+		"configured": true,
+		"device_layer": device_layer,
 	}
 
 

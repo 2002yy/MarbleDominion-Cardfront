@@ -243,6 +243,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_turrets()
 	_create_cardfront_fire_director()
 	_create_cardfront_shot_guide()
+	_create_cardfront_device_layer()
 	_create_control_chambers()
 	_create_ui()
 	if not _is_cardfront_mode():
@@ -368,6 +369,16 @@ func _create_cardfront_shot_guide() -> void:
 	if not bool(guide_setup.get("configured", false)):
 		return
 	runtime.shot_guide_layer = guide_setup.get("shot_guide_layer", null)
+
+
+func _create_cardfront_device_layer() -> void:
+	runtime.device_layer = null
+	if not _is_cardfront_mode():
+		return
+	var device_setup: Dictionary = CardfrontModeScript.create_device_layer(game_layer, runtime.battlefield, runtime.region_map)
+	if not bool(device_setup.get("configured", false)):
+		return
+	runtime.device_layer = device_setup.get("device_layer", null)
 
 
 func _create_control_chambers() -> void:
