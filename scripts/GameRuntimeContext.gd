@@ -19,6 +19,7 @@ var fortify_overlay = null
 var target_bias_system = null
 var fire_director = null
 var card_system = null
+var shot_guide_layer = null
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
@@ -43,6 +44,7 @@ func reset() -> void:
     target_bias_system = null
     fire_director = null
     card_system = null
+    shot_guide_layer = null
     resource_states.clear()
     last_yield_snapshot.clear()
     current_config.clear()

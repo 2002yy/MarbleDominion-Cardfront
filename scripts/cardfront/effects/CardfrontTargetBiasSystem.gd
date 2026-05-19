@@ -72,6 +72,12 @@ func get_biased_target_cell(owner_id: int) -> Vector2i:
 	return cells[0]
 
 
+func get_bias_remaining(owner_id: int) -> float:
+	if not _biases.has(int(owner_id)):
+		return 0.0
+	return float((_biases[int(owner_id)] as Dictionary).get("remaining", 0.0))
+
+
 func _process(delta: float) -> void:
 	tick(delta)
 

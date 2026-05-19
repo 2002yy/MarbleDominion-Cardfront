@@ -15,6 +15,7 @@ const CardfrontCaptureInterceptorScript = preload("res://scripts/cardfront/forti
 const CardPlaySystemScript = preload("res://scripts/cardfront/cards/CardPlaySystem.gd")
 const CardfrontTargetBiasSystemScript = preload("res://scripts/cardfront/effects/CardfrontTargetBiasSystem.gd")
 const CardfrontFireDirectorScript = preload("res://scripts/cardfront/fire/CardfrontFireDirector.gd")
+const CardfrontShotGuideLayerScript = preload("res://scripts/cardfront/effects/CardfrontShotGuideLayer.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -188,6 +189,24 @@ static func create_fire_director(game_layer: Node, region_map, battlefield, turr
 	return {
 		"configured": true,
 		"fire_director": fire_director,
+	}
+
+
+static func create_shot_guide(game_layer: Node, battlefield, target_bias_system, turrets: Dictionary, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if battlefield == null or not is_instance_valid(battlefield):
+		return {"configured": false, "reason": "missing_battlefield"}
+	if target_bias_system == null:
+		return {"configured": false, "reason": "missing_target_bias_system"}
+
+	var guide_layer = CardfrontShotGuideLayerScript.new()
+	guide_layer.setup(battlefield, target_bias_system, turrets, region_map)
+	game_layer.add_child(guide_layer)
+
+	return {
+		"configured": true,
+		"shot_guide_layer": guide_layer,
 	}
 
 

@@ -242,6 +242,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_cardfront_card_system()
 	_create_turrets()
 	_create_cardfront_fire_director()
+	_create_cardfront_shot_guide()
 	_create_control_chambers()
 	_create_ui()
 	if not _is_cardfront_mode():
@@ -357,6 +358,17 @@ func _create_cardfront_fire_director() -> void:
 		push_warning("Cardfront fire director setup failed: %s" % str(fire_setup.get("reason", "unknown")))
 		return
 	runtime.fire_director = fire_setup.get("fire_director", null)
+
+
+func _create_cardfront_shot_guide() -> void:
+	runtime.shot_guide_layer = null
+	if not _is_cardfront_mode():
+		return
+	var guide_setup: Dictionary = CardfrontModeScript.create_shot_guide(game_layer, runtime.battlefield, runtime.target_bias_system, runtime.turrets, runtime.region_map)
+	if not bool(guide_setup.get("configured", false)):
+		return
+	runtime.shot_guide_layer = guide_setup.get("shot_guide_layer", null)
+
 
 func _create_control_chambers() -> void:
 	runtime.chambers = {}
