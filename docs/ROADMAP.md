@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.1-c-region-yield`
-- Next slice: `v0.1.2-region-morale`
+- Current completed slice: `v0.1.2-region-morale`
+- Next slice: `v0.1.3-deployment-rules`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
@@ -24,8 +24,8 @@ This file is the single place for project direction and phase status.
 | `v0.1.1-a-region-map` | Done / 已完成 | Region types, deterministic `RegionMap`, Cardfront-only overlay. No economy tick, cards, or AI. |
 | `v0.1.1-b-region-instances` | Done / 已完成 | Add `region_id`, explicit region instances, and region-control statistics. |
 | `v0.1.1-c-region-yield` | Done / 已完成 | Region-control yield with 50% / 80% thresholds. |
-| `v0.1.2-region-morale` | Next / 下一步 | Morale fluctuation system tied to region state. |
-| `v0.1.3-deployment-rules` | Planned / 计划中 | Deployment permission by owned region, owned border, and region control degree. |
+| `v0.1.2-region-morale` | Done / 已完成 | Morale fluctuation system tied to region state. |
+| `v0.1.3-deployment-rules` | Next / 下一步 | Deployment permission by owned region, owned border, and region control degree. |
 | `v0.1.4-fortify-layer` | Planned / 计划中 | Frontline fortification layer. |
 | `v0.1.5-card-core-lite` | Planned / 计划中 | Pseudo-card core: fixed hand and energy costs. |
 | `v0.1.6-first-card-effects` | Planned / 计划中 | First effects such as calibrated shot, pioneer beacon, and morale fluctuation. |
@@ -110,9 +110,12 @@ This file is the single place for project direction and phase status.
   - 已加入 1 秒经济 tick
   - 已加入 Cardfront-only 最小经济调试面板
   - 经济逻辑保持独立于 `Battlefield.apply_bullet()`
-- 当前下一刀是 `v0.1.2-region-morale`：
-  - 在区域状态之上加入民心起伏
+- `v0.1.2-region-morale` 已完成：
+  - 已加入 region-local 民心起伏底层系统
+  - 固定 seed 可测试
   - 暂不做卡牌、单位、AI 和前线加固
+- 当前下一刀是 `v0.1.3-deployment-rules`：
+  - 部署权限：我方区域 / 我方边界 / 区域控制度
 
 ### Android export hardening / Android 导出固化
 
@@ -138,9 +141,8 @@ This file is the single place for project direction and phase status.
 
 ## 5. Next / 下一步
 
-1. **`v0.1.2-region-morale`**: morale fluctuation system.
-2. **`v0.1.3-deployment-rules`**: deployment permission by owned region, owned border, and region control degree.
-3. **`v0.1.4-fortify-layer`**: frontline fortification layer.
+1. **`v0.1.3-deployment-rules`**: deployment permission by owned region, owned border, and region control degree.
+2. **`v0.1.4-fortify-layer`**: frontline fortification layer.
 
 ## 6. Later / 中期候选
 
@@ -154,7 +156,7 @@ This file is the single place for project direction and phase status.
 
 ## 7. Not Now / 暂不处理
 
-- 在 `v0.1.1-c` 中提前做民心、卡牌、单位或 AI
+- 在 `v0.1.2` 中提前做卡牌 UI、单位、AI 或前线加固
 - 在区域实例前做卡牌和 AI
 - 在性能基线不稳定前继续扩大弹幕规模
 - 把 UI 重新塞回纯代码动态生成

@@ -8,6 +8,7 @@ const RegionOverlayLayerScript = preload("res://scripts/cardfront/regions/Region
 const CardfrontResourceStateScript = preload("res://scripts/cardfront/economy/CardfrontResourceState.gd")
 const EconomyTickSystemScript = preload("res://scripts/cardfront/economy/EconomyTickSystem.gd")
 const CardfrontEconomyDebugPanelScript = preload("res://scripts/cardfront/economy/CardfrontEconomyDebugPanel.gd")
+const RegionMoraleSystemScript = preload("res://scripts/cardfront/morale/RegionMoraleSystem.gd")
 
 
 static func is_selected(mode_name: String) -> bool:
@@ -85,4 +86,22 @@ static func create_economy(game_layer: Node, battlefield, region_map) -> Diction
 		"economy_system": economy_system,
 		"resource_states": resource_states,
 		"economy_debug_panel": debug_panel,
+	}
+
+
+static func create_morale(game_layer: Node, battlefield, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if battlefield == null or not is_instance_valid(battlefield):
+		return {"configured": false, "reason": "missing_battlefield"}
+	if region_map == null:
+		return {"configured": false, "reason": "missing_region_map"}
+
+	var morale_system = RegionMoraleSystemScript.new()
+	morale_system.setup(region_map, battlefield)
+	game_layer.add_child(morale_system)
+
+	return {
+		"configured": true,
+		"morale_system": morale_system,
 	}

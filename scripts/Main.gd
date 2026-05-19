@@ -236,6 +236,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_battlefield(grid_size)
 	_create_cardfront_regions()
 	_create_cardfront_economy()
+	_create_cardfront_morale()
 	_create_turrets()
 	_create_control_chambers()
 	_create_ui()
@@ -289,6 +290,16 @@ func _create_cardfront_economy() -> void:
 
 func _on_cardfront_yield_tick(owner_id: int, yield_data: Dictionary) -> void:
 	runtime.last_yield_snapshot[owner_id] = yield_data
+
+func _create_cardfront_morale() -> void:
+	runtime.morale_system = null
+	if not _is_cardfront_mode():
+		return
+	var morale_setup: Dictionary = CardfrontModeScript.create_morale(game_layer, runtime.battlefield, runtime.region_map)
+	if not bool(morale_setup.get("configured", false)):
+		push_warning("Cardfront morale setup failed: %s" % str(morale_setup.get("reason", "unknown")))
+		return
+	runtime.morale_system = morale_setup.get("morale_system", null)
 
 func _create_turrets() -> void:
 	var active_factions: Array = CardfrontModeScript.get_active_factions() if _is_cardfront_mode() else []

@@ -15,6 +15,8 @@ This folder keeps the detailed stage-by-stage BallWar history that used to live 
 
 ## 推荐入口 / Suggested entry points
 
+- `README_v0_1_2_region_morale.md`
+  - Cardfront region-morale slice / region-local morale ownership shifts with deterministic RNG
 - `README_v0_1_1_region_yield.md`
   - Cardfront region-yield slice / resource state, yield rules, yield calculator, economy tick, and debug panel
 - `README_v0_1_1_region_instances.md`

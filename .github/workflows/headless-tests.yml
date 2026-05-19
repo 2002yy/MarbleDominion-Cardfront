@@ -68,6 +68,11 @@ jobs:
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/EconomyTickTestRunner.gd"
 
+      - name: Region Morale Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/RegionMoraleTestRunner.gd"
+
       - name: Start Menu Scene Test
         shell: pwsh
         run: |
