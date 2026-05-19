@@ -16,6 +16,8 @@ const CardPlaySystemScript = preload("res://scripts/cardfront/cards/CardPlaySyst
 const CardfrontTargetBiasSystemScript = preload("res://scripts/cardfront/effects/CardfrontTargetBiasSystem.gd")
 const CardfrontFireDirectorScript = preload("res://scripts/cardfront/fire/CardfrontFireDirector.gd")
 
+const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
+
 
 static func is_selected(mode_name: String) -> bool:
 	return Rules.is_cardfront_mode(mode_name)
@@ -23,6 +25,10 @@ static func is_selected(mode_name: String) -> bool:
 
 static func is_active() -> bool:
 	return is_selected(GameConfig.get_game_mode_name())
+
+
+static func uses_control_chambers() -> bool:
+	return false
 
 
 static func get_active_factions() -> Array:
@@ -183,3 +189,13 @@ static func create_fire_director(game_layer: Node, region_map, battlefield, turr
 		"configured": true,
 		"fire_director": fire_director,
 	}
+
+
+static func configure_runtime_hud(hud_nodes: Dictionary) -> void:
+	var event_label = hud_nodes.get("event_label", null)
+	if event_label == null or not is_instance_valid(event_label):
+		return
+	event_label.text = FIRE_STATUS_TEXT
+	event_label.tooltip_text = "Cardfront FireDirector active; cards can bias target selection."
+	event_label.add_theme_color_override("font_color", Color(0.62, 0.90, 1.0))
+	event_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT

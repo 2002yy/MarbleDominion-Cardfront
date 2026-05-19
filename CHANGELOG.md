@@ -17,6 +17,14 @@ Detailed stage notes now live under [docs/history/](docs/history/README.md).
 - Historical Releases: `v1.9.x`, `v0.1.0-mvp`
   - reconstructed history, not the recommended download path
 
+## `v0.1.6.2-cardfront-control-chamber-decoupling` — Cardfront 控制舱解耦
+
+- Cardfront mode no longer creates legacy control chambers or +ball buttons.
+- Cardfront HUD now shows `自动射击中 / 卡牌改写射击` in the event-status slot.
+- FireDirector shot limiting now uses both global and per-owner per-second budgets.
+- Old BallWar modes still create control chambers and +ball buttons normally.
+- Added `CardfrontControlChamberDecouplingTestRunner.gd`.
+
 ## `v0.1.6.1-cardfront-fire-director` — Cardfront 射击导演层
 
 - Added Cardfront-only `CardfrontFireDirector`, `CardfrontFireIntent`, `CardfrontTargetScorer`, and `CardfrontFireRules`.

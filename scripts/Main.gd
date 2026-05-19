@@ -359,6 +359,9 @@ func _create_cardfront_fire_director() -> void:
 	runtime.fire_director = fire_setup.get("fire_director", null)
 
 func _create_control_chambers() -> void:
+	runtime.chambers = {}
+	if _is_cardfront_mode() and not CardfrontModeScript.uses_control_chambers():
+		return
 	var active_factions: Array = CardfrontModeScript.get_active_factions() if _is_cardfront_mode() else []
 	runtime.chambers = GameSceneBuilder.create_control_chambers(self, game_layer, runtime.battlefield, runtime.turrets, runtime.current_layout, chamber_scale, Vector2(VIEW_W, VIEW_H), active_factions)
 	_sync_chamber_game_elapsed_time()
@@ -386,6 +389,9 @@ func _create_ui() -> void:
 		"top_bar_total_width": hud_nodes.get("top_bar_total_width", 0.0),
 	})
 	runtime.set_hud_ref("opening_banner", null)
+
+	if _is_cardfront_mode():
+		CardfrontModeScript.configure_runtime_hud(runtime.hud)
 
 	_on_scores_changed(runtime.battlefield.count_cells_by_team())
 
@@ -427,6 +433,10 @@ func _create_event_roulette_system() -> void:
 	_refresh_event_log()
 
 func _create_control_buttons() -> void:
+	_set_ui_runtime_ref("add_ball_buttons", {})
+	_set_ui_runtime_ref("add_ball_button_base_positions", {})
+	if _is_cardfront_mode() and not CardfrontModeScript.uses_control_chambers():
+		return
 	var button_nodes: Dictionary = GameHudView.create_control_buttons(self, game_layer, runtime.chambers, runtime.current_layout, Vector2(VIEW_W, VIEW_H), is_mobile_layout)
 	_set_ui_runtime_ref("add_ball_buttons", button_nodes.get("add_ball_buttons", {}))
 	_set_ui_runtime_ref("add_ball_button_base_positions", button_nodes.get("add_ball_button_base_positions", {}))
@@ -434,6 +444,8 @@ func _create_control_buttons() -> void:
 		_refresh_add_ball_button(faction_id)
 
 func _add_ball_to_chamber(faction_id: int) -> void:
+	if _is_cardfront_mode() and not CardfrontModeScript.uses_control_chambers():
+		return
 	if not runtime.chambers.has(faction_id):
 		return
 	runtime.chambers[faction_id].add_control_ball()
@@ -446,6 +458,10 @@ func _refresh_add_ball_button(faction_id: int) -> void:
 	GameHudView.refresh_add_ball_button(faction_id, _ui_runtime_ref("add_ball_buttons", {}), runtime.chambers)
 
 func _on_chamber_release_requested(faction_id, bullet_count, chamber) -> void:
+	if _is_cardfront_mode() and not CardfrontModeScript.uses_control_chambers():
+		if chamber != null and is_instance_valid(chamber):
+			chamber.set_locked(false)
+		return
 	if is_game_over:
 		chamber.set_locked(false)
 		_refresh_add_ball_button(faction_id)

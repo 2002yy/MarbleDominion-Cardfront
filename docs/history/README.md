@@ -15,6 +15,8 @@ This folder keeps the detailed stage-by-stage BallWar history that used to live 
 
 ## 推荐入口 / Suggested entry points
 
+- `README_v0_1_6_2_cardfront_control_chamber_decoupling.md`
+  - Cardfront control-chamber decoupling / hides legacy control chambers and +ball buttons, adds automatic/card-directed fire HUD status, global + per-owner shot budgets
 - `README_v0_1_6_1_cardfront_fire_director.md`
   - Cardfront fire director / automatic low-frequency firing, FireIntent, target scorer, Calibrated Shot target-bias steering
 - `README_v0_1_6_1_pioneer_beacon_lite.md`

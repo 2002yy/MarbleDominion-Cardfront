@@ -39,7 +39,8 @@ func _run() -> void:
 	_test_target_bias_controls_intent_region()
 	_test_tick_requests_turret_fire()
 	_test_interval_limits_fire_frequency()
-	_test_max_shots_per_second_hard_limit()
+	_test_owner_shot_budget_hard_limit()
+	_test_global_and_owner_budgets_keep_second_owner_firing()
 	await _test_old_ballwar_mode_does_not_create_fire_director()
 
 	GameConfig.reset_runtime_defaults()
@@ -116,20 +117,39 @@ func _test_interval_limits_fire_frequency() -> void:
 	_cleanup_fixture(fixture)
 
 
-func _test_max_shots_per_second_hard_limit() -> void:
+func _test_owner_shot_budget_hard_limit() -> void:
 	var fixture: Dictionary = _make_fixture()
 	var turret: MockTurret = fixture.player_turret
 	fixture.director.shot_interval = 0.0
-	fixture.director.max_shots_per_second = 2
+	fixture.director.max_total_shots_per_second = 5
+	fixture.director.max_owner_shots_per_second = 2
 	fixture.director.base_shot_count = 1
 
 	for _i in range(6):
 		fixture.director.tick(0.0)
 
-	_assert.eq(turret.shot_total, 2, "fire director: hard max shots per second should cap same-window fire")
+	_assert.eq(turret.shot_total, 2, "fire director: per-owner shot budget should cap same-window fire")
 
 	fixture.director.tick(1.0)
 	_assert.eq(turret.shot_total, 3, "fire director: shot budget should reset after one second")
+
+	_cleanup_fixture(fixture)
+
+
+func _test_global_and_owner_budgets_keep_second_owner_firing() -> void:
+	var fixture: Dictionary = _make_fixture(true)
+	var player_turret: MockTurret = fixture.player_turret
+	var ai_turret: MockTurret = fixture.ai_turret
+	fixture.director.shot_interval = 0.0
+	fixture.director.max_total_shots_per_second = 4
+	fixture.director.max_owner_shots_per_second = 2
+	fixture.director.base_shot_count = 4
+
+	var issued: Array = fixture.director.tick(0.0)
+
+	_assert.eq(issued.size(), 2, "fire director: both owners should receive an intent within the same shot window")
+	_assert.eq(player_turret.shot_total, 2, "fire director: first owner should be capped by owner budget")
+	_assert.eq(ai_turret.shot_total, 2, "fire director: second owner should receive remaining global budget")
 
 	_cleanup_fixture(fixture)
 
@@ -153,7 +173,7 @@ func _test_old_ballwar_mode_does_not_create_fire_director() -> void:
 	GameConfig.reset_runtime_defaults()
 
 
-func _make_fixture() -> Dictionary:
+func _make_fixture(include_ai: bool = false) -> Dictionary:
 	var bf = Battlefield.new()
 	bf.configure(20)
 	get_root().add_child(bf)
@@ -171,9 +191,16 @@ func _make_fixture() -> Dictionary:
 	var turrets: Dictionary = {
 		CardfrontRulesScript.PLAYER_FACTION: player_turret,
 	}
+	var active_factions: Array = [CardfrontRulesScript.PLAYER_FACTION]
+	var ai_turret = null
+	if include_ai:
+		ai_turret = MockTurret.new()
+		ai_turret.global_position = Vector2(480.0, 100.0)
+		turrets[CardfrontRulesScript.AI_FACTION] = ai_turret
+		active_factions.append(CardfrontRulesScript.AI_FACTION)
 
 	var director = CardfrontFireDirectorScript.new()
-	director.setup(rm, bf, turrets, target_bias_system, [CardfrontRulesScript.PLAYER_FACTION])
+	director.setup(rm, bf, turrets, target_bias_system, active_factions)
 
 	return {
 		"bf": bf,
@@ -181,6 +208,7 @@ func _make_fixture() -> Dictionary:
 		"target_bias_system": target_bias_system,
 		"director": director,
 		"player_turret": player_turret,
+		"ai_turret": ai_turret,
 	}
 
 

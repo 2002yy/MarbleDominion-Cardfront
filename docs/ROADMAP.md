@@ -8,7 +8,7 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.6.1-cardfront-fire-director`
+- Current completed slice: `v0.1.6.2-cardfront-control-chamber-decoupling`
 - Next slice: `v0.1.7-unit-devices`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
@@ -35,6 +35,7 @@ This file is the single place for project direction and phase status.
 | `v0.1.6-first-card-effects` | Done / 已完成 | First real effects for Calibrated Shot target bias and Morale Fluctuation morale support. |
 | `v0.1.6.1-pioneer-beacon-lite` | Done / 已完成 | Logic-only Pioneer Beacon pulse: owned border cell converts up to 3 nearby neutral cells. |
 | `v0.1.6.1-cardfront-fire-director` | Done / 已完成 | Cardfront-only automatic fire director, target scoring, fire intents, and Calibrated Shot bias integration. |
+| `v0.1.6.2-cardfront-control-chamber-decoupling` | Done / 已完成 | Cardfront skips legacy control chambers and +ball buttons, adds HUD fire status, and splits FireDirector shot budgets into global + per-owner caps. |
 | `v0.1.7-unit-devices` | Planned / 计划中 | Device-style systems for bullet absorber core, engineer robot, and pioneer beacon. |
 
 ## 3. Design Boundaries / 设计边界
@@ -48,6 +49,7 @@ This file is the single place for project direction and phase status.
 - Card effects must stay behind `CardPlaySystem` and small effect systems; `Main.gd` stays assembly-only.
 - Do not modify `Bullet`, `BulletPool`, `Turret`, or `ControlChamber` for region planning slices unless a later slice explicitly requires it.
 - Cardfront Fire Director may use a minimal `Turret` directed-fire seam, but old `fire_burst(...)` and old BallWar control-chamber behavior must remain intact.
+- Cardfront should not expose old control chambers as a primary play surface while FireDirector owns baseline shooting.
 
 ## 4. Foundation Completed / 已完成基础
 
@@ -162,6 +164,13 @@ This file is the single place for project direction and phase status.
   - `Turret.gd` keeps old `fire_burst(...)` and adds a minimal directed-fire seam
   - old BallWar modes do not create `fire_director`
   - `CardfrontFireDirectorTestRunner.gd`
+- `v0.1.6.2-cardfront-control-chamber-decoupling`
+  - Cardfront runtime no longer creates visible legacy control chambers
+  - Cardfront runtime no longer creates +ball buttons
+  - HUD event-status slot now shows `自动射击中 / 卡牌改写射击`
+  - FireDirector now has both global and per-owner per-second shot budgets
+  - old BallWar modes still create control chambers and +ball buttons
+  - `CardfrontControlChamberDecouplingTestRunner.gd`
 
 ## 6. Next / 下一步
 

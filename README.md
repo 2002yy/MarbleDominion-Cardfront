@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.6.1-cardfront-fire-director**. It adds a Cardfront-only automatic fire director so turrets keep low-frequency pressure without relying on control chambers, while also keeping the logic-only Pioneer Beacon card as a small compatible card-effect slice.
+The current completed slice is **v0.1.6.2-cardfront-control-chamber-decoupling**. Cardfront now presents FireDirector as the primary shooting layer: old control chambers and +ball buttons are not created in Cardfront mode, the HUD says automatic/card-directed fire is active, and FireDirector uses both global and per-owner shot budgets.
 
 ## Current Slice / 当前阶段
 
@@ -33,9 +33,10 @@ Implemented in this repository:
   - Generates low-frequency `CardfrontFireIntent` records.
   - Prioritizes target bias from Calibrated Shot when present.
   - Falls back to neutral-boundary and resource-region scoring.
-  - Enforces a hard per-second shot budget.
+  - Enforces both global and per-owner hard per-second shot budgets.
 - Cardfront-only translucent region overlay.
-- Cardfront mode starts with only two turrets and two control chambers.
+- Cardfront mode starts with only two turrets; legacy control chambers and +ball buttons are skipped in this mode.
+- Cardfront HUD shows `自动射击中 / 卡牌改写射击` in the former event-status slot.
 - Event roulette is disabled in Cardfront mode; active card play will replace it later.
 - Cardfront win rules:
   - 70% capture wins immediately.
@@ -45,6 +46,7 @@ Implemented in this repository:
 - New headless runner: `RegionMapTestRunner.gd`.
 - New headless runner: `DeploymentRulesTestRunner.gd`.
 - New headless runner: `CardfrontFireDirectorTestRunner.gd`.
+- New headless runner: `CardfrontControlChamberDecouplingTestRunner.gd`.
 - New headless runner: `PioneerBeaconLiteTestRunner.gd`.
 
 Not implemented yet:
@@ -87,9 +89,10 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
 Detailed milestone notes:
 
-- [docs/history/README_v0_1_6_first_card_effects.md](docs/history/README_v0_1_6_first_card_effects.md)
+- [docs/history/README_v0_1_6_2_cardfront_control_chamber_decoupling.md](docs/history/README_v0_1_6_2_cardfront_control_chamber_decoupling.md)
 - [docs/history/README_v0_1_6_1_cardfront_fire_director.md](docs/history/README_v0_1_6_1_cardfront_fire_director.md)
 - [docs/history/README_v0_1_6_1_pioneer_beacon_lite.md](docs/history/README_v0_1_6_1_pioneer_beacon_lite.md)
+- [docs/history/README_v0_1_6_first_card_effects.md](docs/history/README_v0_1_6_first_card_effects.md)
 - [docs/history/README_v0_1_5_card_core_lite.md](docs/history/README_v0_1_5_card_core_lite.md)
 - [docs/history/README_v0_1_4_fortify_layer.md](docs/history/README_v0_1_4_fortify_layer.md)
 - [docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md](docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md)
@@ -111,6 +114,7 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardCoreLiteTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardFirstEffectsTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFireDirectorTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontControlChamberDecouplingTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/PioneerBeaconLiteTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontTargetBiasTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontModeSmokeTestRunner.gd
@@ -126,9 +130,10 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for the v0.1.6.1 required subset:
+Latest local validation for the v0.1.6.2 required subset:
 
-- `CardfrontFireDirectorTestRunner.gd`: 18 checks passed.
+- `CardfrontControlChamberDecouplingTestRunner.gd`: 7 checks passed.
+- `CardfrontFireDirectorTestRunner.gd`: 21 checks passed.
 - `PioneerBeaconLiteTestRunner.gd`: 37 checks passed.
 - `CardCoreLiteTestRunner.gd`: 40 checks passed.
 - `CardFirstEffectsTestRunner.gd`: 35 checks passed.
@@ -137,7 +142,7 @@ Latest local validation for the v0.1.6.1 required subset:
 - `FortifyLayerTestRunner.gd`: 469 checks passed.
 - `DeploymentRulesTestRunner.gd`: 26 checks passed.
 - `EconomyTickTestRunner.gd`: 50 checks passed.
-- `CardfrontModeSmokeTestRunner.gd`: 36 checks passed.
+- `CardfrontModeSmokeTestRunner.gd`: 38 checks passed.
 - `SmokeTestRunner.gd`: 218 checks passed.
 - `IntegrationTestRunner.gd`: 133 checks passed.
 
