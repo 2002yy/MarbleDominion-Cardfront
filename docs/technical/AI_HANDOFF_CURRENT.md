@@ -1,6 +1,6 @@
 # AI_HANDOFF_CURRENT
 
-Last updated: 2026-05-17
+Last updated: 2026-05-19
 Role / 作用: handoff card only / 仅作快速接管卡片
 
 ## 1. Current Version / 当前版本
@@ -68,6 +68,15 @@ Current active correctness baseline:
 - `SmokeTestRunner.gd`
 - `IntegrationTestRunner.gd`
 - `LayoutSanityTestRunner.gd`
+
+Cardfront baseline:
+- `FortifyLayerTestRunner.gd`
+- `CardCoreLiteTestRunner.gd`
+- `DeploymentRulesTestRunner.gd`
+- `EconomyTickTestRunner.gd`
+- `RegionMapTestRunner.gd`
+- `CardfrontModeSmokeTestRunner.gd`
+- `NeutralOwnerCompatibilityTestRunner.gd`
 
 Latest documented broader baseline:
 

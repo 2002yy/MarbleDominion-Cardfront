@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.4-fortify-layer**. It adds a frontline fortification system where fortified cells require multiple enemy hits before capture, with visual overlay and a generic Battlefield capture interceptor hook.
+The current completed slice is **v0.1.5-card-core-lite**. It adds a minimal card play pipeline with a fixed 3-card hand, resource cost deduction, and a working Fortify card.
 
 ## Current Slice / 当前阶段
 
@@ -69,6 +69,7 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
 Detailed milestone notes:
 
+- [docs/history/README_v0_1_5_card_core_lite.md](docs/history/README_v0_1_5_card_core_lite.md)
 - [docs/history/README_v0_1_4_fortify_layer.md](docs/history/README_v0_1_4_fortify_layer.md)
 - [docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md](docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md)
 - [docs/history/README_v0_1_3_1_visual_pressure_rebalance.md](docs/history/README_v0_1_3_1_visual_pressure_rebalance.md)
@@ -121,7 +122,7 @@ Latest local validation:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.5-card-core-lite`:
+`v0.1.6-first-card-effects`:
 
 - Pseudo-card core with fixed hand and energy costs.
 - Still defer card UI, unit devices, and AI Commander behavior.

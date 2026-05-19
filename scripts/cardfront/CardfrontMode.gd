@@ -12,6 +12,7 @@ const RegionMoraleSystemScript = preload("res://scripts/cardfront/morale/RegionM
 const FortifyLayerScript = preload("res://scripts/cardfront/fortify/FortifyLayer.gd")
 const FortifyOverlayLayerScript = preload("res://scripts/cardfront/fortify/FortifyOverlayLayer.gd")
 const CardfrontCaptureInterceptorScript = preload("res://scripts/cardfront/fortify/CardfrontCaptureInterceptor.gd")
+const CardPlaySystemScript = preload("res://scripts/cardfront/cards/CardPlaySystem.gd")
 
 
 static func is_selected(mode_name: String) -> bool:
@@ -134,4 +135,13 @@ static func create_fortify(game_layer: Node, battlefield, region_map) -> Diction
 		"fortify_layer": fortify_layer,
 		"fortify_overlay": overlay,
 		"capture_interceptor": interceptor,
+	}
+
+
+static func create_card_system(resource_states: Dictionary, region_map, battlefield, fortify_layer, morale_system, region_overlay) -> Dictionary:
+	var card_system = CardPlaySystemScript.new()
+	card_system.setup(resource_states, region_map, battlefield, fortify_layer, morale_system, region_overlay)
+	return {
+		"configured": true,
+		"card_system": card_system,
 	}

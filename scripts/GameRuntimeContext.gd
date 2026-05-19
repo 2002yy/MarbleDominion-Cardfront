@@ -16,6 +16,7 @@ var economy_debug_panel = null
 var morale_system = null
 var fortify_layer = null
 var fortify_overlay = null
+var card_system = null
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
@@ -37,6 +38,7 @@ func reset() -> void:
     morale_system = null
     fortify_layer = null
     fortify_overlay = null
+    card_system = null
     resource_states.clear()
     last_yield_snapshot.clear()
     current_config.clear()
