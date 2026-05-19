@@ -113,7 +113,10 @@ func _process(delta: float) -> void:
 		perf_debug_update_timer = PERF_DEBUG_UPDATE_INTERVAL
 		var fps_label = _hud_ref("fps_label")
 		if fps_label != null and is_instance_valid(fps_label):
-			fps_label.text = RuntimeHudController.get_perf_debug_text(runtime.bullet_pool, runtime.battlefield, _runtime_grid_size(), runtime.turrets)
+			if _is_cardfront_mode():
+				fps_label.text = "FPS %d | %s" % [Engine.get_frames_per_second(), _build_cardfront_status_text()]
+			else:
+				fps_label.text = RuntimeHudController.get_perf_debug_text(runtime.bullet_pool, runtime.battlefield, _runtime_grid_size(), runtime.turrets)
 
 	hud_meta_update_timer -= delta
 	if hud_meta_update_timer <= 0.0:
@@ -571,13 +574,16 @@ func _on_turret_destroyed(faction_id: int) -> void:
 	_check_winner()
 
 func _update_cardfront_status_label() -> void:
-	if not _is_cardfront_mode():
-		return
 	var event_label = _hud_ref("event_label")
-	if event_label == null or not is_instance_valid(event_label):
-		return
+	if event_label != null and is_instance_valid(event_label) and _is_cardfront_mode():
+		event_label.text = _build_cardfront_status_text()
 
-	var parts: Array[String] = ["射击中"]
+
+func _build_cardfront_status_text() -> String:
+	var parts: Array[String] = []
+	if runtime.battlefield != null and is_instance_valid(runtime.battlefield):
+		parts.append("射击ON")
+
 	var device_info := ""
 	if runtime.device_layer != null and is_instance_valid(runtime.device_layer) and runtime.device_layer.has_method("get_all_active_devices"):
 		var devices = runtime.device_layer.get_all_active_devices()
@@ -586,18 +592,17 @@ func _update_cardfront_status_label() -> void:
 			var t: String = str(d.device_type)
 			counts[t] = int(counts.get(t, 0)) + 1
 		if not counts.is_empty():
-			device_info = "设备 "
 			var entries: Array[String] = []
 			if counts.has("absorber_core"): entries.append("吸弹%d" % int(counts.absorber_core))
 			if counts.has("engineer_bot"): entries.append("工程%d" % int(counts.engineer_bot))
 			if counts.has("pioneer_beacon"): entries.append("信标%d" % int(counts.pioneer_beacon))
-			device_info += " ".join(entries)
+			device_info = " | 设备 " + " ".join(entries)
 
 	var card_info := ""
 	if runtime.card_system != null and is_instance_valid(runtime.card_system) and runtime.card_system.has_method("get_available_card_data"):
 		var available = runtime.card_system.get_available_card_data()
 		if available.size() > 0:
-			card_info = " 卡牌%d手" % available.size()
+			card_info = " | 卡牌%d手" % available.size()
 
 	var bias_info := ""
 	if runtime.target_bias_system != null and is_instance_valid(runtime.target_bias_system) and runtime.target_bias_system.has_method("get_biased_region"):
@@ -606,9 +611,9 @@ func _update_cardfront_status_label() -> void:
 			var remaining: float = 0.0
 			if runtime.target_bias_system.has_method("get_bias_remaining"):
 				remaining = runtime.target_bias_system.get_bias_remaining(CardfrontRulesScript.PLAYER_FACTION)
-			bias_info = " 校准区域#%d(%.0fs)" % [biased, remaining]
+			bias_info = " | 校准#%d %.0fs" % [biased, remaining]
 
-	event_label.text = " ".join(parts) + (" |" + device_info if device_info != "" else "") + (card_info if card_info != "" else "") + (bias_info if bias_info != "" else "")
+	return " ".join(parts) + device_info + card_info + bias_info
 
 
 func _check_winner() -> void:

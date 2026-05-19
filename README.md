@@ -135,8 +135,10 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for the v0.1.8b required subset:
+Latest local validation for the v0.1.8d required subset:
 
+- `CardfrontVfxLayerTestRunner.gd`: 14 checks passed.
+- `CardfrontVisibleEffectBridgeTestRunner.gd`: 8 checks passed.
 - `DeviceOverlayLayerTestRunner.gd`: 21 checks passed.
 - `DeviceCoreTestRunner.gd`: 31 checks passed.
 - `AbsorberCoreLiteTestRunner.gd`: 11 checks passed.
