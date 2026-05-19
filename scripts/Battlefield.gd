@@ -26,6 +26,7 @@ var redraw_calls_this_second: int = 0
 var redraw_calls_per_second: int = 0
 var cell_changes_this_second: int = 0
 var cell_changes_per_second: int = 0
+var capture_interceptor = null
 var decor_layer: BattlefieldDecorLayer
 
 const LOW_CHANGE_REDRAW_INTERVAL: float = 0.016
@@ -165,6 +166,9 @@ func apply_bullet(cell: Vector2i, faction_id: int) -> String:
 	var old: int = owners[cell.x][cell.y]
 	if old == faction_id:
 		return "SAME_CELL"
+	if capture_interceptor != null and is_instance_valid(capture_interceptor) and capture_interceptor.has_method("should_block_capture"):
+		if capture_interceptor.should_block_capture(cell, faction_id, old):
+			return "BLOCKED_BY_FORTIFY"
 	owners[cell.x][cell.y] = faction_id
 	_add_owner_count(old, -1)
 	_add_owner_count(faction_id, 1)

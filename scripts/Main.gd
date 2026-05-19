@@ -237,6 +237,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_cardfront_regions()
 	_create_cardfront_economy()
 	_create_cardfront_morale()
+	_create_cardfront_fortify()
 	_create_turrets()
 	_create_control_chambers()
 	_create_ui()
@@ -300,6 +301,21 @@ func _create_cardfront_morale() -> void:
 		push_warning("Cardfront morale setup failed: %s" % str(morale_setup.get("reason", "unknown")))
 		return
 	runtime.morale_system = morale_setup.get("morale_system", null)
+
+
+func _create_cardfront_fortify() -> void:
+	runtime.fortify_layer = null
+	runtime.fortify_overlay = null
+	runtime.battlefield.capture_interceptor = null
+	if not _is_cardfront_mode():
+		return
+	var fortify_setup: Dictionary = CardfrontModeScript.create_fortify(game_layer, runtime.battlefield, runtime.region_map)
+	if not bool(fortify_setup.get("configured", false)):
+		push_warning("Cardfront fortify setup failed: %s" % str(fortify_setup.get("reason", "unknown")))
+		return
+	runtime.fortify_layer = fortify_setup.get("fortify_layer", null)
+	runtime.fortify_overlay = fortify_setup.get("fortify_overlay", null)
+
 
 func _create_turrets() -> void:
 	var active_factions: Array = CardfrontModeScript.get_active_factions() if _is_cardfront_mode() else []

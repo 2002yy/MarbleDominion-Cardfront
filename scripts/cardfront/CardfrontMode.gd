@@ -9,6 +9,9 @@ const CardfrontResourceStateScript = preload("res://scripts/cardfront/economy/Ca
 const EconomyTickSystemScript = preload("res://scripts/cardfront/economy/EconomyTickSystem.gd")
 const CardfrontEconomyDebugPanelScript = preload("res://scripts/cardfront/economy/CardfrontEconomyDebugPanel.gd")
 const RegionMoraleSystemScript = preload("res://scripts/cardfront/morale/RegionMoraleSystem.gd")
+const FortifyLayerScript = preload("res://scripts/cardfront/fortify/FortifyLayer.gd")
+const FortifyOverlayLayerScript = preload("res://scripts/cardfront/fortify/FortifyOverlayLayer.gd")
+const CardfrontCaptureInterceptorScript = preload("res://scripts/cardfront/fortify/CardfrontCaptureInterceptor.gd")
 
 
 static func is_selected(mode_name: String) -> bool:
@@ -104,4 +107,31 @@ static func create_morale(game_layer: Node, battlefield, region_map) -> Dictiona
 	return {
 		"configured": true,
 		"morale_system": morale_system,
+	}
+
+
+static func create_fortify(game_layer: Node, battlefield, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if battlefield == null or not is_instance_valid(battlefield):
+		return {"configured": false, "reason": "missing_battlefield"}
+	if region_map == null:
+		return {"configured": false, "reason": "missing_region_map"}
+
+	var fortify_layer = FortifyLayerScript.new()
+	fortify_layer.configure(int(battlefield.grid_size))
+
+	var overlay = FortifyOverlayLayerScript.new()
+	overlay.setup(fortify_layer, battlefield, GameConfig.GAME_MODE_CARDFRONT)
+	game_layer.add_child(overlay)
+
+	var interceptor = CardfrontCaptureInterceptorScript.new()
+	interceptor.setup(fortify_layer)
+	battlefield.capture_interceptor = interceptor
+
+	return {
+		"configured": true,
+		"fortify_layer": fortify_layer,
+		"fortify_overlay": overlay,
+		"capture_interceptor": interceptor,
 	}

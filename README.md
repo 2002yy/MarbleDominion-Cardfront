@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.3-deployment-rules** with two follow-up polish slices: **v0.1.3.1-visual-pressure-rebalance** and **v0.1.3.2-cardfront-debug-panel-placement**. The latest small polish slice is **v0.1.3.2-cardfront-debug-panel-placement**.
+The current completed slice is **v0.1.4-fortify-layer**. It adds a frontline fortification system where fortified cells require multiple enemy hits before capture, with visual overlay and a generic Battlefield capture interceptor hook.
 
 ## Current Slice / 当前阶段
 
@@ -69,6 +69,7 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
 Detailed milestone notes:
 
+- [docs/history/README_v0_1_4_fortify_layer.md](docs/history/README_v0_1_4_fortify_layer.md)
 - [docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md](docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md)
 - [docs/history/README_v0_1_3_1_visual_pressure_rebalance.md](docs/history/README_v0_1_3_1_visual_pressure_rebalance.md)
 - [docs/history/README_v0_1_3_deployment_rules.md](docs/history/README_v0_1_3_deployment_rules.md)
@@ -84,6 +85,7 @@ Detailed milestone notes:
 Run with Godot 4.6:
 
 ```powershell
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/FortifyLayerTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontModeSmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeploymentRulesTestRunner.gd
@@ -116,10 +118,9 @@ Latest local validation:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.4-fortify-layer`:
+`v0.1.5-card-core-lite`:
 
-- Add a dedicated frontline fortification layer above deployment permission checks.
-- Keep fortification outside bullet movement, capture, and core chamber/turret logic.
+- Pseudo-card core with fixed hand and energy costs.
 - Still defer card UI, unit devices, and AI Commander behavior.
 - Full route is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 

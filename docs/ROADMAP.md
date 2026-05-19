@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.3-deployment-rules` + `v0.1.3.1-visual-pressure-rebalance` + `v0.1.3.2-cardfront-debug-panel-placement`
-- Next slice: `v0.1.4-fortify-layer`
+- Current completed slice: `v0.1.4-fortify-layer`
+- Next slice: `v0.1.5-card-core-lite`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
@@ -29,7 +29,8 @@ This file is the single place for project direction and phase status.
 | `v0.1.3-deployment-rules` | Done / 已完成 | Deployment permission by owned cell, owned border, and region control degree. |
 | `v0.1.3.1-visual-pressure-rebalance` | Done / 已完成 | Rebalance visual pressure: real screen load determines degradation; queue is forecast-only. |
 | `v0.1.3.2-cardfront-debug-panel-placement` | Done / 已完成 | Move Cardfront economy debug panel to bottom-right corner. |
-| `v0.1.4-fortify-layer` | Next / 下一步 | Frontline fortification layer. |
+| `v0.1.4-fortify-layer` | Done / 已完成 | Frontline fortification layer above deployment rules. |
+| `v0.1.5-card-core-lite` | Next / 下一步 | Pseudo-card core: fixed hand and energy costs. |
 | `v0.1.5-card-core-lite` | Planned / 计划中 | Pseudo-card core: fixed hand and energy costs. |
 | `v0.1.6-first-card-effects` | Planned / 计划中 | First effects such as calibrated shot, pioneer beacon, and morale fluctuation. |
 | `v0.1.7-unit-devices` | Planned / 计划中 | Device-style systems for bullet absorber core, engineer robot, and pioneer beacon. |
@@ -121,11 +122,18 @@ This file is the single place for project direction and phase status.
   - moved economy debug panel from hardcoded top-left to bottom-right
   - `_resolve_panel_position` supports `bottom_right` / `bottom_left`
   - `EconomyDebugPanelSceneTestRunner.gd` adds position boundary checks
+- `v0.1.4-fortify-layer`
+  - `FortifyRules.gd`, `FortifyLayer.gd` — configurable grid of 0–3 fortify stacks
+  - `FortifyTargetSelector.gd` — reuses `DeploymentRules.is_owned_border`
+  - `CardfrontCaptureInterceptor.gd` — intercepts capture on fortified cells
+  - `Battlefield.gd` — generic `capture_interceptor` hook in `apply_bullet`
+  - `FortifyOverlayLayer.gd` — dark fill + colored border per stack level
+  - `FortifyLayerTestRunner.gd` — 13 test cases
 
 ## 6. Next / 下一步
 
-1. **`v0.1.4-fortify-layer`**: frontline fortification layer built above deployment rules.
-2. **`v0.1.5-card-core-lite`**: pseudo-card core with fixed hand and energy costs.
+1. **`v0.1.5-card-core-lite`**: pseudo-card core with fixed hand and energy costs.
+2. **`v0.1.6-first-card-effects`**: calibrated shot, pioneer beacon, morale fluctuation, and similar first effects.
 
 ## 7. Later / 中期候选
 
