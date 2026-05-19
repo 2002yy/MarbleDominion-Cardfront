@@ -132,4 +132,6 @@ func _draw_guide_line(bias: Dictionary) -> void:
 	var remaining: float = float(bias.get("remaining", 0.0))
 	var label_text: String = "校准：区域#%d 剩余%.0f秒" % [int(bias.get("region_id", 0)), remaining]
 	var font_size: int = maxi(10, int(float(cell_size) * 0.9))
+	# DEBUG VISUAL / TEMPORARY FEEDBACK — text will move to HUD in a later UI polish slice.
+	# Keep line + pulse on battlefield layer; HUD should show countdown + card effect label.
 	draw_string(ThemeDB.fallback_font, target_center + Vector2(4, -font_size * 0.6), label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0.82, 0.94, 1.0, alpha + 0.3))

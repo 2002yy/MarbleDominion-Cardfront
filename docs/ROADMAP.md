@@ -9,7 +9,7 @@ This file is the single place for project direction and phase status.
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
 - Current completed slice: `v0.1.6.2-cardfront-control-chamber-decoupling`
-- Next slice: `v0.1.7-unit-devices`
+- Next slice: `v0.1.7a-device-core`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
@@ -36,7 +36,10 @@ This file is the single place for project direction and phase status.
 | `v0.1.6.1-pioneer-beacon-lite` | Done / 已完成 | Logic-only Pioneer Beacon pulse: owned border cell converts up to 3 nearby neutral cells. |
 | `v0.1.6.1-cardfront-fire-director` | Done / 已完成 | Cardfront-only automatic fire director, target scoring, fire intents, and Calibrated Shot bias integration. |
 | `v0.1.6.2-cardfront-control-chamber-decoupling` | Done / 已完成 | Cardfront skips legacy control chambers and +ball buttons, adds HUD fire status, and splits FireDirector shot budgets into global + per-owner caps. |
-| `v0.1.7-unit-devices` | Planned / 计划中 | Device-style systems for bullet absorber core, engineer robot, and pioneer beacon. |
+| `v0.1.7a-device-core` | Next / 下一步 | Device core layer: `DeviceSlot`, `DeviceEffect`, `DeviceLayer` foundation; shared deployment/tick/teardown pipeline. Do NOT add full absorber/beacon/robot yet. |
+| `v0.1.7b-absorber-core-lite` | Planned / 计划中 | Bullet absorber core device on device core layer. |
+| `v0.1.7c-engineer-bot-lite` | Planned / 计划中 | Engineer robot device on device core layer. |
+| `v0.1.7d-durable-pioneer-beacon` | Planned / 计划中 | Durable pioneer beacon device on device core layer. |
 
 ## 3. Design Boundaries / 设计边界
 
@@ -174,12 +177,26 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. **`v0.1.7-unit-devices`**: device-style systems for bullet absorber core, engineer robot, and pioneer beacon.
-2. Keep formal card UI, deck flow, and AI Commander deferred until the unit-device boundary is stable.
+1. **`v0.1.7a-device-core`**: `DeviceSlot`, `DeviceEffect`, `DeviceLayer` foundation; shared deployment/tick/teardown pipeline. Do NOT add full absorber/beacon/robot yet.
+2. **`v0.1.7b-absorber-core-lite`**: Bullet absorber core device on device core layer.
+3. **`v0.1.7c-engineer-bot-lite`**: Engineer robot device on device core layer.
+4. **`v0.1.7d-durable-pioneer-beacon`**: Durable pioneer beacon device on device core layer.
+5. Keep formal card UI, deck flow, HUD shot-guide text migration, and AI Commander deferred until the device boundary is stable.
+
+### Cardfront Save Schema (before or alongside device layer)
+
+By `v0.1.7a`, define `CardfrontRuntimeSnapshot` fields needed for save/restore:
+- resource state (energy, parts per player/AI)
+- used card IDs
+- fortify stacks grid
+- active morale effects
+- target bias state (owner → region → remaining duration)
+- future device list placeholder
+
+Full save/load wiring may wait, but schema shape should be decided before devices introduce durable world entities.
 
 ## 7. Later / 中期候选
 
-- `v0.1.7-unit-devices`: device-style systems for bullet absorber core, engineer robot, and pioneer beacon.
 - New-player tutorial.
 - Mode explanation page.
 - More complete match-end statistics.
