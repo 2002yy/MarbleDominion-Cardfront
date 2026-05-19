@@ -40,3 +40,21 @@
 - **VFX 纹理**可先试跑，但当前没有粒子/AudioStreamPlayer 管线。
 - **所有素材为 AI 生成**，仅限本项目使用，不对外做第三方 pack 分发。
 - **所有素材均未人工修改**，接入前可能需要裁切、去背景、缩放、调色。
+
+## 六、Runtime 派生图 / cardfront_runtime
+
+v0.1.7c.1 已从 1024 源图批量导出 runtime 尺寸：
+
+| 源目录 | 导出目录 | 尺寸 | 处理 |
+|---|---|---|---|
+| 卡牌插图_cards_illustrations/ | cardfront_runtime/卡牌插图_cards/512/ | 512×512 | Lanczos 缩放 |
+| 装置地图精灵_devices_map_sprites/ | cardfront_runtime/装置精灵_devices/96/ | 96×96 | 自动背景透明 + Lanczos 缩放 |
+| 装置图标_devices_icons/ | cardfront_runtime/装置图标_icons/48/ | 48×48 | 自动背景透明 + Lanczos 缩放 |
+| 特效纹理_vfx_textures/ | cardfront_runtime/视觉特效_vfx/128/ | 128×128 | 保留透明度 + Lanczos 缩放 |
+
+处理脚本: `tools/process_cardfront_assets.py`
+
+- `CardfrontDeviceOverlayLayer.gd` 已接入 runtime device sprites (96×96)。
+- 装置图自动抠背景为采样角落色+阈值 60，结果需人工检查修图。
+- VFX 和卡牌图暂未接入渲染层。
+

@@ -98,6 +98,14 @@ func get_devices_by_owner_type(owner_id: int, device_type: String) -> Array:
 	return result
 
 
+func get_all_active_devices() -> Array:
+	var result = []
+	for instance in _devices_by_cell.values():
+		if instance.active:
+			result.append(instance)
+	return result
+
+
 func tick(delta: float) -> void:
 	var expired_cells: Array = []
 	for cell in _devices_by_cell.keys():

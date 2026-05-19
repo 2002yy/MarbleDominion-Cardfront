@@ -20,6 +20,7 @@ const DeviceLayerScript = preload("res://scripts/cardfront/devices/DeviceLayer.g
 const AbsorberCoreEffectSystemScript = preload("res://scripts/cardfront/devices/effects/AbsorberCoreEffectSystem.gd")
 const EngineerBotEffectSystemScript = preload("res://scripts/cardfront/devices/effects/EngineerBotEffectSystem.gd")
 const DurablePioneerBeaconEffectSystemScript = preload("res://scripts/cardfront/devices/effects/DurablePioneerBeaconEffectSystem.gd")
+const CardfrontDeviceOverlayLayerScript = preload("res://scripts/cardfront/devices/CardfrontDeviceOverlayLayer.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -226,9 +227,14 @@ static func create_device_layer(game_layer: Node, battlefield, region_map) -> Di
 	device_layer.setup(battlefield, region_map)
 	game_layer.add_child(device_layer)
 
+	var device_overlay = CardfrontDeviceOverlayLayerScript.new()
+	device_overlay.setup(device_layer, battlefield, GameConfig.GAME_MODE_CARDFRONT)
+	game_layer.add_child(device_overlay)
+
 	return {
 		"configured": true,
 		"device_layer": device_layer,
+		"device_overlay": device_overlay,
 	}
 
 
