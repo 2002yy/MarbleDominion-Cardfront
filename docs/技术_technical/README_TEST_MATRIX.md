@@ -1,4 +1,4 @@
-# Test Matrix / 测试矩阵
+﻿# Test Matrix / 测试矩阵
 
 Date / 日期: 2026-05-17
 Role / 作用: test-only document / 只负责测试
@@ -20,8 +20,8 @@ This file answers:
 Development progress belongs in `docs/ROADMAP.md`.  
 开发进度请看 `docs/ROADMAP.md`。
 
-Session takeover belongs in `docs/technical/AI_HANDOFF_CURRENT.md`.  
-交接卡片请看 `docs/technical/AI_HANDOFF_CURRENT.md`。
+Session takeover belongs in `docs/技术_technical/AI_HANDOFF_CURRENT.md`.  
+交接卡片请看 `docs/技术_technical/AI_HANDOFF_CURRENT.md`。
 
 ## 1. Scene Wiring Tests / 场景接线测试
 

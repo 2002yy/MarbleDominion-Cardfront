@@ -1,0 +1,331 @@
+{
+    "external":  false,
+    "lightbox":  {
+                     "browse_url":  "https://itch.io/games",
+                     "app_url":  "https://itch.io/app",
+                     "show_app_banner":  true,
+                     "share_buttons":  {
+                                           "twitter":  {
+                                                           "url":  "https://twitter.com/intent/tweet?text=I%20just%20downloaded%20Assets%20Free%3A%20UI%20Sci-Fi%20Minimalism%20%2301%20by%20Wenrexa\u0026hashtags=indiegames\u0026url=https%3A%2F%2Fwenrexa.itch.io%2Fnesia01"
+                                                       },
+                                           "facebook":  {
+                                                            "url":  "https://www.facebook.com/dialog/share?quote=I%20just%20downloaded%20Assets%20Free%3A%20UI%20Sci-Fi%20Minimalism%20%2301%20by%20Wenrexa\u0026app_id=537395183072744\u0026href=https%3A%2F%2Fwenrexa.itch.io%2Fnesia01\u0026display=popup"
+                                                        }
+                                       },
+                     "conversion_source":  5,
+                     "has_more_games":  true,
+                     "grid_referrer":  "after_download:437378",
+                     "show_ad":  true,
+                     "user":  {
+                                  "name":  "Wenrexa",
+                                  "id":  1664685,
+                                  "follow_button":  {
+                                                        "user_id":  1664685,
+                                                        "login_url":  "https://itch.io/login?return_to=https%3A%2F%2Fwenrexa.itch.io%2Fnesia01%2Ffile%2F4396114%3Fsource%3Dview_game%26as_props%3D1%26after_download_lightbox%3Dtrue\u0026intent=follow_user\u0026user_id=1664685",
+                                                        "name":  "Wenrexa"
+                                                    },
+                                  "url":  "https://wenrexa.itch.io"
+                              },
+                     "rec_games":  [
+                                       {
+                                           "cover_color":  "#111111",
+                                           "cover":  "https://img.itch.zone/aW1nLzc3MzI2MDQuanBn/300x240%23c/s1ex7F.jpg",
+                                           "title":  "Assets Free Cursors Pack 5 Lightning UI [+52]",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "short_text":  "128x128px | Hand-Drawn | PNG",
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  979458,
+                                           "url":  "https://wenrexa.itch.io/cursors5",
+                                           "rating":  {
+                                                          "count":  5,
+                                                          "average":  5
+                                                      },
+                                           "flag":  "free"
+                                       },
+                                       {
+                                           "cover_color":  "#eeeeee",
+                                           "cover":  "https://img.itch.zone/aW1nLzQ3MzY3MDUuanBn/300x240%23c/UoBsQ0.jpg",
+                                           "title":  "Assets Free Laser Bullets Pack 2020",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "short_text":  "66 Bullet",
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  756244,
+                                           "rating":  {
+                                                          "count":  33,
+                                                          "average":  4.8484848484848
+                                                      },
+                                           "url":  "https://wenrexa.itch.io/laser2020",
+                                           "platforms":  [
+                                                             "windows"
+                                                         ],
+                                           "flag":  "free"
+                                       },
+                                       {
+                                           "cover_color":  "#1b1b1b",
+                                           "cover":  "https://img.itch.zone/aW1nLzQ3NTE0OTIuanBn/300x240%23c/E8%2B%2Fiu.jpg",
+                                           "title":  "Assets: UI Space Minimalism",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "short_text":  "PNG, PSD, VECTOR",
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  549564,
+                                           "price":  "$1.80",
+                                           "rating":  {
+                                                          "count":  6,
+                                                          "average":  4.3333333333333
+                                                      },
+                                           "sale_rate":  90,
+                                           "url":  "https://wenrexa.itch.io/nesia04"
+                                       },
+                                       {
+                                           "cover_color":  "#1b1b1b",
+                                           "cover":  "https://img.itch.zone/aW1nLzU0OTgxNjQuanBn/300x240%23c/baeCcb.jpg",
+                                           "title":  "Assets: Magic Cursors Pack 4 [+77]",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "short_text":  "128x128px | Hand-Drawn | PNG",
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  968628,
+                                           "url":  "https://wenrexa.itch.io/cursors4",
+                                           "rating":  {
+                                                          "count":  17,
+                                                          "average":  5
+                                                      },
+                                           "flag":  "free"
+                                       },
+                                       {
+                                           "cover_color":  "#000000",
+                                           "cover":  "https://img.itch.zone/aW1nLzQ5NjAzMjcuanBn/300x240%23c/wRUfxN.jpg",
+                                           "title":  "Assets: UI MMORPG Dark Templar",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "short_text":  "PNG, PSD",
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  881050,
+                                           "price":  "$3.50",
+                                           "rating":  {
+                                                          "count":  5,
+                                                          "average":  5
+                                                      },
+                                           "sale_rate":  90,
+                                           "url":  "https://wenrexa.itch.io/uidarktemplar"
+                                       },
+                                       {
+                                           "cover_color":  "#6531b1",
+                                           "cover":  "https://img.itch.zone/aW1nLzQ5MTk2MzkuanBn/300x240%23c/V%2BrPal.jpg",
+                                           "title":  "Assets Free: Video Footage: Explosion Energy 2k",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  874616,
+                                           "flag":  "free",
+                                           "rating":  {
+                                                          "count":  6,
+                                                          "average":  5
+                                                      },
+                                           "url":  "https://wenrexa.itch.io/footage-energy"
+                                       },
+                                       {
+                                           "cover_color":  "#1e1e1e",
+                                           "cover":  "https://img.itch.zone/aW1nLzc5MTQzMDguanBn/300x240%23c/0xkSKh.jpg",
+                                           "title":  "WENREXA GAME ASSETS +80 Unique packages #1",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "short_text":  "BUNDLE UI | Icons | Sprites | Backgrounds | Cursors",
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  821418,
+                                           "price":  "$75",
+                                           "rating":  {
+                                                          "count":  101,
+                                                          "average":  4.7722772277228
+                                                      },
+                                           "sale_rate":  90,
+                                           "url":  "https://wenrexa.itch.io/wenrexa-game-assets-1"
+                                       },
+                                       {
+                                           "cover_color":  "#232323",
+                                           "cover":  "https://img.itch.zone/aW1nLzQ3MzU5NDcuanBn/300x240%23c/87pcbZ.jpg",
+                                           "title":  "Assets: UI Icons Pack Free #2",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  527408,
+                                           "flag":  "free",
+                                           "rating":  {
+                                                          "count":  7,
+                                                          "average":  5
+                                                      },
+                                           "url":  "https://wenrexa.itch.io/icons2"
+                                       },
+                                       {
+                                           "cover_color":  "#47aba9",
+                                           "cover":  "https://img.itch.zone/aW1nLzIzMzE1ODI5LnBuZw==/300x240%23c/YH%2Bfqg.png",
+                                           "title":  "Tiny Swords",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "short_text":  "​The most brutal and colorful battle!",
+                                           "user":  {
+                                                        "url":  "https://pixelfrog-assets.itch.io",
+                                                        "name":  "Pixel Frog",
+                                                        "id":  1765937
+                                                    },
+                                           "id":  1591077,
+                                           "url":  "https://pixelfrog-assets.itch.io/tiny-swords",
+                                           "rating":  {
+                                                          "count":  697,
+                                                          "average":  4.9383070301291
+                                                      },
+                                           "flag":  "free"
+                                       },
+                                       {
+                                           "cover_color":  "#28234b",
+                                           "cover":  "https://img.itch.zone/aW1nLzc0NTkwMTAuanBn/300x240%23c/1yVnwl.jpg",
+                                           "title":  "Assets Free Interface UI Dark Miko",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "short_text":  "PNG,  PSD, VECTOR",
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  1281478,
+                                           "url":  "https://wenrexa.itch.io/darkmiko",
+                                           "rating":  {
+                                                          "count":  15,
+                                                          "average":  4.9333333333333
+                                                      },
+                                           "flag":  "free"
+                                       },
+                                       {
+                                           "cover_color":  "#232323",
+                                           "cover":  "https://img.itch.zone/aW1nLzQ3NTA0MTkuanBn/300x240%23c/iig4qE.jpg",
+                                           "title":  "Assets Free Interface UI KIT #4 [Icons, Bars, Buttons]",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  543203,
+                                           "flag":  "free",
+                                           "rating":  {
+                                                          "count":  36,
+                                                          "average":  4.8611111111111
+                                                      },
+                                           "url":  "https://wenrexa.itch.io/ui-different02"
+                                       },
+                                       {
+                                           "cover_color":  "#161616",
+                                           "cover":  "https://img.itch.zone/aW1nLzQ3NTIxNDEuanBn/300x240%23c/0qN3IQ.jpg",
+                                           "title":  "Assets: UI Sci-Fi Minimalism #03",
+                                           "tags":  [
+                                                        {
+                                                            "name":  "Game assets",
+                                                            "url":  "https://itch.io/game-assets"
+                                                        }
+                                                    ],
+                                           "short_text":  "PNG, PSD, VECTOR",
+                                           "user":  {
+                                                        "url":  "https://wenrexa.itch.io",
+                                                        "name":  "Wenrexa",
+                                                        "id":  1664685
+                                                    },
+                                           "id":  540634,
+                                           "price":  "$1.20",
+                                           "rating":  {
+                                                          "count":  2,
+                                                          "average":  5
+                                                      },
+                                           "sale_rate":  90,
+                                           "url":  "https://wenrexa.itch.io/nesia03"
+                                       }
+                                   ],
+                     "logo_url":  "https://itch.io/static/images/logo-black-new.svg?1778354678",
+                     "game":  {
+                                  "title":  "Assets Free: UI Sci-Fi Minimalism #01",
+                                  "noun":  "asset pack",
+                                  "id":  437378
+                              }
+                 },
+    "url":  "https://itchio-mirror.cb031a832f44726753d6267436f3b414.r2.cloudflarestorage.com/upload2/game/437378/4396114?X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=3edfcce40115d057d0b5606758e7e9ee%2F20260511%2Fauto%2Fs3%2Faws4_request\u0026X-Amz-Date=20260511T132529Z\u0026X-Amz-Expires=60\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Signature=7918afe13deca416133358608d24aa9725975f2d76b67afaf6d441e97752ada0"
+}

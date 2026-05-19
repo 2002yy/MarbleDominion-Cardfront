@@ -1,11 +1,11 @@
-# Asset Sources And Licenses / 素材来源与授权
+﻿# Asset Sources And Licenses / 素材来源与授权
 
 This folder is a curated, import-ready asset tree.  
 这个目录只保留整理后的可导入素材，不是原始下载包堆放区。
 
 ## 1. Rules / 规则
 
-- raw marketplace and download artifacts stay in `art_reference/free_ui_assets/`
+- raw marketplace and download artifacts stay in `美术参考_art_reference/free_ui_assets/`
 - only curated, usage-oriented files belong under `assets/`
 - every imported pack must have a source note and a license note
 
@@ -13,17 +13,17 @@ This folder is a curated, import-ready asset tree.
 
 - `assets/ui/`
   - curated UI frames, overlays, fonts, and icon sets
-- `assets/sfx/`
+- `assets/音效_sfx/`
   - reserved for explicitly licensed audio only
-- `assets/background/`
+- `assets/背景_background/`
   - redistribution-safe background candidates
 
 ## 3. Imported Packs / 当前已导入
 
-### `assets/ui/kenney_scifi`
+### `assets/ui/Kenney科幻UI_kenney_scifi`
 
 - source pack: `kenney_ui-pack-sci-fi.zip`
-- source reference: `art_reference/free_ui_assets/kenney_page.html`
+- source reference: `美术参考_art_reference/free_ui_assets/kenney_page.html`
 - original pack name: `Kenney UI Pack - Sci-Fi`
 - license: `CC0`
 - imported content:
@@ -33,10 +33,10 @@ This folder is a curated, import-ready asset tree.
   - shadow slices
   - `Kenney Future` fonts
 
-### `assets/ui/wenrexa_scifi_minimalism_01`
+### `assets/ui/Wenrexa极简科幻_wenrexa_scifi_minimalism_01`
 
 - source pack: `wenrexa_ui-scifi-minimalism-01_real.zip`
-- source reference: `art_reference/free_ui_assets/wenrexa_purchase.html`
+- source reference: `美术参考_art_reference/free_ui_assets/wenrexa_purchase.html`
 - likely source page: `https://wenrexa.itch.io/ui-scifi-minimalism-01`
 - license: `CC0`
 - imported content:
@@ -47,13 +47,13 @@ This folder is a curated, import-ready asset tree.
   - decorative info blocks
   - compact icon blocks
 
-### `assets/ui/game_icons_scifi`
+### `assets/ui/游戏图标_科幻_game_icons_scifi`
 
 - source pack: `game-icons_science-fiction_svg_white-transparent.zip`
-- source reference: `art_reference/free_ui_assets/gameicons_scifi.html`
+- source reference: `美术参考_art_reference/free_ui_assets/gameicons_scifi.html`
 - source page: `https://game-icons.net/tags/science-fiction.html`
 - license: `CC BY 3.0`
-- local license copy: `assets/ui/game_icons_scifi/license.txt`
+- local license copy: `assets/ui/游戏图标_科幻_game_icons_scifi/license.txt`
 
 Imported icons and authors:
 
@@ -74,10 +74,10 @@ Credits rule:
 - recommended wording:
   - `Icons made by Lorc and Delapouite via Game-icons.net (CC BY 3.0)`
 
-### `assets/background/wenrexa_scifi`
+### `assets/背景_background/wenrexa_scifi`
 
 - source pack: `wenrexa_ui-scifi-minimalism-01_real.zip`
-- source reference: `art_reference/free_ui_assets/wenrexa_purchase.html`
+- source reference: `美术参考_art_reference/free_ui_assets/wenrexa_purchase.html`
 - license: `CC0`
 - imported content:
   - `Background.jpg`
@@ -102,8 +102,8 @@ Credits rule:
 
 - source pack: `cats_tooth_free-scifi-backgrounds_real.zip`
 - source reference:
-  - `art_reference/free_ui_assets/cats_page.html`
-  - `art_reference/free_ui_assets/cats_file_api_pretty.json`
+  - `美术参考_art_reference/free_ui_assets/cats_page.html`
+  - `美术参考_art_reference/free_ui_assets/cats_file_api_pretty.json`
 - source page: `https://cats-tooth-studio.itch.io/free-sci-fi-backgrounds`
 - license note from prior audit:
   - custom free-use terms
@@ -112,16 +112,16 @@ Credits rule:
 
 Decision:
 
-- keep this pack in `art_reference/free_ui_assets/`
-- do not mirror the raw background files into `assets/background/`
+- keep this pack in `美术参考_art_reference/free_ui_assets/`
+- do not mirror the raw background files into `assets/背景_background/`
 - if the project wants to ship a derived background later, re-check the specific terms first
 
 ## 5. SFX Status / 音效状态
 
 ### Current imported audio subset / 当前已导入音频子集
 
-The project now includes a first-pass curated audio subset under `assets/sfx/`.
-当前项目已经导入第一轮筛选后的音频子集，位于 `assets/sfx/`。
+The project now includes a first-pass curated audio subset under `assets/音效_sfx/`.
+当前项目已经导入第一轮筛选后的音频子集，位于 `assets/音效_sfx/`。
 
 Imported categories:
 
@@ -140,7 +140,7 @@ Imported categories:
 
 Selection note:
 
-- `assets/sfx/SFX_SELECTION_NOTES.md`
+- `assets/音效_sfx/SFX_SELECTION_NOTES.md`
 
 Primary source packs and licenses:
 
@@ -159,15 +159,15 @@ Primary source packs and licenses:
 Local source and license evidence:
 
 - raw downloads and extracted packs:
-  - `art_reference/asset_gap_downloads/`
+  - `美术参考_art_reference/asset_gap_downloads/`
 - saved source pages and license snapshots:
-  - `art_reference/asset_gap_downloads/licenses/`
+  - `美术参考_art_reference/asset_gap_downloads/licenses/`
 
 ## 6. Feature Mapping / 功能映射建议
 
 - menu background
-  - safe current candidate: `assets/background/wenrexa_scifi/Background.jpg`
-  - restricted external candidate: Cat's Tooth pack in `art_reference/free_ui_assets/`
+  - safe current candidate: `assets/背景_background/wenrexa_scifi/Background.jpg`
+  - restricted external candidate: Cat's Tooth pack in `美术参考_art_reference/free_ui_assets/`
 - button SFX
   - no approved asset imported yet
 - turret animation dressing
@@ -176,16 +176,16 @@ Local source and license evidence:
 - chamber glow framing
   - use Kenney bars/gloss slices and Wenrexa panel overlays
 - faction totems
-  - start from `assets/ui/game_icons_scifi/totem_candidates/`
+  - start from `assets/ui/游戏图标_科幻_game_icons_scifi/totem_candidates/`
 - victory and event presentation
   - combine Wenrexa panel layers, Game-Icons, and custom tween/VFX work
 
 ## 7. Related Docs / 相关文档
 
-- `art_reference/free_ui_assets/FREE_UI_INTEGRATION_PLAN.md`
-- `docs/technical/TECHNICAL_GUIDE.md`
-- `docs/design/ASSET_GAP_PLAN.md`
-- `assets/sfx/SFX_SELECTION_NOTES.md`
+- `美术参考_art_reference/free_ui_assets/FREE_UI_INTEGRATION_PLAN.md`
+- `docs/技术_technical/TECHNICAL_GUIDE.md`
+- `docs/设计_design/ASSET_GAP_PLAN.md`
+- `assets/音效_sfx/SFX_SELECTION_NOTES.md`
 
 ## 8. Asset Integration Status / 素材集成状态 (v2.1.8 audit)
 

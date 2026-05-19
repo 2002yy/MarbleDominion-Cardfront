@@ -1,10 +1,10 @@
-# Changelog / 版本脊柱
+﻿# Changelog / 版本脊柱
 
 Date / 日期: 2026-05-17  
 Role / 作用: condensed milestone spine / 精简版本脊柱
 
-Detailed stage notes now live under [docs/history/](docs/history/README.md).  
-详细阶段记录现已统一收敛到 [docs/history/](docs/history/README.md)。
+Detailed stage notes now live under [docs/历史_history/](docs/历史_history/README.md).  
+详细阶段记录现已统一收敛到 [docs/历史_history/](docs/历史_history/README.md)。
 
 ## Release Reading Rule / Release 分层
 
@@ -61,7 +61,7 @@ Detailed stage notes now live under [docs/history/](docs/history/README.md).
 - Added GitHub Actions CI workflow / 接入 GitHub Actions CI：项目加载验证 + 10 测试并行矩阵
 - Fixed Android export scripts: removed hardcoded absolute paths / Android 导出脚本去本机绝对路径
 - Aligned `export_presets.cfg` settings / 对齐 export_presets.cfg 预设配置
-- Historical docs remain in `docs/history/` — root directory clean / 历史文档全部归档到 docs/history/
+- Historical docs remain in `docs/历史_history/` — root directory clean / 历史文档全部归档到 docs/历史_history/
 
 - Current Latest Stable / 推荐公开下载版本
 

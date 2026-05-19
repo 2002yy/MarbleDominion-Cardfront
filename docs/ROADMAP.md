@@ -1,4 +1,4 @@
-# Roadmap / 路线图
+﻿# Roadmap / 路线图
 
 Role / 作用: main progress board / 主进度板
 
@@ -87,7 +87,7 @@ This file is the single place for project direction and phase status.
 - `README.md` is the repository entry surface.
 - `CHANGELOG.md` is the short milestone spine.
 - `docs/` owns architecture, testing, performance, save system, export, release process, and roadmap docs.
-- `docs/history/` keeps detailed historical stage notes.
+- `docs/历史_history/` keeps detailed historical stage notes.
 
 ## 5. Cardfront Completed Slices / 已完成 Cardfront 切片
 
@@ -205,7 +205,7 @@ Full save/load wiring may wait, but schema shape should be decided before device
 - Do not build cards or AI before the region/deployment foundation is stable.
 - Do not expand bullet-field scale before the performance baseline is stable.
 - Do not push UI logic back into raw code-generated dynamic UI surfaces.
-- Do not treat `docs/history/README_v*.md` as the current source of truth.
+- Do not treat `docs/历史_history/README_v*.md` as the current source of truth.
 - Do not add large special events or special marbles before their boundaries are designed.
 
 ## 9. Canonical Doc Split / 文档分工
@@ -219,5 +219,5 @@ Full save/load wiring may wait, but schema shape should be decided before device
 - `docs/ANDROID_EXPORT.md`: Android export checklist.
 - `docs/RELEASE_PROCESS.md`: packaging and release workflow.
 - `docs/ROADMAP.md`: current direction, completed work, next step, and deferred scope.
-- `docs/history/README.md`: historical stage index.
-- `docs/technical/AI_HANDOFF_CURRENT.md`: AI / Codex handoff card.
+- `docs/历史_history/README.md`: historical stage index.
+- `docs/技术_technical/AI_HANDOFF_CURRENT.md`: AI / Codex handoff card.

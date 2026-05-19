@@ -1,4 +1,4 @@
-# BallWar v2.1.11 — Public Repository Hardening
+﻿# BallWar v2.1.11 — Public Repository Hardening
 
 Date: 2026-05-17
 Scope: repository documentation split, CI/test visibility, Android export workflow cleanup, release narrative alignment
@@ -10,7 +10,7 @@ Scope: repository documentation split, CI/test visibility, Android export workfl
 - 公开仓库可读性（README 从工程交接转向玩家/招聘官友好）
 - Release 版本叙事对齐（Latest Stable / Milestone / Historical 三层明确）
 - CI 和测试可见性（GitHub Actions 接入，10 个 test runner matrix）
-- 文档分层清理（根目录只留入口，历史归档到 `docs/history/`）
+- 文档分层清理（根目录只留入口，历史归档到 `docs/历史_history/`）
 - Android 导出脚本去本机路径依赖（别人 clone 下来直接能用）
 
 ## 2. Completed Work
@@ -28,7 +28,7 @@ Scope: repository documentation split, CI/test visibility, Android export workfl
 - 每层在 README、CHANGELOG、Releases 页面三处一致
 
 ### Documentation split / 根目录文档分层
-- 所有 `README_v*.md` 历史阶段记录已移入 `docs/history/`，根目录不再堆叠
+- 所有 `README_v*.md` 历史阶段记录已移入 `docs/历史_history/`，根目录不再堆叠
 - `docs/` 下设 `history/`、`technical/`、`design/`、`performance/` 四个子目录
 - 每个子目录有独立的 `README.md` 作为索引
 
@@ -40,7 +40,7 @@ Scope: repository documentation split, CI/test visibility, Android export workfl
   - `export_path` 从中文改为英文
   - `script_export_mode=2` → `0`
   - `version/name=""` → `"2.1.11"`
-- `docs/technical/README_ANDROID_EXPORT.md` 命令行示例中的 preset 名同步更新
+- `docs/技术_technical/README_ANDROID_EXPORT.md` 命令行示例中的 preset 名同步更新
 
 ### GitHub Actions CI / CI 接入
 - `.github/workflows/test.yml`: 两个 job
@@ -50,7 +50,7 @@ Scope: repository documentation split, CI/test visibility, Android export workfl
 - 所有日志通过 `actions/upload-artifact` 上传，即使失败也有记录
 
 ### History doc for public-repo-hardening
-- 本文档：`docs/history/README_v2_1_11_public_repo_hardening.md`
+- 本文档：`docs/历史_history/README_v2_1_11_public_repo_hardening.md`
 
 ## 3. Repository Structure After Cleanup
 
@@ -72,7 +72,7 @@ BallWar/
 │  ├─ design/                  # 美术/UI/音效/素材规划文档
 │  └─ performance/             # 性能基线与附录
 ├─ scenes/                     # Godot 场景
-├─ screenshots/                # 仓库展示截图
+├─ 截图_screenshots/                # 仓库展示截图
 ├─ scripts/                    # 核心 GDScript 与测试脚本
 ├─ tools/                      # 导出/检查辅助脚本
 ├─ CHANGELOG.md                # 精简版本主线
@@ -89,7 +89,7 @@ BallWar/
 
 | 检查项 | 方法 |
 |---|---|
-| README 链接检查 | 逐一点击 `docs/history/`、`docs/technical/`、`assets/` 下的链接，确保不 404 |
+| README 链接检查 | 逐一点击 `docs/历史_history/`、`docs/技术_technical/`、`assets/` 下的链接，确保不 404 |
 | Godot headless SmokeTest | `<godot> --headless --path . --script res://scripts/tests/SmokeTestRunner.gd` |
 | Godot headless IntegrationTest | `<godot> --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd` |
 | Android export config check | `.\tools\check_android_export_config.ps1`（从 `tools/` 目录运行） |
@@ -115,7 +115,7 @@ v2.1.12-visual-audio-polish
 
 优先级建议：
 
-1. **素材实际接入**：菜单背景、按钮皮肤、顶部占领条视觉增强（参考 `docs/design/ASSET_GAP_PLAN.md`）
+1. **素材实际接入**：菜单背景、按钮皮肤、顶部占领条视觉增强（参考 `docs/设计_design/ASSET_GAP_PLAN.md`）
 2. **音效系统第一版**：按钮点击、子弹发射、格子占领、事件触发、胜负判定全链路音效
 3. **移动端真机布局验证**：确保所有 UI 在真实 Android 设备上可用
 4. **性能基线归档**：覆盖常规模式、高压弹幕（满配四阵营同时发射）、较大网格场景

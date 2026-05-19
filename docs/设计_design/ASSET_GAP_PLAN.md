@@ -1,4 +1,4 @@
-# Asset Gap Plan / 素材缺口与接入计划
+﻿# Asset Gap Plan / 素材缺口与接入计划
 
 更新时间:
 - `2026-05-15`
@@ -16,7 +16,7 @@
 当前项目的真实缺口不是基础 UI 图像，而是下面四类:
 
 1. `音效 / 音乐`
-   - `assets/sfx/` 仍为空。
+   - `assets/音效_sfx/` 仍为空。
    - 项目内也没有成型的音频播放层、音频总线配置、统一的 SFX 入口。
 2. `字体接入`
    - `Kenney Future.ttf` 已在本地，但仍未替换目前多处 `ThemeDB.fallback_font`。
@@ -37,20 +37,20 @@
 
 | 类别 | 本地位置 | 状态 | 许可证 |
 |---|---|---|---|
-| 科幻 UI 框体、按钮、条形框、准星、阴影 | `assets/ui/kenney_scifi/` | 已导入，未接入代码 | `CC0` |
-| 科幻面板、箭头、装饰条、信息块 | `assets/ui/wenrexa_scifi_minimalism_01/` | 已导入，未接入代码 | `CC0` |
-| 事件图标、图腾候选 | `assets/ui/game_icons_scifi/` | 已导入，候选有限 | `CC BY 3.0` |
-| 背景图 | `assets/background/wenrexa_scifi/Background.jpg` | 已导入，未正式接入 | `CC0` |
-| 科幻字体 | `assets/ui/kenney_scifi/font/Kenney Future.ttf` | 已导入，未正式接入 | `CC0` |
+| 科幻 UI 框体、按钮、条形框、准星、阴影 | `assets/ui/Kenney科幻UI_kenney_scifi/` | 已导入，未接入代码 | `CC0` |
+| 科幻面板、箭头、装饰条、信息块 | `assets/ui/Wenrexa极简科幻_wenrexa_scifi_minimalism_01/` | 已导入，未接入代码 | `CC0` |
+| 事件图标、图腾候选 | `assets/ui/游戏图标_科幻_game_icons_scifi/` | 已导入，候选有限 | `CC BY 3.0` |
+| 背景图 | `assets/背景_background/wenrexa_scifi/Background.jpg` | 已导入，未正式接入 | `CC0` |
+| 科幻字体 | `assets/ui/Kenney科幻UI_kenney_scifi/font/Kenney Future.ttf` | 已导入，未正式接入 | `CC0` |
 
 参考文档:
 - `assets/ASSET_SOURCES_AND_LICENSES.md`
-- `art_reference/free_ui_assets/FREE_UI_INTEGRATION_PLAN.md`
+- `美术参考_art_reference/free_ui_assets/FREE_UI_INTEGRATION_PLAN.md`
 
 ## 3. 这次已下载到本地的候选素材
 
 本次新增下载根目录:
-- `art_reference/asset_gap_downloads/`
+- `美术参考_art_reference/asset_gap_downloads/`
 
 目录用途:
 - `audio_cc0/`
@@ -66,14 +66,14 @@
 
 | 文件 / 包 | 本地路径 | 已解包数量 | 推荐用途 | 来源 | 许可证 |
 |---|---|---:|---|---|---|
-| `opengameart_50_cc0_scifi_sfx.zip` | `art_reference/asset_gap_downloads/audio_cc0/` | 50 | 子弹发射、爆炸、传送、终端、环境循环 | OpenGameArt `50 CC0 Sci-Fi SFX` | `CC0` |
-| `opengameart_interface_sounds_kenney.zip` | `art_reference/asset_gap_downloads/audio_cc0/` | 103 | 菜单点击、开关、滑动、界面确认 | OpenGameArt `Interface Sounds` | `CC0` |
-| `opengameart_ui_sounds.zip` | `art_reference/asset_gap_downloads/audio_cc0/` | 11 | 提示音、通知音、状态切换 | OpenGameArt `UI sounds` | `CC0` |
-| `opengameart_beeps.zip` | `art_reference/asset_gap_downloads/audio_cc0/` | 16 | 轮盘 tick、科技 beep、菜单 hover | OpenGameArt `Interface Beeps` | `CC0` |
-| `opengameart_10_clicks_and_switches.zip` | `art_reference/asset_gap_downloads/audio_cc0/` | 11 | 按钮点击、切换、轻确认 | OpenGameArt `10 Clicks and Switches` | `CC0` |
-| `opengameart_gui_sound_effects.7z` | `art_reference/asset_gap_downloads/audio_cc0/` | 13 | GUI confirm / cancel / error | OpenGameArt `GUI Sound Effects` | `CC0` |
-| `opengameart_win_jingle.zip` | `art_reference/asset_gap_downloads/audio_cc0/` | 34 | 胜利、结算、成功提示 | OpenGameArt `Win Jingle` | `CC0` |
-| `opengameart_victory_sting.ogg` | `art_reference/asset_gap_downloads/audio_cc0/` | 1 | 短促胜利提示 / 事件结果 | OpenGameArt `Victory Sting` | `CC0` |
+| `opengameart_50_cc0_scifi_sfx.zip` | `美术参考_art_reference/asset_gap_downloads/audio_cc0/` | 50 | 子弹发射、爆炸、传送、终端、环境循环 | OpenGameArt `50 CC0 Sci-Fi SFX` | `CC0` |
+| `opengameart_interface_sounds_kenney.zip` | `美术参考_art_reference/asset_gap_downloads/audio_cc0/` | 103 | 菜单点击、开关、滑动、界面确认 | OpenGameArt `Interface Sounds` | `CC0` |
+| `opengameart_ui_sounds.zip` | `美术参考_art_reference/asset_gap_downloads/audio_cc0/` | 11 | 提示音、通知音、状态切换 | OpenGameArt `UI sounds` | `CC0` |
+| `opengameart_beeps.zip` | `美术参考_art_reference/asset_gap_downloads/audio_cc0/` | 16 | 轮盘 tick、科技 beep、菜单 hover | OpenGameArt `Interface Beeps` | `CC0` |
+| `opengameart_10_clicks_and_switches.zip` | `美术参考_art_reference/asset_gap_downloads/audio_cc0/` | 11 | 按钮点击、切换、轻确认 | OpenGameArt `10 Clicks and Switches` | `CC0` |
+| `opengameart_gui_sound_effects.7z` | `美术参考_art_reference/asset_gap_downloads/audio_cc0/` | 13 | GUI confirm / cancel / error | OpenGameArt `GUI Sound Effects` | `CC0` |
+| `opengameart_win_jingle.zip` | `美术参考_art_reference/asset_gap_downloads/audio_cc0/` | 34 | 胜利、结算、成功提示 | OpenGameArt `Win Jingle` | `CC0` |
+| `opengameart_victory_sting.ogg` | `美术参考_art_reference/asset_gap_downloads/audio_cc0/` | 1 | 短促胜利提示 / 事件结果 | OpenGameArt `Victory Sting` | `CC0` |
 
 当前统计:
 - 音效原始包 / 单文件: `8`
@@ -85,14 +85,14 @@
 
 | 文件 | 本地路径 | 推荐用途 | 来源 | 许可证 |
 |---|---|---|---|---|
-| `opengameart_space_echo.ogg` | `art_reference/asset_gap_downloads/music_candidates/` | 菜单循环 / 低存在感外层氛围 | OpenGameArt `Space Echo` | `CC0` |
-| `opengameart_scifi_background_noise.ogg` | `art_reference/asset_gap_downloads/music_candidates/` | 战斗环境底噪 / 低音量 ambience | OpenGameArt `Sci-Fi Background noise` | `CC0` |
-| `opengameart_space_dungeon_bpm100.mp3` | `art_reference/asset_gap_downloads/music_candidates/` | 菜单 / 战斗前中段循环候选 | OpenGameArt `Space Dungeon` | `CC0` |
+| `opengameart_space_echo.ogg` | `美术参考_art_reference/asset_gap_downloads/music_candidates/` | 菜单循环 / 低存在感外层氛围 | OpenGameArt `Space Echo` | `CC0` |
+| `opengameart_scifi_background_noise.ogg` | `美术参考_art_reference/asset_gap_downloads/music_candidates/` | 战斗环境底噪 / 低音量 ambience | OpenGameArt `Sci-Fi Background noise` | `CC0` |
+| `opengameart_space_dungeon_bpm100.mp3` | `美术参考_art_reference/asset_gap_downloads/music_candidates/` | 菜单 / 战斗前中段循环候选 | OpenGameArt `Space Dungeon` | `CC0` |
 
 ### 3.3 本地许可页备份
 
 本地备份位置:
-- `art_reference/asset_gap_downloads/licenses/`
+- `美术参考_art_reference/asset_gap_downloads/licenses/`
 
 已保存页面:
 - `oga_50_cc0_scifi_sfx.html`
@@ -118,20 +118,20 @@
 
 | 缺口 | 当前状态 | 推荐来源 | 许可证 | 优先级 | 建议落地位置 | 接入点 |
 |---|---|---|---|---|---|---|
-| 全局字体 | `Kenney Future.ttf` 已有但未用 | 本地 `assets/ui/kenney_scifi/font/` | `CC0` | `P0` | 建议后续镜像到 `assets/theme/fonts/` 或直接保留原路径 | `StartMenu.gd`, `StartMenuView.gd`, `RuntimeHudController.gd`, `EventRouletteView.tscn`, 所有仍依赖 `ThemeDB.fallback_font` 的界面 |
-| 子弹发射音 | 完全缺失 | 本地已下 `50 CC0 Sci-Fi SFX` | `CC0` | `P0` | 后续筛选后导入 `assets/sfx/bullets/` | `scripts/Turret.gd:_spawn_bullet()` |
-| 格子占领音 | 完全缺失 | 本地已下 `UI sounds`、`Interface Beeps`、`50 CC0 Sci-Fi SFX` | `CC0` | `P0` | `assets/sfx/capture/` | `scripts/Battlefield.gd` 的分数/归属变化路径，重点看 `scores_changed` 触发链 |
-| 按钮点击 / hover | 完全缺失 | 本地已下 `10 Clicks and Switches`、`Interface Sounds`、`GUI Sound Effects` | `CC0` | `P1` | `assets/sfx/ui/` | `scripts/StartMenu.gd`, `scripts/StartMenuView.gd`, 以及暂停/设置菜单按钮连接处 |
-| 事件转盘 tick | 完全缺失 | 本地已下 `Interface Beeps`、`UI sounds` | `CC0` | `P1` | `assets/sfx/event_roulette/` | `scripts/EventRouletteController.gd`, `scenes/ui/EventRouletteView.tscn` |
-| 事件结果音 | 完全缺失 | 本地已下 `Victory Sting`、`Win Jingle`、`GUI Sound Effects` | `CC0` | `P1` | `assets/sfx/event_result/` | `scripts/EventRouletteController.gd:_finish_event_round()` 附近 |
-| 控制舱过门音 | 完全缺失 | 本地已下 `Interface Sounds`、`UI sounds` | `CC0` | `P2` | `assets/sfx/chamber/` | `scripts/ControlChamber.gd` 的放球 / 过门 / 回弹路径 |
-| 炮塔摧毁音 | 完全缺失 | 本地已下 `50 CC0 Sci-Fi SFX` 中爆炸类 | `CC0` | `P2` | `assets/sfx/turret/` | `scripts/Turret.gd` 的摧毁逻辑 |
-| 限时模式警告音 | 完全缺失 | 本地已下 `Interface Beeps`、`UI sounds` | `CC0` | `P2` | `assets/sfx/timer/` | `scripts/RuntimeHudController.gd` 或 `Main.gd` 的倒计时逻辑 |
-| 胜利 / 平局短乐句 | 完全缺失 | 本地已下 `Win Jingle`、`Victory Sting` | `CC0` | `P2` | `assets/sfx/results/` | `scripts/Main.gd:_finish_with_winner()`, `scripts/Main.gd:_finish_as_draw()` |
-| 背景音乐 / 环境氛围 | 完全缺失 | 本地已下 `Space Echo`, `Sci-Fi Background noise`, `Space Dungeon` | `CC0` | `P3` | `assets/sfx/music/` 或 `assets/music/` | `Main.gd` 的菜单与局内状态切换链；建议未来新增统一音频控制器 |
-| 阵营图腾正式版 | 仅有少量候选 SVG | 本地 `assets/ui/game_icons_scifi/totem_candidates/`，必要时去 Game-icons 增补 | `CC BY 3.0` | `P2` | `assets/ui/game_icons_scifi/faction_totems/` | `GameHUD.tscn`, `StartMenu.tscn`, 结算横幅 |
-| 事件效果图标扩充 | 现有仅够最小集 | 本地 `assets/ui/game_icons_scifi/event_icons/`，必要时增补 Game-icons | `CC BY 3.0` | `P2` | `assets/ui/game_icons_scifi/event_icons/` | `EventRouletteView.tscn`, `EventRouletteController.gd` 关联显示 |
-| 主菜单背景升级 | 已有 `Background.jpg` 但未正式替换 | 本地现成 | `CC0` | `P1` | 现有 `assets/background/wenrexa_scifi/` | `scenes/ui/StartMenu.tscn` |
+| 全局字体 | `Kenney Future.ttf` 已有但未用 | 本地 `assets/ui/Kenney科幻UI_kenney_scifi/font/` | `CC0` | `P0` | 建议后续镜像到 `assets/theme/fonts/` 或直接保留原路径 | `StartMenu.gd`, `StartMenuView.gd`, `RuntimeHudController.gd`, `EventRouletteView.tscn`, 所有仍依赖 `ThemeDB.fallback_font` 的界面 |
+| 子弹发射音 | 完全缺失 | 本地已下 `50 CC0 Sci-Fi SFX` | `CC0` | `P0` | 后续筛选后导入 `assets/音效_sfx/bullets/` | `scripts/Turret.gd:_spawn_bullet()` |
+| 格子占领音 | 完全缺失 | 本地已下 `UI sounds`、`Interface Beeps`、`50 CC0 Sci-Fi SFX` | `CC0` | `P0` | `assets/音效_sfx/capture/` | `scripts/Battlefield.gd` 的分数/归属变化路径，重点看 `scores_changed` 触发链 |
+| 按钮点击 / hover | 完全缺失 | 本地已下 `10 Clicks and Switches`、`Interface Sounds`、`GUI Sound Effects` | `CC0` | `P1` | `assets/音效_sfx/ui/` | `scripts/StartMenu.gd`, `scripts/StartMenuView.gd`, 以及暂停/设置菜单按钮连接处 |
+| 事件转盘 tick | 完全缺失 | 本地已下 `Interface Beeps`、`UI sounds` | `CC0` | `P1` | `assets/音效_sfx/event_roulette/` | `scripts/EventRouletteController.gd`, `scenes/ui/EventRouletteView.tscn` |
+| 事件结果音 | 完全缺失 | 本地已下 `Victory Sting`、`Win Jingle`、`GUI Sound Effects` | `CC0` | `P1` | `assets/音效_sfx/event_result/` | `scripts/EventRouletteController.gd:_finish_event_round()` 附近 |
+| 控制舱过门音 | 完全缺失 | 本地已下 `Interface Sounds`、`UI sounds` | `CC0` | `P2` | `assets/音效_sfx/chamber/` | `scripts/ControlChamber.gd` 的放球 / 过门 / 回弹路径 |
+| 炮塔摧毁音 | 完全缺失 | 本地已下 `50 CC0 Sci-Fi SFX` 中爆炸类 | `CC0` | `P2` | `assets/音效_sfx/turret/` | `scripts/Turret.gd` 的摧毁逻辑 |
+| 限时模式警告音 | 完全缺失 | 本地已下 `Interface Beeps`、`UI sounds` | `CC0` | `P2` | `assets/音效_sfx/timer/` | `scripts/RuntimeHudController.gd` 或 `Main.gd` 的倒计时逻辑 |
+| 胜利 / 平局短乐句 | 完全缺失 | 本地已下 `Win Jingle`、`Victory Sting` | `CC0` | `P2` | `assets/音效_sfx/results/` | `scripts/Main.gd:_finish_with_winner()`, `scripts/Main.gd:_finish_as_draw()` |
+| 背景音乐 / 环境氛围 | 完全缺失 | 本地已下 `Space Echo`, `Sci-Fi Background noise`, `Space Dungeon` | `CC0` | `P3` | `assets/音效_sfx/music/` 或 `assets/music/` | `Main.gd` 的菜单与局内状态切换链；建议未来新增统一音频控制器 |
+| 阵营图腾正式版 | 仅有少量候选 SVG | 本地 `assets/ui/游戏图标_科幻_game_icons_scifi/totem_candidates/`，必要时去 Game-icons 增补 | `CC BY 3.0` | `P2` | `assets/ui/游戏图标_科幻_game_icons_scifi/faction_totems/` | `GameHUD.tscn`, `StartMenu.tscn`, 结算横幅 |
+| 事件效果图标扩充 | 现有仅够最小集 | 本地 `assets/ui/游戏图标_科幻_game_icons_scifi/event_icons/`，必要时增补 Game-icons | `CC BY 3.0` | `P2` | `assets/ui/游戏图标_科幻_game_icons_scifi/event_icons/` | `EventRouletteView.tscn`, `EventRouletteController.gd` 关联显示 |
+| 主菜单背景升级 | 已有 `Background.jpg` 但未正式替换 | 本地现成 | `CC0` | `P1` | 现有 `assets/背景_background/wenrexa_scifi/` | `scenes/ui/StartMenu.tscn` |
 | 主题资源 `.tres` | 完全缺失 | 本地现有 UI 图像足够生成主题 | 继承原素材许可证 | `P1` | 建议新增 `assets/theme/` | `StartMenu`, `GameHUD`, `EventRouletteView`, `SettingsPanel` |
 
 ## 5. 我建议的接入顺序
@@ -192,10 +192,10 @@
 1. 先看这份文件。
 2. 再看:
    - `assets/ASSET_SOURCES_AND_LICENSES.md`
-   - `art_reference/free_ui_assets/FREE_UI_INTEGRATION_PLAN.md`
+   - `美术参考_art_reference/free_ui_assets/FREE_UI_INTEGRATION_PLAN.md`
 3. 如果先做音效:
-   - 从 `art_reference/asset_gap_downloads/audio_cc0_extracted/` 里筛选
-   - 复制最小集合到 `assets/sfx/`
+   - 从 `美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/` 里筛选
+   - 复制最小集合到 `assets/音效_sfx/`
    - 新增一个统一音频入口，不要把 `AudioStreamPlayer` 散着塞进每个脚本
 4. 如果先做 UI:
    - 从 `Kenney Future.ttf` 和 `Background.jpg` 开始
@@ -216,4 +216,4 @@
 - 代码接入
 - `.tres` 主题资源生产
 - 最终素材筛选和统一命名
-- `assets/sfx/` 正式导入
+- `assets/音效_sfx/` 正式导入

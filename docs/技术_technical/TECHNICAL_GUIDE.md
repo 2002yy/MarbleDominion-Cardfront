@@ -1,4 +1,4 @@
-# Technical Guide / 技术指南
+﻿# Technical Guide / 技术指南
 
 Date / 日期: 2026-05-16
 Role / 作用: live engineering guide / 当前工程协作与技术边界
@@ -27,15 +27,15 @@ Keep it current, short, and operational.
   - Android export troubleshooting checklist / Android 导出排错清单
 - `docs/RELEASE_PROCESS.md`
   - packaging and release workflow / 打包与发布流程
-- `docs/technical/AI_HANDOFF_CURRENT.md`
+- `docs/技术_technical/AI_HANDOFF_CURRENT.md`
   - fast session takeover card for the next AI / Codex run / 下一次 AI/Codex 接管卡
 - `CHANGELOG.md`
   - condensed version spine / 精简版本脊柱
 - `.github/workflows/test.yml`
   - GitHub Actions headless CI: validate + 10-test matrix / GitHub Actions headless CI：验证 + 10 测试矩阵
-- `docs/history/README.md`
+- `docs/历史_history/README.md`
   - history index for stage documents / 历史阶段索引
-- `docs/history/README_v*.md`
+- `docs/历史_history/README_v*.md`
   - detailed historical stage notes, intentionally preserved / 详细历史阶段记录，有保留地保存
 - `assets/ASSET_SOURCES_AND_LICENSES.md`
   - asset provenance and redistribution notes / 素材来源与分发许可
@@ -102,7 +102,7 @@ Priority / 优先级:
 
 Working rules / 工作规则:
 
-- correctness baseline lives in `docs/technical/README_TEST_MATRIX.md` / 正确性基线见测试矩阵文档
+- correctness baseline lives in `docs/技术_technical/README_TEST_MATRIX.md` / 正确性基线见测试矩阵文档
 - performance probes are not correctness proof / 性能探针不能替代正确性验证
 - if Codex runtime crashes but there is no clear parse/script failure and desktop local does not reproduce it, record it as an environment limitation instead of rewriting code speculatively / 无法重现的环境限制不做推测性重写
 - when feature work is UI-heavy, still leave controller/logic tests, a benchmark hook, or a manual verification checklist / UI 重的工作也尽量保留逻辑测试或人工验证清单
@@ -111,7 +111,7 @@ Working rules / 工作规则:
 
 - `assets/`
   - curated, import-ready, redistribution-aware files only / 仅存放整理好、可导入、可分发的文件
-- `art_reference/free_ui_assets/`
+- `美术参考_art_reference/free_ui_assets/`
   - research material, raw downloads, and source capture artifacts / 调研素材、原始下载和源文件
 
 Before shipping or mirroring third-party material, check `assets/ASSET_SOURCES_AND_LICENSES.md`.  
@@ -121,13 +121,13 @@ Before shipping or mirroring third-party material, check `assets/ASSET_SOURCES_A
 
 - if a doc is about the current truth, fold it into one of the live docs above
 - if a doc is only a temporary process log, do not let it become permanent root clutter
-- detailed stage history belongs under `docs/history/`
+- detailed stage history belongs under `docs/历史_history/`
 - when a new version gets its own stage note, keep the live docs aligned instead of copying status text into many places
 
 ## 8. Android Export Boundary / Android 导出边界
 
 - public-facing export notes should stay summarized in `README.md`
-- operational export checklist and helper scripts can live in `docs/technical/README_ANDROID_EXPORT.md` and `tools/`
+- operational export checklist and helper scripts can live in `docs/技术_technical/README_ANDROID_EXPORT.md` and `tools/`
 - `project.godot` must keep:
   - `[rendering]`
   - `textures/vram_compression/import_etc2_astc=true`

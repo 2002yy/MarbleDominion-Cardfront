@@ -1,4 +1,4 @@
-# BallWar v2.1.11 — Encoding Recovery & Export Fixes
+﻿# BallWar v2.1.11 — Encoding Recovery & Export Fixes
 
 Date: 2026-05-17
 Scope: Chinese encoding recovery, Android export ETC2/ASTC fix, build pipeline stabilization
@@ -56,7 +56,7 @@ Root cause: Android target requires `textures/vram_compression/import_etc2_astc=
 | `BallWar_v2_0_5/.../project.godot` | Backfilled |
 | `tools/check_android_export_config.ps1` | Pre-flight script |
 | `tools/fix_android_export_config.ps1` | Auto-fix script |
-| `docs/technical/README_ANDROID_EXPORT.md` | Export troubleshooting doc |
+| `docs/技术_technical/README_ANDROID_EXPORT.md` | Export troubleshooting doc |
 | `EXPORT_WORKFLOW.md` | Full export workflow doc |
 
 ## Build & Release Pipeline

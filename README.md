@@ -1,4 +1,4 @@
-# Marble Dominion: Cardfront / 弹珠领土：卡牌前线
+﻿# Marble Dominion: Cardfront / 弹珠领土：卡牌前线
 
 **Godot 4.6 + GDScript** prototype built from the BallWar / Marble Dominion Ricochet War foundation.
 
@@ -64,7 +64,7 @@ These screenshots still show the inherited BallWar visual baseline while Cardfro
 
 | Start Menu | Initial Field | Mid Game | Event Screen | Result |
 |:--:|:--:|:--:|:--:|:--:|
-| ![](screenshots/%E5%BC%80%E5%A7%8B%E7%95%8C%E9%9D%A2.png) | ![](screenshots/%E6%B8%B8%E6%88%8F%E5%88%9D%E5%A7%8B.png) | ![](screenshots/%E6%B8%B8%E6%88%8F%E4%B8%AD%E5%9C%BA.png) | ![](screenshots/%E4%BA%8B%E4%BB%B6%E7%94%BB%E9%9D%A2.png) | ![](screenshots/%E4%B8%80%E6%96%B9%E8%83%9C%E5%88%A9%E7%BB%93%E6%9E%9C.png) |
+| ![](截图_screenshots/%E5%BC%80%E5%A7%8B%E7%95%8C%E9%9D%A2.png) | ![](截图_screenshots/%E6%B8%B8%E6%88%8F%E5%88%9D%E5%A7%8B.png) | ![](截图_screenshots/%E6%B8%B8%E6%88%8F%E4%B8%AD%E5%9C%BA.png) | ![](截图_screenshots/%E4%BA%8B%E4%BB%B6%E7%94%BB%E9%9D%A2.png) | ![](截图_screenshots/%E4%B8%80%E6%96%B9%E8%83%9C%E5%88%A9%E7%BB%93%E6%9E%9C.png) |
 
 ## Architecture / 架构
 
@@ -90,21 +90,21 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
 Detailed milestone notes:
 
-- [docs/history/README_v0_1_6_2_cardfront_control_chamber_decoupling.md](docs/history/README_v0_1_6_2_cardfront_control_chamber_decoupling.md)
-- [docs/history/README_v0_1_6_1_cardfront_fire_director.md](docs/history/README_v0_1_6_1_cardfront_fire_director.md)
-- [docs/history/README_v0_1_6_1_pioneer_beacon_lite.md](docs/history/README_v0_1_6_1_pioneer_beacon_lite.md)
-- [docs/history/README_v0_1_6_first_card_effects.md](docs/history/README_v0_1_6_first_card_effects.md)
-- [docs/history/README_v0_1_5_card_core_lite.md](docs/history/README_v0_1_5_card_core_lite.md)
-- [docs/history/README_v0_1_4_fortify_layer.md](docs/history/README_v0_1_4_fortify_layer.md)
-- [docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md](docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md)
-- [docs/history/README_v0_1_3_1_visual_pressure_rebalance.md](docs/history/README_v0_1_3_1_visual_pressure_rebalance.md)
-- [docs/history/README_v0_1_3_deployment_rules.md](docs/history/README_v0_1_3_deployment_rules.md)
-- [docs/history/README_v0_1_2_region_morale.md](docs/history/README_v0_1_2_region_morale.md)
-- [docs/history/README_v0_1_2_1_cardfront_visibility_polish.md](docs/history/README_v0_1_2_1_cardfront_visibility_polish.md)
-- [docs/history/README_v0_1_1_region_instances.md](docs/history/README_v0_1_1_region_instances.md)
-- [docs/history/README_v0_1_1_region_yield.md](docs/history/README_v0_1_1_region_yield.md)
-- [docs/history/README_v0_1_1_region_map.md](docs/history/README_v0_1_1_region_map.md)
-- [docs/history/README_v0_1_0_cardfront_prototype.md](docs/history/README_v0_1_0_cardfront_prototype.md)
+- [docs/历史_history/README_v0_1_6_2_cardfront_control_chamber_decoupling.md](docs/历史_history/README_v0_1_6_2_cardfront_control_chamber_decoupling.md)
+- [docs/历史_history/README_v0_1_6_1_cardfront_fire_director.md](docs/历史_history/README_v0_1_6_1_cardfront_fire_director.md)
+- [docs/历史_history/README_v0_1_6_1_pioneer_beacon_lite.md](docs/历史_history/README_v0_1_6_1_pioneer_beacon_lite.md)
+- [docs/历史_history/README_v0_1_6_first_card_effects.md](docs/历史_history/README_v0_1_6_first_card_effects.md)
+- [docs/历史_history/README_v0_1_5_card_core_lite.md](docs/历史_history/README_v0_1_5_card_core_lite.md)
+- [docs/历史_history/README_v0_1_4_fortify_layer.md](docs/历史_history/README_v0_1_4_fortify_layer.md)
+- [docs/历史_history/README_v0_1_3_2_cardfront_debug_panel_placement.md](docs/历史_history/README_v0_1_3_2_cardfront_debug_panel_placement.md)
+- [docs/历史_history/README_v0_1_3_1_visual_pressure_rebalance.md](docs/历史_history/README_v0_1_3_1_visual_pressure_rebalance.md)
+- [docs/历史_history/README_v0_1_3_deployment_rules.md](docs/历史_history/README_v0_1_3_deployment_rules.md)
+- [docs/历史_history/README_v0_1_2_region_morale.md](docs/历史_history/README_v0_1_2_region_morale.md)
+- [docs/历史_history/README_v0_1_2_1_cardfront_visibility_polish.md](docs/历史_history/README_v0_1_2_1_cardfront_visibility_polish.md)
+- [docs/历史_history/README_v0_1_1_region_instances.md](docs/历史_history/README_v0_1_1_region_instances.md)
+- [docs/历史_history/README_v0_1_1_region_yield.md](docs/历史_history/README_v0_1_1_region_yield.md)
+- [docs/历史_history/README_v0_1_1_region_map.md](docs/历史_history/README_v0_1_1_region_map.md)
+- [docs/历史_history/README_v0_1_0_cardfront_prototype.md](docs/历史_history/README_v0_1_0_cardfront_prototype.md)
 
 ## Validation / 验证
 

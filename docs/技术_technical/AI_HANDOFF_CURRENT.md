@@ -1,4 +1,4 @@
-# AI_HANDOFF_CURRENT
+﻿# AI_HANDOFF_CURRENT
 
 Last updated: 2026-05-19
 Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管卡
@@ -89,10 +89,10 @@ Performance probes are separate from correctness:
 
 - `README.md` — current project entrypoint / 项目入口
 - `docs/ROADMAP.md` — main progress board and next slice / 进度板与下一切片
-- `docs/history/README_v0_1_6_first_card_effects.md` — v0.1.6 detailed stage record
-- `docs/history/README_v0_1_6_1_pioneer_beacon_lite.md` — Pioneer Beacon Lite stage record
-- `docs/history/README_v0_1_6_1_cardfront_fire_director.md` — Cardfront Fire Director stage record
-- `docs/history/README_v0_1_6_2_cardfront_control_chamber_decoupling.md` — Cardfront control-chamber decoupling stage record
-- `docs/history/README.md` — historical stage index / 历史阶段索引
-- `docs/technical/AI_HANDOFF_CURRENT.md` — quick takeover card for the next AI / Codex session
+- `docs/历史_history/README_v0_1_6_first_card_effects.md` — v0.1.6 detailed stage record
+- `docs/历史_history/README_v0_1_6_1_pioneer_beacon_lite.md` — Pioneer Beacon Lite stage record
+- `docs/历史_history/README_v0_1_6_1_cardfront_fire_director.md` — Cardfront Fire Director stage record
+- `docs/历史_history/README_v0_1_6_2_cardfront_control_chamber_decoupling.md` — Cardfront control-chamber decoupling stage record
+- `docs/历史_history/README.md` — historical stage index / 历史阶段索引
+- `docs/技术_technical/AI_HANDOFF_CURRENT.md` — quick takeover card for the next AI / Codex session
 - `docs/TESTING.md` — test ownership, baseline, and run guidance
