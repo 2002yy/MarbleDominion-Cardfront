@@ -238,6 +238,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_cardfront_economy()
 	_create_cardfront_morale()
 	_create_cardfront_fortify()
+	_create_cardfront_target_bias()
 	_create_cardfront_card_system()
 	_create_turrets()
 	_create_control_chambers()
@@ -318,11 +319,22 @@ func _create_cardfront_fortify() -> void:
 	runtime.fortify_overlay = fortify_setup.get("fortify_overlay", null)
 
 
+func _create_cardfront_target_bias() -> void:
+	runtime.target_bias_system = null
+	if not _is_cardfront_mode():
+		return
+	var target_bias_setup: Dictionary = CardfrontModeScript.create_target_bias(game_layer, runtime.region_map)
+	if not bool(target_bias_setup.get("configured", false)):
+		push_warning("Cardfront target bias setup failed: %s" % str(target_bias_setup.get("reason", "unknown")))
+		return
+	runtime.target_bias_system = target_bias_setup.get("target_bias_system", null)
+
+
 func _create_cardfront_card_system() -> void:
 	runtime.card_system = null
 	if not _is_cardfront_mode():
 		return
-	var card_setup: Dictionary = CardfrontModeScript.create_card_system(runtime.resource_states, runtime.region_map, runtime.battlefield, runtime.fortify_layer, runtime.morale_system, runtime.region_overlay)
+	var card_setup: Dictionary = CardfrontModeScript.create_card_system(runtime.resource_states, runtime.region_map, runtime.battlefield, runtime.fortify_layer, runtime.morale_system, runtime.region_overlay, runtime.target_bias_system)
 	if not bool(card_setup.get("configured", false)):
 		push_warning("Cardfront card system setup failed")
 		return

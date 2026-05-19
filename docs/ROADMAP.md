@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.5-card-core-lite`
-- Next slice: `v0.1.6-first-card-effects`
+- Current completed slice: `v0.1.6-first-card-effects`
+- Next slice: `v0.1.6.1-pioneer-beacon-lite`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
@@ -31,9 +31,8 @@ This file is the single place for project direction and phase status.
 | `v0.1.3.2-cardfront-debug-panel-placement` | Done / 已完成 | Move Cardfront economy debug panel to bottom-right corner. |
 | `v0.1.4-fortify-layer` | Done / 已完成 | Frontline fortification layer above deployment rules. |
 | `v0.1.5-card-core-lite` | Done / 已完成 | Minimal card play pipeline: 3-card hand, costs, target validation, Fortify effect. |
-| `v0.1.6-first-card-effects` | Next / 下一步 | First card effects: calibrated shot, pioneer beacon, morale fluctuation. |
-| `v0.1.5-card-core-lite` | Planned / 计划中 | Pseudo-card core: fixed hand and energy costs. |
-| `v0.1.6-first-card-effects` | Planned / 计划中 | First effects such as calibrated shot, pioneer beacon, and morale fluctuation. |
+| `v0.1.6-first-card-effects` | Done / 已完成 | First real effects for Calibrated Shot target bias and Morale Fluctuation morale support. |
+| `v0.1.6.1-pioneer-beacon-lite` | Next / 下一步 | Smallest Pioneer Beacon effect slice without formal unit-device systems. |
 | `v0.1.7-unit-devices` | Planned / 计划中 | Device-style systems for bullet absorber core, engineer robot, and pioneer beacon. |
 
 ## 3. Design Boundaries / 设计边界
@@ -44,7 +43,7 @@ This file is the single place for project direction and phase status.
 - `v0.1.3` adds deployment permission judgment only.
 - Economy calculation must stay outside `Battlefield.apply_bullet()`.
 - Deployment rules must not mutate `Battlefield` owners or `RegionMap`.
-- Card effects should wait until region, yield, morale, and deployment rules are already testable.
+- Card effects must stay behind `CardPlaySystem` and small effect systems; `Main.gd` stays assembly-only.
 - Do not modify `Bullet`, `BulletPool`, `Turret`, or `ControlChamber` for region planning slices unless a later slice explicitly requires it.
 
 ## 4. Foundation Completed / 已完成基础
@@ -136,17 +135,24 @@ This file is the single place for project direction and phase status.
   - `CardHandState.gd` — fixed hand with used/available tracking
   - `CardPlayRequest.gd`, `CardPlayResult.gd` — request/result data objects
   - `CardPlaySystem.gd` — play pipeline: cost check, target validation, effect resolution
-  - Card effects: Fortify calls `FortifyLayer`, others are stubs
+  - Card effects at this slice: Fortify calls `FortifyLayer`, others were stubs
   - `CardCoreLiteTestRunner.gd` — 11 test cases
+- `v0.1.6-first-card-effects`
+  - `CardPlaySystem.gd` — resolves `morale_fluctuation` and `calibrated_shot`
+  - `CardfrontTargetBiasSystem.gd` — Cardfront-only region bias state with duration expiry
+  - `CardfrontMode.gd`, `GameRuntimeContext.gd`, `Main.gd` — target-bias assembly and injection
+  - Morale Fluctuation calls `RegionMoraleSystem.apply_morale(..., SUPPORT_PLAYER)`
+  - Calibrated Shot registers a target-region bias; turret aiming integration remains deferred
+  - effect failures roll back resource payment and hand used state
+  - `CardFirstEffectsTestRunner.gd` and `CardfrontTargetBiasTestRunner.gd`
 
 ## 6. Next / 下一步
 
-1. **`v0.1.6-first-card-effects`**: calibrated shot, pioneer beacon, morale fluctuation, and similar first effects.
+1. **`v0.1.6.1-pioneer-beacon-lite`**: smallest Pioneer Beacon effect path, still no formal card UI or full unit system.
 2. **`v0.1.7-unit-devices`**: device-style systems for bullet absorber core, engineer robot, and pioneer beacon.
 
 ## 7. Later / 中期候选
 
-- `v0.1.6-first-card-effects`: calibrated shot, pioneer beacon, morale fluctuation, and similar first effects.
 - `v0.1.7-unit-devices`: device-style systems for bullet absorber core, engineer robot, and pioneer beacon.
 - New-player tutorial.
 - Mode explanation page.

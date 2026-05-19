@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.5-card-core-lite**. It adds a minimal card play pipeline with a fixed 3-card hand, resource cost deduction, and a working Fortify card.
+The current completed slice is **v0.1.6-first-card-effects**. It turns the two v0.1.5 stub cards into first real, testable effects: Morale Fluctuation now schedules a region morale effect, and Calibrated Shot now records a Cardfront-only target bias state.
 
 ## Current Slice / 当前阶段
 
@@ -23,6 +23,11 @@ Implemented in this repository:
 - Cardfront-only low-pressure bullet visual policy that keeps richer marble effects while old BallWar modes keep their original degradation rules.
 - Region-local morale system for support and unrest ownership shifts.
 - Deployment permission rules for owned cells, owned borders, and controlled regions.
+- Minimal card play pipeline with a fixed 3-card hand, resource cost deduction, target validation, and rollback on effect failure.
+- Working first cards:
+  - Frontline Fortify adds real `FortifyLayer` stacks.
+  - Morale Fluctuation calls `RegionMoraleSystem.apply_morale(...)`.
+  - Calibrated Shot registers a testable target-region bias for the player.
 - Cardfront-only translucent region overlay.
 - Cardfront mode starts with only two turrets and two control chambers.
 - Event roulette is disabled in Cardfront mode; active card play will replace it later.
@@ -36,10 +41,11 @@ Implemented in this repository:
 
 Not implemented yet:
 
-- Deck / hand / card effect data.
+- Formal card UI / HUD.
+- Deck draw, discard, shuffle, and deckbuilding.
 - AI Commander behavior.
 - Cardfront save schema.
-- Dedicated Cardfront HUD and card UI.
+- Unit-device effects such as pioneer beacon, bullet absorber core, and engineer robot.
 
 ## Screenshots / 截图
 
@@ -61,6 +67,8 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 - `scripts/cardfront/regions/RegionControlCalculator.gd` — per-region player / AI / neutral control statistics.
 - `scripts/cardfront/economy/` — resource state, region yield rules, yield calculator, economy tick system, and debug panel.
 - `scripts/cardfront/morale/` — region-local morale rules and deterministic morale tick system.
+- `scripts/cardfront/cards/` — fixed-hand card catalog, play request/result, cost checks, target validation, effect dispatch, and rollback.
+- `scripts/cardfront/effects/CardfrontTargetBiasSystem.gd` — Cardfront-only target-region bias state used by Calibrated Shot.
 - `scripts/cardfront/regions/RegionOverlayLayer.gd` — lightweight Cardfront-only region visualization.
 - `scripts/cardfront/CardfrontMode.gd` — thin assembly layer used by `Main.gd`.
 - `scripts/Battlefield.gd` — owns generic owner grids, owner counts, painting, and draw color overrides.
@@ -69,6 +77,7 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
 Detailed milestone notes:
 
+- [docs/history/README_v0_1_6_first_card_effects.md](docs/history/README_v0_1_6_first_card_effects.md)
 - [docs/history/README_v0_1_5_card_core_lite.md](docs/history/README_v0_1_5_card_core_lite.md)
 - [docs/history/README_v0_1_4_fortify_layer.md](docs/history/README_v0_1_4_fortify_layer.md)
 - [docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md](docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md)
@@ -87,6 +96,9 @@ Run with Godot 4.6:
 
 ```powershell
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/FortifyLayerTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardCoreLiteTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardFirstEffectsTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontTargetBiasTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontModeSmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeploymentRulesTestRunner.gd
@@ -100,32 +112,24 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation:
+Latest local validation for the v0.1.6 required subset:
 
-- `FortifyLayerTestRunner.gd`: 469 checks passed.
-- `CardfrontModeSmokeTestRunner.gd`: 32 checks passed.
-- `NeutralOwnerCompatibilityTestRunner.gd`: 24 checks passed.
-- `DeploymentRulesTestRunner.gd`: 26 checks passed.
+- `CardCoreLiteTestRunner.gd`: 35 checks passed.
+- `CardFirstEffectsTestRunner.gd`: 35 checks passed.
+- `CardfrontTargetBiasTestRunner.gd`: 13 checks passed.
 - `RegionMoraleTestRunner.gd`: 24 checks passed.
+- `FortifyLayerTestRunner.gd`: 469 checks passed.
+- `DeploymentRulesTestRunner.gd`: 26 checks passed.
 - `EconomyTickTestRunner.gd`: 50 checks passed.
-- `EconomyDebugPanelSceneTestRunner.gd`: 12 checks passed.
-- `CardfrontVisualPolicyTestRunner.gd`: 27 checks passed.
-- `VisualPressurePolicyTestRunner.gd`: 25 checks passed.
-- `RegionMapTestRunner.gd`: 3737 checks passed.
+- `CardfrontModeSmokeTestRunner.gd`: 35 checks passed.
 - `SmokeTestRunner.gd`: 218 checks passed.
 - `IntegrationTestRunner.gd`: 133 checks passed.
-- `StartMenuSceneTestRunner.gd`: 55 checks passed.
-- `GameHUDSceneTestRunner.gd`: 40 checks passed.
-- `LayoutSanityTestRunner.gd`: 376 checks passed.
-- `SaveFlowControllerTestRunner.gd`: 190 checks passed.
-- `EndToEndContinueMainTestRunner.gd`: 56 checks passed.
 
 ## Next Milestone / 下一阶段
 
-`v0.1.6-first-card-effects`:
+`v0.1.6.1-pioneer-beacon-lite`:
 
-- Pseudo-card core with fixed hand and energy costs.
-- Still defer card UI, unit devices, and AI Commander behavior.
+- Add the smallest useful Pioneer Beacon slice while keeping formal card UI, AI Commander, and full unit-device systems deferred.
 - Full route is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License

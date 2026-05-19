@@ -13,6 +13,7 @@ const FortifyLayerScript = preload("res://scripts/cardfront/fortify/FortifyLayer
 const FortifyOverlayLayerScript = preload("res://scripts/cardfront/fortify/FortifyOverlayLayer.gd")
 const CardfrontCaptureInterceptorScript = preload("res://scripts/cardfront/fortify/CardfrontCaptureInterceptor.gd")
 const CardPlaySystemScript = preload("res://scripts/cardfront/cards/CardPlaySystem.gd")
+const CardfrontTargetBiasSystemScript = preload("res://scripts/cardfront/effects/CardfrontTargetBiasSystem.gd")
 
 
 static func is_selected(mode_name: String) -> bool:
@@ -138,9 +139,25 @@ static func create_fortify(game_layer: Node, battlefield, region_map) -> Diction
 	}
 
 
-static func create_card_system(resource_states: Dictionary, region_map, battlefield, fortify_layer, morale_system, region_overlay) -> Dictionary:
+static func create_target_bias(game_layer: Node, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if region_map == null:
+		return {"configured": false, "reason": "missing_region_map"}
+
+	var target_bias_system = CardfrontTargetBiasSystemScript.new()
+	target_bias_system.setup(region_map)
+	game_layer.add_child(target_bias_system)
+
+	return {
+		"configured": true,
+		"target_bias_system": target_bias_system,
+	}
+
+
+static func create_card_system(resource_states: Dictionary, region_map, battlefield, fortify_layer, morale_system, region_overlay, target_bias_system = null) -> Dictionary:
 	var card_system = CardPlaySystemScript.new()
-	card_system.setup(resource_states, region_map, battlefield, fortify_layer, morale_system, region_overlay)
+	card_system.setup(resource_states, region_map, battlefield, fortify_layer, morale_system, region_overlay, target_bias_system)
 	return {
 		"configured": true,
 		"card_system": card_system,

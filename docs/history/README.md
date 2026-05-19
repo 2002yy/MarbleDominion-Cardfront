@@ -15,6 +15,10 @@ This folder keeps the detailed stage-by-stage BallWar history that used to live 
 
 ## 推荐入口 / Suggested entry points
 
+- `README_v0_1_6_first_card_effects.md`
+  - Cardfront first card effects / Morale Fluctuation real morale effect, Calibrated Shot target bias, rollback tests
+- `README_v0_1_5_card_core_lite.md`
+  - Cardfront card core lite / fixed 3-card hand, resource costs, target validation, Fortify effect
 - `README_v0_1_3_deployment_rules.md`
   - Cardfront deployment-rules slice / owned cell, owned border, and controlled-region permission checks
 - `README_v0_1_2_1_cardfront_visibility_polish.md`

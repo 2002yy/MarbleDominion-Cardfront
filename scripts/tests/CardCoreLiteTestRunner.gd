@@ -13,6 +13,8 @@ const FortifyLayerScript = preload("res://scripts/cardfront/fortify/FortifyLayer
 const FortifyRulesScript = preload("res://scripts/cardfront/fortify/FortifyRules.gd")
 const DeploymentRulesScript = preload("res://scripts/cardfront/deployment/DeploymentRules.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
+const RegionMoraleSystemScript = preload("res://scripts/cardfront/morale/RegionMoraleSystem.gd")
+const CardfrontTargetBiasSystemScript = preload("res://scripts/cardfront/effects/CardfrontTargetBiasSystem.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 
 var _assert: TestAssert
@@ -35,8 +37,8 @@ func _run() -> void:
 	_test_invalid_target_rejected()
 	_test_same_card_cannot_play_twice()
 	_test_fortify_adds_stacks()
-	_test_calibrated_shot_stub_succeeds()
-	_test_morale_fluctuation_stub_succeeds()
+	_test_calibrated_shot_effect_succeeds()
+	_test_morale_fluctuation_effect_succeeds()
 	_test_hand_state_mark_and_available()
 
 	GameConfig.reset_runtime_defaults()
@@ -83,6 +85,12 @@ func _make_system_with_battlefield(energy: int = 100, parts: int = 50):
 	var fortify_layer = FortifyLayerScript.new()
 	fortify_layer.configure(20)
 
+	var morale_system = RegionMoraleSystemScript.new()
+	morale_system.setup(rm, bf)
+
+	var target_bias_system = CardfrontTargetBiasSystemScript.new()
+	target_bias_system.setup(rm)
+
 	var system = CardPlaySystemScript.new()
 
 	var player_state = CardfrontResourceStateScript.new()
@@ -94,13 +102,15 @@ func _make_system_with_battlefield(energy: int = 100, parts: int = 50):
 		CardfrontRulesScript.PLAYER_FACTION: player_state,
 		CardfrontRulesScript.AI_FACTION: ai_state,
 	}
-	system.setup(resource_states, rm, bf, fortify_layer, null, null)
+	system.setup(resource_states, rm, bf, fortify_layer, morale_system, null, target_bias_system)
 
 	return {
 		"system": system,
 		"bf": bf,
 		"rm": rm,
 		"fortify_layer": fortify_layer,
+		"morale_system": morale_system,
+		"target_bias_system": target_bias_system,
 		"player_state": player_state,
 	}
 
@@ -147,7 +157,7 @@ func _test_fortify_success_on_owned_border() -> void:
 	_assert.eq(int(player_state.energy), 10, "card core: energy should be 10 after paying 10 from 20")
 	_assert.eq(int(player_state.parts), 7, "card core: parts should be 7 after paying 3 from 10")
 
-	TestFixtures.cleanup_node(bf)
+	_cleanup_fixture(fixture)
 
 
 func _test_insufficient_energy_rejected() -> void:
@@ -162,7 +172,7 @@ func _test_insufficient_energy_rejected() -> void:
 	_assert.that(not result.success, "card core: should reject when insufficient energy")
 	_assert.eq(result.reason, CardPlayResultScript.REASON_INSUFFICIENT_RESOURCES, "card core: reason should be insufficient_resources")
 
-	TestFixtures.cleanup_node(bf)
+	_cleanup_fixture(fixture)
 
 
 func _test_insufficient_parts_rejected() -> void:
@@ -177,7 +187,7 @@ func _test_insufficient_parts_rejected() -> void:
 	_assert.that(not result.success, "card core: should reject when insufficient parts")
 	_assert.eq(result.reason, CardPlayResultScript.REASON_INSUFFICIENT_RESOURCES, "card core: reason should be insufficient_resources")
 
-	TestFixtures.cleanup_node(bf)
+	_cleanup_fixture(fixture)
 
 
 func _test_invalid_target_rejected() -> void:
@@ -192,7 +202,7 @@ func _test_invalid_target_rejected() -> void:
 	_assert.that(not result.success, "card core: should reject non-border cell")
 	_assert.eq(result.reason, CardPlayResultScript.REASON_INVALID_TARGET, "card core: reason should be invalid_target")
 
-	TestFixtures.cleanup_node(bf)
+	_cleanup_fixture(fixture)
 
 
 func _test_same_card_cannot_play_twice() -> void:
@@ -209,7 +219,7 @@ func _test_same_card_cannot_play_twice() -> void:
 	_assert.that(not r2.success, "card core: second play should be rejected (already used)")
 	_assert.eq(r2.reason, CardPlayResultScript.REASON_CARD_ALREADY_USED, "card core: reason should be card_already_used")
 
-	TestFixtures.cleanup_node(bf)
+	_cleanup_fixture(fixture)
 
 
 func _test_fortify_adds_stacks() -> void:
@@ -226,33 +236,37 @@ func _test_fortify_adds_stacks() -> void:
 
 	_assert.eq(fortify_layer.get_fortify_stack(cell), FortifyRulesScript.DEFAULT_FORTIFY_STACKS, "card core: fortify card should add 3 stacks")
 
-	TestFixtures.cleanup_node(bf)
+	_cleanup_fixture(fixture)
 
 
-func _test_calibrated_shot_stub_succeeds() -> void:
+func _test_calibrated_shot_effect_succeeds() -> void:
 	var fixture = _make_system_with_battlefield(50, 50)
 	var system = fixture.system
+	var target_bias_system = fixture.target_bias_system
 
 	var req = CardPlayRequestScript.make(CardCatalogScript.CARD_CALIBRATED_SHOT, CardfrontRulesScript.PLAYER_FACTION, Vector2i.ZERO, 0)
 	var result = system.play(req)
 
-	_assert.that(result.success, "card core: calibrated shot stub should succeed")
+	_assert.that(result.success, "card core: calibrated shot effect should succeed")
+	_assert.eq(target_bias_system.get_biased_region(CardfrontRulesScript.PLAYER_FACTION), 0, "card core: calibrated shot should set target bias")
 	_assert.eq(result.card_name, "校准射击", "card core: calibrated shot card name")
 
-	TestFixtures.cleanup_node(fixture.bf)
+	_cleanup_fixture(fixture)
 
 
-func _test_morale_fluctuation_stub_succeeds() -> void:
+func _test_morale_fluctuation_effect_succeeds() -> void:
 	var fixture = _make_system_with_battlefield(50, 50)
 	var system = fixture.system
+	var morale_system = fixture.morale_system
 
 	var req = CardPlayRequestScript.make(CardCatalogScript.CARD_MORALE_FLUCTUATION, CardfrontRulesScript.PLAYER_FACTION, Vector2i.ZERO, 0)
 	var result = system.play(req)
 
-	_assert.that(result.success, "card core: morale fluctuation stub should succeed")
+	_assert.that(result.success, "card core: morale fluctuation effect should succeed")
+	_assert.eq(morale_system.active_effects.size(), 1, "card core: morale fluctuation should add active morale effect")
 	_assert.eq(result.card_name, "民心起伏", "card core: morale fluctuation card name")
 
-	TestFixtures.cleanup_node(fixture.bf)
+	_cleanup_fixture(fixture)
 
 
 func _test_hand_state_mark_and_available() -> void:
@@ -265,6 +279,12 @@ func _test_hand_state_mark_and_available() -> void:
 	_assert.that(not hand.can_play_card(CardCatalogScript.CARD_FRONTLINE_FORTIFY), "hand: fortify not playable after mark_used")
 	_assert.that(hand.can_play_card(CardCatalogScript.CARD_CALIBRATED_SHOT), "hand: calibrated shot still playable")
 	_assert.eq(hand.get_available_card_ids().size(), 1, "hand: 1 card available after marking one used")
+
+
+func _cleanup_fixture(fixture: Dictionary) -> void:
+	TestFixtures.cleanup_node(fixture.get("bf", null))
+	TestFixtures.cleanup_node(fixture.get("morale_system", null))
+	TestFixtures.cleanup_node(fixture.get("target_bias_system", null))
 
 
 func _find_by_id(data_list: Array, target_id: int):
