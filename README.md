@@ -93,6 +93,7 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EconomyTickTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EconomyDebugPanelSceneTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVisualPolicyTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/VisualPressurePolicyTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMapTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
@@ -100,13 +101,15 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 
 Latest local validation:
 
+- `FortifyLayerTestRunner.gd`: 469 checks passed.
 - `CardfrontModeSmokeTestRunner.gd`: 32 checks passed.
 - `NeutralOwnerCompatibilityTestRunner.gd`: 24 checks passed.
 - `DeploymentRulesTestRunner.gd`: 26 checks passed.
 - `RegionMoraleTestRunner.gd`: 24 checks passed.
 - `EconomyTickTestRunner.gd`: 50 checks passed.
-- `EconomyDebugPanelSceneTestRunner.gd`: 8 checks passed.
-- `CardfrontVisualPolicyTestRunner.gd`: 9 checks passed.
+- `EconomyDebugPanelSceneTestRunner.gd`: 12 checks passed.
+- `CardfrontVisualPolicyTestRunner.gd`: 27 checks passed.
+- `VisualPressurePolicyTestRunner.gd`: 25 checks passed.
 - `RegionMapTestRunner.gd`: 3737 checks passed.
 - `SmokeTestRunner.gd`: 218 checks passed.
 - `IntegrationTestRunner.gd`: 133 checks passed.
