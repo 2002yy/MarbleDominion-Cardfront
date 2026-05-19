@@ -28,11 +28,11 @@ func generate_default_layout() -> void:
 	var contest_min_x: int = spawn_columns
 	var contest_max_x: int = grid_size - spawn_columns - 1
 	var center: int = grid_size >> 1
-	var resource_radius: int = maxi(1, grid_size / 20)
-	var lab_radius: int = maxi(2, grid_size / 12)
+	var resource_radius: int = maxi(1, floori(float(grid_size) / 20.0))
+	var lab_radius: int = maxi(2, floori(float(grid_size) / 12.0))
 
-	var energy_margin: int = maxi(2, grid_size / 20)
-	var energy_y_top: int = grid_size / 4
+	var energy_margin: int = maxi(2, floori(float(grid_size) / 20.0))
+	var energy_y_top: int = floori(float(grid_size) / 4.0)
 	var energy_y_bottom: int = grid_size - energy_y_top - 1
 	_paint_rect_instance(
 		contest_min_x + energy_margin,
@@ -50,8 +50,8 @@ func generate_default_layout() -> void:
 	)
 
 	var contest_width: int = maxi(1, contest_max_x - contest_min_x + 1)
-	var factory_left_x: int = contest_min_x + contest_width / 4
-	var factory_right_x: int = contest_max_x - contest_width / 4
+	var factory_left_x: int = contest_min_x + floori(float(contest_width) / 4.0)
+	var factory_right_x: int = contest_max_x - floori(float(contest_width) / 4.0)
 	_paint_rect_instance(
 		factory_left_x - resource_radius,
 		center - lab_radius,
