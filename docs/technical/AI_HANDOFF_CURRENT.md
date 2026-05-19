@@ -42,7 +42,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - Do not add formal card UI in this line unless explicitly requested.
 - Do not add deck draw, discard, shuffle, or deckbuilding.
 - Do not add AI Commander behavior.
-- Do not add bullet absorber core, engineer robot, or full unit systems during a card-effect slice.
+- Do not add new full unit systems outside the planned device slice.
+- Do not expand absorber core or engineer bot beyond current lite behavior unless the next slice explicitly owns tuning.
 - Do not use AI-generated images for this work.
 - Do not change old BallWar mode rules to satisfy Cardfront tests.
 - Do not push effect logic into `Main.gd`.
