@@ -7,7 +7,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 
 - Current line: `v0.1.x` Cardfront prototype
 - Current completed slice: `v0.1.8e-bottom-hud-status-polish`
-- Next slice: TBD (v0.1.9 direction)
+- Next slice: `v0.1.9-direction-planning`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -27,10 +27,13 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 
 ## 3. Just Completed / 刚完成的内容
 
-- `CardfrontDeviceOverlayLayer.get_draw_items_for_test()` — testable draw item inspection without rendering.
-- `DeviceOverlayLayerTestRunner.gd` — full coverage: registry paths, Cardfront overlay existence, BallWar null, draw items, expired, removed, fallback (7 tests, 19 checks).
-- `runtime.device_overlay_layer` stored in `GameRuntimeContext` and `Main.gd`.
-- Device visual layer (v0.1.8a) and validation (v0.1.8b) complete.
+- `CardfrontStatusFormatter.gd` — builds status line: 射击ON | 设备 counts | 卡牌 hand | 校准区域 | VFX ON.
+- Bottom HUD (`fps_label`) refreshed every 0.25s with live Cardfront status.
+- `CardfrontBottomHudStatusTestRunner.gd` (10 checks): verifies device counts, bias info, BallWar isolation.
+- `CardfrontPerformanceSmokeTestRunner.gd` (7 checks): 40×40/50×50 perf smoke.
+- Dirty-redraw optimizations for RegionOverlay and FortifyOverlay.
+- ShotGuideLayer debug text moved out of battlefield layer.
+- Bottom HUD fully retained and visible in both Cardfront and BallWar modes.
 
 ## 4. Next Steps / 下一步
 

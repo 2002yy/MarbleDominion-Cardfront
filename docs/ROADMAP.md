@@ -9,7 +9,7 @@ This file is the single place for project direction and phase status.
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
 - Current completed slice: `v0.1.8e-bottom-hud-status-polish`
-- Next slice: TBD
+- Next slice: `v0.1.9-direction-planning`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
