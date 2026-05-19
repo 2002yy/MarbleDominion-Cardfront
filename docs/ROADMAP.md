@@ -8,7 +8,7 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.3-deployment-rules`
+- Current completed slice: `v0.1.3-deployment-rules` + `v0.1.3.1-visual-pressure-rebalance` + `v0.1.3.2-cardfront-debug-panel-placement`
 - Next slice: `v0.1.4-fortify-layer`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
@@ -27,6 +27,8 @@ This file is the single place for project direction and phase status.
 | `v0.1.2-region-morale` | Done / 已完成 | Morale fluctuation system tied to region state. |
 | `v0.1.2.1-cardfront-visibility-polish` | Done / 已完成 | Compact economy debug panel and Cardfront-only low-pressure bullet visual polish. |
 | `v0.1.3-deployment-rules` | Done / 已完成 | Deployment permission by owned cell, owned border, and region control degree. |
+| `v0.1.3.1-visual-pressure-rebalance` | Done / 已完成 | Rebalance visual pressure: real screen load determines degradation; queue is forecast-only. |
+| `v0.1.3.2-cardfront-debug-panel-placement` | Done / 已完成 | Move Cardfront economy debug panel to bottom-right corner. |
 | `v0.1.4-fortify-layer` | Next / 下一步 | Frontline fortification layer. |
 | `v0.1.5-card-core-lite` | Planned / 计划中 | Pseudo-card core: fixed hand and energy costs. |
 | `v0.1.6-first-card-effects` | Planned / 计划中 | First effects such as calibrated shot, pioneer beacon, and morale fluctuation. |
@@ -109,6 +111,16 @@ This file is the single place for project direction and phase status.
   - `DeploymentRulesTestRunner.gd`
   - owned cell, owned border, and controlled-region permission checks
   - no cards, units, fortification, or AI
+- `v0.1.3.1-visual-pressure-rebalance`
+  - split `_resolve_visual_profile` into legacy and Cardfront strategies
+  - queue is now a forecast signal, not a current pressure signal
+  - Cardfront uses independent thresholds (more generous at low load)
+  - new `VisualPressurePolicyTestRunner.gd` for legacy mode tests
+  - `CardfrontVisualPolicyTestRunner.gd` rewritten with 8 cardfront-specific tests
+- `v0.1.3.2-cardfront-debug-panel-placement`
+  - moved economy debug panel from hardcoded top-left to bottom-right
+  - `_resolve_panel_position` supports `bottom_right` / `bottom_left`
+  - `EconomyDebugPanelSceneTestRunner.gd` adds position boundary checks
 
 ## 6. Next / 下一步
 

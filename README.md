@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.3-deployment-rules**. It adds shared Cardfront deployment permission checks for owned cells, owned borders, and region-control thresholds without changing the BallWar capture runtime. The previous small polish slice is **v0.1.2.1-cardfront-visibility-polish**.
+The current completed slice is **v0.1.3-deployment-rules** with two follow-up polish slices: **v0.1.3.1-visual-pressure-rebalance** and **v0.1.3.2-cardfront-debug-panel-placement**. The latest small polish slice is **v0.1.3.2-cardfront-debug-panel-placement**.
 
 ## Current Slice / 当前阶段
 
@@ -69,6 +69,8 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
 Detailed milestone notes:
 
+- [docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md](docs/history/README_v0_1_3_2_cardfront_debug_panel_placement.md)
+- [docs/history/README_v0_1_3_1_visual_pressure_rebalance.md](docs/history/README_v0_1_3_1_visual_pressure_rebalance.md)
 - [docs/history/README_v0_1_3_deployment_rules.md](docs/history/README_v0_1_3_deployment_rules.md)
 - [docs/history/README_v0_1_2_region_morale.md](docs/history/README_v0_1_2_region_morale.md)
 - [docs/history/README_v0_1_2_1_cardfront_visibility_polish.md](docs/history/README_v0_1_2_1_cardfront_visibility_polish.md)
