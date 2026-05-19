@@ -325,5 +325,7 @@ func _draw() -> void:
 	draw_circle(Vector2.ZERO, radius, base)
 	if not reduce_visual_effects:
 		draw_circle(Vector2(1.8, 1.8), radius * 0.64, base.darkened(0.26))
+		draw_arc(Vector2.ZERO, radius * 0.88, -0.95, 2.25, 18, Color(1.0, 1.0, 1.0, 0.20), 1.1, true)
 		draw_circle(Vector2(-2.2, -2.0), radius * 0.30, Color(1.0, 1.0, 1.0, 0.76))
+		draw_circle(Vector2(-3.3, -3.0), radius * 0.13, Color(1.0, 1.0, 1.0, 0.48))
 		draw_circle(Vector2.ZERO, radius * 0.25, Color(1.0, 1.0, 1.0, 0.14))

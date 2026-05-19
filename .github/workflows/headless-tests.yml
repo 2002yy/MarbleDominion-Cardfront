@@ -68,10 +68,20 @@ jobs:
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/EconomyTickTestRunner.gd"
 
+      - name: Economy Debug Panel Scene Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/EconomyDebugPanelSceneTestRunner.gd"
+
       - name: Region Morale Test
         shell: pwsh
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/RegionMoraleTestRunner.gd"
+
+      - name: Cardfront Visual Policy Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/CardfrontVisualPolicyTestRunner.gd"
 
       - name: Start Menu Scene Test
         shell: pwsh

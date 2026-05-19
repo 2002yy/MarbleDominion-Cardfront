@@ -8,7 +8,7 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.2-region-morale`
+- Current completed slice: `v0.1.2-region-morale` plus small polish `v0.1.2.1-cardfront-visibility-polish`
 - Next slice: `v0.1.3-deployment-rules`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
@@ -25,6 +25,7 @@ This file is the single place for project direction and phase status.
 | `v0.1.1-b-region-instances` | Done / 已完成 | Add `region_id`, explicit region instances, and region-control statistics. |
 | `v0.1.1-c-region-yield` | Done / 已完成 | Region-control yield with 50% / 80% thresholds. |
 | `v0.1.2-region-morale` | Done / 已完成 | Morale fluctuation system tied to region state. |
+| `v0.1.2.1-cardfront-visibility-polish` | Done / 已完成 | Compact economy debug panel and Cardfront-only low-pressure bullet visual polish. |
 | `v0.1.3-deployment-rules` | Next / 下一步 | Deployment permission by owned region, owned border, and region control degree. |
 | `v0.1.4-fortify-layer` | Planned / 计划中 | Frontline fortification layer. |
 | `v0.1.5-card-core-lite` | Planned / 计划中 | Pseudo-card core: fixed hand and energy costs. |
@@ -114,6 +115,10 @@ This file is the single place for project direction and phase status.
   - 已加入 region-local 民心起伏底层系统
   - 固定 seed 可测试
   - 暂不做卡牌、单位、AI 和前线加固
+- `v0.1.2.1-cardfront-visibility-polish` 已完成：
+  - 经济调试面板改为紧凑显示
+  - Cardfront 低压力下保留更完整的小球视觉效果
+  - 旧 BallWar 模式视觉策略不变
 - 当前下一刀是 `v0.1.3-deployment-rules`：
   - 部署权限：我方区域 / 我方边界 / 区域控制度
 

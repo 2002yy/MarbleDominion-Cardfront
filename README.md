@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current milestone is **v0.1.2-region-morale**. It adds deterministic region-local morale shifts without changing the BallWar capture runtime.
+The current milestone is **v0.1.2-region-morale**. It adds deterministic region-local morale shifts without changing the BallWar capture runtime. The latest small polish slice is **v0.1.2.1-cardfront-visibility-polish**.
 
 ## Current Slice / 当前阶段
 
@@ -19,7 +19,8 @@ Implemented in this repository:
 - Stable `region_id` instances for contested `ENERGY`, `FACTORY`, and central `LAB` regions.
 - Per-region player / AI / neutral control statistics via `RegionControlCalculator.gd`.
 - Cardfront resource state, region yield rules, and 1-second economy tick.
-- Minimal Cardfront-only economy debug panel for resource and region-yield verification.
+- Compact Cardfront-only economy debug panel for resource and region-yield verification.
+- Cardfront-only low-pressure bullet visual policy that keeps richer marble effects while old BallWar modes keep their original degradation rules.
 - Region-local morale system for support and unrest ownership shifts.
 - Cardfront-only translucent region overlay.
 - Cardfront mode starts with only two turrets and two control chambers.
@@ -66,6 +67,7 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 Detailed milestone notes:
 
 - [docs/history/README_v0_1_2_region_morale.md](docs/history/README_v0_1_2_region_morale.md)
+- [docs/history/README_v0_1_2_1_cardfront_visibility_polish.md](docs/history/README_v0_1_2_1_cardfront_visibility_polish.md)
 - [docs/history/README_v0_1_1_region_instances.md](docs/history/README_v0_1_1_region_instances.md)
 - [docs/history/README_v0_1_1_region_yield.md](docs/history/README_v0_1_1_region_yield.md)
 - [docs/history/README_v0_1_1_region_map.md](docs/history/README_v0_1_1_region_map.md)
@@ -80,6 +82,8 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMoraleTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EconomyTickTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EconomyDebugPanelSceneTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVisualPolicyTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMapTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
@@ -90,7 +94,9 @@ Latest local validation:
 - `CardfrontModeSmokeTestRunner.gd`: 32 checks passed.
 - `NeutralOwnerCompatibilityTestRunner.gd`: 24 checks passed.
 - `RegionMoraleTestRunner.gd`: 24 checks passed.
-- `EconomyTickTestRunner.gd`: 49 checks passed.
+- `EconomyTickTestRunner.gd`: 50 checks passed.
+- `EconomyDebugPanelSceneTestRunner.gd`: 8 checks passed.
+- `CardfrontVisualPolicyTestRunner.gd`: 9 checks passed.
 - `RegionMapTestRunner.gd`: 3737 checks passed.
 - `SmokeTestRunner.gd`: 218 checks passed.
 - `IntegrationTestRunner.gd`: 133 checks passed.

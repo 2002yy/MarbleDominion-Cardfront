@@ -6,6 +6,8 @@ const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/R
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
 const RegionYieldCalculatorScript = preload("res://scripts/cardfront/economy/RegionYieldCalculator.gd")
 
+const MAX_REGION_LINES: int = 3
+
 var region_map = null
 var battlefield = null
 var economy_system = null
@@ -56,12 +58,12 @@ func _ensure_ui() -> void:
 		return
 	_panel = Panel.new()
 	_panel.name = "EconomyDebugPanel"
-	_panel.position = Vector2(14.0, 84.0)
-	_panel.size = Vector2(320.0, 210.0)
+	_panel.position = Vector2(8.0, 118.0)
+	_panel.size = Vector2(260.0, 150.0)
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.z_index = 100
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.04, 0.06, 0.09, 0.78)
+	style.bg_color = Color(0.04, 0.06, 0.09, 0.58)
 	style.border_color = Color(0.42, 0.80, 1.0, 0.60)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(6)
@@ -70,11 +72,11 @@ func _ensure_ui() -> void:
 
 	_label = Label.new()
 	_label.name = "EconomyDebugLabel"
-	_label.position = Vector2(10.0, 8.0)
-	_label.size = Vector2(300.0, 192.0)
+	_label.position = Vector2(8.0, 6.0)
+	_label.size = Vector2(244.0, 138.0)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_label.add_theme_font_size_override("font_size", 13)
+	_label.add_theme_font_size_override("font_size", 12)
 	_label.add_theme_color_override("font_color", Color(0.88, 0.95, 1.0, 0.96))
 	_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.55))
 	_label.add_theme_constant_override("outline_size", 2)
@@ -114,13 +116,76 @@ func _refresh_text() -> void:
 	var lines: Array[String] = [
 		"能量：%d" % energy,
 		"零件：%d" % parts,
-		"",
+		_format_tick_summary(),
 	]
 
-	if region_map != null:
-		for region_id in region_map.get_controllable_region_ids():
-			lines.append(_format_region_line(int(region_id)))
+	for region_id in _get_key_region_ids():
+		lines.append(_format_region_line(int(region_id)))
 	_label.text = "\n".join(lines)
+
+
+func _format_tick_summary() -> String:
+	if region_map == null or battlefield == null:
+		return "本tick：无产出"
+	var player_yield: Dictionary = RegionYieldCalculatorScript.calculate_for_owner(region_map, battlefield, CardfrontRulesScript.PLAYER_FACTION).get("total_yield", {})
+	var ai_yield: Dictionary = RegionYieldCalculatorScript.calculate_for_owner(region_map, battlefield, CardfrontRulesScript.AI_FACTION).get("total_yield", {})
+	return "本tick：玩家 %s｜AI %s" % [_yield_summary(player_yield), _yield_summary(ai_yield)]
+
+
+func _yield_summary(yield_data: Dictionary) -> String:
+	var parts: Array[String] = []
+	var energy: int = int(yield_data.get("energy", 0))
+	var part_count: int = int(yield_data.get("parts", 0))
+	if energy > 0:
+		parts.append("+%d能量" % energy)
+	if part_count > 0:
+		parts.append("+%d零件" % part_count)
+	if parts.is_empty():
+		return "无产出"
+	return " ".join(parts)
+
+
+func _get_key_region_ids() -> Array[int]:
+	var selected: Array[int] = []
+	if region_map == null or battlefield == null:
+		return selected
+	var scored: Array[Dictionary] = []
+	for raw_region_id in region_map.get_controllable_region_ids():
+		var region_id: int = int(raw_region_id)
+		scored.append({
+			"region_id": region_id,
+			"score": _score_region(region_id),
+		})
+	scored.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if int(a.get("score", 0)) == int(b.get("score", 0)):
+			return int(a.get("region_id", 0)) < int(b.get("region_id", 0))
+		return int(a.get("score", 0)) > int(b.get("score", 0))
+	)
+	for item in scored:
+		if selected.size() >= MAX_REGION_LINES:
+			break
+		selected.append(int(item.get("region_id", -1)))
+	return selected
+
+
+func _score_region(region_id: int) -> int:
+	var control: Dictionary = RegionControlCalculatorScript.calculate(region_map, battlefield, region_id)
+	var player_percent: int = RegionControlCalculatorScript.get_owner_percent(control, CardfrontRulesScript.PLAYER_FACTION)
+	var ai_percent: int = RegionControlCalculatorScript.get_owner_percent(control, CardfrontRulesScript.AI_FACTION)
+	var player_detail: Dictionary = RegionYieldCalculatorScript.calculate_region_yield(region_map, battlefield, region_id, CardfrontRulesScript.PLAYER_FACTION)
+	var ai_detail: Dictionary = RegionYieldCalculatorScript.calculate_region_yield(region_map, battlefield, region_id, CardfrontRulesScript.AI_FACTION)
+	var best_tier: int = maxi(int(player_detail.get("yield_tier", 0)), int(ai_detail.get("yield_tier", 0)))
+	return best_tier * 100 + maxi(player_percent, ai_percent) + _type_priority(region_map.get_region_type_by_id(region_id))
+
+
+func _type_priority(region_type: String) -> int:
+	match region_type:
+		RegionTypeScript.LAB:
+			return 18
+		RegionTypeScript.ENERGY, RegionTypeScript.FACTORY:
+			return 10
+		_:
+			return 0
 
 
 func _format_region_line(region_id: int) -> String:

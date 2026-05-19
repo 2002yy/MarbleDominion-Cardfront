@@ -8,6 +8,7 @@ var active_spawn_order: Array[int] = []
 var active_spawn_cursor: int = 0
 var peak_active_count: int = 0
 var visual_pressure_update_timer: float = 0.0
+var _visual_pressure_fps_override_for_tests: int = -1
 var trail_layer
 var tracked_turrets: Dictionary = {}
 var tracked_queue_by_faction: Dictionary = {}
@@ -61,6 +62,9 @@ func set_trail_layer(new_trail_layer) -> void:
 	trail_layer = new_trail_layer
 	if trail_layer != null and is_instance_valid(trail_layer) and trail_layer.has_method("setup"):
 		trail_layer.setup(self )
+
+func set_visual_pressure_fps_override_for_tests(value: int) -> void:
+	_visual_pressure_fps_override_for_tests = value
 
 func set_tracked_turrets(turret_map: Dictionary) -> void:
 	_disconnect_tracked_turrets()
@@ -214,7 +218,7 @@ func _get_current_visual_profile() -> Dictionary:
 	return last_visual_profile
 
 func _resolve_visual_profile(active_count: int) -> Dictionary:
-	var fps: int = floori(Engine.get_frames_per_second())
+	var fps: int = _visual_pressure_fps_override_for_tests if _visual_pressure_fps_override_for_tests >= 0 else floori(Engine.get_frames_per_second())
 	var queue_total: int = get_tracked_queue_total()
 	var trail_segments: int = estimate_trail_segments()
 	var trail_redraws: int = 0
@@ -290,6 +294,11 @@ func _resolve_visual_profile(active_count: int) -> Dictionary:
 				trail_points = GameConfig.get_high_trail_points()
 			elif active_count >= GameConfig.get_mid_pressure_threshold():
 				trail_points = GameConfig.get_mid_trail_points()
+
+	if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT and severity <= 1:
+		use_reduced_effects = false
+		use_simple_draw = false
+		trail_points = maxi(trail_points, 10)
 
 	return {
 		"simple_draw": use_simple_draw,
