@@ -15,6 +15,8 @@ This folder keeps the detailed stage-by-stage BallWar history that used to live 
 
 ## 推荐入口 / Suggested entry points
 
+- `README_v0_1_3_deployment_rules.md`
+  - Cardfront deployment-rules slice / owned cell, owned border, and controlled-region permission checks
 - `README_v0_1_2_1_cardfront_visibility_polish.md`
   - Cardfront visibility polish / compact economy debug panel and Cardfront-only low-pressure bullet visuals
 - `README_v0_1_2_region_morale.md`

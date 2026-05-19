@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current milestone is **v0.1.2-region-morale**. It adds deterministic region-local morale shifts without changing the BallWar capture runtime. The latest small polish slice is **v0.1.2.1-cardfront-visibility-polish**.
+The current completed slice is **v0.1.3-deployment-rules**. It adds shared Cardfront deployment permission checks for owned cells, owned borders, and region-control thresholds without changing the BallWar capture runtime. The previous small polish slice is **v0.1.2.1-cardfront-visibility-polish**.
 
 ## Current Slice / 当前阶段
 
@@ -22,6 +22,7 @@ Implemented in this repository:
 - Compact Cardfront-only economy debug panel for resource and region-yield verification.
 - Cardfront-only low-pressure bullet visual policy that keeps richer marble effects while old BallWar modes keep their original degradation rules.
 - Region-local morale system for support and unrest ownership shifts.
+- Deployment permission rules for owned cells, owned borders, and controlled regions.
 - Cardfront-only translucent region overlay.
 - Cardfront mode starts with only two turrets and two control chambers.
 - Event roulette is disabled in Cardfront mode; active card play will replace it later.
@@ -31,12 +32,12 @@ Implemented in this repository:
   - Equal player/AI territory at timer is a draw.
 - New headless runner: `CardfrontModeSmokeTestRunner.gd`.
 - New headless runner: `RegionMapTestRunner.gd`.
+- New headless runner: `DeploymentRulesTestRunner.gd`.
 
 Not implemented yet:
 
 - Deck / hand / card effect data.
 - AI Commander behavior.
-- Deployment permission rules.
 - Cardfront save schema.
 - Dedicated Cardfront HUD and card UI.
 
@@ -52,6 +53,8 @@ These screenshots still show the inherited BallWar visual baseline while Cardfro
 
 Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
+- `scripts/cardfront/deployment/` - shared deployment permission query/result/rule evaluation.
+
 - `scripts/cardfront/CardfrontRules.gd` — mode constants, duel factions, neutral owner, timer and capture target.
 - `scripts/cardfront/CardfrontBattlefieldInitializer.gd` — player/AI/neutral initial owner-grid generation.
 - `scripts/cardfront/regions/RegionMap.gd` — deterministic region instance map used by Cardfront systems.
@@ -66,6 +69,7 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 
 Detailed milestone notes:
 
+- [docs/history/README_v0_1_3_deployment_rules.md](docs/history/README_v0_1_3_deployment_rules.md)
 - [docs/history/README_v0_1_2_region_morale.md](docs/history/README_v0_1_2_region_morale.md)
 - [docs/history/README_v0_1_2_1_cardfront_visibility_polish.md](docs/history/README_v0_1_2_1_cardfront_visibility_polish.md)
 - [docs/history/README_v0_1_1_region_instances.md](docs/history/README_v0_1_1_region_instances.md)
@@ -80,6 +84,7 @@ Run with Godot 4.6:
 ```powershell
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontModeSmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeploymentRulesTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMoraleTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EconomyTickTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EconomyDebugPanelSceneTestRunner.gd
@@ -93,6 +98,7 @@ Latest local validation:
 
 - `CardfrontModeSmokeTestRunner.gd`: 32 checks passed.
 - `NeutralOwnerCompatibilityTestRunner.gd`: 24 checks passed.
+- `DeploymentRulesTestRunner.gd`: 26 checks passed.
 - `RegionMoraleTestRunner.gd`: 24 checks passed.
 - `EconomyTickTestRunner.gd`: 50 checks passed.
 - `EconomyDebugPanelSceneTestRunner.gd`: 8 checks passed.
@@ -108,11 +114,11 @@ Latest local validation:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.3-deployment-rules`:
+`v0.1.4-fortify-layer`:
 
-- Define deployment permission by owned region, owned border, and region control degree.
-- Keep deployment rules outside bullet capture and economy storage internals.
-- Still defer cards, units, fortification, and AI Commander behavior.
+- Add a dedicated frontline fortification layer above deployment permission checks.
+- Keep fortification outside bullet movement, capture, and core chamber/turret logic.
+- Still defer card UI, unit devices, and AI Commander behavior.
 - Full route is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License

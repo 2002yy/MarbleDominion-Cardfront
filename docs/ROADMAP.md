@@ -3,18 +3,18 @@
 Role / 作用: main progress board / 主进度板
 
 This file is the single place for project direction and phase status.  
-这份文档只回答项目“已经完成了什么、正在推进什么、接下来做什么、哪些内容暂缓”。
+这份文档只回答项目已经完成什么、正在推进什么、接下来做什么、哪些内容暂缓。
 
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.2-region-morale` plus small polish `v0.1.2.1-cardfront-visibility-polish`
-- Next slice: `v0.1.3-deployment-rules`
+- Current completed slice: `v0.1.3-deployment-rules`
+- Next slice: `v0.1.4-fortify-layer`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
   - economy and deployment rules built from region control, not from bullet internals
-  - card systems added only after region/yield/deployment boundaries are testable
+  - card systems added only after region, yield, morale, and deployment boundaries are testable
   - keep `Battlefield`, bullets, turrets, and chambers reusable for old BallWar modes
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
@@ -26,169 +26,123 @@ This file is the single place for project direction and phase status.
 | `v0.1.1-c-region-yield` | Done / 已完成 | Region-control yield with 50% / 80% thresholds. |
 | `v0.1.2-region-morale` | Done / 已完成 | Morale fluctuation system tied to region state. |
 | `v0.1.2.1-cardfront-visibility-polish` | Done / 已完成 | Compact economy debug panel and Cardfront-only low-pressure bullet visual polish. |
-| `v0.1.3-deployment-rules` | Next / 下一步 | Deployment permission by owned region, owned border, and region control degree. |
-| `v0.1.4-fortify-layer` | Planned / 计划中 | Frontline fortification layer. |
+| `v0.1.3-deployment-rules` | Done / 已完成 | Deployment permission by owned cell, owned border, and region control degree. |
+| `v0.1.4-fortify-layer` | Next / 下一步 | Frontline fortification layer. |
 | `v0.1.5-card-core-lite` | Planned / 计划中 | Pseudo-card core: fixed hand and energy costs. |
 | `v0.1.6-first-card-effects` | Planned / 计划中 | First effects such as calibrated shot, pioneer beacon, and morale fluctuation. |
 | `v0.1.7-unit-devices` | Planned / 计划中 | Device-style systems for bullet absorber core, engineer robot, and pioneer beacon. |
 
-### Design Boundaries / 设计边界
+## 3. Design Boundaries / 设计边界
 
 - `v0.1.1-b` adds region identity and control statistics only; no resource income yet.
 - `v0.1.1-c` adds region yield and the first 1-second economy tick.
+- `v0.1.2` adds region-local morale ownership shifts only.
+- `v0.1.3` adds deployment permission judgment only.
 - Economy calculation must stay outside `Battlefield.apply_bullet()`.
-- Card effects should wait until region/yield/deployment rules are already testable.
+- Deployment rules must not mutate `Battlefield` owners or `RegionMap`.
+- Card effects should wait until region, yield, morale, and deployment rules are already testable.
 - Do not modify `Bullet`, `BulletPool`, `Turret`, or `ControlChamber` for region planning slices unless a later slice explicitly requires it.
 
-## 3. Foundation Completed / 已完成基础
+## 4. Foundation Completed / 已完成基础
 
 ### Gameplay loop / 玩法闭环
 
-- 四阵营战场争夺、角落炮台、控制仓发射节奏已经形成稳定闭环
-- 基础模式、占领模式、限时模式、狂野模式已接入主流程
-- 事件转盘、事件日志、胜负判断和对局结束流程已打通
+- Four-faction battlefield capture, ricochet turrets, control chambers, win evaluation, event log, and match-end flow are already stable.
+- Existing BallWar modes remain the baseline runtime.
+- Cardfront is a sidecar mode on top of the reusable BallWar runtime.
 
 ### Save/load and orchestration / 保存恢复与编排
 
-- `SaveFlowController` 已拆成 `prepare_*` / `apply_*`
-- `RestorePlan.gd` 已进入主动恢复链路
-- `ControlChamber.gd`、`Turret.gd`、`Bullet.gd` 各自拥有 `restore_from_state(...)`
-- `Main.gd` 已明显收缩，主要承担顶层生命周期编排
+- `SaveFlowController` owns save preparation and apply steps.
+- `RestorePlan.gd` remains the active recovery chain.
+- `ControlChamber.gd`, `Turret.gd`, and `Bullet.gd` expose `restore_from_state(...)`.
+- `Main.gd` is kept orchestration-focused and delegates Cardfront systems to `scripts/cardfront/`.
 
 ### UI and product surfaces / UI 与用户面
 
-- `StartMenu.tscn`、`GameHUD.tscn`、`SettingsPanel.tscn`、`ResultPanel.tscn` 已形成当前主 UI 结构
-- 设置系统已接入：
-  - 显示性能信息
-  - 低特效模式
-  - 事件日志显示开关
-- 结算页已接入：
-  - 胜利原因
-  - 游戏时长
-  - 最终占领率
-  - 最高活跃子弹
-  - 事件次数
+- `StartMenu.tscn`, `GameHUD.tscn`, `SettingsPanel.tscn`, and `ResultPanel.tscn` form the current main UI structure.
+- Cardfront currently uses a compact economy debug panel, not a final HUD.
+- Formal card UI is intentionally deferred.
 
 ### Runtime cleanup / 运行时收口
 
-- `BattlefieldDecorLayer.gd` 从每帧轮询改为事件/脏标记模式
-- `BulletPool.gd` 已维护峰值活跃子弹统计
-- `EventRouletteController.gd` 已维护事件触发计数
-- `ChamberState.gd` 已从 `ControlChamber.gd` 外提为纯状态容器
+- `BattlefieldDecorLayer.gd` uses event/dirty-marker style updates.
+- `BulletPool.gd` maintains peak active-bullet statistics and visual degradation rules.
+- `EventRouletteController.gd` remains part of old BallWar modes; Cardfront disables roulette for now.
+- `ChamberState.gd` and chamber helper modules keep chamber state and physics boundaries explicit.
 
 ### Documentation cleanup / 文档收口
 
-- `README.md` 作为仓库入口（9 个精选区块，链接到 `docs/`）
-- `CHANGELOG.md` 作为精简版本脊柱
-- `docs/`: `ARCHITECTURE.md`, `TESTING.md`, `PERFORMANCE.md`, `SAVE_SYSTEM.md`, `ANDROID_EXPORT.md`, `RELEASE_PROCESS.md`, `ROADMAP.md`
-- `docs/history/` — 历史阶段记录
-- `docs/technical/`, `docs/design/`, `docs/performance/` — 工程、设计、性能附录
+- `README.md` is the repository entry surface.
+- `CHANGELOG.md` is the short milestone spine.
+- `docs/` owns architecture, testing, performance, save system, export, release process, and roadmap docs.
+- `docs/history/` keeps detailed historical stage notes.
 
-### Public repository hardening / 公开仓库收口
+## 5. Cardfront Completed Slices / 已完成 Cardfront 切片
 
-- README 顶部重构：面向玩家/招聘官，30 秒看懂项目价值
-- GitHub Actions CI workflow：validate + 10 测试并行 matrix，日志 artifact
-- Android 导出脚本去本机绝对路径（`$PSScriptRoot` 相对路径）
-- `export_presets.cfg` 三处不对齐修复（preset 名称、script_export_mode、version）
-- 版本叙事三处统一（README / CHANGELOG / Releases 页面）
-- 历史版本文档全部归档到 `docs/history/`，根目录保持干净
-
-## 4. In Progress / 当前进行中
-
-### Cardfront region model / 卡牌前线区域模型
-
-- `v0.1.1-a-region-map` 已完成：
+- `v0.1.1-a-region-map`
   - `RegionType.gd`
   - `RegionMap.gd`
   - `RegionOverlayLayer.gd`
   - `RegionMapTestRunner.gd`
-- `v0.1.1-b-region-instances` 已完成：
-  - 区域层已有稳定 `region_id`
-  - 已建立区域实例数据结构
-  - 已能统计每个区域内玩家/AI/中立控制度
-- `v0.1.1-c-region-yield` 已完成：
-  - 基于 50% / 80% 控制度档位计算区域产出
-  - 已加入 1 秒经济 tick
-  - 已加入 Cardfront-only 最小经济调试面板
-  - 经济逻辑保持独立于 `Battlefield.apply_bullet()`
-- `v0.1.2-region-morale` 已完成：
-  - 已加入 region-local 民心起伏底层系统
-  - 固定 seed 可测试
-  - 暂不做卡牌、单位、AI 和前线加固
-- `v0.1.2.1-cardfront-visibility-polish` 已完成：
-  - 经济调试面板改为紧凑显示
-  - Cardfront 低压力下保留更完整的小球视觉效果
-  - 旧 BallWar 模式视觉策略不变
-- 当前下一刀是 `v0.1.3-deployment-rules`：
-  - 部署权限：我方区域 / 我方边界 / 区域控制度
+- `v0.1.1-b-region-instances`
+  - stable `region_id`
+  - explicit region instance data
+  - per-region player / AI / neutral control statistics
+- `v0.1.1-c-region-yield`
+  - resource state, yield rules, yield calculator, economy tick
+  - compact Cardfront-only economy debug panel
+  - economy logic remains outside `Battlefield.apply_bullet()`
+- `v0.1.2-region-morale`
+  - region-local morale system
+  - deterministic seeded test path
+  - no cards, units, AI, or fortification
+- `v0.1.2.1-cardfront-visibility-polish`
+  - compact debug panel layout
+  - Cardfront-only low-pressure marble visual polish
+  - old BallWar visual strategy unchanged
+- `v0.1.3-deployment-rules`
+  - `DeploymentRuleType.gd`
+  - `DeploymentQuery.gd`
+  - `DeploymentResult.gd`
+  - `DeploymentRules.gd`
+  - `DeploymentRulesTestRunner.gd`
+  - owned cell, owned border, and controlled-region permission checks
+  - no cards, units, fortification, or AI
 
-### Android export hardening / Android 导出固化
+## 6. Next / 下一步
 
-- 导出配置与资源压缩设置已基本对齐
-- Debug APK 已进入 release 资产流；后续重点是签名包和可重复交付流程
+1. **`v0.1.4-fortify-layer`**: frontline fortification layer built above deployment rules.
+2. **`v0.1.5-card-core-lite`**: pseudo-card core with fixed hand and energy costs.
 
-### Chamber refactor phase 2 / 控制仓第二阶段拆分
+## 7. Later / 中期候选
 
-- 当前已完成状态外提与 `ChamberBallPhysics.gd` 初步拆分
-- 配套补充 `ChamberBallPhysicsTestRunner.gd`
-- 后续再继续拆出几何、绘制和保存适配边界
+- `v0.1.6-first-card-effects`: calibrated shot, pioneer beacon, morale fluctuation, and similar first effects.
+- `v0.1.7-unit-devices`: device-style systems for bullet absorber core, engineer robot, and pioneer beacon.
+- New-player tutorial.
+- Mode explanation page.
+- More complete match-end statistics.
+- Android signing and store-ready delivery flow.
 
-### Public repo hygiene / 公开仓库整理
+## 8. Not Now / 暂不处理
 
-- Release 与主 README 已按 Latest Stable / Milestone / Historical 分层对齐
-- 根目录已收束为外部入口，过程文档归入 `docs/`
-- 已完成，转入下一阶段视觉与音效收口
+- Do not add card UI, units, AI, or fortification outside their planned slices.
+- Do not build cards or AI before the region/deployment foundation is stable.
+- Do not expand bullet-field scale before the performance baseline is stable.
+- Do not push UI logic back into raw code-generated dynamic UI surfaces.
+- Do not treat `docs/history/README_v*.md` as the current source of truth.
+- Do not add large special events or special marbles before their boundaries are designed.
 
-### Performance evidence capture / 性能证据归档
+## 9. Canonical Doc Split / 文档分工
 
-- 性能探针脚本已存在
-- 仍需要补齐更成体系的基线记录，尤其是高压弹幕与较大网格场景
-
-## 5. Next / 下一步
-
-1. **`v0.1.3-deployment-rules`**: deployment permission by owned region, owned border, and region control degree.
-2. **`v0.1.4-fortify-layer`**: frontline fortification layer.
-
-## 6. Later / 中期候选
-
-- `v0.1.5-card-core-lite`：伪卡牌、固定手牌、能量消耗
-- `v0.1.6-first-card-effects`：校准射击、拓荒信标、民心起伏等效果
-- `v0.1.7-unit-devices`：吸弹核心、工程机器人、拓荒信标装置化
-- 新手引导
-- 模式说明页
-- 更完整的结算统计
-- Android 签名包与商店发布流程
-
-## 7. Not Now / 暂不处理
-
-- 在 `v0.1.2` 中提前做卡牌 UI、单位、AI 或前线加固
-- 在区域实例前做卡牌和 AI
-- 在性能基线不稳定前继续扩大弹幕规模
-- 把 UI 重新塞回纯代码动态生成
-- 把 `docs/history/README_v*.md` 当成当前真相入口
-- 在没有边界设计前大规模增加复杂特殊事件或特殊球
-
-## 8. Canonical Doc Split / 文档分工
-
-- `README.md`
-  - 项目入口，9 个区块链接到 `docs/`
-- `CHANGELOG.md`
-  - 精简版本脊柱
-- `docs/ARCHITECTURE.md`
-  - 系统分层、归属规则、架构原则
-- `docs/TESTING.md`
-  - 10 个测试 runner、分类说明、运行建议
-- `docs/PERFORMANCE.md`
-  - 性能探针概览与基线摘要
-- `docs/SAVE_SYSTEM.md`
-  - 存档槽、备份恢复、版本校验、输入清洗
-- `docs/ANDROID_EXPORT.md`
-  - Android 导出检查清单
-- `docs/RELEASE_PROCESS.md`
-  - 打包与发布流程
-- `docs/ROADMAP.md`
-  - 当前方向、已完成、下一步、暂缓项
-- `docs/history/README.md`
-  - 历史阶段索引
-- `docs/technical/AI_HANDOFF_CURRENT.md`
-  - AI / Codex 接管卡片
+- `README.md`: project entry surface and curated links.
+- `CHANGELOG.md`: short milestone spine.
+- `docs/ARCHITECTURE.md`: system layering, ownership rules, and architecture principles.
+- `docs/TESTING.md`: runner categories and run guidance.
+- `docs/PERFORMANCE.md`: performance probe overview and baseline notes.
+- `docs/SAVE_SYSTEM.md`: save schema, backup recovery, validation, and input cleanup.
+- `docs/ANDROID_EXPORT.md`: Android export checklist.
+- `docs/RELEASE_PROCESS.md`: packaging and release workflow.
+- `docs/ROADMAP.md`: current direction, completed work, next step, and deferred scope.
+- `docs/history/README.md`: historical stage index.
+- `docs/technical/AI_HANDOFF_CURRENT.md`: AI / Codex handoff card.

@@ -58,6 +58,11 @@ jobs:
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd"
 
+      - name: Deployment Rules Test
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/DeploymentRulesTestRunner.gd"
+
       - name: Region Map Test
         shell: pwsh
         run: |
