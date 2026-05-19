@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.1.x` Cardfront prototype
-- Current completed slice: `v0.1.8a-device-visual-layer`
-- Next slice: `v0.1.8b-device-visual-validation`
+- Current completed slice: `v0.1.8b-device-visual-validation`
+- Next slice: TBD
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -27,16 +27,14 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 
 ## 3. Just Completed / 刚完成的内容
 
-- `DeviceVisualRegistry.gd` — maps device_type → texture path, fallback color, display label.
-- `CardfrontDeviceOverlayLayer.gd` — draws device sprites (96×96) on battlefield cells with fallback to colored rect.
-- 11 runtime PNGs exported from 1024 sources via `tools/process_cardfront_assets.py`.
-- `DeviceOverlayLayerTestRunner.gd` (6 tests, 14 checks).
-- Device logic tetralogy (v0.1.7a-d) complete.
+- `CardfrontDeviceOverlayLayer.get_draw_items_for_test()` — testable draw item inspection without rendering.
+- `DeviceOverlayLayerTestRunner.gd` — full coverage: registry paths, Cardfront overlay existence, BallWar null, draw items, expired, removed, fallback (7 tests, 19 checks).
+- `runtime.device_overlay_layer` stored in `GameRuntimeContext` and `Main.gd`.
+- Device visual layer (v0.1.8a) and validation (v0.1.8b) complete.
 
 ## 4. Next Steps / 下一步
 
-1. `v0.1.8b-device-visual-validation`: tests and polish for device visual layer.
-2. Keep formal card UI, draw/discard/shuffle, and AI Commander deferred.
+Device visual phase complete. Next direction TBD per ROADMAP.
 
 ## 5. Do Not Do / 不要做什么
 

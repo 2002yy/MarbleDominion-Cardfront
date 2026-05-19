@@ -22,6 +22,7 @@ func _run() -> void:
 	_test_texture_paths_exist()
 	_test_overlay_created_in_cardfront()
 	_test_old_ballwar_no_overlay()
+	_test_active_device_in_draw_items()
 	_test_expired_device_not_drawn()
 	_test_removed_device_not_drawn()
 	_test_missing_texture_falls_back_to_color()
@@ -86,9 +87,40 @@ func _test_old_ballwar_no_overlay() -> void:
 	main._start_game(20, true, false)
 
 	_assert.that(main.runtime.device_layer == null, "overlay: old BallWar should not have device layer")
+	_assert.that(main.runtime.device_overlay_layer == null, "overlay: old BallWar should not have device_overlay_layer")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
+
+
+func _test_active_device_in_draw_items() -> void:
+	var bf = Battlefield.new()
+	bf.configure(10)
+	get_root().add_child(bf)
+	bf.reset_quadrants()
+
+	var device_layer = DeviceLayerScript.new()
+	device_layer.setup(bf, null)
+	get_root().add_child(device_layer)
+
+	var overlay = CardfrontDeviceOverlayLayerScript.new()
+	overlay.setup(device_layer, bf, GameConfig.GAME_MODE_CARDFRONT)
+	get_root().add_child(overlay)
+
+	var req = DevicePlacementRequestScript.make(DeviceTypeScript.ABSORBER_CORE, CardfrontRulesScript.PLAYER_FACTION, Vector2i(2, 2))
+	device_layer.place(req)
+
+	var items = overlay.get_draw_items_for_test()
+	_assert.gte(items.size(), 1, "overlay: active device should appear in draw items")
+	if items.size() > 0:
+		var item: Dictionary = items[0]
+		_assert.eq(str(item.get("device_type", "")), DeviceTypeScript.ABSORBER_CORE, "overlay: draw item type")
+		_assert.that(str(item.get("texture_path", "")) != "", "overlay: draw item should have texture path")
+		_assert.that(bool(item.get("has_fallback", false)), "overlay: draw item should have fallback color")
+
+	TestFixtures.cleanup_node(overlay)
+	TestFixtures.cleanup_node(device_layer)
+	TestFixtures.cleanup_node(bf)
 
 
 func _test_expired_device_not_drawn() -> void:

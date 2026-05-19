@@ -65,3 +65,20 @@ func _get_texture(device_type: String) -> Texture2D:
 	_texture_cache[device_type] = tex
 	return tex
 
+
+func get_draw_items_for_test() -> Array:
+	var items = []
+	if device_layer == null:
+		return items
+	for instance in device_layer.get_all_active_devices():
+		var device_type: String = str(instance.device_type)
+		items.append({
+			"device_type": device_type,
+			"cell": instance.cell,
+			"owner_id": instance.owner_id,
+			"texture_path": device_visual_registry.get_texture_path(device_type),
+			"texture_loaded": _get_texture(device_type) != null,
+			"has_fallback": device_visual_registry.get_fallback_color(device_type) != Color.GRAY,
+		})
+	return items
+

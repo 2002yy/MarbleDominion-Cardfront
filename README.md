@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.8a-device-visual-layer**. Device sprites load from runtime PNGs and render on the battlefield via DeviceOverlayLayer, backed by DeviceVisualRegistry.
+The current completed slice is **v0.1.8b-device-visual-validation**. Device overlay layer passes full test coverage: draw items, fallback, expiry, removal, BallWar isolation.
 
 ## Current Slice / 当前阶段
 
@@ -151,8 +151,7 @@ Latest local validation for the v0.1.6.2 required subset:
 
 `v0.1.8b-device-visual-validation`:
 
-- Add tests and polish for device visual layer, overlay draw boundary, and missing texture fallback.
-
+- 
 ## License
 
 MIT License. See [LICENSE](LICENSE).
