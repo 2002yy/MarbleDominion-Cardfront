@@ -22,12 +22,14 @@ var fortify_layer = null
 var morale_system = null
 var region_overlay = null
 var target_bias_system = null
+var effect_registry: Dictionary = {}
 
 
 func _init() -> void:
 	catalog = CardCatalogScript.new()
 	hand = CardHandStateScript.new()
 	hand.initialize_fixed_hand(catalog.get_default_hand_ids())
+	_register_default_effects()
 
 
 func setup(new_resource_states: Dictionary, new_region_map, new_battlefield, new_fortify_layer, new_morale_system, new_region_overlay, new_target_bias_system = null) -> void:
@@ -106,17 +108,35 @@ func _validate_target(req, card):
 
 
 func _resolve_effect(req, card):
-	match card.effect_id:
-		"fortify_border":
-			return _resolve_fortify_border(req, card)
-		"calibrated_shot":
-			return _resolve_calibrated_shot(req, card)
-		"morale_fluctuation":
-			return _resolve_morale_fluctuation(req, card)
-		"pioneer_beacon_lite":
-			return _resolve_pioneer_beacon_lite(req, card)
-		_:
-			return CardPlayResultScript.fail(CardPlayResultScript.REASON_STUB, card.card_name)
+	var effect_id: String = str(card.effect_id)
+	if effect_registry.has(effect_id):
+		var handler: Callable = effect_registry[effect_id]
+		return handler.call(req, card)
+	return CardPlayResultScript.fail(CardPlayResultScript.REASON_STUB, card.card_name)
+
+
+func register_effect_handler(effect_id: String, handler: Callable) -> void:
+	if effect_id.is_empty() or not handler.is_valid():
+		return
+	effect_registry[str(effect_id)] = handler
+
+
+func has_effect_handler(effect_id: String) -> bool:
+	return effect_registry.has(str(effect_id))
+
+
+func get_registered_effect_ids() -> Array:
+	var ids: Array = effect_registry.keys()
+	ids.sort()
+	return ids
+
+
+func _register_default_effects() -> void:
+	effect_registry.clear()
+	register_effect_handler("fortify_border", Callable(self, "_resolve_fortify_border"))
+	register_effect_handler("calibrated_shot", Callable(self, "_resolve_calibrated_shot"))
+	register_effect_handler("morale_fluctuation", Callable(self, "_resolve_morale_fluctuation"))
+	register_effect_handler("pioneer_beacon_lite", Callable(self, "_resolve_pioneer_beacon_lite"))
 
 
 func _resolve_fortify_border(req, card):

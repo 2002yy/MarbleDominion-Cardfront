@@ -29,10 +29,12 @@ Keep it current, short, and operational.
   - packaging and release workflow / 打包与发布流程
 - `docs/技术_technical/AI_HANDOFF_CURRENT.md`
   - fast session takeover card for the next AI / Codex run / 下一次 AI/Codex 接管卡
+- `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md`
+  - Cardfront high-coupling split order and acceptance criteria / Cardfront 高耦合拆分顺序与验收标准
 - `CHANGELOG.md`
   - condensed version spine / 精简版本脊柱
-- `.github/workflows/test.yml`
-  - GitHub Actions headless CI: validate + 10-test matrix / GitHub Actions headless CI：验证 + 10 测试矩阵
+- `.github/workflows/headless-tests.yml`
+  - GitHub Actions headless CI: parse/import warmup + batched baseline and Cardfront runners / GitHub Actions headless CI：解析/导入预热 + 基础与 Cardfront 分批测试
 - `docs/历史_history/README.md`
   - history index for stage documents / 历史阶段索引
 - `docs/历史_history/README_v*.md`

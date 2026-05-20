@@ -9,7 +9,7 @@ This file is the single place for project direction and phase status.
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
 - Current completed slice: `v0.1.8e-bottom-hud-status-polish`
-- Next slice: `v0.1.9-direction-planning`
+- Next slice: `v0.1.9-cardfront-engineering-closeout`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
@@ -43,6 +43,8 @@ This file is the single place for project direction and phase status.
 | `v0.1.8a-device-visual-layer` | Done / 已完成 | Device sprites from runtime PNGs, DeviceOverlayLayer, DeviceVisualRegistry. |
 | `v0.1.8b-device-visual-validation` | Done / 已完成 | Full test coverage for device overlay: draw items, fallback, expiry, removal, BallWar isolation. |
 | `v0.1.8d-cardfront-bottom-hud-visible-bridge` | Done / 已完成 | Bottom HUD shows device counts and card status; VFX + debug panel wired. |
+| `v0.1.8e-bottom-hud-status-polish` | Done / 已完成 | Bottom HUD status formatter, dirty redraw protection, and Cardfront performance smoke coverage. |
+| `v0.1.9-cardfront-engineering-closeout` | Active / 当前 | Version sync, CI batch gate, test matrix update, performance budget gate, save schema audit, `CardPlaySystem` effect registry pre-split, and doc alignment. |
 
 ## 3. Design Boundaries / 设计边界
 
@@ -180,8 +182,9 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. Device visual layer, validation, and VFX feedback (v0.1.8a-c) complete. Next direction TBD.
-2. Keep formal card UI, deck flow, HUD shot-guide text migration, and AI Commander deferred.
+1. `v0.1.9-cardfront-engineering-closeout`: sync `project.godot` versions, move Cardfront runners into `headless-tests.yml` batches, update the test matrix, keep `CardfrontPerformanceSmokeTestRunner.gd` as the performance budget gate, audit `CardfrontRuntimeSnapshot.gd`, pre-split `CardPlaySystem.gd` effect dispatch through a registry, and align README / ROADMAP / AI handoff.
+2. Keep formal card UI, Deckbuilder, deck draw/discard/shuffle, and AI Commander deferred.
+3. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` before adding formal HUD, Deckbuilder, AI, or full Cardfront save/load.
 
 ### Cardfront Save Schema
 
@@ -193,7 +196,7 @@ This file is the single place for project direction and phase status.
 - target bias state (owner → region → remaining duration)
 - future device list placeholder
 
-Full save/load wiring may wait, but schema shape should be decided before devices introduce durable world entities.
+v0.1.9 owns the schema audit and explicit test coverage. Full save/load wiring may wait, but schema shape should be kept stable before devices introduce durable world entities.
 
 ## 7. Later / 中期候选
 
@@ -204,7 +207,7 @@ Full save/load wiring may wait, but schema shape should be decided before device
 
 ## 8. Not Now / 暂不处理
 
-- Do not add card UI, units, AI, or fortification outside their planned slices.
+- Do not add formal card UI, Deckbuilder, AI Commander, units, or fortification outside their planned slices.
 - Do not build cards or AI before the region/deployment foundation is stable.
 - Do not expand bullet-field scale before the performance baseline is stable.
 - Do not push UI logic back into raw code-generated dynamic UI surfaces.
@@ -219,6 +222,7 @@ Full save/load wiring may wait, but schema shape should be decided before device
 - `docs/TESTING.md`: runner categories and run guidance.
 - `docs/PERFORMANCE.md`: performance probe overview and baseline notes.
 - `docs/SAVE_SYSTEM.md`: save schema, backup recovery, validation, and input cleanup.
+- `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md`: Cardfront high-coupling split order and acceptance criteria.
 - `docs/ANDROID_EXPORT.md`: Android export checklist.
 - `docs/RELEASE_PROCESS.md`: packaging and release workflow.
 - `docs/ROADMAP.md`: current direction, completed work, next step, and deferred scope.

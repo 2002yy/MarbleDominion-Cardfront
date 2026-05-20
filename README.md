@@ -51,10 +51,8 @@ Implemented in this repository:
 
 Not implemented yet:
 
-- Formal card UI / HUD.
-- Deck draw, discard, shuffle, and deckbuilding.
-- AI Commander behavior.
-- Cardfront save/load integration.
+- Formal card UI / HUD, Deckbuilder, and AI Commander remain deferred until after `v0.1.9-cardfront-engineering-closeout`.
+- Cardfront save/load integration remains deferred; v0.1.9 only audits the snapshot schema and keeps the boundary explicit.
 - Final device tuning, animation polish, and save/load integration.
 
 ## Screenshots / 截图
@@ -109,7 +107,14 @@ Detailed milestone notes:
 
 Run with Godot 4.6:
 
+CI gate: [`.github/workflows/headless-tests.yml`](.github/workflows/headless-tests.yml) runs these as batch jobs on push and pull request.
+
 ```powershell
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontPerformanceSmokeTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontBottomHudStatusTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVfxLayerTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVisibleEffectBridgeTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontRuntimeSnapshotTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeviceOverlayLayerTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeviceCoreTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/AbsorberCoreLiteTestRunner.gd
@@ -119,6 +124,7 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardCoreLiteTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardFirstEffectsTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFireDirectorTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFireDirectorTurretIntegrationTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontControlChamberDecouplingTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/PioneerBeaconLiteTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontTargetBiasTestRunner.gd
@@ -141,6 +147,7 @@ Latest local validation for the v0.1.8e required subset:
 - `CardfrontBottomHudStatusTestRunner.gd`: 10 checks passed.
 - `CardfrontVfxLayerTestRunner.gd`: 14 checks passed.
 - `CardfrontVisibleEffectBridgeTestRunner.gd`: 8 checks passed.
+- `CardfrontRuntimeSnapshotTestRunner.gd`: 14 checks passed.
 - `DeviceOverlayLayerTestRunner.gd`: 21 checks passed.
 - `DeviceCoreTestRunner.gd`: 31 checks passed.
 - `AbsorberCoreLiteTestRunner.gd`: 11 checks passed.
@@ -148,9 +155,10 @@ Latest local validation for the v0.1.8e required subset:
 - `DurablePioneerBeaconTestRunner.gd`: 9 checks passed.
 - `CardfrontControlChamberDecouplingTestRunner.gd`: 7 checks passed.
 - `CardfrontFireDirectorTestRunner.gd`: 21 checks passed.
+- `CardfrontFireDirectorTurretIntegrationTestRunner.gd`: 12 checks passed.
 - `PioneerBeaconLiteTestRunner.gd`: 37 checks passed.
 - `CardCoreLiteTestRunner.gd`: 40 checks passed.
-- `CardFirstEffectsTestRunner.gd`: 35 checks passed.
+- `CardFirstEffectsTestRunner.gd`: 40 checks passed.
 - `FortifyLayerTestRunner.gd`: 469 checks passed.
 - `DeploymentRulesTestRunner.gd`: 26 checks passed.
 - `EconomyTickTestRunner.gd`: 50 checks passed.
@@ -160,6 +168,6 @@ Latest local validation for the v0.1.8e required subset:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.9` (direction TBD). Full route is tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
+`v0.1.9-cardfront-engineering-closeout`: version sync, CI batch gate, test matrix update, performance budget test, Cardfront save schema audit, `CardPlaySystem` effect registry pre-split, and README / ROADMAP / AI handoff alignment. Formal Deckbuilder and AI Commander stay out of this slice.
 
 MIT License. See [LICENSE](LICENSE).

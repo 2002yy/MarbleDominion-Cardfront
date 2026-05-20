@@ -6,21 +6,83 @@ on:
 
 jobs:
   godot-headless:
+    name: ${{ matrix.batch }}
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - batch: Baseline runtime
+            scripts: |
+              SmokeTestRunner.gd
+              IntegrationTestRunner.gd
+              LayoutSanityTestRunner.gd
+              StartMenuSceneTestRunner.gd
+              GameHUDSceneTestRunner.gd
+              EventRouletteSceneTestRunner.gd
+              SettingsPanelSceneTestRunner.gd
+              GameStateCoordinatorTestRunner.gd
+              SaveFlowControllerTestRunner.gd
+              RestorePlanTestRunner.gd
+          - batch: Cardfront map economy
+            scripts: |
+              RegionMapTestRunner.gd
+              NeutralOwnerCompatibilityTestRunner.gd
+              DeploymentRulesTestRunner.gd
+              RegionMoraleTestRunner.gd
+              EconomyTickTestRunner.gd
+              EconomyDebugPanelSceneTestRunner.gd
+              CardfrontVisualPolicyTestRunner.gd
+              VisualPressurePolicyTestRunner.gd
+          - batch: Cardfront cards effects fire
+            scripts: |
+              FortifyLayerTestRunner.gd
+              CardCoreLiteTestRunner.gd
+              CardFirstEffectsTestRunner.gd
+              CardfrontTargetBiasTestRunner.gd
+              PioneerBeaconLiteTestRunner.gd
+              CardfrontFireDirectorTestRunner.gd
+              CardfrontFireDirectorTurretIntegrationTestRunner.gd
+              CardfrontControlChamberDecouplingTestRunner.gd
+          - batch: Cardfront devices visuals schema
+            scripts: |
+              DeviceCoreTestRunner.gd
+              AbsorberCoreLiteTestRunner.gd
+              EngineerBotLiteTestRunner.gd
+              DurablePioneerBeaconTestRunner.gd
+              DeviceOverlayLayerTestRunner.gd
+              CardfrontBottomHudStatusTestRunner.gd
+              CardfrontVfxLayerTestRunner.gd
+              CardfrontVisibleEffectBridgeTestRunner.gd
+              CardfrontRuntimeSnapshotTestRunner.gd
+          - batch: Cardfront performance budget
+            scripts: |
+              CardfrontPerformanceSmokeTestRunner.gd
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Godot archive
+        uses: actions/cache@v4
+        with:
+          path: .godot-cache
+          key: godot-${{ runner.os }}-${{ env.GODOT_VERSION }}-${{ env.GODOT_ARCHIVE }}
+
       - name: Download Godot
         id: godot
         shell: pwsh
         run: |
+          $cacheDir = Join-Path "${{ github.workspace }}" ".godot-cache"
+          New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
           $archiveUrl = "https://github.com/godotengine/godot/releases/download/$env:GODOT_VERSION/$env:GODOT_ARCHIVE"
-          $archivePath = Join-Path $env:RUNNER_TEMP $env:GODOT_ARCHIVE
+          $archivePath = Join-Path $cacheDir $env:GODOT_ARCHIVE
           $extractPath = Join-Path $env:RUNNER_TEMP "godot"
-          Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath
+
+          if (-not (Test-Path $archivePath)) {
+            Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath
+          }
           Expand-Archive -Path $archivePath -DestinationPath $extractPath -Force
 
           $godotExe = Get-ChildItem -Path $extractPath -Recurse -Filter "*console.exe" | Select-Object -First 1
@@ -43,92 +105,15 @@ jobs:
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
 
-      - name: Smoke Test
+      - name: Run ${{ matrix.batch }}
         shell: pwsh
         run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/SmokeTestRunner.gd"
+          $scripts = "${{ matrix.scripts }}" -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }
 
-      - name: Cardfront Mode Smoke Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/CardfrontModeSmokeTestRunner.gd"
-
-      - name: Neutral Owner Compatibility Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd"
-
-      - name: Deployment Rules Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/DeploymentRulesTestRunner.gd"
-
-      - name: Region Map Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/RegionMapTestRunner.gd"
-
-      - name: Economy Tick Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/EconomyTickTestRunner.gd"
-
-      - name: Economy Debug Panel Scene Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/EconomyDebugPanelSceneTestRunner.gd"
-
-      - name: Region Morale Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/RegionMoraleTestRunner.gd"
-
-      - name: Cardfront Visual Policy Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/CardfrontVisualPolicyTestRunner.gd"
-
-      - name: Start Menu Scene Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/StartMenuSceneTestRunner.gd"
-
-      - name: Game HUD Scene Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/GameHUDSceneTestRunner.gd"
-
-      - name: Event Roulette Scene Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/EventRouletteSceneTestRunner.gd"
-
-      - name: Settings Panel Scene Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/SettingsPanelSceneTestRunner.gd"
-
-      - name: Game State Coordinator Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/GameStateCoordinatorTestRunner.gd"
-
-      - name: Save Flow Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/SaveFlowControllerTestRunner.gd"
-
-      - name: Restore Plan Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/RestorePlanTestRunner.gd"
-
-      - name: Integration Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/IntegrationTestRunner.gd"
-
-      - name: Layout Sanity Test
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/LayoutSanityTestRunner.gd"
+          foreach ($script in $scripts) {
+            Write-Host "Running $script"
+            & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/$script"
+            if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+            }
+          }

@@ -32,6 +32,7 @@ func _run() -> void:
 	_test_calibrated_shot_success_sets_target_bias()
 	_test_calibrated_shot_missing_bias_system_rolls_back()
 	_test_fortify_border_still_adds_stacks()
+	_test_effect_registry_covers_current_catalog()
 
 	GameConfig.reset_runtime_defaults()
 	await _flush()
@@ -160,6 +161,22 @@ func _test_fortify_border_still_adds_stacks() -> void:
 	_assert.eq(fortify_layer.get_fortify_stack(cell), FortifyRulesScript.DEFAULT_FORTIFY_STACKS, "first effects: fortify should still add default stacks")
 
 	_cleanup_fixture(fixture)
+
+
+func _test_effect_registry_covers_current_catalog() -> void:
+	var system = CardPlaySystemScript.new()
+	var expected_ids: Array = [
+		"calibrated_shot",
+		"fortify_border",
+		"morale_fluctuation",
+		"pioneer_beacon_lite",
+	]
+	_assert.eq(system.get_registered_effect_ids(), expected_ids, "effect registry: current catalog effects should be registered")
+
+	var catalog = CardCatalogScript.new()
+	for card_id in catalog.get_default_hand_ids():
+		var card = catalog.get_card(int(card_id))
+		_assert.that(system.has_effect_handler(str(card.effect_id)), "effect registry: card %s effect should have handler" % int(card_id))
 
 
 func _make_fixture(energy: int = 100, parts: int = 50, with_morale_system: bool = true, with_target_bias_system: bool = true, setup_morale_system: bool = true) -> Dictionary:

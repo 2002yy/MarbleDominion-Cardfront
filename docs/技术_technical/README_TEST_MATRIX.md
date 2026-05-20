@@ -206,7 +206,7 @@ Performance probes are useful, but they are not part of the strict correctness b
 
 ## 9. CI-Verified Baseline / CI 验证基线
 
-The GitHub Actions matrix (`.github/workflows/test.yml`) runs all 10 correctness runners and passed on `2026-05-17`:
+The GitHub Actions workflow (`.github/workflows/headless-tests.yml`) runs parse/import warmup plus batched baseline and Cardfront runners.
 
 | Runner | Expected checks | CI status |
 |---|---|---|
@@ -216,16 +216,18 @@ The GitHub Actions matrix (`.github/workflows/test.yml`) runs all 10 correctness
 | `LayoutSanityTestRunner.gd` | 376 | PASS |
 | `StartMenuSceneTestRunner.gd` | 55 | PASS |
 | `GameStateCoordinatorTestRunner.gd` | 50 | PASS |
-| `GameHUDSceneTestRunner.gd` | 27 | PASS |
+| `GameHUDSceneTestRunner.gd` | 40 | PASS |
 | `EventRouletteSceneTestRunner.gd` | 14 | PASS |
 | `RestorePlanTestRunner.gd` | 11 | PASS |
 | `SettingsPanelSceneTestRunner.gd` | 9 | PASS |
 
-Total: 1083 expected checks across 10 runners.
+Total: 1096 expected checks across 10 runners.
 
-CI status: [`.github/workflows/test.yml`](/.github/workflows/test.yml) — `Headless Tests` workflow green on `main`.
+Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, and the Cardfront performance budget smoke runner.
 
-> These counts reflect the CI workflow's expected values. If a runner's assertion count changes, update the `checks` field in the matrix and this table together.
+CI status: [`.github/workflows/headless-tests.yml`](/.github/workflows/headless-tests.yml) — `Headless Tests` workflow.
+
+> These counts reflect the expected baseline values. If a runner's assertion count changes, update this table and `docs/TESTING.md` together.
 
 ## 10. What To Run / 改动后跑什么
 

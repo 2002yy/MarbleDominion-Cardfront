@@ -1,78 +1,54 @@
 # Testing / 测试
 
-Date: 2026-05-17
+Date: 2026-05-20  
 Role: test matrix and run guidance / 测试矩阵与运行建议
 
 ## Correctness Baseline / 正确性基线
 
-10 headless test runners, verified via GitHub Actions CI (`Headless Tests` workflow).
+Baseline BallWar runtime runners:
 
-| Runner | Checks | Category |
-|---|---|---|
+| Runner | Expected checks | Category |
+|---|---:|---|
 | `LayoutSanityTestRunner.gd` | 376 | Layout boundary |
 | `SmokeTestRunner.gd` | 218 | Smoke / fast regression |
 | `SaveFlowControllerTestRunner.gd` | 190 | Save/load orchestration |
 | `IntegrationTestRunner.gd` | 133 | Cross-system correctness |
 | `StartMenuSceneTestRunner.gd` | 55 | Scene wiring |
 | `GameStateCoordinatorTestRunner.gd` | 50 | Gameplay state flow |
-| `GameHUDSceneTestRunner.gd` | 27 | Scene wiring |
+| `GameHUDSceneTestRunner.gd` | 40 | Scene wiring |
 | `EventRouletteSceneTestRunner.gd` | 14 | Scene wiring |
 | `RestorePlanTestRunner.gd` | 11 | Restore planning |
 | `SettingsPanelSceneTestRunner.gd` | 9 | Scene wiring |
 
-**Total: 1083 expected checks** across 10 runners.
+Baseline subtotal: **1096 expected checks** across 10 runners.
 
-## Categories / 测试分类
+## Cardfront CI Batches / 卡牌前线 CI 批次
 
-### Scene Wiring Tests / 场景接线测试
+`.github/workflows/headless-tests.yml` runs parse/import warmup plus the following batches on every push and pull request:
 
-Verify `.tscn` scenes load, node paths stay stable, setup code does not break layout.
+| CI batch | Runners |
+|---|---|
+| Baseline runtime | `SmokeTestRunner`, `IntegrationTestRunner`, `LayoutSanityTestRunner`, scene wiring, state, save, restore |
+| Cardfront map economy | `RegionMapTestRunner`, `NeutralOwnerCompatibilityTestRunner`, `DeploymentRulesTestRunner`, `RegionMoraleTestRunner`, `EconomyTickTestRunner`, `EconomyDebugPanelSceneTestRunner`, visual pressure policy tests |
+| Cardfront cards effects fire | `FortifyLayerTestRunner`, `CardCoreLiteTestRunner`, `CardFirstEffectsTestRunner`, `CardfrontTargetBiasTestRunner`, `PioneerBeaconLiteTestRunner`, FireDirector tests, control-chamber decoupling |
+| Cardfront devices visuals schema | device core/effect runners, device overlay, bottom HUD status, VFX bridge, `CardfrontRuntimeSnapshotTestRunner` |
+| Cardfront performance budget | `CardfrontPerformanceSmokeTestRunner` |
 
-Files: `StartMenuSceneTestRunner`, `GameHUDSceneTestRunner`, `EventRouletteSceneTestRunner`, `SettingsPanelSceneTestRunner`
-
-Run after: editing `.tscn`, changing scene scripts, changing node paths.
-
-### Coordinator & Restore Helper Tests / 协调器与恢复辅助测试
-
-Verify extracted helper logic without full runtime boot.
-
-Files: `GameStateCoordinatorTestRunner`, `SaveFlowControllerTestRunner`, `RestorePlanTestRunner`
-
-Run after: splitting `Main.gd`, changing save/load orchestration, changing restore boundaries.
-
-### Smoke Test / 冒烟测试
-
-Fast regression guard. Confirms major systems work at high level.
-
-Files: `SmokeTestRunner`
-
-Run after: almost any medium-sized gameplay or system change.
-
-### Integration Test / 集成测试
-
-Medium-weight cross-system correctness. Save/load, battlefield rules, win conditions.
-
-Files: `IntegrationTestRunner`
-
-Run after: touching save/load, battlefield rules, win-condition logic.
-
-### Layout Boundary Test / 布局边界测试
-
-Verify layout profiles, catch overflow and placement regressions.
-
-Files: `LayoutSanityTestRunner`
-
-Run after: changing layout profiles, HUD/chamber/map placement.
+The v0.1.9 engineering closeout treats local-only Cardfront success as incomplete until the relevant runner is also present in `headless-tests.yml`.
 
 ## Performance Probes / 性能探针
 
-Not correctness tests. Measure performance and pressure behavior.
+Correctness gate:
 
-- `PerfBurstBenchmark.gd` — full suite
-- `PerfBurstBenchmarkSingleTurret.gd` — single-turret half
-- `PerfBurstBenchmarkMultiTurret.gd` — multi-turret half
+- `CardfrontPerformanceSmokeTestRunner.gd` — lightweight budget guard for Cardfront overlay redraw, shot-guide debug cleanup, and 40x40 / 50x50 startup pressure.
 
-Run when: tuning firing or performance policies, collecting benchmark evidence.
+Manual or release-evidence probes:
+
+- `PerfBurstBenchmark.gd` — full suite.
+- `PerfBurstBenchmarkSingleTurret.gd` — single-turret half.
+- `PerfBurstBenchmarkMultiTurret.gd` — multi-turret half.
+
+Run the benchmark probes when tuning firing or pressure policies, collecting release evidence, or checking trail/pool behavior. They are not a substitute for the correctness batches above.
 
 ## Test Infrastructure / 测试基础设施
 
@@ -82,33 +58,47 @@ Run when: tuning firing or performance policies, collecting benchmark evidence.
 ## What To Run / 改动后跑什么
 
 ### Editing `.tscn` or UI wiring
-1. Scene wiring tests
-2. Layout boundary test
-3. Smoke test
+
+1. Scene wiring tests.
+2. `LayoutSanityTestRunner.gd`.
+3. `SmokeTestRunner.gd`.
 
 ### Editing save/load or continue orchestration
-1. `SaveFlowControllerTestRunner`
-2. `RestorePlanTestRunner`
-3. `IntegrationTestRunner`
-4. `SmokeTestRunner`
 
-### Editing restore ownership or sequencing
-1. `RestorePlanTestRunner`
-2. `SaveFlowControllerTestRunner`
-3. `SmokeTestRunner`
-4. `IntegrationTestRunner`
+1. `SaveFlowControllerTestRunner.gd`.
+2. `RestorePlanTestRunner.gd`.
+3. `IntegrationTestRunner.gd`.
+4. `SmokeTestRunner.gd`.
 
-### Editing gameplay state flow
-1. `GameStateCoordinatorTestRunner`
-2. `SmokeTestRunner`
-3. `IntegrationTestRunner` if save/win flow involved
+### Editing Cardfront map, economy, morale, or deployment rules
 
-### Adding a new gameplay feature
-1. Most relevant helper/scene tests
-2. `SmokeTestRunner`
-3. `IntegrationTestRunner` if rules/save/win flow changed
-4. Performance probe only if runtime pressure or rendering cost changes
+1. The matching Cardfront map economy batch runner.
+2. `CardfrontModeSmokeTestRunner.gd`.
+3. `SmokeTestRunner.gd` if shared runtime surfaces changed.
+
+### Editing cards, effects, or FireDirector
+
+1. `CardCoreLiteTestRunner.gd`.
+2. `CardFirstEffectsTestRunner.gd`.
+3. Relevant effect runner such as `PioneerBeaconLiteTestRunner.gd`.
+4. Relevant FireDirector runner if shooting or target bias changed.
+
+### Editing device visuals or Cardfront HUD status
+
+1. `DeviceCoreTestRunner.gd`.
+2. `DeviceOverlayLayerTestRunner.gd`.
+3. `CardfrontBottomHudStatusTestRunner.gd`.
+4. `CardfrontVfxLayerTestRunner.gd` or `CardfrontVisibleEffectBridgeTestRunner.gd` when VFX paths change.
+
+### Editing Cardfront save schema
+
+1. `CardfrontRuntimeSnapshotTestRunner.gd`.
+2. `NeutralOwnerCompatibilityTestRunner.gd` if owner encoding changes.
+3. `SaveFlowControllerTestRunner.gd` once Cardfront save/load wiring becomes active.
 
 ## CI / GitHub Actions
 
-The `Headless Tests` workflow in `.github/workflows/test.yml` runs validate + all 10 runners in parallel on every push. Artifacts uploaded even on failure.
+Workflow file: `.github/workflows/headless-tests.yml`  
+Workflow name: `Headless Tests`
+
+The workflow uses batch matrix jobs so Cardfront additions are automatic gates instead of local-only claims.

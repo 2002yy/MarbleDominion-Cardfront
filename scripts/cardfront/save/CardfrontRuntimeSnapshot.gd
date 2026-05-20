@@ -21,7 +21,7 @@ func to_dict() -> Dictionary:
 
 
 static func from_dict(data: Dictionary):
-	var snap = CardfrontRuntimeSnapshot.new()
+	var snap = load("res://scripts/cardfront/save/CardfrontRuntimeSnapshot.gd").new()
 	snap.resource_states = data.get("resource_states", {})
 	snap.used_card_ids = data.get("used_card_ids", [])
 	snap.fortify_stacks = data.get("fortify_stacks", [])
