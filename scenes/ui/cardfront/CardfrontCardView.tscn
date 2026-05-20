@@ -1,0 +1,47 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfrontcardview001"]
+
+[ext_resource type="Script" path="res://scripts/cardfront/ui/CardfrontCardView.gd" id="1_view"]
+
+[node name="CardView" type="Panel"]
+script = ExtResource("1_view")
+size = Vector2(180, 100)
+mouse_filter = 2
+
+[node name="Bg" type="ColorRect" parent="."]
+size = Vector2(180, 100)
+color = Color(0.06, 0.10, 0.18, 0.92)
+
+[node name="HoverBorder" type="ColorRect" parent="."]
+size = Vector2(180, 100)
+color = Color(0.62, 0.90, 1.0, 0.0)
+
+[node name="SelectedBorder" type="ColorRect" parent="."]
+position = Vector2(1, 1)
+size = Vector2(178, 98)
+color = Color(0.62, 0.90, 1.0, 0.0)
+
+[node name="IconRect" type="ColorRect" parent="."]
+position = Vector2(8, 8)
+size = Vector2(44, 44)
+color = Color(0.10, 0.16, 0.28, 0.7)
+
+[node name="NameLabel" type="Label" parent="."]
+position = Vector2(58, 6)
+size = Vector2(116, 20)
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.92, 0.96, 1.0, 1.0)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
+theme_override_constants/outline_size = 1
+
+[node name="CostLabel" type="Label" parent="."]
+position = Vector2(58, 26)
+size = Vector2(116, 18)
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.72, 0.88, 1.0, 1.0)
+
+[node name="StatusLabel" type="Label" parent="."]
+position = Vector2(8, 54)
+size = Vector2(164, 40)
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.62, 0.68, 0.80, 1.0)
+autowrap_mode = 3

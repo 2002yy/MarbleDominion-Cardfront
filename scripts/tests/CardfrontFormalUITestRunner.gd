@@ -111,7 +111,8 @@ func _test_hand_panel_has_four_cards() -> void:
 		var views = main.runtime.hand_panel._card_views
 		_assert.eq(views.size(), 4, "should have 4 card views")
 		for view in views:
-			_assert.neq(view._name_label.text, "???", "card name should not be placeholder")
+			var name_label = view.get_node("NameLabel") as Label
+			_assert.neq(name_label.text, "???", "card name should not be placeholder")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

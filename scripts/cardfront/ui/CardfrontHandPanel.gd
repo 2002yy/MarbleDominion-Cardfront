@@ -2,24 +2,17 @@ extends CanvasLayer
 class_name CardfrontHandPanel
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
-const CardfrontCardViewScript = preload("res://scripts/cardfront/ui/CardfrontCardView.gd")
+const CardViewScene = preload("res://scenes/ui/cardfront/CardfrontCardView.tscn")
 
 var card_system = null
 var resource_states: Dictionary = {}
 var _card_views: Array[CardfrontCardView] = []
-var _panel_bg: ColorRect
-var _hbox: HBoxContainer
 var selection_controller = null
 var economy_system = null
 
 const PANEL_HEIGHT: float = 110.0
 const CARD_GAP: float = 6.0
 const CARD_W: float = 180.0
-
-
-func _init() -> void:
-	name = "CardfrontHandPanel"
-	layer = 17
 
 
 func setup(new_card_system, new_resource_states: Dictionary, new_economy_system, mode_name: String, view_size: Vector2) -> void:
@@ -29,30 +22,22 @@ func setup(new_card_system, new_resource_states: Dictionary, new_economy_system,
 	visible = CardfrontRulesScript.is_cardfront_mode(mode_name)
 	if not visible:
 		return
-	_ensure_ui(view_size)
+	_layout_panel(view_size)
 	_populate_cards()
 	_connect_economy_signals()
 	refresh()
 
 
-func _ensure_ui(view_size: Vector2) -> void:
+func _layout_panel(view_size: Vector2) -> void:
+	var panel_bg: ColorRect = $PanelBg as ColorRect
+	var hbox: HBoxContainer = $CardHBox as HBoxContainer
 	var panel_w: float = CARD_W * 4 + CARD_GAP * 3 + 24.0
 	var panel_x: float = (view_size.x - panel_w) * 0.5
 	var panel_y: float = view_size.y - PANEL_HEIGHT - 8.0
-
-	_panel_bg = ColorRect.new()
-	_panel_bg.name = "PanelBg"
-	_panel_bg.position = Vector2(panel_x, panel_y)
-	_panel_bg.size = Vector2(panel_w, PANEL_HEIGHT)
-	_panel_bg.color = Color(0.04, 0.07, 0.12, 0.90)
-	add_child(_panel_bg)
-
-	_hbox = HBoxContainer.new()
-	_hbox.name = "CardHBox"
-	_hbox.position = Vector2(panel_x + 12.0, panel_y + 5.0)
-	_hbox.size = Vector2(panel_w - 24.0, PANEL_HEIGHT - 10.0)
-	_hbox.add_theme_constant_override("separation", int(CARD_GAP))
-	add_child(_hbox)
+	panel_bg.position = Vector2(panel_x, panel_y)
+	panel_bg.size = Vector2(panel_w, PANEL_HEIGHT)
+	hbox.position = Vector2(panel_x + 12.0, panel_y + 5.0)
+	hbox.size = Vector2(panel_w - 24.0, PANEL_HEIGHT - 10.0)
 
 
 func _populate_cards() -> void:
@@ -62,9 +47,10 @@ func _populate_cards() -> void:
 	_card_views.clear()
 
 	for i in range(4):
-		var view: CardfrontCardView = CardfrontCardViewScript.new()
+		var view: CardfrontCardView = CardViewScene.instantiate()
 		view.name = "CardView_%d" % i
-		_hbox.add_child(view)
+		var hbox: HBoxContainer = $CardHBox as HBoxContainer
+		hbox.add_child(view)
 		_card_views.append(view)
 
 

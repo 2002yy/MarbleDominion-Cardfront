@@ -23,8 +23,8 @@ const DurablePioneerBeaconEffectSystemScript = preload("res://scripts/cardfront/
 const CardfrontDeviceOverlayLayerScript = preload("res://scripts/cardfront/devices/CardfrontDeviceOverlayLayer.gd")
 const CardfrontVfxLayerScript = preload("res://scripts/cardfront/vfx/CardfrontVfxLayer.gd")
 const CardfrontDebugActionPanelScript = preload("res://scripts/cardfront/debug/CardfrontDebugActionPanel.gd")
-const CardfrontTopResourceBarScript = preload("res://scripts/cardfront/ui/CardfrontTopResourceBar.gd")
-const CardfrontHandPanelScript = preload("res://scripts/cardfront/ui/CardfrontHandPanel.gd")
+const CardfrontTopResourceBarScene = preload("res://scenes/ui/cardfront/CardfrontTopResourceBar.tscn")
+const CardfrontHandPanelScene = preload("res://scenes/ui/cardfront/CardfrontHandPanel.tscn")
 const CardfrontCardSelectionControllerScript = preload("res://scripts/cardfront/ui/CardfrontCardSelectionController.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
@@ -330,7 +330,7 @@ static func create_top_resource_bar(ui_layer: Node, economy_system, resource_sta
 	if ui_layer == null or not is_instance_valid(ui_layer):
 		return {"configured": false, "reason": "missing_ui_layer"}
 
-	var bar = CardfrontTopResourceBarScript.new()
+	var bar = CardfrontTopResourceBarScene.instantiate()
 	bar.setup(economy_system, resource_states, GameConfig.GAME_MODE_CARDFRONT)
 	ui_layer.add_child(bar)
 
@@ -346,7 +346,7 @@ static func create_hand_panel(ui_layer: Node, card_system, resource_states: Dict
 	if card_system == null:
 		return {"configured": false, "reason": "missing_card_system"}
 
-	var panel = CardfrontHandPanelScript.new()
+	var panel = CardfrontHandPanelScene.instantiate()
 	panel.setup(card_system, resource_states, economy_system, GameConfig.GAME_MODE_CARDFRONT, view_size)
 	ui_layer.add_child(panel)
 
