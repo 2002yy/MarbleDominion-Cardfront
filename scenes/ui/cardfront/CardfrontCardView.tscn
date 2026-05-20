@@ -1,47 +1,80 @@
-[gd_scene load_steps=2 format=3 uid="uid://cfrontcardview001"]
+[gd_scene load_steps=2 format=3 uid="uid://cfrontcardview002"]
 
 [ext_resource type="Script" path="res://scripts/cardfront/ui/CardfrontCardView.gd" id="1_view"]
 
 [node name="CardView" type="Panel"]
 script = ExtResource("1_view")
-size = Vector2(180, 100)
+size = Vector2(130, 150)
 mouse_filter = 2
 
+[node name="CardBorder" type="ColorRect" parent="."]
+size = Vector2(130, 150)
+color = Color(0.12, 0.18, 0.30, 0.0)
+
 [node name="Bg" type="ColorRect" parent="."]
-size = Vector2(180, 100)
+position = Vector2(1, 1)
+size = Vector2(128, 148)
 color = Color(0.06, 0.10, 0.18, 0.92)
 
 [node name="HoverBorder" type="ColorRect" parent="."]
-size = Vector2(180, 100)
+size = Vector2(130, 150)
 color = Color(0.62, 0.90, 1.0, 0.0)
 
 [node name="SelectedBorder" type="ColorRect" parent="."]
 position = Vector2(1, 1)
-size = Vector2(178, 98)
+size = Vector2(128, 148)
 color = Color(0.62, 0.90, 1.0, 0.0)
 
-[node name="IconRect" type="ColorRect" parent="."]
-position = Vector2(8, 8)
-size = Vector2(44, 44)
-color = Color(0.10, 0.16, 0.28, 0.7)
+[node name="CardIcon" type="ColorRect" parent="."]
+position = Vector2(25, 12)
+size = Vector2(80, 56)
+color = Color(0.10, 0.16, 0.28, 0.75)
 
-[node name="NameLabel" type="Label" parent="."]
-position = Vector2(58, 6)
-size = Vector2(116, 20)
+[node name="CardIconBorder" type="ColorRect" parent="."]
+position = Vector2(24, 11)
+size = Vector2(82, 58)
+color = Color(0.62, 0.90, 1.0, 0.15)
+
+[node name="CardIconLabel" type="Label" parent="."]
+position = Vector2(25, 22)
+size = Vector2(80, 36)
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1.0, 1.0, 1.0, 0.8)
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardName" type="Label" parent="."]
+position = Vector2(6, 74)
+size = Vector2(118, 20)
 theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.92, 0.96, 1.0, 1.0)
+theme_override_colors/font_color = Color(0.95, 0.97, 1.0, 1.0)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
 theme_override_constants/outline_size = 1
+horizontal_alignment = 1
 
-[node name="CostLabel" type="Label" parent="."]
-position = Vector2(58, 26)
-size = Vector2(116, 18)
+[node name="CostEnergy" type="Label" parent="."]
+position = Vector2(6, 96)
+size = Vector2(60, 16)
 theme_override_font_sizes/font_size = 11
-theme_override_colors/font_color = Color(0.72, 0.88, 1.0, 1.0)
+theme_override_colors/font_color = Color(0.62, 0.90, 1.0, 1.0)
+horizontal_alignment = 2
+
+[node name="CostParts" type="Label" parent="."]
+position = Vector2(66, 96)
+size = Vector2(60, 16)
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(1.0, 0.82, 0.36, 1.0)
+
+[node name="TargetLabel" type="Label" parent="."]
+position = Vector2(6, 116)
+size = Vector2(118, 16)
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.55, 0.65, 0.82, 1.0)
+horizontal_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="."]
-position = Vector2(8, 54)
-size = Vector2(164, 40)
-theme_override_font_sizes/font_size = 10
+position = Vector2(6, 133)
+size = Vector2(118, 14)
+theme_override_font_sizes/font_size = 9
 theme_override_colors/font_color = Color(0.62, 0.68, 0.80, 1.0)
-autowrap_mode = 3
+horizontal_alignment = 1

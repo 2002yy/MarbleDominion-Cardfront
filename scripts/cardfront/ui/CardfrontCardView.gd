@@ -6,7 +6,7 @@ var card_data: Dictionary = {}
 var current_state: String = "idle"
 var clicked_callback: Callable = func(): pass
 
-const CARD_SIZE := Vector2(180, 100)
+const CARD_SIZE := Vector2(130, 150)
 const STATE_COLORS := {
 	"idle": Color(0.06, 0.10, 0.18, 0.92),
 	"hover": Color(0.08, 0.14, 0.24, 0.94),
@@ -19,6 +19,19 @@ const COST_COLORS := {
 	"expensive": Color(1.0, 0.48, 0.36),
 }
 
+const CARD_PLACEHOLDERS := {
+	1001: {"icon": "🛡", "color": Color(0.24, 0.52, 0.88), "label": "加固"},
+	1002: {"icon": "◎", "color": Color(0.20, 0.70, 0.72), "label": "校准"},
+	1003: {"icon": "〰", "color": Color(0.72, 0.45, 1.0), "label": "民心"},
+	1004: {"icon": "✦", "color": Color(0.90, 0.72, 0.18), "label": "信标"},
+}
+const DEFAULT_PLACEHOLDER := {"icon": "?", "color": Color(0.35, 0.40, 0.50), "label": "?"}
+const TARGET_ICONS := {
+	"owned_border": "▣ 己方边界格",
+	"enemy_region": "◆ 敌方控制区",
+	"owned_region": "◎ 己方控制区",
+}
+
 
 func _ready() -> void:
 	mouse_entered.connect(_on_mouse_entered)
@@ -29,68 +42,79 @@ func _ready() -> void:
 func bind(data: Dictionary, resource_state) -> void:
 	card_data = data.duplicate(false)
 	card_id = int(data.get("id", -1))
-	var name_label: Label = $NameLabel as Label
+
+	var ph: Dictionary = CARD_PLACEHOLDERS.get(card_id, DEFAULT_PLACEHOLDER)
+	var icon_color: Color = ph.color
+
+	var card_icon: ColorRect = $CardIcon as ColorRect
+	card_icon.color = Color(icon_color.r * 0.22, icon_color.g * 0.22, icon_color.b * 0.22, 0.85)
+	var icon_border: ColorRect = $CardIconBorder as ColorRect
+	icon_border.color = Color(icon_color.r, icon_color.g, icon_color.b, 0.30)
+	var icon_label: Label = $CardIconLabel as Label
+	icon_label.text = str(ph.icon)
+
+	var name_label: Label = $CardName as Label
 	name_label.text = str(data.get("card_name", "???"))
+
 	var energy_cost: int = int(data.get("energy_cost", 0))
 	var parts_cost: int = int(data.get("parts_cost", 0))
 	var used: bool = bool(data.get("used", false))
 	var can_pay: bool = true
 	if resource_state != null and resource_state.has_method("can_pay"):
 		can_pay = resource_state.can_pay(energy_cost, parts_cost)
-	var cost_label: Label = $CostLabel as Label
-	cost_label.text = "E%d P%d" % [energy_cost, parts_cost]
-	cost_label.add_theme_color_override("font_color", COST_COLORS["affordable"] if can_pay else COST_COLORS["expensive"])
 
-	var target_desc: String = _target_description(str(data.get("target_type", "")))
+	var cost_energy: Label = $CostEnergy as Label
+	cost_energy.text = "⚡%d" % energy_cost
+	cost_energy.add_theme_color_override("font_color", COST_COLORS["affordable"] if can_pay else COST_COLORS["expensive"])
+	var cost_parts: Label = $CostParts as Label
+	cost_parts.text = "⚙%d" % parts_cost
+	cost_parts.add_theme_color_override("font_color", COST_COLORS["affordable"] if can_pay else COST_COLORS["expensive"])
+
+	var target_type: String = str(data.get("target_type", ""))
+	var target_label: Label = $TargetLabel as Label
+	target_label.text = TARGET_ICONS.get(target_type, "")
+
 	var status_label: Label = $StatusLabel as Label
-	status_label.text = target_desc
 
 	if used:
 		set_state("used")
+		status_label.text = "已使用"
 	elif not can_pay:
 		set_state("disabled_resource")
+		status_label.text = "资源不足"
 	elif current_state in ["used", "disabled_resource"]:
 		set_state("idle")
-
-
-func _target_description(target_type: String) -> String:
-	match target_type:
-		"owned_border":
-			return "目标：己方边界格"
-		"enemy_region":
-			return "目标：敌方控制区"
-		"owned_region":
-			return "目标：己方控制区"
-		_:
-			return ""
+		status_label.text = ""
 
 
 func set_state(state: String) -> void:
 	current_state = state
 	var bg: ColorRect = $Bg as ColorRect
 	bg.color = STATE_COLORS.get(state, STATE_COLORS["idle"])
+	var card_border: ColorRect = $CardBorder as ColorRect
 	var hover_border: ColorRect = $HoverBorder as ColorRect
 	var selected_border: ColorRect = $SelectedBorder as ColorRect
 	match state:
 		"idle":
+			card_border.color = Color(0.12, 0.18, 0.30, 0.0)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.0)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
 		"hover":
-			hover_border.color = Color(0.62, 0.90, 1.0, 0.25)
+			card_border.color = Color(0.62, 0.90, 1.0, 0.20)
+			hover_border.color = Color(0.62, 0.90, 1.0, 0.20)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
 		"selected":
+			card_border.color = Color(0.62, 0.90, 1.0, 0.40)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.0)
-			selected_border.color = Color(0.62, 0.90, 1.0, 0.45)
+			selected_border.color = Color(0.62, 0.90, 1.0, 0.35)
 		"disabled_resource":
-			var name_label: Label = $NameLabel as Label
-			name_label.add_theme_color_override("font_color", Color(0.45, 0.45, 0.50))
-			var status_label: Label = $StatusLabel as Label
-			status_label.text = "资源不足"
+			card_border.color = Color(0.08, 0.08, 0.10, 0.6)
+			hover_border.color = Color(0.3, 0.2, 0.2, 0.0)
+			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
 		"used":
-			var name_label2: Label = $NameLabel as Label
-			name_label2.add_theme_color_override("font_color", Color(0.35, 0.38, 0.42))
-			var status_label2: Label = $StatusLabel as Label
-			status_label2.text = "已使用"
+			card_border.color = Color(0.05, 0.05, 0.08, 0.6)
+			hover_border.color = Color(0.62, 0.90, 1.0, 0.0)
+			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
 
 
 func is_playable() -> bool:
@@ -111,7 +135,3 @@ func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if is_playable():
 			clicked_callback.call()
-
-
-func _on_clicked() -> void:
-	pass

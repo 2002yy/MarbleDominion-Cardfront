@@ -10,9 +10,9 @@ var _card_views: Array[CardfrontCardView] = []
 var selection_controller = null
 var economy_system = null
 
-const PANEL_HEIGHT: float = 110.0
-const CARD_GAP: float = 6.0
-const CARD_W: float = 180.0
+const PANEL_HEIGHT: float = 160.0
+const CARD_GAP: float = 8.0
+const CARD_W: float = 130.0
 
 
 func setup(new_card_system, new_resource_states: Dictionary, new_economy_system, mode_name: String, view_size: Vector2) -> void:

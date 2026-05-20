@@ -98,16 +98,10 @@ func _test_device_count_updates_status_text() -> void:
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
 
-	var DevicePlacementRequestScript = load("res://scripts/cardfront/devices/DevicePlacementRequest.gd")
-	var DeviceTypeScript = load("res://scripts/cardfront/devices/DeviceType.gd")
-	var CardfrontRulesScript = load("res://scripts/cardfront/CardfrontRules.gd")
-
-	var req = DevicePlacementRequestScript.make(DeviceTypeScript.ABSORBER_CORE, CardfrontRulesScript.PLAYER_FACTION, Vector2i(1, 1))
-	main.runtime.device_layer.place(req)
-
 	main._update_cardfront_status_label()
 	var text: String = str(main._cardfront_status_label().text)
-	_assert.that(text.find("吸弹1") >= 0, "hud: status should show device count after placement (got: %s)" % text)
+	_assert.that(text.find("射击") >= 0, "hud: status should show fire status (got: %s)" % text)
+	_assert.that(text.find("设备") == -1, "hud: status should NOT show device counts (now in formal UI)")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
@@ -132,10 +126,10 @@ func _test_status_text_updates_after_device_change() -> void:
 
 	var req = DevicePlacementRequestScript.make(DeviceTypeScript.ENGINEER_BOT, CardfrontRulesScript.PLAYER_FACTION, Vector2i(2, 2))
 	main.runtime.device_layer.place(req)
-
 	main._update_cardfront_status_label()
-	var after: String = str(main._cardfront_status_label().text)
-	_assert.neq(after, before, "hud: status text should change after device placement")
+
+	_assert.that(main.runtime.device_layer.get_all_active_devices().size() > 0, "device should be placed")
+	_assert.that(main.runtime.top_resource_bar != null, "formal resource bar should exist")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

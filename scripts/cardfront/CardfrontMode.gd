@@ -26,6 +26,7 @@ const CardfrontDebugActionPanelScript = preload("res://scripts/cardfront/debug/C
 const CardfrontTopResourceBarScene = preload("res://scenes/ui/cardfront/CardfrontTopResourceBar.tscn")
 const CardfrontHandPanelScene = preload("res://scenes/ui/cardfront/CardfrontHandPanel.tscn")
 const CardfrontCardSelectionControllerScript = preload("res://scripts/cardfront/ui/CardfrontCardSelectionController.gd")
+const CardfrontTargetPreviewLayerScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -356,9 +357,23 @@ static func create_hand_panel(ui_layer: Node, card_system, resource_states: Dict
 	}
 
 
-static func create_card_selection_controller(card_system, resource_states: Dictionary, hand_panel, top_resource_bar) -> Dictionary:
+static func create_target_preview_layer(game_layer: Node, battlefield, region_map) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+
+	var layer = CardfrontTargetPreviewLayerScript.new()
+	layer.setup(battlefield, region_map, GameConfig.GAME_MODE_CARDFRONT)
+	game_layer.add_child(layer)
+
+	return {
+		"configured": true,
+		"target_preview_layer": layer,
+	}
+
+
+static func create_card_selection_controller(card_system, resource_states: Dictionary, hand_panel, top_resource_bar, target_preview = null) -> Dictionary:
 	var controller = CardfrontCardSelectionControllerScript.new()
-	controller.setup(card_system, resource_states, hand_panel, top_resource_bar)
+	controller.setup(card_system, resource_states, hand_panel, top_resource_bar, target_preview)
 	if hand_panel != null:
 		hand_panel.set_selection_controller(controller)
 	return {

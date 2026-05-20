@@ -254,6 +254,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_cardfront_fire_director()
 	_create_cardfront_shot_guide()
 	_create_cardfront_device_layer()
+	_create_cardfront_target_preview_layer()
 	_create_cardfront_vfx_layer()
 	_create_cardfront_debug_action_panel()
 	_create_cardfront_absorber_core_effect()
@@ -461,6 +462,16 @@ func _create_cardfront_top_resource_bar() -> void:
 	runtime.top_resource_bar = bar_setup.get("top_resource_bar", null)
 
 
+func _create_cardfront_target_preview_layer() -> void:
+	runtime.target_preview_layer = null
+	if not _is_cardfront_mode():
+		return
+	var preview_setup: Dictionary = CardfrontModeScript.create_target_preview_layer(game_layer, runtime.battlefield, runtime.region_map)
+	if not bool(preview_setup.get("configured", false)):
+		return
+	runtime.target_preview_layer = preview_setup.get("target_preview_layer", null)
+
+
 func _create_cardfront_hand_panel() -> void:
 	runtime.hand_panel = null
 	runtime.selection_controller = null
@@ -473,7 +484,7 @@ func _create_cardfront_hand_panel() -> void:
 	if not bool(hand_setup.get("configured", false)):
 		return
 	runtime.hand_panel = hand_setup.get("hand_panel", null)
-	var ctrl_setup: Dictionary = CardfrontModeScript.create_card_selection_controller(runtime.card_system, runtime.resource_states, runtime.hand_panel, runtime.top_resource_bar)
+	var ctrl_setup: Dictionary = CardfrontModeScript.create_card_selection_controller(runtime.card_system, runtime.resource_states, runtime.hand_panel, runtime.top_resource_bar, runtime.target_preview_layer)
 	if bool(ctrl_setup.get("configured", false)):
 		runtime.selection_controller = ctrl_setup.get("selection_controller", null)
 
