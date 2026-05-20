@@ -332,8 +332,8 @@ static func create_top_resource_bar(ui_layer: Node, economy_system, resource_sta
 		return {"configured": false, "reason": "missing_ui_layer"}
 
 	var bar = CardfrontTopResourceBarScene.instantiate()
-	bar.setup(economy_system, resource_states, GameConfig.GAME_MODE_CARDFRONT)
 	ui_layer.add_child(bar)
+	bar.setup(economy_system, resource_states, GameConfig.GAME_MODE_CARDFRONT)
 
 	return {
 		"configured": true,
@@ -348,8 +348,8 @@ static func create_hand_panel(ui_layer: Node, card_system, resource_states: Dict
 		return {"configured": false, "reason": "missing_card_system"}
 
 	var panel = CardfrontHandPanelScene.instantiate()
-	panel.setup(card_system, resource_states, economy_system, GameConfig.GAME_MODE_CARDFRONT, view_size)
 	ui_layer.add_child(panel)
+	panel.setup(card_system, resource_states, economy_system, GameConfig.GAME_MODE_CARDFRONT, view_size)
 
 	return {
 		"configured": true,

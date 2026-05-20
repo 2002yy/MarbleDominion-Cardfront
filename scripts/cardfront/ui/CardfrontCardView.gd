@@ -99,14 +99,17 @@ func set_state(state: String) -> void:
 			card_border.color = Color(0.12, 0.18, 0.30, 0.0)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.0)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
+			_restore_text_colors()
 		"hover":
 			card_border.color = Color(0.62, 0.90, 1.0, 0.20)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.20)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
+			_restore_text_colors()
 		"selected":
 			card_border.color = Color(0.62, 0.90, 1.0, 0.40)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.0)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.35)
+			_restore_text_colors()
 		"disabled_resource":
 			card_border.color = Color(0.08, 0.08, 0.10, 0.6)
 			hover_border.color = Color(0.3, 0.2, 0.2, 0.0)
@@ -121,6 +124,17 @@ func is_playable() -> bool:
 	return current_state in ["idle", "hover"]
 
 
+func is_clickable() -> bool:
+	return current_state in ["idle", "hover", "selected"]
+
+
+func _restore_text_colors() -> void:
+	var name_label: Label = $CardName as Label
+	name_label.add_theme_color_override("font_color", Color(0.95, 0.97, 1.0))
+	var status_label: Label = $StatusLabel as Label
+	status_label.add_theme_color_override("font_color", Color(0.62, 0.68, 0.80))
+
+
 func _on_mouse_entered() -> void:
 	if current_state == "idle":
 		set_state("hover")
@@ -133,5 +147,5 @@ func _on_mouse_exited() -> void:
 
 func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if is_playable():
+		if is_clickable():
 			clicked_callback.call()
