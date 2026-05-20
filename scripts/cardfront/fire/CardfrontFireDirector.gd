@@ -1,6 +1,11 @@
 extends Node
 class_name CardfrontFireDirector
 
+signal fire_tick(owner_id, intent)
+signal fire_requested(owner_id, intent)
+signal fire_issued(owner_id, intent)
+signal fire_skipped(owner_id, reason)
+
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const FireRulesScript = preload("res://scripts/cardfront/fire/CardfrontFireRules.gd")
 const FireIntentScript = preload("res://scripts/cardfront/fire/CardfrontFireIntent.gd")
@@ -65,12 +70,17 @@ func tick(delta: float) -> Array:
 		var remaining_budget: int = _remaining_shot_budget(safe_owner_id)
 		if remaining_budget <= 0:
 			_owner_timers[safe_owner_id] = 0.0
+			fire_skipped.emit(safe_owner_id, "budget_exceeded")
 			continue
 
 		var intent = build_intent(safe_owner_id, mini(maxi(1, int(base_shot_count)), remaining_budget))
 		if intent == null:
 			_owner_timers[safe_owner_id] = maxf(0.0, float(shot_interval))
+			fire_skipped.emit(safe_owner_id, "no_target")
 			continue
+
+		fire_tick.emit(safe_owner_id, intent)
+		fire_requested.emit(safe_owner_id, intent)
 
 		if _request_fire(safe_owner_id, intent):
 			issued.append(intent)
@@ -78,8 +88,10 @@ func tick(delta: float) -> Array:
 			_total_shots_in_window += int(intent.shot_count)
 			_owner_shots_in_window[safe_owner_id] = int(_owner_shots_in_window.get(safe_owner_id, 0)) + int(intent.shot_count)
 			_owner_timers[safe_owner_id] = maxf(0.0, float(shot_interval))
+			fire_issued.emit(safe_owner_id, intent)
 		else:
 			_owner_timers[safe_owner_id] = 0.1
+			fire_skipped.emit(safe_owner_id, "turret_unavailable")
 
 	return issued
 
