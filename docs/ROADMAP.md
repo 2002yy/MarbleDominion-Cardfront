@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.1.9-cardfront-engineering-closeout`
-- Next slice: `v0.2.0b-fix-formal-ui-and-signal-ci`
+- Current completed slice: `v0.2.1-target-preview`
+- Next slice: `v0.2.2-card-art-binding`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - formal Cardfront HUD components (resource bar, hand panel) replacing debug panels
@@ -45,8 +45,9 @@ This file is the single place for project direction and phase status.
 | `v0.1.8e-bottom-hud-status-polish` | Done / 已完成 | Bottom HUD status formatter, dirty redraw protection, and Cardfront performance smoke coverage. |
 | `v0.1.9-cardfront-engineering-closeout` | Done / 已完成 | Version sync, CI batch gate, test matrix update, performance budget gate, save schema audit, `CardPlaySystem` effect registry pre-split, and doc alignment. |
 | `v0.2.0a-cardfront-formal-ui-foundation` | Done / 已完成 | Formal `CardfrontTopResourceBar`, `CardfrontHandPanel`, `CardfrontCardView`, `CardfrontCardSelectionController`; FireDirector signals (`fire_tick`/`fire_requested`/`fire_issued`/`fire_skipped`); overlay `ImageTexture` caching. |
-| `v0.2.0b-fix-formal-ui-and-signal-ci` | Active / 当前 | Fix `CardfrontCardView._create_children()` body, fix `CardfrontFireDirectorSignalTestRunner` fixture errors, add new tests to CI batch matrix, doc alignment. |
-| `v0.2.1-target-preview` | Planned | Highlight valid target cells when a card is selected; target preview overlay layer. |
+| `v0.2.0b-fix-formal-ui-and-signal-ci` | Done / 已完成 | Fix `CardfrontCardView._create_children()` body, fix `CardfrontFireDirectorSignalTestRunner` fixture errors, add new tests to CI batch matrix, doc alignment. |
+| `v0.2.1-target-preview` | Done / 已完成 | `CardfrontTargetPreviewLayer.gd`: highlight valid target cells on battlefield; pioneer beacon shows border + adjacent neutral hint cells; `CardfrontBattlefieldClickSelectionTestRunner.gd` verifies select→preview→click→play flow; `Main.gd:_unhandled_input()` wires mouse click to `selection_controller.on_battlefield_clicked()`. |
+| `v0.2.2-card-art-binding` | Active / 当前 | Replace `CARD_PLACEHOLDERS` icons with actual card illustrations from `cardfront_runtime/卡牌插图_cards/512/` via `CardVisualRegistry.gd`; `TextureRect` in `CardfrontCardView.tscn` with placeholder fallback. |
 
 ## 3. Design Boundaries / 设计边界
 
@@ -184,7 +185,7 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. `v0.2.1-target-preview`: target preview overlay layer that highlights valid cells when a card is selected via `CardfrontCardSelectionController`.
+1. `v0.2.2-card-art-binding`: replace `CARD_PLACEHOLDERS` with actual card illustrations via `CardVisualRegistry`, add `TextureRect` to `CardfrontCardView.tscn` with placeholder fallback.
 2. Keep Deckbuilder, deck draw/discard/shuffle, and AI Commander deferred.
 3. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` for all new wiring.
 
