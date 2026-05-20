@@ -520,8 +520,6 @@ func _create_event_roulette_system() -> void:
 	if not runtime.event_controller.chamber_ui_refresh_requested.is_connected(chamber_refresh_callable):
 		runtime.event_controller.chamber_ui_refresh_requested.connect(chamber_refresh_callable)
 
-	_refresh_event_log()
-
 func _create_control_buttons() -> void:
 	_set_ui_runtime_ref("add_ball_buttons", {})
 	_set_ui_runtime_ref("add_ball_button_base_positions", {})
@@ -672,24 +670,8 @@ func _toggle_pause() -> void:
 		Callable(self, "_save_game_progress")
 	)
 
-func _refresh_event_log() -> void:
-	var event_log_label = _hud_ref("event_log_label")
-	if event_log_label == null or not is_instance_valid(event_log_label):
-		return
-	if runtime.event_controller == null or not is_instance_valid(runtime.event_controller):
-		return
-	if not runtime.event_controller.has_method("get_event_log_text"):
-		return
-	var log_text: String = runtime.event_controller.get_event_log_text(8)
-	if log_text.is_empty():
-		return
-	if event_log_label.has_method("update_event_log"):
-		event_log_label.update_event_log(log_text)
-	else:
-		event_log_label.text = log_text
-
 func _on_event_round_finished(_payload: Dictionary) -> void:
-	_refresh_event_log()
+	pass
 
 func _on_event_banner_requested(title_text: String, sub_text: String, accent: Color, auto_hide: bool) -> void:
 	_show_center_banner(title_text, sub_text, accent, auto_hide)
@@ -973,8 +955,6 @@ func _apply_saved_state(restore_input) -> void:
 	)
 
 	SaveStateApplier.apply_event_state(runtime.event_controller, {"event_state": restore_plan.event_state})
-
-	_refresh_event_log()
 
 	_restore_bullet_states(restore_plan.bullet_states)
 

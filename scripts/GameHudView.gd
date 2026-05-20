@@ -281,44 +281,6 @@ static func create_runtime_ui(owner, game_layer: Node, _battlefield, current_lay
 	event_label.process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_canvas.add_child(event_label)
 
-	var event_log_label := RichTextLabel.new()
-	event_log_label.name = "EventLogLabel"
-	event_log_label.process_mode = Node.PROCESS_MODE_ALWAYS
-	event_log_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	event_log_label.scroll_active = false
-	event_log_label.selection_enabled = false
-	event_log_label.bbcode_enabled = true
-	event_log_label.fit_content = true
-	var event_log_rect: Rect2 = current_layout.get("hud_positions", {}).get("event_log_rect", Rect2(Vector2(view_size.x - 290.0 - 10.0, 106.0), Vector2(290.0, 230.0)))
-	event_log_label.position = event_log_rect.position
-	event_log_label.size = event_log_rect.size
-	event_log_label.add_theme_font_size_override("normal_font_size", 11 if mobile_mode else 13)
-	event_log_label.add_theme_color_override("default_color", Color(0.88, 0.92, 1.0, 0.94))
-	event_log_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.5))
-	event_log_label.add_theme_constant_override("shadow_offset_x", 1)
-	event_log_label.add_theme_constant_override("shadow_offset_y", 1)
-	event_log_label.add_theme_constant_override("shadow_size", 1)
-	ui_canvas.add_child(event_log_label)
-
-	var btn_size: float = 18.0 if mobile_mode else 20.0
-	var el_toggle_btn := Button.new()
-	el_toggle_btn.name = "EventLogToggle"
-	el_toggle_btn.text = "◀"
-	el_toggle_btn.position = Vector2(event_log_rect.position.x - btn_size - 2.0, event_log_rect.position.y + 4.0)
-	el_toggle_btn.size = Vector2(btn_size, btn_size)
-	el_toggle_btn.add_theme_font_size_override("font_size", 10 if mobile_mode else 12)
-	el_toggle_btn.add_theme_color_override("font_color", Color(0.72, 0.82, 1.0))
-	el_toggle_btn.add_theme_color_override("font_hover_color", Color.WHITE)
-	el_toggle_btn.self_modulate = Color(0.06, 0.10, 0.18, 0.70)
-	el_toggle_btn.tooltip_text = "显示/隐藏事件日志"
-	el_toggle_btn.process_mode = Node.PROCESS_MODE_ALWAYS
-	el_toggle_btn.pressed.connect(func() -> void:
-		var showing: bool = event_log_label.visible
-		event_log_label.visible = not showing
-		el_toggle_btn.text = "▶" if event_log_label.visible else "◀"
-	)
-	ui_canvas.add_child(el_toggle_btn)
-
 	return {
 		"ui_canvas": ui_canvas,
 		"top_bar_segments": top_bar_segments,
@@ -337,7 +299,6 @@ static func create_runtime_ui(owner, game_layer: Node, _battlefield, current_lay
 		"timer_label": timer_label,
 		"stage_label": stage_label,
 		"event_label": event_label,
-		"event_log_toggle": el_toggle_btn,
 	}
 
 static func _create_pause_overlay(owner, view_size: Vector2) -> Control:

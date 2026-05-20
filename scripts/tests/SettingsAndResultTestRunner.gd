@@ -20,8 +20,6 @@ func _run() -> void:
 	await _flush()
 	await _test_performance_toggle(t)
 	await _flush()
-	await _test_event_log_toggle(t)
-	await _flush()
 	await _test_result_panel(t)
 	await _flush()
 
@@ -49,13 +47,11 @@ func _test_settings_persistence(t: TestAssert) -> void:
 
 	var prefs := PlayerSettingsStore.default_settings()
 	prefs["show_performance_info"] = false
-	prefs["show_event_log"] = false
 	prefs["low_effect_mode"] = true
 	PlayerSettingsStore.save_settings(prefs)
 
 	var loaded := PlayerSettingsStore.load_settings()
 	t.eq(bool(loaded["show_performance_info"]), false, "persist: show_performance_info=false")
-	t.eq(bool(loaded["show_event_log"]), false, "persist: show_event_log=false")
 	t.eq(bool(loaded["low_effect_mode"]), true, "persist: low_effect_mode=true")
 
 	var panel = SettingsScene.instantiate()
@@ -63,9 +59,7 @@ func _test_settings_persistence(t: TestAssert) -> void:
 	await process_frame
 
 	var perf_cb: CheckButton = panel.get_node("PanelMargin/MainVBox/PerformanceCheck")
-	var log_cb: CheckButton = panel.get_node("PanelMargin/MainVBox/EventLogCheck")
 	t.that(not perf_cb.button_pressed, "panel loads show_perf=false")
-	t.that(not log_cb.button_pressed, "panel loads show_log=false")
 
 	panel.queue_free()
 	await process_frame
@@ -99,59 +93,9 @@ func _test_performance_toggle(t: TestAssert) -> void:
 	await process_frame
 
 
-# === P3: Event log toggle ===
-func _test_event_log_toggle(t: TestAssert) -> void:
-	print("  [P3] event log toggle")
-
-	var prefs := PlayerSettingsStore.default_settings()
-	prefs["show_event_log"] = false
-	PlayerSettingsStore.save_settings(prefs)
-
-	var main_script = load("res://scripts/Main.gd")
-	var main = main_script.new()
-	main.name = "E2E_LogTest"
-	get_root().add_child(main)
-	main.player_settings = PlayerSettingsStore.load_settings()
-
-	main.selected_grid_size = 20
-	main.selected_game_mode_name = GameConfig.GAME_MODE_BASIC
-	main.selected_save_slot = 9
-	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_BASIC)
-	main._start_game(20, true, false)
-	await process_frame
-	await process_frame
-	await process_frame
-
-	main._apply_event_log_setting()
-
-	var ec = main.runtime.event_controller
-	if ec != null and is_instance_valid(ec):
-		t.that(not ec.event_log_visible, "event_log_visible=false after apply")
-		var history_before: int = ec.event_history.size()
-		ec._finish_event_round({
-			"faction_id": GameConfig.Faction.BLUE,
-			"faction_name": "蓝方",
-			"final_effect": EventRouletteController.EFFECT_BONUS_10,
-			"result_text": "蓝方：本次 +10！",
-		})
-		var history_after: int = ec.event_history.size()
-		t.that(history_after > history_before, "event_history still records when log hidden")
-
-	prefs["show_event_log"] = true
-	PlayerSettingsStore.save_settings(prefs)
-	main.player_settings = PlayerSettingsStore.load_settings()
-	main._apply_event_log_setting()
-	if ec != null and is_instance_valid(ec):
-		t.that(ec.event_log_visible, "event_log_visible=true after toggle back")
-
-	_cleanup_save_slot(9)
-	main.queue_free()
-	await process_frame
-
-
-# === P4: Result panel ===
+# === P3: Result panel ===
 func _test_result_panel(t: TestAssert) -> void:
-	print("  [P4] result panel")
+	print("  [P3] result panel")
 
 	var panel = ResultScene.instantiate()
 	get_root().add_child(panel)

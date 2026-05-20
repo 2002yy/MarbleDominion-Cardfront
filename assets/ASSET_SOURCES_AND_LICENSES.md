@@ -84,17 +84,26 @@ Credits rule:
 
 ### `assets/cardfront/`
 
-- source: AI-generated project-specific Cardfront assets
+- source: AI-generated project-specific Cardfront assets (original staging/source)
 - generated for: Marble Dominion: Cardfront
 - usage: card illustrations, device sprites, VFX textures
 - restriction: do not use as third-party source pack; project-specific generated assets
 - manifest: `assets/cardfront/提示词_prompts/generated_asset_manifest_v01.md`
-- current status: staged but NOT wired into runtime (v0.1.x is logic-only)
+- current status: source/staged AI-generated originals and prompt manifest; not all files are directly runtime-ready
 - imported content (11 files):
-  - 卡牌插图_cards_illustrations/ (3 card illustrations)
-  - 装置地图精灵_devices_map_sprites/ (4 device sprites)
+  - 卡牌插图_cards_illustrations/ (3 card illustrations) — deferred to formal card UI
+  - 装置地图精灵_devices_map_sprites/ (4 device sprites) — source originals; processed versions in assets/cardfront_runtime/
   - 装置图标_devices_icons/ (1 status icon)
-  - 特效纹理_vfx_textures/ (3 VFX textures)
+  - 特效纹理_vfx_textures/ (3 VFX textures) — staged, not yet fully wired
+
+### `assets/cardfront_runtime/`
+
+- processed runtime assets derived from `assets/cardfront/` source
+- device sprites under `装置精灵_devices/96/` are already wired by `DeviceVisualRegistry.gd`
+  - registered sprites: absorber core, engineer bot, pioneer beacon, temporary reflector
+- VFX textures under `视觉特效_vfx/128/`: staged but not yet fully wired into runtime
+- device icons under `装置图标_icons/48/`: staged but not yet fully wired
+- card illustrations under `卡牌插图_cards/512/`: remain deferred to formal card UI
 
 ## 4. Not Mirrored Into `assets/` / 未直接镜像进 `assets/` 的素材
 

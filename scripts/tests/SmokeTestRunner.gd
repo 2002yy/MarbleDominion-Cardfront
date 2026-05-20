@@ -797,21 +797,18 @@ func _test_player_settings_bool_sanitization() -> void:
 	var raw_file := FileAccess.open(settings_path, FileAccess.WRITE)
 	_assert_true(raw_file != null, "player settings test should create settings file")
 	if raw_file != null:
-		raw_file.store_string("{\"show_performance_info\":\"abc\",\"low_effect_mode\":\"true\",\"show_event_log\":0}")
+		raw_file.store_string("{\"show_performance_info\":\"abc\",\"low_effect_mode\":\"true\"}")
 		raw_file.close()
 
 	var loaded: Dictionary = PlayerSettingsStore.load_settings()
 	_assert_eq(typeof(loaded.get("show_performance_info", null)), TYPE_BOOL, "player settings should normalize show_performance_info to bool")
 	_assert_eq(typeof(loaded.get("low_effect_mode", null)), TYPE_BOOL, "player settings should normalize low_effect_mode to bool")
-	_assert_eq(typeof(loaded.get("show_event_log", null)), TYPE_BOOL, "player settings should normalize show_event_log to bool")
 	_assert_eq(bool(loaded.get("show_performance_info", not OS.is_debug_build())), OS.is_debug_build(), "player settings should fall back to default for invalid bool strings")
 	_assert_true(bool(loaded.get("low_effect_mode", false)), "player settings should parse truthy strings")
-	_assert_true(not bool(loaded.get("show_event_log", true)), "player settings should parse numeric zero as false")
 
 	PlayerSettingsStore.save_settings({
 		"show_performance_info": "off",
 		"low_effect_mode": 1,
-		"show_event_log": "unexpected",
 	})
 	var saved_file := FileAccess.open(settings_path, FileAccess.READ)
 	_assert_true(saved_file != null, "player settings save should write normalized file")
@@ -822,7 +819,6 @@ func _test_player_settings_bool_sanitization() -> void:
 		if parsed is Dictionary:
 			_assert_eq(typeof(parsed.get("show_performance_info", null)), TYPE_BOOL, "saved player settings should keep bool type for performance flag")
 			_assert_eq(typeof(parsed.get("low_effect_mode", null)), TYPE_BOOL, "saved player settings should keep bool type for low effect mode")
-			_assert_eq(typeof(parsed.get("show_event_log", null)), TYPE_BOOL, "saved player settings should keep bool type for event log flag")
 
 	if FileAccess.file_exists(settings_path):
 		DirAccess.remove_absolute(settings_abs)

@@ -31,9 +31,6 @@ var top_bar_segments: Dictionary = {}
 var top_bar_labels: Dictionary = {}
 var top_bar_name_labels: Dictionary = {}
 var top_bar_total_width: float = 0.0
-var event_log_label: RichTextLabel
-var event_log_toggle_btn: Button
-
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_collect_top_bar_nodes()
@@ -106,7 +103,6 @@ func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary
 
 	_layout_side_buttons(view_size, mobile_mode, layout)
 	_layout_bottom_hud(view_size, mobile_mode, layout)
-	_try_attach_event_log(layout, view_size, mobile_mode)
 	_layout_pause_overlay(view_size)
 
 	var winner_label_rect: Rect2 = hud_positions.get("winner_label_rect", Rect2(Vector2(0.0, float(layout.get("winner_y", 666.0))), Vector2(view_size.x, 34.0)))
@@ -139,8 +135,6 @@ func get_static_parts() -> Dictionary:
 		"timer_label": timer_label,
 		"stage_label": stage_label,
 		"event_label": event_label,
-		"event_log_label": event_log_label,
-		"event_log_toggle": event_log_toggle_btn,
 	}
 
 func setup_side_buttons(controller_ref) -> void:
@@ -254,61 +248,6 @@ func _layout_pause_overlay(view_size: Vector2) -> void:
 func _apply_button_layout(button: Button, position_value: Vector2, size_value: Vector2) -> void:
 	button.position = position_value
 	button.size = size_value
-
-func _try_attach_event_log(layout: Dictionary, view_size: Vector2, mobile_mode: bool) -> void:
-	if has_node("EventLogLabel"):
-		event_log_label = get_node("EventLogLabel") as RichTextLabel
-		if is_instance_valid(event_log_label):
-			return
-
-	event_log_label = RichTextLabel.new()
-	event_log_label.name = "EventLogLabel"
-	event_log_label.process_mode = Node.PROCESS_MODE_ALWAYS
-	event_log_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	event_log_label.scroll_active = false
-	event_log_label.selection_enabled = false
-	event_log_label.bbcode_enabled = true
-	event_log_label.fit_content = true
-
-	var hud_positions: Dictionary = layout.get("hud_positions", {})
-	var event_log_rect: Rect2 = hud_positions.get("event_log_rect", Rect2(Vector2(view_size.x - 290.0 - 10.0, 106.0), Vector2(290.0, 230.0)))
-	event_log_label.position = event_log_rect.position
-	event_log_label.size = event_log_rect.size
-	event_log_label.add_theme_font_size_override("normal_font_size", 11 if mobile_mode else 13)
-	event_log_label.add_theme_color_override("default_color", Color(0.88, 0.92, 1.0, 0.94))
-	event_log_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.5))
-	event_log_label.add_theme_constant_override("shadow_offset_x", 1)
-	event_log_label.add_theme_constant_override("shadow_offset_y", 1)
-	event_log_label.add_theme_constant_override("shadow_size", 1)
-	add_child(event_log_label)
-
-	var btn_size: float = 18.0 if mobile_mode else 20.0
-	event_log_toggle_btn = Button.new()
-	event_log_toggle_btn.name = "EventLogToggle"
-	event_log_toggle_btn.text = "◀"
-	event_log_toggle_btn.position = Vector2(event_log_rect.position.x - btn_size - 2.0, event_log_rect.position.y + 4.0)
-	event_log_toggle_btn.size = Vector2(btn_size, btn_size)
-	event_log_toggle_btn.add_theme_font_size_override("font_size", 10 if mobile_mode else 12)
-	event_log_toggle_btn.add_theme_color_override("font_color", Color(0.72, 0.82, 1.0))
-	event_log_toggle_btn.add_theme_color_override("font_hover_color", Color.WHITE)
-	event_log_toggle_btn.self_modulate = Color(0.06, 0.10, 0.18, 0.70)
-	event_log_toggle_btn.tooltip_text = "显示/隐藏事件日志"
-	event_log_toggle_btn.process_mode = Node.PROCESS_MODE_ALWAYS
-	event_log_toggle_btn.pressed.connect(_toggle_event_log)
-	add_child(event_log_toggle_btn)
-
-func _toggle_event_log() -> void:
-	if event_log_label == null or not is_instance_valid(event_log_label):
-		return
-	var visible_now: bool = event_log_label.visible
-	event_log_label.visible = not visible_now
-	if event_log_toggle_btn != null and is_instance_valid(event_log_toggle_btn):
-		event_log_toggle_btn.text = "▶" if event_log_label.visible else "◀"
-
-func update_event_log(log_text: String) -> void:
-	if event_log_label == null or not is_instance_valid(event_log_label):
-		return
-	event_log_label.text = log_text
 
 func _load_settings_panel() -> void:
 	var sp_path: String = "res://scenes/ui/SettingsPanel.tscn"

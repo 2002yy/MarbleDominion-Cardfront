@@ -6,7 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.8e-bottom-hud-status-polish**. Bottom HUD shows live device counts and card effects; dirty-redraw optimizations verified; performance smoke test in place.
+The current completed slice is **v0.1.8e-bottom-hud-status-polish**.
+Current active slice: **v0.1.9-cardfront-engineering-closeout**.
+Bottom HUD shows live device counts and card effects; dirty-redraw optimizations verified; performance smoke test in place.
 
 ## Current Slice / 当前阶段
 
@@ -51,9 +53,9 @@ Implemented in this repository:
 
 Not implemented yet:
 
-- Formal card UI / HUD, Deckbuilder, and AI Commander remain deferred until after `v0.1.9-cardfront-engineering-closeout`.
-- Cardfront save/load integration remains deferred; v0.1.9 only audits the snapshot schema and keeps the boundary explicit.
-- Final device tuning, animation polish, and save/load integration.
+- Formal card UI / HUD, Deckbuilder, and AI Commander remain deferred for v0.2.0.
+- Cardfront save/load integration remains deferred; schema shape is audited in `CardfrontRuntimeSnapshot.gd` but not wired.
+- Final device tuning, animation polish.
 
 ## Screenshots / 截图
 
@@ -170,6 +172,6 @@ Latest local validation for the v0.1.8e required subset:
 
 ## Next Milestone / 下一阶段
 
-`v0.1.9-cardfront-engineering-closeout`: version sync, CI batch gate, test matrix update, performance budget test, Cardfront save schema audit, `CardPlaySystem` effect registry pre-split, and README / ROADMAP / AI handoff alignment. Formal Deckbuilder and AI Commander stay out of this slice.
+`v0.2.0-cardfront-formal-hud`: formal Cardfront HUD scene, resource bars, active card hand display, device status panel, target preview. Deckbuilder, AI Commander, and full Cardfront save/load remain deferred. See [docs/历史_history/README_v0_1_9_cardfront_engineering_closeout.md](docs/历史_history/README_v0_1_9_cardfront_engineering_closeout.md) for complete v0.2.0 boundary.
 
 MIT License. See [LICENSE](LICENSE).

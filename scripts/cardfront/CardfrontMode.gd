@@ -336,14 +336,6 @@ static func configure_runtime_hud(hud_nodes: Dictionary) -> void:
 	if fps_label != null and is_instance_valid(fps_label):
 		fps_label.visible = true
 
-	var event_log_label = hud_nodes.get("event_log_label", null)
-	if event_log_label != null and is_instance_valid(event_log_label):
-		event_log_label.visible = true
-
-	var event_log_toggle = hud_nodes.get("event_log_toggle", null)
-	if event_log_toggle != null and is_instance_valid(event_log_toggle):
-		event_log_toggle.visible = true
-
 	RuntimeHudController.set_performance_visible(true)
 
 

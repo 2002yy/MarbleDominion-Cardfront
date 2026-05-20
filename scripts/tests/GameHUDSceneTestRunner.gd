@@ -71,8 +71,6 @@ func _run() -> void:
 	t.that(parts["settings_panel"] is Control, "settings_panel is Control")
 	t.that(parts.has("pause_overlay"), "part: pause_overlay")
 	t.that(parts.has("winner_label"), "part: winner_label")
-	t.that(parts.has("event_log_label"), "part: event_log_label")
-	t.that(parts["event_log_label"] is RichTextLabel, "event_log_label is RichTextLabel")
 
 	t.that(parts["fps_label"] is Label, "fps_label is Label")
 	t.that(parts["event_label"] is Label, "event_label is Label")
@@ -84,7 +82,6 @@ func _run() -> void:
 	t.that(instance.get_node("TopPanel").position == layout["hud_positions"]["top_panel_rect"].position, "top panel uses merged layout")
 
 	_test_button_click(parts, mock, t)
-	_test_event_log_label(parts, t)
 
 	t.report("[GameHUDSceneTest]")
 
@@ -110,20 +107,3 @@ func _test_button_click(parts: Dictionary, mock: MockController, t: TestAssert) 
 
 	settings_btn.pressed.emit()
 	t.eq(mock.toggle_settings_called, 1, "settings button pressed → _toggle_settings_panel called once")
-
-
-func _test_event_log_label(parts: Dictionary, t: TestAssert) -> void:
-	var log_label = parts.get("event_log_label", null)
-	t.that(log_label != null, "event_log_label exists")
-	if log_label == null or not is_instance_valid(log_label):
-		return
-
-	t.eq(log_label.mouse_filter, Control.MOUSE_FILTER_IGNORE, "event_log_label mouse_filter is IGNORE")
-	t.eq(log_label.scroll_active, false, "event_log_label scroll_active is false")
-	t.eq(log_label.selection_enabled, false, "event_log_label selection_enabled is false")
-	t.eq(log_label.bbcode_enabled, true, "event_log_label bbcode_enabled is true")
-
-	var parent_has_toggle: bool = false
-	if log_label.get_parent() != null:
-		parent_has_toggle = log_label.get_parent().has_node("EventLogToggle")
-	t.that(parent_has_toggle, "event_log_label parent has EventLogToggle button")

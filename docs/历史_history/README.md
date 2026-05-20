@@ -15,6 +15,16 @@ This folder keeps the detailed stage-by-stage BallWar history that used to live 
 
 ## 推荐入口 / Suggested entry points
 
+- `README_v0_1_9_cardfront_engineering_closeout.md`
+  - v0.1.9 engineering closeout / version sync, CI batch, snapshot audit, effect resolver split, doc alignment, performance smoke gate
+- `README_v0_1_7d_durable_pioneer_beacon.md`
+  - Durable Pioneer Beacon / persistent beacon device that periodically converts nearby neutral cells; device tetralogy complete
+- `README_v0_1_7c_engineer_bot_lite.md`
+  - Engineer Bot Lite / reinforces nearby owned-border cells with fortify stacks per tick
+- `README_v0_1_7b_absorber_core_lite.md`
+  - Absorber Core Lite / absorbs enemy bullets within radius, grants energy on kill
+- `README_v0_1_7a_device_core.md`
+  - Device core layer / placement, lifetime tick, snapshot; 3 types registered, no effects
 - `README_v0_1_6_2_cardfront_control_chamber_decoupling.md`
   - Cardfront control-chamber decoupling / hides legacy control chambers and +ball buttons, adds automatic/card-directed fire HUD status, global + per-owner shot budgets
 - `README_v0_1_6_1_cardfront_fire_director.md`

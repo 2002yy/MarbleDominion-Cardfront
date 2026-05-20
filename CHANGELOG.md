@@ -17,6 +17,44 @@ Detailed stage notes now live under [docs/历史_history/](docs/历史_history/R
 - Historical Releases: `v1.9.x`, `v0.1.0-mvp`
   - reconstructed history, not the recommended download path
 
+## `v0.1.9-cardfront-engineering-closeout` — 工程收口与效果拆分
+
+- Sync project.godot version to 0.1.9-dev.
+- Convert GitHub Actions headless-tests into Cardfront batch matrix.
+- Add CardfrontRuntimeSnapshotTestRunner.gd and CardEffectResolverTestRunner.gd.
+- Split CardPlaySystem effect dispatch through CardEffectResolver / CardEffectRegistry.
+- Add CARDFRONT_DECOUPLING_PLAN to docs/技术_technical/.
+- CardfrontPerformanceSmokeTestRunner.gd serves as smoke-level performance gate; strict budget test deferred.
+- Keep formal card UI, Deckbuilder, AI Commander, and full Cardfront save/load deferred.
+
+## `v0.1.8e-bottom-hud-status-polish` — 底部HUD状态打磨
+
+- Added BottomHudStatusFormatter for device-count and active-card-effect display in Cardfront HUD.
+- Overlay redraw now protected by dirty-flag checks to avoid per-frame full repaint.
+- Added CardfrontPerformanceSmokeTestRunner.gd as smoke-level performance gate.
+- Added CardfrontBottomHudStatusTestRunner.gd.
+
+## `v0.1.8d-cardfront-bottom-hud-visible-bridge` — 底部HUD可视化桥接
+
+- Bottom HUD now shows live device counts and card effect status.
+- VFX layer and debug panel data wired into bottom HUD bridge.
+- Added CardfrontVfxLayerTestRunner.gd and CardfrontVisibleEffectBridgeTestRunner.gd.
+
+## `v0.1.8a/b-device-visual-layer` — 装置视觉层
+
+- Added DeviceVisualRegistry.gd to map device types to runtime PNG sprites under assets/cardfront_runtime/.
+- Added DeviceOverlayLayer.gd for device sprite rendering on the Cardfront battlefield overlay.
+- Full test coverage: draw items, fallback color, expiry, removal, and BallWar isolation via DeviceOverlayLayerTestRunner.gd.
+- Registered absorber core, engineer bot, pioneer beacon, and temporary reflector sprites.
+
+## `v0.1.7a-d-device-core-and-effects` — 装置核心与四效果
+
+- v0.1.7a: Added DeviceType.gd, DeviceInstance.gd, DeviceLayer.gd — placement, lifetime tick, snapshot; 3 types registered.
+- v0.1.7b: Added AbsorberCoreLiteEffect.gd — absorbs enemy bullets within radius, grants energy on kill.
+- v0.1.7c: Added EngineerBotLiteEffect.gd — reinforces nearby owned-border cells with fortify stacks per tick.
+- v0.1.7d: Added DurablePioneerBeacon.gd — durable beacon that periodically converts nearby neutral cells. Device tetralogy complete.
+- Added DeviceCoreTestRunner.gd, AbsorberCoreLiteTestRunner.gd, EngineerBotLiteTestRunner.gd, DurablePioneerBeaconTestRunner.gd.
+
 ## `v0.1.6.2-cardfront-control-chamber-decoupling` — Cardfront 控制舱解耦
 
 - Cardfront mode no longer creates legacy control chambers or +ball buttons.

@@ -14,7 +14,6 @@ func _run() -> void:
 
 	_test_cardfront_event_label_has_fire_status()
 	_test_cardfront_fps_label_visible()
-	_test_cardfront_event_log_visible()
 	_test_ballwar_old_event_hud_still_works()
 	_test_device_count_updates_status_text()
 	_test_status_text_updates_after_device_change()
@@ -66,24 +65,6 @@ func _test_cardfront_fps_label_visible() -> void:
 	var fps_label = main._hud_ref("fps_label")
 	_assert.that(fps_label != null, "hud: fps_label should exist")
 	_assert.that(fps_label.visible, "hud: fps_label should be visible in Cardfront")
-
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
-
-
-func _test_cardfront_event_log_visible() -> void:
-	GameConfig.reset_runtime_defaults()
-	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
-
-	var main = load("res://scripts/Main.gd").new()
-	get_root().add_child(main)
-	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
-	main.selected_grid_size = 20
-	main._start_game(20, true, false)
-
-	var log_label = main._hud_ref("event_log_label")
-	_assert.that(log_label != null, "hud: event_log_label should exist")
-	_assert.that(log_label.visible, "hud: event_log_label should be visible in Cardfront")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

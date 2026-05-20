@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
-- Current completed slice: `v0.1.8e-bottom-hud-status-polish`
-- Next slice: `v0.1.9-cardfront-engineering-closeout`
+- Current completed slice: `v0.1.9-cardfront-engineering-closeout`
+- Next slice: `v0.2.0-cardfront-formal-hud`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - region ownership as the strategic layer above Battlefield cell ownership
@@ -44,7 +44,7 @@ This file is the single place for project direction and phase status.
 | `v0.1.8b-device-visual-validation` | Done / 已完成 | Full test coverage for device overlay: draw items, fallback, expiry, removal, BallWar isolation. |
 | `v0.1.8d-cardfront-bottom-hud-visible-bridge` | Done / 已完成 | Bottom HUD shows device counts and card status; VFX + debug panel wired. |
 | `v0.1.8e-bottom-hud-status-polish` | Done / 已完成 | Bottom HUD status formatter, dirty redraw protection, and Cardfront performance smoke coverage. |
-| `v0.1.9-cardfront-engineering-closeout` | Active / 当前 | Version sync, CI batch gate, test matrix update, performance budget gate, save schema audit, `CardPlaySystem` effect registry pre-split, and doc alignment. |
+| `v0.1.9-cardfront-engineering-closeout` | Done / 已完成 | Version sync, CI batch gate, test matrix update, performance budget gate, save schema audit, `CardPlaySystem` effect registry pre-split, and doc alignment. |
 
 ## 3. Design Boundaries / 设计边界
 
@@ -182,9 +182,9 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. `v0.1.9-cardfront-engineering-closeout`: sync `project.godot` versions, move Cardfront runners into `headless-tests.yml` batches, update the test matrix, keep `CardfrontPerformanceSmokeTestRunner.gd` as the performance budget gate, audit `CardfrontRuntimeSnapshot.gd`, pre-split `CardPlaySystem.gd` effect dispatch through a registry, and align README / ROADMAP / AI handoff.
-2. Keep formal card UI, Deckbuilder, deck draw/discard/shuffle, and AI Commander deferred.
-3. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` before adding formal HUD, Deckbuilder, AI, or full Cardfront save/load.
+1. `v0.2.0-cardfront-formal-hud`: formal Cardfront HUD scene, `CardfrontHudBuilder.gd`, `CardfrontRuntimeRefs.gd`, `CardfrontSystemRegistry.gd`, hand UI and device status display. See `docs/历史_history/README_v0_1_9_cardfront_engineering_closeout.md` for boundaries.
+2. Keep Deckbuilder, deck draw/discard/shuffle, and AI Commander deferred.
+3. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` for all new wiring.
 
 ### Cardfront Save Schema
 

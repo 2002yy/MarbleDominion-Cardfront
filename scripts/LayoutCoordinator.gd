@@ -12,9 +12,6 @@ const CHAMBER_BOTTOM_TURRET_GAP: float = 8.0
 const FPS_BG_SIZE: Vector2 = Vector2(714.0, 30.0)
 const FPS_LABEL_SIZE: Vector2 = Vector2(702.0, 24.0)
 const EVENT_LABEL_SIZE: Vector2 = Vector2(332.0, 24.0)
-const EVENT_LOG_WIDTH: float = 290.0
-const EVENT_LOG_MAX_HEIGHT: float = 230.0
-const EVENT_LOG_LINE_HEIGHT: float = 20.0
 
 static func get_cell_size(grid_size: int) -> float:
 	match grid_size:
@@ -215,14 +212,6 @@ static func _calculate_hud_positions(
 		settings_panel_size
 	)
 
-	var event_log_rect := Rect2(
-		Vector2(viewport_size.x - EVENT_LOG_WIDTH - SIDE_MARGIN, top_panel_rect.position.y + top_panel_rect.size.y + 8.0),
-		Vector2(EVENT_LOG_WIDTH, EVENT_LOG_MAX_HEIGHT)
-	)
-	if is_mobile:
-		event_log_rect.size.x = minf(event_log_rect.size.x, 260.0)
-		event_log_rect.position.x = viewport_size.x - event_log_rect.size.x - 6.0
-
 	return {
 		"top_panel_rect": top_panel_rect,
 		"leader_label_rect": leader_label_rect,
@@ -239,7 +228,6 @@ static func _calculate_hud_positions(
 		"event_label_rect": event_label_rect,
 		"bottom_hud_rect": bottom_hud_rect,
 		"settings_panel_rect": settings_panel_rect,
-		"event_log_rect": event_log_rect,
 	}
 
 static func _calculate_roulette(grid_size: int, viewport_size: Vector2, is_mobile: bool, battlefield_rect: Rect2) -> Rect2:
