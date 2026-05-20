@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.1.8e-bottom-hud-status-polish**.
-Current active slice: **v0.1.9-cardfront-engineering-closeout**.
-Bottom HUD shows live device counts and card effects; dirty-redraw optimizations verified; performance smoke test in place.
+The current completed slice is **v0.1.9-cardfront-engineering-closeout**.
+Current active slice: **v0.2.0b-fix-formal-ui-and-signal-ci**.
+Bottom HUD shows live device counts and card effects; formal resource bar and hand panel in place; FireDirector signals active; overlay layers on ImageTexture caches.
 
 ## Current Slice / 当前阶段
 
@@ -177,6 +177,6 @@ Latest local validation for the v0.1.8e required subset:
 
 ## Next Milestone / 下一阶段
 
-`v0.2.0-cardfront-formal-hud`: formal Cardfront HUD scene, resource bars, active card hand display, device status panel, target preview. Deckbuilder, AI Commander, and full Cardfront save/load remain deferred. See [docs/历史_history/README_v0_1_9_cardfront_engineering_closeout.md](docs/历史_history/README_v0_1_9_cardfront_engineering_closeout.md) for complete v0.2.0 boundary.
+`v0.2.1-target-preview`: highlight valid target cells when a card is selected via the hand panel. Deckbuilder, AI Commander, and full Cardfront save/load remain deferred.
 
 MIT License. See [LICENSE](LICENSE).

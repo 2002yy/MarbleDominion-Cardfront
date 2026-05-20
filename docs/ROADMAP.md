@@ -7,16 +7,15 @@ This file is the single place for project direction and phase status.
 
 ## 1. Current Line / 当前主线
 
-- Current line: `v0.1.x` Cardfront prototype / 卡牌前线原型线
+- Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
 - Current completed slice: `v0.1.9-cardfront-engineering-closeout`
-- Next slice: `v0.2.0-cardfront-formal-hud`
+- Next slice: `v0.2.0b-fix-formal-ui-and-signal-ci`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
-  - region ownership as the strategic layer above Battlefield cell ownership
-  - economy and deployment rules built from region control, not from bullet internals
-  - card systems added only after region, yield, morale, and deployment boundaries are testable
-  - Cardfront battlefield should keep moving through a Cardfront-only fire director even before formal card UI exists
-  - keep `Battlefield`, bullets, turrets, and chambers reusable for old BallWar modes
+  - formal Cardfront HUD components (resource bar, hand panel) replacing debug panels
+  - FireDirector signal seams for testability and external listener hooks
+  - overlay performance via ImageTexture caching instead of per-cell draw_rect
+  - next: target preview layer for card selection
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
 
@@ -45,6 +44,9 @@ This file is the single place for project direction and phase status.
 | `v0.1.8d-cardfront-bottom-hud-visible-bridge` | Done / 已完成 | Bottom HUD shows device counts and card status; VFX + debug panel wired. |
 | `v0.1.8e-bottom-hud-status-polish` | Done / 已完成 | Bottom HUD status formatter, dirty redraw protection, and Cardfront performance smoke coverage. |
 | `v0.1.9-cardfront-engineering-closeout` | Done / 已完成 | Version sync, CI batch gate, test matrix update, performance budget gate, save schema audit, `CardPlaySystem` effect registry pre-split, and doc alignment. |
+| `v0.2.0a-cardfront-formal-ui-foundation` | Done / 已完成 | Formal `CardfrontTopResourceBar`, `CardfrontHandPanel`, `CardfrontCardView`, `CardfrontCardSelectionController`; FireDirector signals (`fire_tick`/`fire_requested`/`fire_issued`/`fire_skipped`); overlay `ImageTexture` caching. |
+| `v0.2.0b-fix-formal-ui-and-signal-ci` | Active / 当前 | Fix `CardfrontCardView._create_children()` body, fix `CardfrontFireDirectorSignalTestRunner` fixture errors, add new tests to CI batch matrix, doc alignment. |
+| `v0.2.1-target-preview` | Planned | Highlight valid target cells when a card is selected; target preview overlay layer. |
 
 ## 3. Design Boundaries / 设计边界
 
@@ -182,7 +184,7 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. `v0.2.0-cardfront-formal-hud`: formal Cardfront HUD scene, `CardfrontHudBuilder.gd`, `CardfrontRuntimeRefs.gd`, `CardfrontSystemRegistry.gd`, hand UI and device status display. See `docs/历史_history/README_v0_1_9_cardfront_engineering_closeout.md` for boundaries.
+1. `v0.2.1-target-preview`: target preview overlay layer that highlights valid cells when a card is selected via `CardfrontCardSelectionController`.
 2. Keep Deckbuilder, deck draw/discard/shuffle, and AI Commander deferred.
 3. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` for all new wiring.
 

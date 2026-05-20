@@ -47,8 +47,8 @@ func _ensure_ui() -> void:
 
 	_energy_box = _make_resource_box(hbox, "⚡ 能量", Color(0.62, 0.90, 1.0))
 	_parts_box = _make_resource_box(hbox, "⚙ 零件", Color(1.0, 0.82, 0.36))
-	_energy_value = _energy_box.get_node("Value") as Label
-	_parts_value = _parts_box.get_node("Value") as Label
+	_energy_value = _energy_box.find_child("Value", true, false) as Label
+	_parts_value = _parts_box.find_child("Value", true, false) as Label
 
 	_yield_label = Label.new()
 	_yield_label.name = "YieldLabel"

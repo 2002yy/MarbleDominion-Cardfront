@@ -44,6 +44,7 @@ jobs:
               PioneerBeaconLiteTestRunner.gd
               CardfrontFireDirectorTestRunner.gd
               CardfrontFireDirectorTurretIntegrationTestRunner.gd
+              CardfrontFireDirectorSignalTestRunner.gd
               CardfrontControlChamberDecouplingTestRunner.gd
           - batch: Cardfront devices visuals schema
             scripts: |
@@ -56,6 +57,7 @@ jobs:
               CardfrontVfxLayerTestRunner.gd
               CardfrontVisibleEffectBridgeTestRunner.gd
               CardfrontRuntimeSnapshotTestRunner.gd
+              CardfrontFormalUITestRunner.gd
           - batch: Cardfront performance budget
             scripts: |
               CardfrontPerformanceSmokeTestRunner.gd

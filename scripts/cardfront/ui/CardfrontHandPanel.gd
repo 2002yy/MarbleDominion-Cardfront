@@ -82,7 +82,7 @@ func refresh() -> void:
 func set_selection_controller(controller) -> void:
 	selection_controller = controller
 	for view in _card_views:
-		view._on_clicked = func():
+		view.clicked_callback = func():
 			if selection_controller != null and selection_controller.has_method("on_card_clicked"):
 				selection_controller.on_card_clicked(view.card_id, view.card_data)
 
