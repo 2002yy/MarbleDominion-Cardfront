@@ -807,6 +807,34 @@ func _cleanup_menu() -> void:
 	menu_save_slot_buttons.clear()
 	menu_status_label = null
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		return
+	if not _is_cardfront_mode():
+		return
+	if game_layer == null or is_game_over or get_tree().paused:
+		return
+	if runtime.selection_controller == null:
+		return
+	if runtime.selection_controller.get_selected_card_id() < 0:
+		return
+	if runtime.battlefield == null or not is_instance_valid(runtime.battlefield):
+		return
+	if not runtime.battlefield.has_method("world_to_cell"):
+		return
+
+	var cell: Vector2i = runtime.battlefield.world_to_cell(get_global_mouse_position())
+	if not runtime.battlefield.is_inside(cell):
+		return
+
+	var result: Dictionary = runtime.selection_controller.on_battlefield_clicked(cell)
+	if not result.success:
+		if result.reason == "invalid_target":
+			var status_label = _cardfront_status_label()
+			if status_label != null:
+				status_label.text = "目标无效"
+
+
 func _cleanup_game_layer() -> void:
 	GameStateCoordinator.reset_pause_and_winner_state(_hud_ref("pause_overlay"), _hud_ref("pause_button"), _hud_ref("winner_label"))
 	if game_layer != null:
