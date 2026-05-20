@@ -14,19 +14,19 @@ const REASON_MISSING_SYSTEM: String = "missing_system"
 const REASON_UNKNOWN_TYPE: String = "unknown_type"
 
 
-static func ok(instance):
+static func ok(p_instance):
 	var DevicePlacementResultScript = load("res://scripts/cardfront/devices/DevicePlacementResult.gd")
 	var r = DevicePlacementResultScript.new()
 	r.success = true
 	r.reason = REASON_SUCCESS
-	r.instance = instance
+	r.instance = p_instance
 	return r
 
 
-static func fail(reason: String):
+static func fail(p_reason: String):
 	var DevicePlacementResultScript = load("res://scripts/cardfront/devices/DevicePlacementResult.gd")
 	var r = DevicePlacementResultScript.new()
 	r.success = false
-	r.reason = str(reason)
+	r.reason = str(p_reason)
 	r.instance = null
 	return r

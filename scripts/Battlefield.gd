@@ -178,7 +178,7 @@ func apply_bullet(cell: Vector2i, faction_id: int) -> String:
 	return "HIT_ENEMY_CELL"
 
 
-func apply_owner_change(cell: Vector2i, new_owner_id: int, source_reason: String = "card_effect") -> String:
+func apply_owner_change(cell: Vector2i, new_owner_id: int, _source_reason: String = "card_effect") -> String:
 	if not is_inside(cell):
 		return "OUTSIDE"
 	var old: int = owners[cell.x][cell.y]

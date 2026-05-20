@@ -313,7 +313,7 @@ func _resolve_legacy_visual_profile(active_count: int, fps: int, queue_total: in
 	}
 
 
-func _resolve_cardfront_visual_profile(active_count: int, fps: int, queue_total: int, trail_segments: int, trail_redraws: int) -> Dictionary:
+func _resolve_cardfront_visual_profile(active_count: int, fps: int, queue_total: int, trail_segments: int, _trail_redraws: int) -> Dictionary:
 	var severity: int = 0
 	var reason: String = "none"
 

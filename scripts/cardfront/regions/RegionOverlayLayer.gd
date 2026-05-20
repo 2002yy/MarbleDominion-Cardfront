@@ -57,8 +57,8 @@ func _build_texture() -> void:
 			match region_type:
 				RegionTypeScript.ENERGY:
 					image.fill_rect(Rect2i(rect.position + Vector2i(1, 1), rect.size - Vector2i(2, 2)), Color(0.35, 0.82, 1.0, 0.18))
-					var center := Vector2i(x * cell_size + cell_size / 2, y * cell_size + cell_size / 2)
-					_fill_circle(image, center, maxi(1, cell_size / 6), Color(0.65, 0.95, 1.0, 0.42))
+					var center := Vector2i(x * cell_size + int(cell_size / 2.0), y * cell_size + int(cell_size / 2.0))
+					_fill_circle(image, center, maxi(1, int(cell_size / 6.0)), Color(0.65, 0.95, 1.0, 0.42))
 				RegionTypeScript.FACTORY:
 					image.fill_rect(Rect2i(rect.position + Vector2i(1, 1), rect.size - Vector2i(2, 2)), Color(1.0, 0.64, 0.22, 0.17))
 					var inner := int(cell_size * 0.44)
@@ -66,8 +66,8 @@ func _build_texture() -> void:
 					image.fill_rect(Rect2i(rect.position + Vector2i(offset, offset), Vector2i(inner, inner)), Color(1.0, 0.78, 0.38, 0.34))
 				RegionTypeScript.LAB:
 					image.fill_rect(Rect2i(rect.position + Vector2i(1, 1), rect.size - Vector2i(2, 2)), Color(0.72, 0.45, 1.0, 0.20))
-					var center := Vector2i(x * cell_size + cell_size / 2, y * cell_size + cell_size / 2)
-					_fill_circle(image, center, maxi(1, cell_size / 5), Color(0.88, 0.74, 1.0, 0.45))
+					var center := Vector2i(x * cell_size + int(cell_size / 2.0), y * cell_size + int(cell_size / 2.0))
+					_fill_circle(image, center, maxi(1, int(cell_size / 5.0)), Color(0.88, 0.74, 1.0, 0.45))
 
 	var texture := ImageTexture.create_from_image(image)
 	_sprite.texture = texture

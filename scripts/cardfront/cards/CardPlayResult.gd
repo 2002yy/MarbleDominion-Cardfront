@@ -16,21 +16,21 @@ const REASON_STUB: String = "stub"
 const REASON_CARD_ALREADY_USED: String = "card_already_used"
 
 
-static func ok(card_name: String, energy: int = 0, parts: int = 0):
+static func ok(p_card_name: String, p_energy: int = 0, p_parts: int = 0):
 	var CardPlayResultScript = load("res://scripts/cardfront/cards/CardPlayResult.gd")
 	var r = CardPlayResultScript.new()
 	r.success = true
 	r.reason = REASON_SUCCESS
-	r.card_name = str(card_name)
-	r.consumed_energy = int(energy)
-	r.consumed_parts = int(parts)
+	r.card_name = str(p_card_name)
+	r.consumed_energy = int(p_energy)
+	r.consumed_parts = int(p_parts)
 	return r
 
 
-static func fail(reason: String, card_name: String = ""):
+static func fail(p_reason: String, p_card_name: String = ""):
 	var CardPlayResultScript = load("res://scripts/cardfront/cards/CardPlayResult.gd")
 	var r = CardPlayResultScript.new()
 	r.success = false
-	r.reason = str(reason)
-	r.card_name = str(card_name)
+	r.reason = str(p_reason)
+	r.card_name = str(p_card_name)
 	return r
