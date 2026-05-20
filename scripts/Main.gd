@@ -130,6 +130,10 @@ func _process(delta: float) -> void:
 		_update_cardfront_status_label()
 		_check_winner()
 
+	if runtime.region_info_panel != null and runtime.battlefield != null and is_instance_valid(runtime.battlefield) and runtime.battlefield.has_method("world_to_cell"):
+		var mouse_cell: Vector2i = runtime.battlefield.world_to_cell(get_global_mouse_position())
+		runtime.region_info_panel.update_for_cell(mouse_cell)
+
 	UIAnimationController.animate_menu_and_title(
 		ui_time,
 		menu_title_label,
@@ -472,6 +476,19 @@ func _create_cardfront_target_preview_layer() -> void:
 	runtime.target_preview_layer = preview_setup.get("target_preview_layer", null)
 
 
+func _create_cardfront_region_info_panel() -> void:
+	runtime.region_info_panel = null
+	if not _is_cardfront_mode():
+		return
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var panel_setup: Dictionary = CardfrontModeScript.create_region_info_panel(ui_canvas, runtime.region_map, runtime.battlefield)
+	if not bool(panel_setup.get("configured", false)):
+		return
+	runtime.region_info_panel = panel_setup.get("region_info_panel", null)
+
+
 func _create_cardfront_hand_panel() -> void:
 	runtime.hand_panel = null
 	runtime.selection_controller = null
@@ -525,6 +542,7 @@ func _create_ui() -> void:
 		CardfrontModeScript.configure_runtime_hud(runtime.hud)
 		_create_cardfront_top_resource_bar()
 		_create_cardfront_hand_panel()
+		_create_cardfront_region_info_panel()
 
 	_on_scores_changed(runtime.battlefield.count_cells_by_team())
 

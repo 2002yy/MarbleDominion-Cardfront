@@ -27,6 +27,7 @@ const CardfrontTopResourceBarScene = preload("res://scenes/ui/cardfront/Cardfron
 const CardfrontHandPanelScene = preload("res://scenes/ui/cardfront/CardfrontHandPanel.tscn")
 const CardfrontCardSelectionControllerScript = preload("res://scripts/cardfront/ui/CardfrontCardSelectionController.gd")
 const CardfrontTargetPreviewLayerScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
+const CardfrontRegionInfoPanelScript = preload("res://scripts/cardfront/ui/CardfrontRegionInfoPanel.gd")
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -368,6 +369,20 @@ static func create_target_preview_layer(game_layer: Node, battlefield, region_ma
 	return {
 		"configured": true,
 		"target_preview_layer": layer,
+	}
+
+
+static func create_region_info_panel(ui_layer: Node, region_map, battlefield) -> Dictionary:
+	if ui_layer == null or not is_instance_valid(ui_layer):
+		return {"configured": false, "reason": "missing_ui_layer"}
+
+	var panel = CardfrontRegionInfoPanelScript.new()
+	panel.setup(region_map, battlefield, GameConfig.GAME_MODE_CARDFRONT)
+	ui_layer.add_child(panel)
+
+	return {
+		"configured": true,
+		"region_info_panel": panel,
 	}
 
 

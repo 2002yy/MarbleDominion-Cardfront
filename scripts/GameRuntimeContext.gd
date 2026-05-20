@@ -31,6 +31,7 @@ var top_resource_bar = null
 var hand_panel = null
 var selection_controller = null
 var target_preview_layer = null
+var region_info_panel = null
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
@@ -67,6 +68,7 @@ func reset() -> void:
     hand_panel = null
     selection_controller = null
     target_preview_layer = null
+    region_info_panel = null
     resource_states.clear()
     last_yield_snapshot.clear()
     current_config.clear()
