@@ -37,6 +37,7 @@ jobs:
           - batch: Cardfront cards effects fire
             scripts: |
               FortifyLayerTestRunner.gd
+              CardEffectResolverTestRunner.gd
               CardCoreLiteTestRunner.gd
               CardFirstEffectsTestRunner.gd
               CardfrontTargetBiasTestRunner.gd

@@ -23,7 +23,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - `CardfrontFireDirector.gd` is Cardfront-only. It ticks independently, builds `CardfrontFireIntent` records, requests directed turret bursts, and uses global + per-owner shot budgets.
 - Cardfront does not create legacy control chambers or +ball buttons; HUD event status shows `自动射击中 / 卡牌改写射击`.
 - `GameRuntimeContext.gd` has `target_bias_system` and `fire_director`; `Main.gd` only creates and passes them through.
-- `CardPlaySystem.gd` now dispatches current effects through a small `effect_registry`; keep future effect growth behind that seam instead of expanding `Main.gd`.
+- `CardPlaySystem.gd` now dispatches current effects through `CardEffectResolver.gd` and `CardEffectRegistry.gd`; keep future effect growth behind that seam instead of expanding `Main.gd`.
+- Current concrete card effects live under `scripts/cardfront/effects/effects/`.
 - `CardfrontRuntimeSnapshot.gd` owns the current Cardfront save-schema shape; v0.1.9 audits the schema but does not wire full Cardfront save/load.
 - `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` is the current high-coupling split plan. Follow it before adding formal HUD, Deckbuilder, AI, or full Cardfront save/load.
 - Old BallWar modes should not create or depend on Cardfront card/effect/fire systems.
@@ -48,6 +49,7 @@ Ship `v0.1.9-cardfront-engineering-closeout` only:
 - `CardfrontPerformanceSmokeTestRunner.gd` as the performance budget gate
 - `CardfrontRuntimeSnapshotTestRunner.gd` save-schema audit
 - `CardPlaySystem.gd` effect registry pre-split
+- `CardEffectResolver.gd` / `CardEffectRegistry.gd` plus four concrete effect wrappers
 - README / ROADMAP / AI handoff alignment
 - high-coupling split plan captured in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md`
 
@@ -72,6 +74,7 @@ Cardfront first-effect baseline:
 
 - `DeviceCoreTestRunner.gd`
 - `AbsorberCoreLiteTestRunner.gd`
+- `CardEffectResolverTestRunner.gd`
 - `CardCoreLiteTestRunner.gd`
 - `CardFirstEffectsTestRunner.gd`
 - `CardfrontTargetBiasTestRunner.gd`

@@ -63,6 +63,8 @@ Acceptance:
 
 ### Phase 1: Effect Resolver Split / 卡牌效果拆分
 
+Status: started. `CardEffectResolver.gd`, `CardEffectRegistry.gd`, and the first four concrete effect wrappers now exist.
+
 Target folder:
 
 ```text

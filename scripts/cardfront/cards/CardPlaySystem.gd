@@ -6,12 +6,11 @@ const CardPlayResultScript = preload("res://scripts/cardfront/cards/CardPlayResu
 const CardHandStateScript = preload("res://scripts/cardfront/cards/CardHandState.gd")
 const CardTargetTypeScript = preload("res://scripts/cardfront/cards/CardTargetType.gd")
 const DeploymentRulesScript = preload("res://scripts/cardfront/deployment/DeploymentRules.gd")
-const FortifyRulesScript = preload("res://scripts/cardfront/fortify/FortifyRules.gd")
-const FortifyTargetSelectorScript = preload("res://scripts/cardfront/fortify/FortifyTargetSelector.gd")
-const RegionMoraleRulesScript = preload("res://scripts/cardfront/morale/RegionMoraleRules.gd")
-const PioneerBeaconLiteEffectScript = preload("res://scripts/cardfront/effects/PioneerBeaconLiteEffect.gd")
-
-const CALIBRATED_SHOT_BIAS_DURATION: float = 6.0
+const CardEffectResolverScript = preload("res://scripts/cardfront/effects/CardEffectResolver.gd")
+const FortifyBorderEffectScript = preload("res://scripts/cardfront/effects/effects/FortifyBorderEffect.gd")
+const CalibratedShotEffectScript = preload("res://scripts/cardfront/effects/effects/CalibratedShotEffect.gd")
+const MoraleFluctuationEffectScript = preload("res://scripts/cardfront/effects/effects/MoraleFluctuationEffect.gd")
+const PioneerBeaconLiteEffectScript = preload("res://scripts/cardfront/effects/effects/PioneerBeaconLiteEffect.gd")
 
 var catalog = null
 var hand = null
@@ -22,13 +21,14 @@ var fortify_layer = null
 var morale_system = null
 var region_overlay = null
 var target_bias_system = null
-var effect_registry: Dictionary = {}
+var effect_resolver = null
 
 
 func _init() -> void:
 	catalog = CardCatalogScript.new()
 	hand = CardHandStateScript.new()
 	hand.initialize_fixed_hand(catalog.get_default_hand_ids())
+	effect_resolver = CardEffectResolverScript.new()
 	_register_default_effects()
 
 
@@ -40,6 +40,7 @@ func setup(new_resource_states: Dictionary, new_region_map, new_battlefield, new
 	morale_system = new_morale_system
 	region_overlay = new_region_overlay
 	target_bias_system = new_target_bias_system
+	effect_resolver.setup(_build_effect_context())
 
 
 func can_play(req):
@@ -108,92 +109,37 @@ func _validate_target(req, card):
 
 
 func _resolve_effect(req, card):
-	var effect_id: String = str(card.effect_id)
-	if effect_registry.has(effect_id):
-		var handler: Callable = effect_registry[effect_id]
-		return handler.call(req, card)
-	return CardPlayResultScript.fail(CardPlayResultScript.REASON_STUB, card.card_name)
+	return effect_resolver.resolve(req, card)
 
 
-func register_effect_handler(effect_id: String, handler: Callable) -> void:
-	if effect_id.is_empty() or not handler.is_valid():
-		return
-	effect_registry[str(effect_id)] = handler
+func register_effect(effect_id: String, effect) -> void:
+	effect_resolver.register(effect_id, effect)
 
 
 func has_effect_handler(effect_id: String) -> bool:
-	return effect_registry.has(str(effect_id))
+	return effect_resolver.has_effect(str(effect_id))
 
 
 func get_registered_effect_ids() -> Array:
-	var ids: Array = effect_registry.keys()
-	ids.sort()
-	return ids
+	return effect_resolver.get_registered_effect_ids()
 
 
 func _register_default_effects() -> void:
-	effect_registry.clear()
-	register_effect_handler("fortify_border", Callable(self, "_resolve_fortify_border"))
-	register_effect_handler("calibrated_shot", Callable(self, "_resolve_calibrated_shot"))
-	register_effect_handler("morale_fluctuation", Callable(self, "_resolve_morale_fluctuation"))
-	register_effect_handler("pioneer_beacon_lite", Callable(self, "_resolve_pioneer_beacon_lite"))
+	register_effect("fortify_border", FortifyBorderEffectScript.new())
+	register_effect("calibrated_shot", CalibratedShotEffectScript.new())
+	register_effect("morale_fluctuation", MoraleFluctuationEffectScript.new())
+	register_effect("pioneer_beacon_lite", PioneerBeaconLiteEffectScript.new())
 
 
-func _resolve_fortify_border(req, card):
-	if fortify_layer == null:
-		return CardPlayResultScript.fail(CardPlayResultScript.REASON_MISSING_SYSTEM, card.card_name)
-
-	var cell: Vector2i = req.target_cell
-	fortify_layer.add_fortify_stack(cell, FortifyRulesScript.DEFAULT_FORTIFY_STACKS)
-
-	if region_overlay != null and is_instance_valid(region_overlay) and region_overlay.has_method("mark_dirty"):
-		region_overlay.mark_dirty()
-
-	return CardPlayResultScript.ok(card.card_name)
-
-
-func _resolve_calibrated_shot(req, card):
-	if target_bias_system == null or not target_bias_system.has_method("apply_region_bias"):
-		return CardPlayResultScript.fail(CardPlayResultScript.REASON_MISSING_SYSTEM, card.card_name)
-
-	var applied: bool = bool(target_bias_system.apply_region_bias(
-		int(req.owner_id),
-		int(req.target_region_id),
-		CALIBRATED_SHOT_BIAS_DURATION
-	))
-	if not applied:
-		return CardPlayResultScript.fail(CardPlayResultScript.REASON_INVALID_TARGET, card.card_name)
-
-	return CardPlayResultScript.ok(card.card_name)
-
-
-func _resolve_morale_fluctuation(req, card):
-	if morale_system == null or not morale_system.has_method("apply_morale"):
-		return CardPlayResultScript.fail(CardPlayResultScript.REASON_MISSING_SYSTEM, card.card_name)
-
-	var applied: bool = bool(morale_system.apply_morale(
-		int(req.target_region_id),
-		int(req.owner_id),
-		RegionMoraleRulesScript.SUPPORT_PLAYER
-	))
-	if not applied:
-		return CardPlayResultScript.fail(CardPlayResultScript.REASON_INVALID_TARGET, card.card_name)
-
-	return CardPlayResultScript.ok(card.card_name)
-
-
-func _resolve_pioneer_beacon_lite(req, card):
-	var effect_result: Dictionary = PioneerBeaconLiteEffectScript.apply(region_map, battlefield, int(req.owner_id), req.target_cell)
-	if not bool(effect_result.get("success", false)):
-		var reason: String = str(effect_result.get("reason", PioneerBeaconLiteEffectScript.REASON_INVALID_TARGET))
-		if reason == PioneerBeaconLiteEffectScript.REASON_MISSING_SYSTEM:
-			return CardPlayResultScript.fail(CardPlayResultScript.REASON_MISSING_SYSTEM, card.card_name)
-		return CardPlayResultScript.fail(CardPlayResultScript.REASON_INVALID_TARGET, card.card_name)
-
-	if region_overlay != null and is_instance_valid(region_overlay) and region_overlay.has_method("mark_dirty"):
-		region_overlay.mark_dirty()
-
-	return CardPlayResultScript.ok(card.card_name)
+func _build_effect_context() -> Dictionary:
+	return {
+		"region_map": region_map,
+		"battlefield": battlefield,
+		"fortify_layer": fortify_layer,
+		"morale_system": morale_system,
+		"region_overlay": region_overlay,
+		"target_bias_system": target_bias_system,
+	}
 
 
 func _is_valid_region_id(region_id: int) -> bool:

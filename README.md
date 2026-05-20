@@ -121,6 +121,7 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EngineerBotLiteTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DurablePioneerBeaconTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/FortifyLayerTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardEffectResolverTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardCoreLiteTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardFirstEffectsTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFireDirectorTestRunner.gd
@@ -157,6 +158,7 @@ Latest local validation for the v0.1.8e required subset:
 - `CardfrontFireDirectorTestRunner.gd`: 21 checks passed.
 - `CardfrontFireDirectorTurretIntegrationTestRunner.gd`: 12 checks passed.
 - `PioneerBeaconLiteTestRunner.gd`: 37 checks passed.
+- `CardEffectResolverTestRunner.gd`: 14 checks passed.
 - `CardCoreLiteTestRunner.gd`: 40 checks passed.
 - `CardFirstEffectsTestRunner.gd`: 40 checks passed.
 - `FortifyLayerTestRunner.gd`: 469 checks passed.

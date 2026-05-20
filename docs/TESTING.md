@@ -30,7 +30,7 @@ Baseline subtotal: **1096 expected checks** across 10 runners.
 |---|---|
 | Baseline runtime | `SmokeTestRunner`, `IntegrationTestRunner`, `LayoutSanityTestRunner`, scene wiring, state, save, restore |
 | Cardfront map economy | `RegionMapTestRunner`, `NeutralOwnerCompatibilityTestRunner`, `DeploymentRulesTestRunner`, `RegionMoraleTestRunner`, `EconomyTickTestRunner`, `EconomyDebugPanelSceneTestRunner`, visual pressure policy tests |
-| Cardfront cards effects fire | `FortifyLayerTestRunner`, `CardCoreLiteTestRunner`, `CardFirstEffectsTestRunner`, `CardfrontTargetBiasTestRunner`, `PioneerBeaconLiteTestRunner`, FireDirector tests, control-chamber decoupling |
+| Cardfront cards effects fire | `FortifyLayerTestRunner`, `CardEffectResolverTestRunner`, `CardCoreLiteTestRunner`, `CardFirstEffectsTestRunner`, `CardfrontTargetBiasTestRunner`, `PioneerBeaconLiteTestRunner`, FireDirector tests, control-chamber decoupling |
 | Cardfront devices visuals schema | device core/effect runners, device overlay, bottom HUD status, VFX bridge, `CardfrontRuntimeSnapshotTestRunner` |
 | Cardfront performance budget | `CardfrontPerformanceSmokeTestRunner` |
 
@@ -79,9 +79,10 @@ Run the benchmark probes when tuning firing or pressure policies, collecting rel
 ### Editing cards, effects, or FireDirector
 
 1. `CardCoreLiteTestRunner.gd`.
-2. `CardFirstEffectsTestRunner.gd`.
-3. Relevant effect runner such as `PioneerBeaconLiteTestRunner.gd`.
-4. Relevant FireDirector runner if shooting or target bias changed.
+2. `CardEffectResolverTestRunner.gd`.
+3. `CardFirstEffectsTestRunner.gd`.
+4. Relevant effect runner such as `PioneerBeaconLiteTestRunner.gd`.
+5. Relevant FireDirector runner if shooting or target bias changed.
 
 ### Editing device visuals or Cardfront HUD status
 
