@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.1.9-cardfront-engineering-closeout`
-- Current slice: `v0.2.0b-fix-formal-ui-and-signal-ci`
+- Current completed slice: `v0.2.1-target-preview`
+- Current slice: `v0.2.2-card-art-binding`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -15,39 +15,41 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - Cardfront is a sidecar mode assembled through `CardfrontMode.gd`; do not move Cardfront rules into `Main.gd`.
 - `CardPlaySystem.gd` owns card play: fixed hand, resource payment, target validation, effect dispatch, and rollback on effect failure.
 - Active card catalog remains 4 fixed cards (Frontline Fortify, Calibrated Shot, Morale Fluctuation, Pioneer Beacon).
-- `CardfrontFireDirector.gd` now has 4 signals: `fire_tick`, `fire_requested`, `fire_issued`, `fire_skipped`. External listeners can hook into fire events without touching director internals.
-- Formal HUD components now replace debug panels:
-  - `CardfrontTopResourceBar.gd` — top-left Energy/Parts display, signal-driven refresh via `economy_system.resources_changed`.
-  - `CardfrontHandPanel.gd` — bottom-center 4-card hand panel with `CardfrontCardView` children, signal-driven refresh via `economy_system.resources_changed`.
-  - `CardfrontCardSelectionController.gd` — click→select→target→`CardPlaySystem.play()` flow.
-- `RegionOverlayLayer.gd` now caches overlay as `ImageTexture` via `Sprite2D`; region layout is static, `mark_dirty()` is a no-op.
-- `FortifyOverlayLayer.gd` caches overlay as `ImageTexture`; rebuilds only on `mark_dirty()` (stack change).
-- `CardfrontEconomyDebugPanel.gd` still exists but is no longer the primary resource display.
-- Cardfront does not create legacy control chambers or +ball buttons.
+- Formal HUD components:
+  - `CardfrontTopResourceBar.gd` — top-left Energy/Parts display, signal-driven.
+  - `CardfrontHandPanel.gd` — bottom-center 4-card hand panel.
+  - `CardfrontCardView.gd` — card display with `CardArt` TextureRect + placeholder fallback.
+  - `CardfrontCardSelectionController.gd` — click → select → preview → battlefield click → play.
+  - `CardfrontTargetPreviewLayer.gd` — highlights valid cells on card selection.
+- `CardVisualRegistry.gd` maps card IDs 1001-1004 to illustration paths under `assets/cardfront_runtime/卡牌插图_cards/512/`.
+  - 3 of 4 images exist (frontline_fortify, calibrated_shot, morale_shift). Pioneer beacon image is pending generation; placeholder fallback works.
+- `Main.gd:_unhandled_input()` converts mouse clicks to `selection_controller.on_battlefield_clicked(cell)`.
+- `CardfrontFireDirector.gd` has signals: `fire_tick`, `fire_requested`, `fire_issued`, `fire_skipped`.
+- Overlay layers (`RegionOverlay`, `FortifyOverlay`) use ImageTexture caching.
 - Old BallWar modes should not create or depend on Cardfront card/effect/fire systems.
 
 ## 3. Just Completed / 刚完成的内容
 
-- v0.1.9 engineering closeout: version sync, CI batch matrix, snapshot audit, effect resolver split, doc alignment.
-- FireDirector signal seams: `fire_tick`/`fire_requested`/`fire_issued`/`fire_skipped` with `CardfrontFireDirectorSignalTestRunner.gd` (8 tests).
-- RegionOverlay / FortifyOverlay ImageTexture caching: eliminate per-cell draw_rect iteration.
-- Formal HUD: `CardfrontTopResourceBar`, `CardfrontHandPanel`, `CardfrontCardView`, `CardfrontCardSelectionController`.
-- `CardfrontFormalUITestRunner.gd` (7 tests): resource bar visibility, hand panel, card click, card play resource consumption, BallWar isolation.
-- Event log panel (`EventLogLabel` + `EventLogToggle`) removed from all modes.
+- v0.2.1-target-preview: `CardfrontTargetPreviewLayer`, battlefield click wiring in `Main.gd:_unhandled_input()`, `CardfrontBattlefieldClickSelectionTestRunner.gd`.
+- Card visual redesign: vertical layout 130×150, type-specific placeholder icons.
+- Bug fixes: setup order (@onready safety), deselect-on-reclick, lambda closure, text color restore.
+- GDScript warning cleanup: shadowed params, integer division, unused params.
+- Doc realignment: README/ROADMAP/AI_HANDOFF synced to v0.2.1.
 
 ## 4. Next Steps / 下一步
 
-Ship `v0.2.0b-fix-formal-ui-and-signal-ci`:
+Ship `v0.2.2-card-art-binding`:
 
-- Fix `CardfrontCardView.gd` missing `_create_children()` body.
-- Fix `CardfrontFireDirectorSignalTestRunner.gd` fixture/collector variable errors.
-- Add `CardfrontFormalUITestRunner.gd` and `CardfrontFireDirectorSignalTestRunner.gd` to CI batch matrix.
-- Update README / ROADMAP / AI_HANDOFF to reflect v0.2.x formal UI line.
+- Sync project.godot version to 0.2.2-dev.
+- Verify CardVisualRegistry.gd paths against actual cardfront_runtime files.
+- Note: pioneer beacon card illustration is pending generation; fallback works.
+- Create `CardfrontCardArtBindingTestRunner.gd` for path/fallback verification.
+- Update CHANGELOG.md, CI, and all docs to v0.2.2.
 
-Beyond v0.2.0b:
+Beyond v0.2.2:
 
-- `v0.2.1-target-preview`: highlight valid target cells when a card is selected.
-- `v0.2.2-cardfront-hud-builder`: formal `CardfrontHudBuilder.gd` and `CardfrontSystemRegistry.gd`.
+- Generate pioneer beacon card illustration.
+- `v0.2.3-debug-panel-toggle`: fold DebugActionPanel behind F3 toggle.
 - Deckbuilder, AI Commander, and full Cardfront save/load remain deferred.
 
 ## 5. Do Not Do / 不要做什么
@@ -58,59 +60,47 @@ Beyond v0.2.0b:
 - Do not change FireDirector fire rate or budget rules.
 - Do not push effect logic into `Main.gd`.
 - Do not change old BallWar mode rules to satisfy Cardfront tests.
-- Do not re-enable legacy control chambers as the Cardfront primary shooting interface.
+- Do not expand the 4-card fixed hand.
 
 ## 6. Required Tests / 当前必跑测试
 
-Cardfront formal UI + signal baseline:
+Cardfront formal UI + target preview:
+
+- `CardfrontFormalUITestRunner.gd`
+- `CardfrontTargetPreviewTestRunner.gd`
+- `CardfrontBattlefieldClickSelectionTestRunner.gd`
+- `CardfrontCardArtBindingTestRunner.gd`
+
+Cardfront fire/effects:
 
 - `CardfrontFireDirectorSignalTestRunner.gd`
 - `CardfrontFireDirectorTestRunner.gd`
-- `CardfrontFormalUITestRunner.gd`
-- `CardfrontModeSmokeTestRunner.gd`
 - `CardfrontFireDirectorTurretIntegrationTestRunner.gd`
 - `CardfrontControlChamberDecouplingTestRunner.gd`
-
-Cardfront effect + card baseline:
-
 - `CardEffectResolverTestRunner.gd`
 - `CardCoreLiteTestRunner.gd`
 - `CardFirstEffectsTestRunner.gd`
-- `CardfrontTargetBiasTestRunner.gd`
-- `PioneerBeaconLiteTestRunner.gd`
-- `FortifyLayerTestRunner.gd`
 
-Cardfront device baseline:
+Cardfront device/economy:
 
 - `DeviceCoreTestRunner.gd`
 - `AbsorberCoreLiteTestRunner.gd`
 - `EngineerBotLiteTestRunner.gd`
 - `DurablePioneerBeaconTestRunner.gd`
-- `DeviceOverlayLayerTestRunner.gd`
-
-Cardfront map/economy baseline:
-
-- `RegionMapTestRunner.gd`
+- `FortifyLayerTestRunner.gd`
 - `DeploymentRulesTestRunner.gd`
-- `RegionMoraleTestRunner.gd`
 - `EconomyTickTestRunner.gd`
-- `CardfrontRuntimeSnapshotTestRunner.gd`
+- `CardfrontModeSmokeTestRunner.gd`
 
-Runtime smoke baseline:
+Runtime baseline:
 
 - `SmokeTestRunner.gd`
 - `IntegrationTestRunner.gd`
 
-Performance:
-
-- `CardfrontPerformanceSmokeTestRunner.gd`
-
 ## 7. Canonical Docs / 主文档分工
 
-- `README.md` — current project entrypoint / 项目入口
-- `docs/ROADMAP.md` — main progress board and next slice / 进度板与下一切片
-- `docs/历史_history/README_v0_1_9_cardfront_engineering_closeout.md` — v0.1.9 closeout stage record
-- `docs/历史_history/README.md` — historical stage index / 历史阶段索引
+- `README.md` — current project entrypoint
+- `docs/ROADMAP.md` — main progress board
+- `docs/历史_history/README.md` — historical stage index
 - `docs/技术_technical/AI_HANDOFF_CURRENT.md` — this file
 - `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` — Cardfront high-coupling split order
-- `docs/TESTING.md` — test ownership, baseline, and run guidance

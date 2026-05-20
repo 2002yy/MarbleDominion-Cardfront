@@ -17,6 +17,35 @@ Detailed stage notes now live under [docs/历史_history/](docs/历史_history/R
 - Historical Releases: `v1.9.x`, `v0.1.0-mvp`
   - reconstructed history, not the recommended download path
 
+## `v0.2.2-card-art-binding` — 卡牌插图绑定
+
+- Sync project.godot version to 0.2.2-dev.
+- Wire CardVisualRegistry.gd into CardfrontCardView: `CardArt` TextureRect loads illustrations from `cardfront_runtime/卡牌插图_cards/512/`.
+- Placeholder fallback when image missing (pioneer beacon illustration pending generation).
+- Add CardfrontCardArtBindingTestRunner.gd: path existence, fallback, BallWar isolation (8 tests).
+- Add test to CI batch.
+- Update AI_HANDOFF_CURRENT.md and CHANGELOG.md for v0.2.2.
+
+## `v0.2.1-target-preview` — 目标预览层与战场点击
+
+- Add CardfrontTargetPreviewLayer.gd: highlight valid target cells on battlefield when card selected.
+- Pioneer beacon (1004) shows owned border cells + adjacent neutral hint cells.
+- Add CardfrontTargetPreviewTestRunner.gd (7 tests).
+- Wire Main.gd:_unhandled_input(): battlefield click → world_to_cell() → on_battlefield_clicked().
+- Add CardfrontBattlefieldClickSelectionTestRunner.gd (5 tests, 16 checks).
+- Card status format simplified: device/card counts removed from bottom-right text.
+
+## `v0.2.0-cardfront-formal-ui` — 正式 Cardfront UI 基础
+
+- Add CardfrontTopResourceBar: Energy/Parts display with signal-driven refresh, separate yield display.
+- Add CardfrontHandPanel + CardfrontCardView: 4-card hand panel with type-specific placeholder icons.
+- Add CardfrontCardSelectionController: card click → select → play flow.
+- Card visual redesign: vertical layout 130×150 with colored icon blocks.
+- FireDirector signals: fire_tick/fire_requested/fire_issued/fire_skipped.
+- Overlay ImageTexture caching: RegionOverlayLayer, FortifyOverlayLayer.
+- Bug fixes: @onready setup order, deselect-on-reclick, lambda closure, text color restore.
+- GDScript warning cleanup: shadowed params, integer division, unused params.
+
 ## `v0.1.9-cardfront-engineering-closeout` — 工程收口与效果拆分
 
 - Sync project.godot version to 0.1.9-dev.

@@ -60,6 +60,7 @@ jobs:
               CardfrontFormalUITestRunner.gd
               CardfrontTargetPreviewTestRunner.gd
               CardfrontBattlefieldClickSelectionTestRunner.gd
+              CardfrontCardArtBindingTestRunner.gd
           - batch: Cardfront performance budget
             scripts: |
               CardfrontPerformanceSmokeTestRunner.gd
