@@ -49,6 +49,8 @@ func _populate_cards() -> void:
 	for i in range(4):
 		var view: CardfrontCardView = CardViewScene.instantiate()
 		view.name = "CardView_%d" % i
+		view.custom_minimum_size = Vector2(CARD_W, PANEL_HEIGHT - 10.0)
+		view.size = view.custom_minimum_size
 		var hbox: HBoxContainer = $CardHBox as HBoxContainer
 		hbox.add_child(view)
 		_card_views.append(view)

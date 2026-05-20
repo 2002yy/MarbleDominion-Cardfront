@@ -28,6 +28,8 @@ const CardfrontHandPanelScene = preload("res://scenes/ui/cardfront/CardfrontHand
 const CardfrontCardSelectionControllerScript = preload("res://scripts/cardfront/ui/CardfrontCardSelectionController.gd")
 const CardfrontTargetPreviewLayerScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
 const CardfrontRegionInfoPanelScript = preload("res://scripts/cardfront/ui/CardfrontRegionInfoPanel.gd")
+const LEGACY_SIDE_BUTTON_TOP_AFTER_REGION: float = 292.0
+const LEGACY_SIDE_BUTTON_GAP: float = 8.0
 
 const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
 
@@ -411,6 +413,7 @@ static func configure_runtime_hud(hud_nodes: Dictionary) -> void:
 		fps_label.visible = true
 
 	RuntimeHudController.set_performance_visible(true)
+	_lower_legacy_side_buttons(hud_nodes)
 
 
 static func restore_ballwar_hud(hud_nodes: Dictionary) -> void:
@@ -418,3 +421,30 @@ static func restore_ballwar_hud(hud_nodes: Dictionary) -> void:
 	if fps_label != null and is_instance_valid(fps_label):
 		fps_label.visible = true
 	RuntimeHudController.set_performance_visible(true)
+
+
+static func _lower_legacy_side_buttons(hud_nodes: Dictionary) -> void:
+	var settings_button = hud_nodes.get("settings_button", null)
+	var pause_button = hud_nodes.get("pause_button", null)
+	var exit_button = hud_nodes.get("exit_button", null)
+	if settings_button == null or pause_button == null or exit_button == null:
+		return
+	if not is_instance_valid(settings_button) or not is_instance_valid(pause_button) or not is_instance_valid(exit_button):
+		return
+
+	var button_size: Vector2 = settings_button.size
+	var view_height: float = 720.0
+	var viewport = settings_button.get_viewport()
+	if viewport != null:
+		view_height = viewport.get_visible_rect().size.y
+	var stack_height: float = button_size.y * 3.0 + LEGACY_SIDE_BUTTON_GAP * 2.0
+	var start_y: float = clampf(LEGACY_SIDE_BUTTON_TOP_AFTER_REGION, 84.0, maxf(84.0, view_height - stack_height - 12.0))
+	var x: float = settings_button.position.x
+
+	settings_button.position = Vector2(x, start_y)
+	pause_button.position = Vector2(x, start_y + button_size.y + LEGACY_SIDE_BUTTON_GAP)
+	exit_button.position = Vector2(x, pause_button.position.y + button_size.y + LEGACY_SIDE_BUTTON_GAP)
+
+	var settings_panel = hud_nodes.get("settings_panel", null)
+	if settings_panel != null and is_instance_valid(settings_panel):
+		settings_panel.position = Vector2(settings_panel.position.x, exit_button.position.y + button_size.y + 10.0)

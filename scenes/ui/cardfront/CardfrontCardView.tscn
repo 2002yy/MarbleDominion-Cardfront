@@ -5,6 +5,7 @@
 [node name="CardView" type="Panel"]
 script = ExtResource("1_view")
 size = Vector2(130, 150)
+custom_minimum_size = Vector2(130, 150)
 mouse_filter = 2
 
 [node name="CardBorder" type="ColorRect" parent="."]
