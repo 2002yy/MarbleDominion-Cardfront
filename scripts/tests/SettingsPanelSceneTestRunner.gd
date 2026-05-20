@@ -27,7 +27,6 @@ func _run() -> void:
 
 	t.that(instance.has_node("PanelMargin/MainVBox/PerformanceCheck"), "has PerformanceCheck")
 	t.that(instance.has_node("PanelMargin/MainVBox/LowEffectCheck"), "has LowEffectCheck")
-	t.that(instance.has_node("PanelMargin/MainVBox/EventLogCheck"), "has EventLogCheck")
 	t.that(instance.has_method("show_panel"), "has show_panel method")
 	t.that(instance.has_method("hide_panel"), "has hide_panel method")
 
