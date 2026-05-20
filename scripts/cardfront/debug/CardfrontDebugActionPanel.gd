@@ -76,7 +76,6 @@ func _play_card(card_id: int, needs_border: bool) -> void:
 func _pick_default_cell() -> Vector2i:
 	if battlefield == null:
 		return Vector2i.ZERO
-	var gs: int = int(battlefield.grid_size) / 2
 	return Vector2i(1, 1)
 
 
@@ -84,8 +83,8 @@ func _pick_default_border_cell() -> Vector2i:
 	if battlefield == null:
 		return Vector2i.ZERO
 	var gs: int = int(battlefield.grid_size)
-	var half: int = gs / 2
-	return Vector2i(half - 1, half / 2)
+	var half: int = int(float(gs) / 2.0)
+	return Vector2i(half - 1, int(float(half) / 2.0))
 
 
 func get_button_count_for_test() -> int:

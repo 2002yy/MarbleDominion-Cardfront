@@ -60,7 +60,7 @@ func _ensure_ui() -> void:
 	if _panel != null:
 		return
 	var viewport = get_viewport()
-	var view_size: Vector2 = GameConfig.get_safe_screen_size() if viewport == null else viewport.get_visible_rect().size
+	var view_size: Vector2 = Vector2(GameConfig.get_safe_screen_size()) if viewport == null else viewport.get_visible_rect().size
 
 	_panel = Panel.new()
 	_panel.name = "EconomyDebugPanel"
