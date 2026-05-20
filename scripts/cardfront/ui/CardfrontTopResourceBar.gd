@@ -47,7 +47,10 @@ func _on_yield_tick(owner_id: int, yield_data: Dictionary) -> void:
 	var energy_yield: int = int(total.get("energy", 0))
 	var parts_yield: int = int(total.get("parts", 0))
 	if _yield_label != null and is_instance_valid(_yield_label):
-		_yield_label.text = "+%d/s" % (energy_yield + parts_yield)
+		if energy_yield > 0 or parts_yield > 0:
+			_yield_label.text = "+%d⚡/s | +%d⚙/s" % [energy_yield, parts_yield]
+		else:
+			_yield_label.text = "本秒无产出"
 
 
 func refresh(force: bool = false) -> void:
