@@ -1,6 +1,8 @@
 extends Panel
 class_name CardfrontCardView
 
+const CardVisualRegistryScript = preload("res://scripts/cardfront/ui/CardVisualRegistry.gd")
+
 var card_id: int = -1
 var card_data: Dictionary = {}
 var current_state: String = "idle"
@@ -52,6 +54,27 @@ func bind(data: Dictionary, resource_state) -> void:
 	icon_border.color = Color(icon_color.r, icon_color.g, icon_color.b, 0.30)
 	var icon_label: Label = $CardIconLabel as Label
 	icon_label.text = str(ph.icon)
+
+	var card_art: TextureRect = $CardArt as TextureRect
+	var texture_path: String = CardVisualRegistryScript.get_texture_path(card_id)
+	if texture_path != "" and ResourceLoader.exists(texture_path):
+		var tex = load(texture_path)
+		if tex != null:
+			card_art.texture = tex
+			card_art.visible = true
+			card_icon.visible = false
+			icon_border.visible = false
+			icon_label.visible = false
+		else:
+			card_art.visible = false
+			card_icon.visible = true
+			icon_border.visible = true
+			icon_label.visible = true
+	else:
+		card_art.visible = false
+		card_icon.visible = true
+		icon_border.visible = true
+		icon_label.visible = true
 
 	var name_label: Label = $CardName as Label
 	name_label.text = str(data.get("card_name", "???"))
