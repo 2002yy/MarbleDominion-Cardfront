@@ -62,7 +62,11 @@ func _test_card_1003_path_exists() -> void:
 func _test_card_1004_path_registered() -> void:
 	_assert.that(CardVisualRegistryScript.has_texture(1004), "1004 pioneer_beacon should be registered")
 	var path: String = CardVisualRegistryScript.get_texture_path(1004)
-	_assert.neq(path, "", "1004 pioneer_beacon should have a path (image may be pending)")
+	_assert.neq(path, "", "1004 pioneer_beacon should have a path")
+	if path != "":
+		var exists_via_loader: bool = ResourceLoader.exists(path)
+		var exists_raw: bool = FileAccess.file_exists(path)
+		_assert.that(exists_via_loader or exists_raw, "1004 pioneer_beacon PNG should exist on disk (loader=%s, raw=%s)" % [str(exists_via_loader), str(exists_raw)])
 
 
 func _test_missing_card_returns_empty_path() -> void:
