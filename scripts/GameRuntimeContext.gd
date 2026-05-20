@@ -27,6 +27,9 @@ var debug_action_panel = null
 var absorber_core_effect_system = null
 var engineer_bot_effect_system = null
 var durable_pioneer_beacon_effect_system = null
+var top_resource_bar = null
+var hand_panel = null
+var selection_controller = null
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
@@ -59,6 +62,9 @@ func reset() -> void:
     absorber_core_effect_system = null
     engineer_bot_effect_system = null
     durable_pioneer_beacon_effect_system = null
+    top_resource_bar = null
+    hand_panel = null
+    selection_controller = null
     resource_states.clear()
     last_yield_snapshot.clear()
     current_config.clear()

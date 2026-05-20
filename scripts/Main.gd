@@ -448,6 +448,36 @@ func _create_cardfront_durable_pioneer_beacon_effect() -> void:
 	runtime.durable_pioneer_beacon_effect_system = beacon_setup.get("durable_pioneer_beacon_effect_system", null)
 
 
+func _create_cardfront_top_resource_bar() -> void:
+	runtime.top_resource_bar = null
+	if not _is_cardfront_mode():
+		return
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var bar_setup: Dictionary = CardfrontModeScript.create_top_resource_bar(ui_canvas, runtime.economy_system, runtime.resource_states)
+	if not bool(bar_setup.get("configured", false)):
+		return
+	runtime.top_resource_bar = bar_setup.get("top_resource_bar", null)
+
+
+func _create_cardfront_hand_panel() -> void:
+	runtime.hand_panel = null
+	runtime.selection_controller = null
+	if not _is_cardfront_mode():
+		return
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var hand_setup: Dictionary = CardfrontModeScript.create_hand_panel(ui_canvas, runtime.card_system, runtime.resource_states, runtime.economy_system, Vector2(VIEW_W, VIEW_H))
+	if not bool(hand_setup.get("configured", false)):
+		return
+	runtime.hand_panel = hand_setup.get("hand_panel", null)
+	var ctrl_setup: Dictionary = CardfrontModeScript.create_card_selection_controller(runtime.card_system, runtime.resource_states, runtime.hand_panel, runtime.top_resource_bar)
+	if bool(ctrl_setup.get("configured", false)):
+		runtime.selection_controller = ctrl_setup.get("selection_controller", null)
+
+
 func _create_control_chambers() -> void:
 	runtime.chambers = {}
 	if _is_cardfront_mode() and not CardfrontModeScript.uses_control_chambers():
@@ -482,6 +512,8 @@ func _create_ui() -> void:
 
 	if _is_cardfront_mode():
 		CardfrontModeScript.configure_runtime_hud(runtime.hud)
+		_create_cardfront_top_resource_bar()
+		_create_cardfront_hand_panel()
 
 	_on_scores_changed(runtime.battlefield.count_cells_by_team())
 

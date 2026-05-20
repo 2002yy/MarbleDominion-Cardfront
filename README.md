@@ -31,6 +31,10 @@ Implemented in this repository:
   - Morale Fluctuation calls `RegionMoraleSystem.apply_morale(...)`.
   - Calibrated Shot registers a testable target-region bias for the player.
   - Pioneer Beacon converts up to 3 neutral neighbors around an owned border cell.
+- Formal Cardfront HUD:
+  - `CardfrontTopResourceBar` shows live Energy / Parts with yield rate.
+  - `CardfrontHandPanel` shows 4 fixed-hand cards with cost, target type, and affordability states.
+  - `CardfrontCardSelectionController` manages click-to-select and card-play dispatch.
 - Cardfront fire director:
   - Generates low-frequency `CardfrontFireIntent` records.
   - Prioritizes target bias from Calibrated Shot when present.
@@ -53,7 +57,7 @@ Implemented in this repository:
 
 Not implemented yet:
 
-- Formal card UI / HUD, Deckbuilder, and AI Commander remain deferred for v0.2.0.
+- Deckbuilder and AI Commander remain deferred.
 - Cardfront save/load integration remains deferred; schema shape is audited in `CardfrontRuntimeSnapshot.gd` but not wired.
 - Final device tuning, animation polish.
 
@@ -140,6 +144,7 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVisualPolicyTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/VisualPressurePolicyTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMapTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFormalUITestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
