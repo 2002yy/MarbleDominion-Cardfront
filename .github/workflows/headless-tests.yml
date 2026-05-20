@@ -58,6 +58,7 @@ jobs:
               CardfrontVisibleEffectBridgeTestRunner.gd
               CardfrontRuntimeSnapshotTestRunner.gd
               CardfrontFormalUITestRunner.gd
+              CardfrontTargetPreviewTestRunner.gd
           - batch: Cardfront performance budget
             scripts: |
               CardfrontPerformanceSmokeTestRunner.gd
