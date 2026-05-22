@@ -13,6 +13,7 @@ var battlefield = null
 var region_map = null
 var _is_cardfront_panel: bool = false
 var _toggle_allowed: bool = false
+var _release_mode_override_for_test: int = -1
 
 const BUTTON_H: int = 24
 const BUTTON_W: int = 140
@@ -68,6 +69,10 @@ func is_toggle_allowed_for_test() -> bool:
 
 func is_debug_visible_for_test() -> bool:
 	return visible
+
+
+func set_release_mode_override_for_test(is_release: bool) -> void:
+	_release_mode_override_for_test = 1 if is_release else 0
 
 
 func _ensure_ui() -> void:
@@ -133,6 +138,14 @@ func get_button_count_for_test() -> int:
 
 
 func _can_toggle_in_current_build() -> bool:
-	if ProjectSettings.has_setting(DEBUG_FLAG_SETTING) and bool(ProjectSettings.get_setting(DEBUG_FLAG_SETTING)):
-		return true
-	return not OS.has_feature("release")
+	if _is_release_build():
+		return false
+	if ProjectSettings.has_setting(DEBUG_FLAG_SETTING):
+		return bool(ProjectSettings.get_setting(DEBUG_FLAG_SETTING))
+	return true
+
+
+func _is_release_build() -> bool:
+	if _release_mode_override_for_test >= 0:
+		return _release_mode_override_for_test == 1
+	return OS.has_feature("release")

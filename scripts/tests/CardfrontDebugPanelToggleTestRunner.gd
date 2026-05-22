@@ -1,5 +1,10 @@
 extends SceneTree
 
+const CardfrontDebugActionPanelScript = preload("res://scripts/cardfront/debug/CardfrontDebugActionPanel.gd")
+const CardfrontTopResourceBarScene = preload("res://scenes/ui/cardfront/CardfrontTopResourceBar.tscn")
+const CardfrontResourceStateScript = preload("res://scripts/cardfront/economy/CardfrontResourceState.gd")
+const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+
 var _assert: TestAssert
 
 
@@ -13,7 +18,10 @@ func _run() -> void:
 	await process_frame
 
 	_test_cardfront_debug_panel_default_hidden()
-	_test_f3_toggles_debug_panel()
+	await _test_f3_routes_through_scene_tree()
+	_test_formal_ui_debug_hint()
+	_test_release_debug_panel_stays_hidden()
+	await _test_release_debug_hint_hidden()
 	_test_ballwar_has_no_debug_panel()
 
 	GameConfig.reset_runtime_defaults()
@@ -42,12 +50,12 @@ func _make_main(mode_name: String):
 	return main
 
 
-func _press_f3(panel) -> void:
+func _send_f3_to_tree() -> void:
 	var event := InputEventKey.new()
 	event.keycode = KEY_F3
 	event.physical_keycode = KEY_F3
 	event.pressed = true
-	panel._unhandled_input(event)
+	Input.parse_input_event(event)
 
 
 func _test_cardfront_debug_panel_default_hidden() -> void:
@@ -62,20 +70,61 @@ func _test_cardfront_debug_panel_default_hidden() -> void:
 	TestFixtures.cleanup_node(main)
 
 
-func _test_f3_toggles_debug_panel() -> void:
+func _test_f3_routes_through_scene_tree() -> void:
 	var main = _make_main(GameConfig.GAME_MODE_CARDFRONT)
 	var panel = main.runtime.debug_action_panel
 	if panel != null:
-		_press_f3(panel)
-		_assert.that(panel.visible, "debug panel: F3 should show panel")
-		_press_f3(panel)
-		_assert.that(not panel.visible, "debug panel: second F3 should hide panel")
+		_send_f3_to_tree()
+		await _flush()
+		_assert.that(panel.visible, "debug panel: parsed F3 input should show panel")
+		_send_f3_to_tree()
+		await _flush()
+		_assert.that(not panel.visible, "debug panel: parsed second F3 input should hide panel")
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
+
+
+func _test_formal_ui_debug_hint() -> void:
+	var main = _make_main(GameConfig.GAME_MODE_CARDFRONT)
+	var bar = main.runtime.top_resource_bar
+	_assert.that(bar != null, "debug panel: Cardfront should create formal top resource bar")
+	if bar != null:
+		_assert.that(bar.is_debug_hint_visible_for_test(), "debug panel: Cardfront formal UI should show F3 Debug hint in non-release")
+		_assert.eq(bar.get_debug_hint_text_for_test(), "F3 Debug", "debug panel: formal UI hint text should be F3 Debug")
+	main._cleanup_game_layer()
+	TestFixtures.cleanup_node(main)
+
+
+func _test_release_debug_panel_stays_hidden() -> void:
+	var panel = CardfrontDebugActionPanelScript.new()
+	get_root().add_child(panel)
+	panel.set_release_mode_override_for_test(true)
+	panel.setup(null, null, null, null, GameConfig.GAME_MODE_CARDFRONT)
+	_assert.that(not panel.is_toggle_allowed_for_test(), "debug panel: release builds should not allow F3 toggle")
+	_assert.that(not panel.visible, "debug panel: release builds should keep debug panel hidden")
+	_assert.eq(panel.toggle_debug_panel(), false, "debug panel: release toggle should return false")
+	_assert.that(not panel.visible, "debug panel: release toggle should not show panel")
+	TestFixtures.cleanup_node(panel)
+
+
+func _test_release_debug_hint_hidden() -> void:
+	var bar = CardfrontTopResourceBarScene.instantiate()
+	get_root().add_child(bar)
+	await _flush()
+	bar.set_release_mode_override_for_test(true)
+	var states := {
+		CardfrontRulesScript.PLAYER_FACTION: CardfrontResourceStateScript.new(),
+		CardfrontRulesScript.AI_FACTION: CardfrontResourceStateScript.new(),
+	}
+	bar.setup(null, states, GameConfig.GAME_MODE_CARDFRONT)
+	_assert.that(bar.visible, "debug panel: release top resource bar should still be visible in Cardfront")
+	_assert.that(not bar.is_debug_hint_visible_for_test(), "debug panel: release builds should hide F3 Debug hint")
+	TestFixtures.cleanup_node(bar)
 
 
 func _test_ballwar_has_no_debug_panel() -> void:
 	var main = _make_main(GameConfig.GAME_MODE_BASIC)
 	_assert.eq(main.runtime.debug_action_panel, null, "debug panel: BallWar mode should not create Cardfront debug panel")
+	_assert.eq(main.runtime.top_resource_bar, null, "debug panel: BallWar mode should not create Cardfront top resource bar")
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

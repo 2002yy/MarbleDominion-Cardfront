@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.3.1-cardview-mouse-hotfix**.
-Current next slice: **v0.2.4-ui-art-resource-pass**.
-Formal HUD (resource bar + hand panel) connected; card hover details, invalid-target/resource toasts, and card-success VFX bridge are active; card views now explicitly receive root mouse input while decorative children ignore it; the left Cardfront debug panel is hidden by default and available through F3 in non-release builds; UI art paths are centralized in `CardfrontUiAssetRegistry.gd` with fallback styling.
+The current completed slice is **v0.2.3.2-debug-input-route-hardening**.
+Current next slice: **v0.2.4a-real-ui-art-scene-pass**.
+Formal HUD (resource bar + hand panel) connected; card hover details, invalid-target/resource toasts, and card-success VFX bridge are active; card views now explicitly receive root mouse input while decorative children ignore it; the left Cardfront debug panel is hidden by default and available through parsed F3 input in non-release builds; UI art paths are centralized in `CardfrontUiAssetRegistry.gd` with fallback styling.
 
 ## Current Slice / 当前阶段
 
@@ -41,7 +41,8 @@ Implemented in this repository:
   - `CardfrontToastLayer` shows invalid target, resource shortage, success, and failure feedback without covering the battlefield core.
   - `CardfrontEffectVisualBridge` maps the 4 existing card successes into existing `CardfrontVfxLayer` effects.
 - Cardfront debug panel:
-  - `CardfrontDebugActionPanel` is hidden by default and toggled with F3 in Cardfront non-release builds.
+  - `CardfrontDebugActionPanel` is hidden by default and toggled through the real F3 input route in Cardfront non-release builds.
+  - `CardfrontTopResourceBar` shows a small non-release `F3 Debug` hint; release builds hide both the hint and debug panel route.
   - Old BallWar modes do not create the Cardfront debug action panel.
 - Cardfront UI art registry:
   - `CardfrontUiAssetRegistry` centralizes Kenney/Wenrexa/Game-Icons/font paths.
@@ -176,14 +177,14 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for the v0.2.3.1 card-view mouse hotfix:
+Latest local validation for the v0.2.3.2 debug-input route hardening:
 
 - `CardfrontCardViewInteractionConfigTestRunner.gd`: 35 checks passed.
 - `CardfrontCardDetailPopupTestRunner.gd`: 4 checks passed.
 - `CardfrontCardFeedbackTestRunner.gd`: 24 checks passed.
 - `CardfrontToastLayerTestRunner.gd`: 4 checks passed.
 - `CardfrontEffectVisualBridgeTestRunner.gd`: 5 checks passed.
-- `CardfrontDebugPanelToggleTestRunner.gd`: 7 checks passed.
+- `CardfrontDebugPanelToggleTestRunner.gd`: 17 checks passed.
 - `CardfrontUiAssetRegistryTestRunner.gd`: 40 checks passed.
 - `CardfrontUiArtSceneTestRunner.gd`: 14 checks passed.
 - `CardfrontFormalUITestRunner.gd`: 48 checks passed.
@@ -197,6 +198,6 @@ Latest local validation for the v0.2.3.1 card-view mouse hotfix:
 
 ## Next Milestone / 下一阶段
 
-`v0.2.4-ui-art-resource-pass`: continue replacing procedural UI styling with registry-backed Kenney/Wenrexa/Game-Icons assets. Keep Deckbuilder, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
+`v0.2.4a-real-ui-art-scene-pass`: start using registered art resources in real Cardfront UI scenes, beginning with resource icons and restrained panel/frame usage. Keep Deckbuilder, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
 
 MIT License. See [LICENSE](LICENSE).
