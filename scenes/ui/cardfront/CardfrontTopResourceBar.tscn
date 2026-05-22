@@ -17,6 +17,7 @@ theme_override_constants/separation = 10
 
 [node name="EnergyBox" type="Panel" parent="Margin/HBox"]
 self_modulate = Color(0.06, 0.10, 0.18, 0.88)
+custom_minimum_size = Vector2(80, 28)
 
 [node name="Bg" type="ColorRect" parent="Margin/HBox/EnergyBox"]
 size = Vector2(80, 28)
@@ -53,6 +54,7 @@ theme_override_constants/outline_size = 1
 
 [node name="PartsBox" type="Panel" parent="Margin/HBox"]
 self_modulate = Color(0.06, 0.10, 0.18, 0.88)
+custom_minimum_size = Vector2(80, 28)
 
 [node name="Bg" type="ColorRect" parent="Margin/HBox/PartsBox"]
 size = Vector2(80, 28)
