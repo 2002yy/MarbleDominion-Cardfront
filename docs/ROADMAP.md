@@ -8,15 +8,14 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.3.3-warning-hud-hand-motion-prepass`
-- Next slice: `v0.2.4a-real-ui-art-scene-pass`
+- Current completed slice: `v0.2.4a-real-ui-art-scene-pass`
+- Next slice: `v0.2.4b-card-thumbnail-pass`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
-  - GDScript warning cleanup (show/name/tier shadowing, integer division) done
-  - CardfrontHUD separated as standalone scene; legacy BallWar HUD nodes hidden in Cardfront mode
-  - hand panel collapsed to 80px height with Tween hover expand/collapse animation
-  - F3 Debug hint relocated to bottom-right corner
-  - next: use registered art resources in real UI scenes without changing gameplay
+  - Top resource bar uses TextureRect icons (energy/parts) with registry-backed fallback
+  - CardView uses card_frame Panel and reduced Bg alpha for texture visibility
+  - All UI scenes use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback
+  - next: generate/register 128/256 thumbnails for hand cards
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
 
@@ -54,8 +53,8 @@ This file is the single place for project direction and phase status.
 | `v0.2.3.1-cardview-mouse-hotfix` | Done / 已完成 | Fix `CardfrontCardView.tscn` mouse input routing: root receives hover/click, decorative children ignore mouse input, and CI covers feedback-bus hover/click dispatch. |
 | `v0.2.3.2-debug-input-route-hardening` | Done / 已完成 | Keep debug action panel hidden, route F3 through parsed input, show small non-release `F3 Debug` hint, keep release/BallWar isolated. |
 | `v0.2.3.3-warning-hud-hand-motion-prepass` | Done / 已完成 | GDScript warning cleanup; CardfrontHUD as standalone scene, legacy BallWar HUD hidden in Cardfront mode; hand panel collapsed to 80px + hover Tween expand/collapse; DebugHint relocated to bottom-right; regressions all green. |
-| `v0.2.4a-real-ui-art-scene-pass` | Next / 下一步 | Start using registered art resources in real UI scenes: resource icons, restrained card frame/panel usage, detail panel prep, and toast panel skinning; no gameplay or card-value changes. |
-| `v0.2.4b-card-thumbnail-pass` | Planned / 计划 | Use `CardVisualRegistry.thumbnail` for hand cards and reserve 512 card art for detail/full-card views. |
+| `v0.2.4a-real-ui-art-scene-pass` | Done / 已完成 | TopResourceBar uses TextureRect icons (energy/parts) with registry-backed fallback; CardView uses card_frame Panel and reduced Bg alpha; all scenes use registry-backed style/font hooks with ColorRect / StyleBoxFlat fallback; no gameplay or card-value changes. |
+| `v0.2.4b-card-thumbnail-pass` | Next / 下一步 | Use `CardVisualRegistry.thumbnail` for hand cards and reserve 512 card art for detail/full-card views. |
 | `v0.2.4c-ui-credits-and-asset-doc-sync` | Planned / 计划 | Keep credits and generated asset manifest aligned after UI art and thumbnail wiring. |
 
 ## 3. Design Boundaries / 设计边界
@@ -195,9 +194,8 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. `v0.2.4a-real-ui-art-scene-pass`: use existing registry-backed resources in real Cardfront UI scenes while preserving fallback styling.
-2. `v0.2.4b-card-thumbnail-pass`: generate/register 128/256 thumbnails for hand cards and keep 512 art for hover/detail views.
-3. Keep Deckbuilder, deck draw/discard/shuffle, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
+1. `v0.2.4b-card-thumbnail-pass`: generate/register 128/256 thumbnails for hand cards and keep 512 art for hover/detail views.
+2. Keep Deckbuilder, deck draw/discard/shuffle, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
 3. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` for all new wiring.
 
 ### Cardfront Save Schema

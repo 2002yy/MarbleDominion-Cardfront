@@ -8,10 +8,9 @@ size = Vector2(130, 150)
 custom_minimum_size = Vector2(130, 150)
 mouse_filter = 0
 
-[node name="CardBorder" type="ColorRect" parent="."]
+[node name="CardBorder" type="Panel" parent="."]
 size = Vector2(130, 150)
 mouse_filter = 2
-color = Color(0.12, 0.18, 0.30, 0.0)
 
 [node name="Bg" type="ColorRect" parent="."]
 position = Vector2(1, 1)

@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.3.3-warning-hud-hand-motion-prepass`
-- Current slice: `v0.2.4a-real-ui-art-scene-pass`
+- Current completed slice: `v0.2.4a-real-ui-art-scene-pass`
+- Current slice: `v0.2.4b-card-thumbnail-pass`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -31,7 +31,9 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
   - `CardfrontDebugActionPanel.gd` — hidden by default; parsed F3 input toggles it only in Cardfront non-release builds.
   - `CardfrontTopResourceBar.gd` — includes a tiny non-release `F3 Debug` hint; release builds hide the hint.
   - `CardfrontUiAssetRegistry.gd` — centralized Kenney/Wenrexa/Game-Icons/font path registry with ResourceLoader/fallback helpers.
-  - Current UI scripts use registry-backed style/font hooks, but this is still a resource-prep pass, not final art polish.
+  - v0.2.4a: TopResourceBar uses TextureRect icons (energy/parts) with registry-backed fallback (emoji text if texture missing).
+  - v0.2.4a: CardView uses `card_frame` Panel style (CardBorder changed to Panel) and Bg alpha reduced to 0.40 when `card_bg` texture loads.
+  - All Cardfront UI scenes now use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback.
 - `CardVisualRegistry.gd` maps card IDs 1001-1004 to illustration paths under `assets/cardfront_runtime/卡牌插图_cards/512/`.
   - 3 of 4 images exist (frontline_fortify, calibrated_shot, morale_shift). Pioneer beacon image is pending generation; placeholder fallback works.
 - `Main.gd:_unhandled_input()` converts mouse clicks to `selection_controller.on_battlefield_clicked(cell)`.
@@ -48,15 +50,15 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.3.2-debug-input-route-hardening: F3 toggle is covered through `Input.parse_input_event`, the formal UI shows a small non-release `F3 Debug` hint, and release/BallWar paths stay hidden.
 - CI matrix now includes `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`, and `CardfrontCardViewInteractionConfigTestRunner.gd`.
 - v0.2.3.3-warning-hud-hand-motion-prepass: GDScript warning cleanup (show/name/tier shadowing, integer division); CardfrontHUD as standalone scene with legacy BallWar HUD nodes hidden in Cardfront mode; hand panel collapsed to 80px height (was 160px) with cards sunk at 70px offset; hover Tween expand/collapse animation (y→0, scale→1.05, z_index→30); selected cards stay expanded after mouse exit; F3 Debug hint relocated from top-left (20,136) to bottom-right (1010,660) with reduced visibility.
+- v0.2.4a-real-ui-art-scene-pass: TopResourceBar uses TextureRect icons (icon_energy SVG, icon_parts SVG) with registry-backed emoji fallback; CardView CardBorder changed to Panel for card_frame texture, Bg alpha lowered to 0.40 when card_bg exists; all Cardfront UI scenes use registry-backed style/font/icon hooks; no gameplay or card-value changes.
 
 ## 4. Next Steps / 下一步
 
-Ship `v0.2.4a-real-ui-art-scene-pass`:
+Ship `v0.2.4b-card-thumbnail-pass`:
 
-- Use registered art resources in real UI scenes; do not scatter paths in `Main.gd` or individual gameplay systems.
-- Prioritize `CardfrontTopResourceBar`, `CardfrontCardView`, `CardfrontHandPanel`, `CardfrontCardDetailPopup`, and `CardfrontToastLayer`.
-- Keep `ResourceLoader.exists` fallback behavior for every asset.
-- Preserve Game-Icons credits if those icons move from registry prep into shipped UI.
+- Generate/register 128/256 thumbnails for hand cards using `CardVisualRegistry.thumbnail`.
+- Keep 512px art reserved for hover detail / full-card views.
+- Preserve Game-Icons credits.
 - Keep BallWar mode unchanged.
 - Do not add cards, Deckbuilder, AI Commander, card-value changes, or full Cardfront save/load in this slice.
 

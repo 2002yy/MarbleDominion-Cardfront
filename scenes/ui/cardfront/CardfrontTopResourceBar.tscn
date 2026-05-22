@@ -33,8 +33,14 @@ theme_override_constants/margin_bottom = 2
 [node name="Inner" type="HBoxContainer" parent="Margin/HBox/EnergyBox/Margin2"]
 theme_override_constants/separation = 6
 
+[node name="EnergyIcon" type="TextureRect" parent="Margin/HBox/EnergyBox/Margin2/Inner"]
+custom_minimum_size = Vector2(18, 18)
+size = Vector2(18, 18)
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Name" type="Label" parent="Margin/HBox/EnergyBox/Margin2/Inner"]
-text = "⚡ 能量"
+text = "能量"
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.62, 0.90, 1.0, 1.0)
 
@@ -63,8 +69,14 @@ theme_override_constants/margin_bottom = 2
 [node name="Inner" type="HBoxContainer" parent="Margin/HBox/PartsBox/Margin2"]
 theme_override_constants/separation = 6
 
+[node name="PartsIcon" type="TextureRect" parent="Margin/HBox/PartsBox/Margin2/Inner"]
+custom_minimum_size = Vector2(18, 18)
+size = Vector2(18, 18)
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Name" type="Label" parent="Margin/HBox/PartsBox/Margin2/Inner"]
-text = "⚙ 零件"
+text = "零件"
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(1.0, 0.82, 0.36, 1.0)
 

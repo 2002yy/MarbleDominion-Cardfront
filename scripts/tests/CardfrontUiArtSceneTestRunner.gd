@@ -21,6 +21,7 @@ func _run() -> void:
 
 	_test_scenes_instantiate()
 	_test_art_fallback_style_available()
+	_test_top_resource_bar_icon_nodes_exist()
 	_test_cardfront_mode_creates_feedback_ui()
 	_test_ballwar_mode_does_not_create_cardfront_ui()
 
@@ -57,6 +58,18 @@ func _test_scenes_instantiate() -> void:
 func _test_art_fallback_style_available() -> void:
 	var style = CardfrontUiAssetRegistryScript.make_panel_style("missing_asset_for_scene_test", Color(0.1, 0.1, 0.1), Color(0.5, 0.5, 0.5))
 	_assert.that(style != null, "ui art scene: missing resources should keep fallback style")
+
+
+func _test_top_resource_bar_icon_nodes_exist() -> void:
+	var bar = CardfrontTopResourceBarScene.instantiate()
+	get_root().add_child(bar)
+	var energy_icon = bar.get_node_or_null("Margin/HBox/EnergyBox/Margin2/Inner/EnergyIcon")
+	var parts_icon = bar.get_node_or_null("Margin/HBox/PartsBox/Margin2/Inner/PartsIcon")
+	_assert.that(energy_icon is TextureRect, "top resource bar: EnergyIcon should be TextureRect")
+	_assert.that(parts_icon is TextureRect, "top resource bar: PartsIcon should be TextureRect")
+	_assert.that(energy_icon != null, "top resource bar: EnergyIcon node should exist")
+	_assert.that(parts_icon != null, "top resource bar: PartsIcon node should exist")
+	TestFixtures.cleanup_node(bar)
 
 
 func _make_main(mode_name: String):

@@ -133,31 +133,25 @@ func set_state(state: String) -> void:
 	pivot_offset = size * 0.5
 	var bg: ColorRect = $Bg as ColorRect
 	bg.color = STATE_COLORS.get(state, STATE_COLORS["idle"])
-	var card_border: ColorRect = $CardBorder as ColorRect
 	var hover_border: ColorRect = $HoverBorder as ColorRect
 	var selected_border: ColorRect = $SelectedBorder as ColorRect
 	match state:
 		"idle":
-			card_border.color = Color(0.12, 0.18, 0.30, 0.0)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.0)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
 			_restore_text_colors()
 		"hover":
-			card_border.color = Color(0.62, 0.90, 1.0, 0.20)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.20)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
 			_restore_text_colors()
 		"selected":
-			card_border.color = Color(0.62, 0.90, 1.0, 0.40)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.0)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.35)
 			_restore_text_colors()
 		"disabled_resource":
-			card_border.color = Color(0.08, 0.08, 0.10, 0.6)
 			hover_border.color = Color(0.3, 0.2, 0.2, 0.0)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
 		"used":
-			card_border.color = Color(0.05, 0.05, 0.08, 0.6)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.0)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
 
@@ -240,4 +234,12 @@ func _apply_art_assets() -> void:
 	add_theme_stylebox_override("panel", card_style)
 	if CardfrontUiAssetRegistryScript.has_asset("card_bg"):
 		var bg: ColorRect = $Bg as ColorRect
-		bg.color = Color(0.03, 0.06, 0.11, 0.72)
+		bg.color = Color(0.03, 0.06, 0.11, 0.40)
+	var frame_style = CardfrontUiAssetRegistryScript.make_panel_style(
+		"card_frame",
+		Color(0.12, 0.18, 0.30, 0.0),
+		Color(0.35, 0.55, 0.80, 0.30)
+	)
+	var card_border = get_node_or_null("CardBorder")
+	if card_border is Panel:
+		(card_border as Panel).add_theme_stylebox_override("panel", frame_style)

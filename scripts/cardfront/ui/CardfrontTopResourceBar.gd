@@ -14,6 +14,8 @@ var _release_mode_override_for_test: int = -1
 @onready var _parts_value: Label = $Margin/HBox/PartsBox/Margin2/Inner/Value
 @onready var _yield_label: Label = $Margin/HBox/YieldLabel
 @onready var _debug_hint: Label = $DebugHint
+@onready var _energy_icon: TextureRect = $Margin/HBox/EnergyBox/Margin2/Inner/EnergyIcon
+@onready var _parts_icon: TextureRect = $Margin/HBox/PartsBox/Margin2/Inner/PartsIcon
 
 
 func setup(new_economy_system, new_resource_states: Dictionary, mode_name: String) -> void:
@@ -123,16 +125,32 @@ func _apply_art_assets() -> void:
 			if bg is ColorRect:
 				(bg as ColorRect).color = Color(0.04, 0.07, 0.13, 0.44)
 	var font = CardfrontUiAssetRegistryScript.load_font()
-	if font == null:
+	if font != null:
+		for label_path in [
+			"Margin/HBox/EnergyBox/Margin2/Inner/Name",
+			"Margin/HBox/EnergyBox/Margin2/Inner/Value",
+			"Margin/HBox/PartsBox/Margin2/Inner/Name",
+			"Margin/HBox/PartsBox/Margin2/Inner/Value",
+			"Margin/HBox/YieldLabel",
+			"DebugHint",
+		]:
+			var label = get_node_or_null(label_path)
+			if label is Label:
+				(label as Label).add_theme_font_override("font", font)
+	var energy_name = get_node_or_null("Margin/HBox/EnergyBox/Margin2/Inner/Name") as Label
+	var parts_name = get_node_or_null("Margin/HBox/PartsBox/Margin2/Inner/Name") as Label
+	_apply_icon(_energy_icon, "icon_energy", energy_name, "⚡ 能量")
+	_apply_icon(_parts_icon, "icon_parts", parts_name, "⚙ 零件")
+
+
+func _apply_icon(tex_rect: TextureRect, asset_id: String, name_label: Label, emoji_fallback: String) -> void:
+	if tex_rect == null or not is_instance_valid(tex_rect):
 		return
-	for label_path in [
-		"Margin/HBox/EnergyBox/Margin2/Inner/Name",
-		"Margin/HBox/EnergyBox/Margin2/Inner/Value",
-		"Margin/HBox/PartsBox/Margin2/Inner/Name",
-		"Margin/HBox/PartsBox/Margin2/Inner/Value",
-		"Margin/HBox/YieldLabel",
-		"DebugHint",
-	]:
-		var label = get_node_or_null(label_path)
-		if label is Label:
-			(label as Label).add_theme_font_override("font", font)
+	var tex = CardfrontUiAssetRegistryScript.load_texture(asset_id)
+	if tex != null:
+		tex_rect.texture = tex
+		tex_rect.visible = true
+	else:
+		tex_rect.visible = false
+		if name_label != null and is_instance_valid(name_label):
+			name_label.text = emoji_fallback

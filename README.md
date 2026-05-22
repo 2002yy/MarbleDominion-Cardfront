@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.3.3-warning-hud-hand-motion-prepass**.
-Current next slice: **v0.2.4a-real-ui-art-scene-pass**.
-GDScript warning cleanup (show/name/tier shadowing, integer division) done; CardfrontHUD separated as standalone scene, legacy BallWar HUD nodes hidden in Cardfront mode; hand panel collapsed to 80px height with cards sunk at 70px offset, hover Tween expand/collapse animation with z_index→30; F3 Debug hint relocated from top-left to bottom-right corner; all 11 tests pass with 545 checks across 2 new and 9 regression runners.
+The current completed slice is **v0.2.4a-real-ui-art-scene-pass**.
+Current next slice: **v0.2.4b-card-thumbnail-pass**.
+TopResourceBar uses TextureRect icons (energy/parts) with registry-backed fallback; CardView uses card_frame Panel and reduced Bg alpha for texture visibility; all Cardfront UI scenes use registry-backed style/font/icon hooks; no gameplay or card-value changes.
 
 ## Current Slice / 当前阶段
 
@@ -44,9 +44,11 @@ Implemented in this repository:
   - `CardfrontDebugActionPanel` is hidden by default and toggled through the real F3 input route in Cardfront non-release builds.
   - `CardfrontTopResourceBar` shows a small non-release `F3 Debug` hint at bottom-right (1010, 660); release builds hide both the hint and debug panel route.
   - Old BallWar modes do not create the Cardfront debug action panel.
-- Cardfront UI art registry:
+- Cardfront UI art registry (v0.2.4a):
   - `CardfrontUiAssetRegistry` centralizes Kenney/Wenrexa/Game-Icons/font paths.
-  - Current UI scripts use registry-backed style/font hooks with ColorRect / StyleBoxFlat fallback.
+  - TopResourceBar uses TextureRect icons (icon_energy/icon_parts SVG) with registry-backed emoji fallback.
+  - CardView CardBorder changed to Panel for `card_frame` texture; Bg alpha lowered to 0.40 when `card_bg` exists.
+  - All Cardfront UI scenes use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback.
 - Cardfront card interaction hotfix:
   - `CardfrontCardView.tscn` root uses `MOUSE_FILTER_STOP`; decorative children use `MOUSE_FILTER_IGNORE`.
   - `CardfrontCardViewInteractionConfigTestRunner.gd` verifies hover/click signal routing to `CardfrontFeedbackBus`.
@@ -177,16 +179,17 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for the v0.2.3.2 debug-input route hardening:
+Latest local validation for v0.2.4a-real-ui-art-scene-pass:
 
 - `CardfrontCardViewInteractionConfigTestRunner.gd`: 35 checks passed.
 - `CardfrontCardDetailPopupTestRunner.gd`: 4 checks passed.
 - `CardfrontCardFeedbackTestRunner.gd`: 24 checks passed.
 - `CardfrontToastLayerTestRunner.gd`: 4 checks passed.
 - `CardfrontEffectVisualBridgeTestRunner.gd`: 5 checks passed.
+- `CardfrontCardArtBindingTestRunner.gd`: 22 checks passed.
 - `CardfrontDebugPanelToggleTestRunner.gd`: 17 checks passed.
 - `CardfrontUiAssetRegistryTestRunner.gd`: 40 checks passed.
-- `CardfrontUiArtSceneTestRunner.gd`: 14 checks passed.
+- `CardfrontUiArtSceneTestRunner.gd`: 18 checks passed.
 - `CardfrontFormalUITestRunner.gd`: 48 checks passed.
 - `CardfrontTargetPreviewTestRunner.gd`: 13 checks passed.
 - `CardfrontBattlefieldClickSelectionTestRunner.gd`: 16 checks passed.
@@ -194,10 +197,9 @@ Latest local validation for the v0.2.3.2 debug-input route hardening:
 - `CardfrontPerformanceSmokeTestRunner.gd`: 7 checks passed.
 - `CardfrontVfxLayerTestRunner.gd`: 14 checks passed.
 - `SmokeTestRunner.gd`: 215 checks passed.
-- `IntegrationTestRunner.gd`: 133 checks passed.
 
 ## Next Milestone / 下一阶段
 
-`v0.2.4a-real-ui-art-scene-pass`: start using registered art resources in real Cardfront UI scenes, beginning with resource icons and restrained panel/frame usage. Keep Deckbuilder, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
+`v0.2.4b-card-thumbnail-pass`: generate/register 128/256 thumbnails for hand cards using `CardVisualRegistry.thumbnail` and keep 512 art for hover/detail views. Keep Deckbuilder, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
 
 MIT License. See [LICENSE](LICENSE).
