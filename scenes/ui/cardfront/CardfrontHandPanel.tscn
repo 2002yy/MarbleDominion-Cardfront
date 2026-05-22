@@ -12,5 +12,4 @@ self_modulate = Color(1, 1, 1, 0.92)
 [node name="PanelBorder" type="ColorRect" parent="."]
 color = Color(0.20, 0.35, 0.55, 0.0)
 
-[node name="CardHBox" type="HBoxContainer" parent="."]
-theme_override_constants/separation = 8
+[node name="CardHBox" type="Control" parent="."]

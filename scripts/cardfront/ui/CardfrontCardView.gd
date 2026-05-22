@@ -9,6 +9,10 @@ var card_data: Dictionary = {}
 var current_state: String = "idle"
 var clicked_callback: Callable = func(): pass
 var feedback_bus = null
+var _tween: Tween = null
+var _is_selected: bool = false
+
+const COLLAPSED_OFFSET: float = 70.0
 
 const CARD_SIZE := Vector2(130, 150)
 const HOVER_SCALE := Vector2(1.035, 1.035)
@@ -42,6 +46,7 @@ func _ready() -> void:
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	gui_input.connect(_on_gui_input)
+	position.y = COLLAPSED_OFFSET
 	pivot_offset = size * 0.5
 	_apply_art_assets()
 
@@ -122,7 +127,9 @@ func bind(data: Dictionary, resource_state) -> void:
 
 
 func set_state(state: String) -> void:
+	var prev_state: String = current_state
 	current_state = state
+	_is_selected = (state == "selected")
 	pivot_offset = size * 0.5
 	var bg: ColorRect = $Bg as ColorRect
 	bg.color = STATE_COLORS.get(state, STATE_COLORS["idle"])
@@ -153,7 +160,11 @@ func set_state(state: String) -> void:
 			card_border.color = Color(0.05, 0.05, 0.08, 0.6)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.0)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
-	_apply_feedback_transform()
+
+	if state == "selected":
+		_animate_expand()
+	elif state == "idle" and prev_state != "hover":
+		_animate_collapse()
 
 
 func is_playable() -> bool:
@@ -176,6 +187,7 @@ func _on_mouse_entered() -> void:
 		feedback_bus.emit_card_hovered(card_id, card_data, self)
 	if current_state == "idle":
 		set_state("hover")
+	_animate_expand()
 
 
 func _on_mouse_exited() -> void:
@@ -183,6 +195,8 @@ func _on_mouse_exited() -> void:
 		feedback_bus.emit_card_unhovered(card_id, card_data, self)
 	if current_state == "hover":
 		set_state("idle")
+	if not _is_selected:
+		_animate_collapse()
 
 
 func _on_gui_input(event: InputEvent) -> void:
@@ -193,13 +207,22 @@ func _on_gui_input(event: InputEvent) -> void:
 			clicked_callback.call()
 
 
-func _apply_feedback_transform() -> void:
-	if current_state in ["hover", "selected"]:
-		scale = HOVER_SCALE
-		z_index = 20
-	else:
-		scale = Vector2.ONE
-		z_index = 0
+func _animate_expand() -> void:
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_tween.parallel().tween_property(self, "position:y", 0.0, 0.2)
+	_tween.parallel().tween_property(self, "scale", Vector2(1.05, 1.05), 0.2)
+	_tween.parallel().tween_property(self, "z_index", 30, 0.15)
+
+
+func _animate_collapse() -> void:
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_tween.parallel().tween_property(self, "position:y", COLLAPSED_OFFSET, 0.2)
+	_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.2)
+	_tween.parallel().tween_property(self, "z_index", 0, 0.15)
 
 
 func _apply_art_assets() -> void:

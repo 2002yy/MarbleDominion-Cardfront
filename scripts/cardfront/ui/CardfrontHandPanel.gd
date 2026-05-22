@@ -12,9 +12,11 @@ var selection_controller = null
 var economy_system = null
 var feedback_bus = null
 
-const PANEL_HEIGHT: float = 160.0
+const PANEL_HEIGHT: float = 80.0
+const CARD_H: float = 150.0
 const CARD_GAP: float = 8.0
 const CARD_W: float = 130.0
+const COLLAPSED_Y_OFFSET: float = 70.0
 
 
 func setup(new_card_system, new_resource_states: Dictionary, new_economy_system, mode_name: String, view_size: Vector2, new_feedback_bus = null) -> void:
@@ -33,15 +35,14 @@ func setup(new_card_system, new_resource_states: Dictionary, new_economy_system,
 
 func _layout_panel(view_size: Vector2) -> void:
 	var panel_bg: Control = $PanelBg as Control
-	var hbox: HBoxContainer = $CardHBox as HBoxContainer
+	var container: Control = $CardHBox as Control
 	var panel_w: float = CARD_W * 4 + CARD_GAP * 3 + 24.0
 	var panel_x: float = (view_size.x - panel_w) * 0.5
 	var panel_y: float = view_size.y - PANEL_HEIGHT - 8.0
 	panel_bg.position = Vector2(panel_x, panel_y)
 	panel_bg.size = Vector2(panel_w, PANEL_HEIGHT)
 	_apply_art_assets(panel_bg)
-	hbox.position = Vector2(panel_x + 12.0, panel_y + 5.0)
-	hbox.size = Vector2(panel_w - 24.0, PANEL_HEIGHT - 10.0)
+	container.position = Vector2(panel_x + 12.0, view_size.y - CARD_H - 8.0)
 
 
 func _populate_cards() -> void:
@@ -50,14 +51,15 @@ func _populate_cards() -> void:
 			view.queue_free()
 	_card_views.clear()
 
+	var container: Control = $CardHBox as Control
 	for i in range(4):
 		var view: CardfrontCardView = CardViewScene.instantiate()
 		view.name = "CardView_%d" % i
-		view.custom_minimum_size = Vector2(CARD_W, PANEL_HEIGHT - 10.0)
-		view.size = view.custom_minimum_size
+		view.size = Vector2(CARD_W, CARD_H)
+		view.custom_minimum_size = Vector2(CARD_W, CARD_H)
+		view.position = Vector2(float(i) * (CARD_W + CARD_GAP), COLLAPSED_Y_OFFSET)
 		view.set_feedback_bus(feedback_bus)
-		var hbox: HBoxContainer = $CardHBox as HBoxContainer
-		hbox.add_child(view)
+		container.add_child(view)
 		_card_views.append(view)
 
 
