@@ -6,7 +6,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.3-debug-panel-toggle`
+- Current completed slice: `v0.2.3a-cardview-input-hotfix`
 - Current slice: `v0.2.4-ui-art-resource-pass`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
@@ -18,7 +18,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - Formal HUD components:
   - `CardfrontTopResourceBar.gd` — top-left Energy/Parts display, signal-driven.
   - `CardfrontHandPanel.gd` — bottom-center 4-card hand panel.
-  - `CardfrontCardView.gd` — card display with `CardArt` TextureRect + placeholder fallback.
+  - `CardfrontCardView.gd` — card display with `CardArt` TextureRect + placeholder fallback; root receives mouse input, decorative children ignore input.
   - `CardfrontCardSelectionController.gd` — click → select → preview → battlefield click → play.
   - `CardfrontTargetPreviewLayer.gd` — highlights valid cells on card selection.
 - Interaction feedback:
@@ -43,7 +43,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.3-debug-panel-toggle: Cardfront debug action panel is hidden by default, F3 toggles it in non-release Cardfront builds, and BallWar mode remains isolated.
 - Added `CardfrontUiAssetRegistry.gd` to centralize UI art paths before broader v0.2.4 skin work.
 - Hand panel, card view, resource bar, detail popup, toast layer, and region info panel now consult the registry and fall back to current procedural styling.
-- CI matrix now includes `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, and `CardfrontUiArtSceneTestRunner.gd`.
+- v0.2.3a-cardview-input-hotfix: `CardfrontCardView.tscn` root now uses `MOUSE_FILTER_STOP`, decorative children use `MOUSE_FILTER_IGNORE`, and hover/click dispatch reaches `CardfrontFeedbackBus`.
+- CI matrix now includes `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`, and `CardfrontCardViewInteractionConfigTestRunner.gd`.
 
 ## 4. Next Steps / 下一步
 
@@ -86,6 +87,7 @@ Cardfront formal UI + target preview:
 - `CardfrontDebugPanelToggleTestRunner.gd`
 - `CardfrontUiAssetRegistryTestRunner.gd`
 - `CardfrontUiArtSceneTestRunner.gd`
+- `CardfrontCardViewInteractionConfigTestRunner.gd`
 
 Cardfront fire/effects:
 

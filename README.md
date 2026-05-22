@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.3-debug-panel-toggle**.
+The current completed slice is **v0.2.3a-cardview-input-hotfix**.
 Current next slice: **v0.2.4-ui-art-resource-pass**.
-Formal HUD (resource bar + hand panel) connected; card hover details, invalid-target/resource toasts, and card-success VFX bridge are active; the left Cardfront debug panel is hidden by default and available through F3 in non-release builds; UI art paths are centralized in `CardfrontUiAssetRegistry.gd` with fallback styling.
+Formal HUD (resource bar + hand panel) connected; card hover details, invalid-target/resource toasts, and card-success VFX bridge are active; card views now explicitly receive root mouse input while decorative children ignore it; the left Cardfront debug panel is hidden by default and available through F3 in non-release builds; UI art paths are centralized in `CardfrontUiAssetRegistry.gd` with fallback styling.
 
 ## Current Slice / 当前阶段
 
@@ -46,6 +46,9 @@ Implemented in this repository:
 - Cardfront UI art registry:
   - `CardfrontUiAssetRegistry` centralizes Kenney/Wenrexa/Game-Icons/font paths.
   - Current UI scripts use registry-backed style/font hooks with ColorRect / StyleBoxFlat fallback.
+- Cardfront card interaction hotfix:
+  - `CardfrontCardView.tscn` root uses `MOUSE_FILTER_STOP`; decorative children use `MOUSE_FILTER_IGNORE`.
+  - `CardfrontCardViewInteractionConfigTestRunner.gd` verifies hover/click signal routing to `CardfrontFeedbackBus`.
 - Cardfront fire director:
   - Generates low-frequency `CardfrontFireIntent` records.
   - Prioritizes target bias from Calibrated Shot when present.
@@ -65,7 +68,7 @@ Implemented in this repository:
 - New headless runner: `CardfrontFireDirectorTestRunner.gd`.
 - New headless runner: `CardfrontControlChamberDecouplingTestRunner.gd`.
 - New headless runner: `PioneerBeaconLiteTestRunner.gd`.
-- New headless runners: `CardfrontCardDetailPopupTestRunner.gd`, `CardfrontCardFeedbackTestRunner.gd`, `CardfrontToastLayerTestRunner.gd`, `CardfrontEffectVisualBridgeTestRunner.gd`, `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`.
+- New headless runners: `CardfrontCardDetailPopupTestRunner.gd`, `CardfrontCardFeedbackTestRunner.gd`, `CardfrontToastLayerTestRunner.gd`, `CardfrontEffectVisualBridgeTestRunner.gd`, `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`, `CardfrontCardViewInteractionConfigTestRunner.gd`.
 
 Not implemented yet:
 
@@ -168,12 +171,14 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDebugPanelToggleTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontUiAssetRegistryTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontUiArtSceneTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontCardViewInteractionConfigTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for the v0.2.3 debug-panel + UI registry subset:
+Latest local validation for the v0.2.3a card-view input hotfix:
 
+- `CardfrontCardViewInteractionConfigTestRunner.gd`: 35 checks passed.
 - `CardfrontCardDetailPopupTestRunner.gd`: 4 checks passed.
 - `CardfrontCardFeedbackTestRunner.gd`: 6 checks passed.
 - `CardfrontToastLayerTestRunner.gd`: 4 checks passed.

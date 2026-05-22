@@ -6,39 +6,46 @@
 script = ExtResource("1_view")
 size = Vector2(130, 150)
 custom_minimum_size = Vector2(130, 150)
-mouse_filter = 2
+mouse_filter = 0
 
 [node name="CardBorder" type="ColorRect" parent="."]
 size = Vector2(130, 150)
+mouse_filter = 2
 color = Color(0.12, 0.18, 0.30, 0.0)
 
 [node name="Bg" type="ColorRect" parent="."]
 position = Vector2(1, 1)
 size = Vector2(128, 148)
+mouse_filter = 2
 color = Color(0.06, 0.10, 0.18, 0.92)
 
 [node name="HoverBorder" type="ColorRect" parent="."]
 size = Vector2(130, 150)
+mouse_filter = 2
 color = Color(0.62, 0.90, 1.0, 0.0)
 
 [node name="SelectedBorder" type="ColorRect" parent="."]
 position = Vector2(1, 1)
 size = Vector2(128, 148)
+mouse_filter = 2
 color = Color(0.62, 0.90, 1.0, 0.0)
 
 [node name="CardIcon" type="ColorRect" parent="."]
 position = Vector2(25, 12)
 size = Vector2(80, 56)
+mouse_filter = 2
 color = Color(0.10, 0.16, 0.28, 0.75)
 
 [node name="CardIconBorder" type="ColorRect" parent="."]
 position = Vector2(24, 11)
 size = Vector2(82, 58)
+mouse_filter = 2
 color = Color(0.62, 0.90, 1.0, 0.15)
 
 [node name="CardIconLabel" type="Label" parent="."]
 position = Vector2(25, 22)
 size = Vector2(80, 36)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1.0, 1.0, 1.0, 0.8)
 horizontal_alignment = 1
@@ -47,6 +54,7 @@ vertical_alignment = 1
 [node name="CardArt" type="TextureRect" parent="."]
 position = Vector2(25, 12)
 size = Vector2(80, 56)
+mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 visible = false
@@ -54,6 +62,7 @@ visible = false
 [node name="CardName" type="Label" parent="."]
 position = Vector2(6, 74)
 size = Vector2(118, 20)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.95, 0.97, 1.0, 1.0)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
@@ -63,6 +72,7 @@ horizontal_alignment = 1
 [node name="CostEnergy" type="Label" parent="."]
 position = Vector2(6, 96)
 size = Vector2(60, 16)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.62, 0.90, 1.0, 1.0)
 horizontal_alignment = 2
@@ -70,12 +80,14 @@ horizontal_alignment = 2
 [node name="CostParts" type="Label" parent="."]
 position = Vector2(66, 96)
 size = Vector2(60, 16)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(1.0, 0.82, 0.36, 1.0)
 
 [node name="TargetLabel" type="Label" parent="."]
 position = Vector2(6, 116)
 size = Vector2(118, 16)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(0.55, 0.65, 0.82, 1.0)
 horizontal_alignment = 1
@@ -83,6 +95,7 @@ horizontal_alignment = 1
 [node name="StatusLabel" type="Label" parent="."]
 position = Vector2(6, 133)
 size = Vector2(118, 14)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 9
 theme_override_colors/font_color = Color(0.62, 0.68, 0.80, 1.0)
 horizontal_alignment = 1

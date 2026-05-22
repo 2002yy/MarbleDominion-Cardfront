@@ -72,6 +72,7 @@ jobs:
               CardfrontDebugPanelToggleTestRunner.gd
               CardfrontUiAssetRegistryTestRunner.gd
               CardfrontUiArtSceneTestRunner.gd
+              CardfrontCardViewInteractionConfigTestRunner.gd
           - batch: Cardfront performance budget
             scripts: |
               CardfrontPerformanceSmokeTestRunner.gd
