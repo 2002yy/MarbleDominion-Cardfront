@@ -6,7 +6,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.4b-card-thumbnail-pass`
+- Current completed slice: `v0.2.4a.1-resource-minibar-cleanup`
 - Current slice: `v0.2.4c-ui-credits-and-asset-doc-sync`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
@@ -33,6 +33,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
   - `CardfrontUiAssetRegistry.gd` — centralized Kenney/Wenrexa/Game-Icons/font path registry with ResourceLoader/fallback helpers.
   - v0.2.4a: TopResourceBar uses TextureRect icons (energy/parts) with registry-backed fallback (emoji text if texture missing).
   - v0.2.4a: CardView uses `card_frame` Panel style (CardBorder changed to Panel) and Bg alpha reduced to 0.40 when `card_bg` texture loads.
+- v0.2.4a.1: TopResourceBar simplified to compact minibar: removed Name labels ("能量"/"零件"), removed YieldLabel, added fallback Symbol labels (⚡/⚙) that toggle visibility with TextureRect icons. Container width halved (360→220). No gameplay or card-value changes.
   - All Cardfront UI scenes now use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback.
 - `CardVisualRegistry.gd` maps card IDs 1001-1004 to illustration paths under `assets/cardfront_runtime/卡牌插图_cards/512/` and thumbnail paths under `assets/cardfront_runtime/卡牌插图_cards/256/`.
   - `get_texture_path()` returns 512 full-art path; `get_thumbnail_path()` returns 256 thumbnail path.
@@ -54,6 +55,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.3.3-warning-hud-hand-motion-prepass: GDScript warning cleanup (show/name/tier shadowing, integer division); CardfrontHUD as standalone scene with legacy BallWar HUD nodes hidden in Cardfront mode; hand panel collapsed to 80px height (was 160px) with cards sunk at 70px offset; hover Tween expand/collapse animation (y→0, scale→1.05, z_index→30); selected cards stay expanded after mouse exit; F3 Debug hint relocated from top-left (20,136) to bottom-right (1010,660) with reduced visibility.
 - v0.2.4a-real-ui-art-scene-pass: TopResourceBar uses TextureRect icons (icon_energy SVG, icon_parts SVG) with registry-backed emoji fallback; CardView CardBorder changed to Panel for card_frame texture, Bg alpha lowered to 0.40 when card_bg exists; all Cardfront UI scenes use registry-backed style/font/icon hooks; no gameplay or card-value changes.
 - v0.2.4b-card-thumbnail-pass: 256px thumbnails generated for cards 1001-1004 under `assets/cardfront_runtime/卡牌插图_cards/256/` via Godot headless script (`generate_card_thumbnails.gd`). `CardVisualRegistry.gd` extended with `RUNTIME_BASE_THUMB`, `get_thumbnail_path()`, `has_thumbnail()`, and `thumbnail` fields. `CardfrontCardView.gd` uses `_load_card_texture()` with fallback chain: thumbnail → 512 full art → placeholder. `get_texture_path()` preserved for hover detail. Game-Icons credits untouched.
+- v0.2.4a.1-resource-minibar-cleanup: TopResourceBar simplified to compact minibar. Removed Name labels ("能量"/"零件") and YieldLabel ("本秒无产出"/"+x/s"). Added fallback Symbol labels (⚡/⚙) that toggle visibility with TextureRect icons. Container width halved (360→220) for compact layout. DebugHint unchanged at (1010, 660). No gameplay or card-value changes.
 
 ## 4. Next Steps / 下一步
 

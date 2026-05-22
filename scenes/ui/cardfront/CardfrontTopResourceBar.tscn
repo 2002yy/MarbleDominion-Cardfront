@@ -8,7 +8,7 @@ script = ExtResource("1_bar")
 
 [node name="Margin" type="MarginContainer" parent="."]
 position = Vector2(0, 98)
-size = Vector2(360, 36)
+size = Vector2(220, 36)
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 4
 
@@ -19,7 +19,7 @@ theme_override_constants/separation = 10
 self_modulate = Color(0.06, 0.10, 0.18, 0.88)
 
 [node name="Bg" type="ColorRect" parent="Margin/HBox/EnergyBox"]
-size = Vector2(160, 28)
+size = Vector2(80, 28)
 color = Color(0.04, 0.07, 0.13, 0.95)
 
 [node name="Margin2" type="MarginContainer" parent="Margin/HBox/EnergyBox"]
@@ -39,10 +39,10 @@ size = Vector2(18, 18)
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Name" type="Label" parent="Margin/HBox/EnergyBox/Margin2/Inner"]
-text = "能量"
+[node name="EnergySymbol" type="Label" parent="Margin/HBox/EnergyBox/Margin2/Inner"]
+text = "⚡"
 theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.62, 0.90, 1.0, 1.0)
+theme_override_colors/font_color = Color(0.72, 0.88, 1.0, 1.0)
 
 [node name="Value" type="Label" parent="Margin/HBox/EnergyBox/Margin2/Inner"]
 text = "0"
@@ -55,7 +55,7 @@ theme_override_constants/outline_size = 1
 self_modulate = Color(0.06, 0.10, 0.18, 0.88)
 
 [node name="Bg" type="ColorRect" parent="Margin/HBox/PartsBox"]
-size = Vector2(160, 28)
+size = Vector2(80, 28)
 color = Color(0.04, 0.07, 0.13, 0.95)
 
 [node name="Margin2" type="MarginContainer" parent="Margin/HBox/PartsBox"]
@@ -75,8 +75,8 @@ size = Vector2(18, 18)
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Name" type="Label" parent="Margin/HBox/PartsBox/Margin2/Inner"]
-text = "零件"
+[node name="PartsSymbol" type="Label" parent="Margin/HBox/PartsBox/Margin2/Inner"]
+text = "⚙"
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(1.0, 0.82, 0.36, 1.0)
 
@@ -86,11 +86,6 @@ theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.6)
 theme_override_constants/outline_size = 1
-
-[node name="YieldLabel" type="Label" parent="Margin/HBox"]
-text = ""
-theme_override_font_sizes/font_size = 11
-theme_override_colors/font_color = Color(0.55, 0.62, 0.75, 1.0)
 
 [node name="DebugHint" type="Label" parent="."]
 visible = false
