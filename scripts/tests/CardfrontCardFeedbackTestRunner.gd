@@ -1,6 +1,8 @@
 extends SceneTree
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const CardfrontCardViewScene = preload("res://scenes/ui/cardfront/CardfrontCardView.tscn")
+const CardfrontFeedbackBusScript = preload("res://scripts/cardfront/ui/CardfrontFeedbackBus.gd")
 
 var _assert: TestAssert
 
@@ -18,6 +20,7 @@ func _run() -> void:
 	_test_invalid_target_signal()
 	_test_success_signal()
 	_test_fail_signal()
+	await _test_card_view_scene_input_routes_to_feedback_bus()
 
 	GameConfig.reset_runtime_defaults()
 	await _flush()
@@ -61,6 +64,18 @@ func _first_valid_cell(main) -> Vector2i:
 	if cells.is_empty():
 		return Vector2i(-999, -999)
 	return cells[0]
+
+
+func _sample_card_view_data() -> Dictionary:
+	return {
+		"id": 1001,
+		"card_name": "Frontline Fortify",
+		"type": "structure",
+		"target_type": "owned_border",
+		"energy_cost": 0,
+		"parts_cost": 0,
+		"used": false,
+	}
 
 
 func _test_selected_signal() -> void:
@@ -122,3 +137,47 @@ func _test_fail_signal() -> void:
 	_assert.eq(signal_counts.fail, 1, "feedback: card_play_failed should fire once")
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
+
+
+func _test_card_view_scene_input_routes_to_feedback_bus() -> void:
+	var view = CardfrontCardViewScene.instantiate()
+	get_root().add_child(view)
+	await _flush()
+
+	var bus = CardfrontFeedbackBusScript.new()
+	get_root().add_child(bus)
+	var signal_counts := {"hovered": 0, "clicked": 0, "callback": 0}
+	bus.card_hovered.connect(func(card_id: int, _card_data: Dictionary, card_view: Control) -> void:
+		if card_id == 1001 and card_view == view:
+			signal_counts["hovered"] += 1
+	)
+	bus.card_clicked.connect(func(card_id: int, _card_data: Dictionary, card_view: Control) -> void:
+		if card_id == 1001 and card_view == view:
+			signal_counts["clicked"] += 1
+	)
+	view.set_feedback_bus(bus)
+	view.clicked_callback = func() -> void:
+		signal_counts["callback"] += 1
+	view.bind(_sample_card_view_data(), null)
+
+	_assert.eq(view.mouse_filter, Control.MOUSE_FILTER_STOP, "feedback: card view root should receive mouse input")
+	for node_name in ["CardBorder", "Bg", "CardArt", "CardName", "CostEnergy", "StatusLabel"]:
+		var child = view.get_node_or_null(node_name)
+		_assert.that(child is Control, "feedback: %s should be a Control" % node_name)
+		if child is Control:
+			_assert.eq((child as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE, "feedback: %s should not intercept card input" % node_name)
+	_assert.that(view.mouse_entered.is_connected(Callable(view, "_on_mouse_entered")), "feedback: card view mouse_entered should be connected")
+	_assert.that(view.gui_input.is_connected(Callable(view, "_on_gui_input")), "feedback: card view gui_input should be connected")
+
+	view.emit_signal("mouse_entered")
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	view.emit_signal("gui_input", event)
+
+	_assert.eq(signal_counts.hovered, 1, "feedback: CardView hover should emit through feedback bus")
+	_assert.eq(signal_counts.clicked, 1, "feedback: CardView click should emit through feedback bus")
+	_assert.eq(signal_counts.callback, 1, "feedback: CardView click should preserve clicked_callback")
+
+	TestFixtures.cleanup_node(view)
+	TestFixtures.cleanup_node(bus)

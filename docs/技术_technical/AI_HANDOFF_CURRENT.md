@@ -6,7 +6,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.3a-cardview-input-hotfix`
+- Current completed slice: `v0.2.3.1-cardview-mouse-hotfix`
 - Current slice: `v0.2.4-ui-art-resource-pass`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
@@ -43,7 +43,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.3-debug-panel-toggle: Cardfront debug action panel is hidden by default, F3 toggles it in non-release Cardfront builds, and BallWar mode remains isolated.
 - Added `CardfrontUiAssetRegistry.gd` to centralize UI art paths before broader v0.2.4 skin work.
 - Hand panel, card view, resource bar, detail popup, toast layer, and region info panel now consult the registry and fall back to current procedural styling.
-- v0.2.3a-cardview-input-hotfix: `CardfrontCardView.tscn` root now uses `MOUSE_FILTER_STOP`, decorative children use `MOUSE_FILTER_IGNORE`, and hover/click dispatch reaches `CardfrontFeedbackBus`.
+- v0.2.3.1-cardview-mouse-hotfix: `CardfrontCardView.tscn` root now uses `MOUSE_FILTER_STOP`, decorative children use `MOUSE_FILTER_IGNORE`, and hover/click dispatch reaches `CardfrontFeedbackBus`.
 - CI matrix now includes `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`, and `CardfrontCardViewInteractionConfigTestRunner.gd`.
 
 ## 4. Next Steps / 下一步

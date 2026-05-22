@@ -6,7 +6,7 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.3a-cardview-input-hotfix**.
+The current completed slice is **v0.2.3.1-cardview-mouse-hotfix**.
 Current next slice: **v0.2.4-ui-art-resource-pass**.
 Formal HUD (resource bar + hand panel) connected; card hover details, invalid-target/resource toasts, and card-success VFX bridge are active; card views now explicitly receive root mouse input while decorative children ignore it; the left Cardfront debug panel is hidden by default and available through F3 in non-release builds; UI art paths are centralized in `CardfrontUiAssetRegistry.gd` with fallback styling.
 
@@ -176,11 +176,11 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for the v0.2.3a card-view input hotfix:
+Latest local validation for the v0.2.3.1 card-view mouse hotfix:
 
 - `CardfrontCardViewInteractionConfigTestRunner.gd`: 35 checks passed.
 - `CardfrontCardDetailPopupTestRunner.gd`: 4 checks passed.
-- `CardfrontCardFeedbackTestRunner.gd`: 6 checks passed.
+- `CardfrontCardFeedbackTestRunner.gd`: 24 checks passed.
 - `CardfrontToastLayerTestRunner.gd`: 4 checks passed.
 - `CardfrontEffectVisualBridgeTestRunner.gd`: 5 checks passed.
 - `CardfrontDebugPanelToggleTestRunner.gd`: 7 checks passed.
