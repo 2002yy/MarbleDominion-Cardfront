@@ -70,20 +70,13 @@ func bind(data: Dictionary, resource_state) -> void:
 	icon_label.text = str(ph.icon)
 
 	var card_art: TextureRect = $CardArt as TextureRect
-	var texture_path: String = CardVisualRegistryScript.get_texture_path(card_id)
-	if texture_path != "" and ResourceLoader.exists(texture_path):
-		var tex = load(texture_path)
-		if tex != null:
-			card_art.texture = tex
-			card_art.visible = true
-			card_icon.visible = false
-			icon_border.visible = false
-			icon_label.visible = false
-		else:
-			card_art.visible = false
-			card_icon.visible = true
-			icon_border.visible = true
-			icon_label.visible = true
+	var tex: Texture2D = _load_card_texture(card_id)
+	if tex != null:
+		card_art.texture = tex
+		card_art.visible = true
+		card_icon.visible = false
+		icon_border.visible = false
+		icon_label.visible = false
 	else:
 		card_art.visible = false
 		card_icon.visible = true
@@ -243,3 +236,18 @@ func _apply_art_assets() -> void:
 	var card_border = get_node_or_null("CardBorder")
 	if card_border is Panel:
 		(card_border as Panel).add_theme_stylebox_override("panel", frame_style)
+
+
+func _load_card_texture(card_id: int) -> Texture2D:
+	# Priority: thumbnail -> 512 full art -> fallback null (placeholder)
+	var thumb_path: String = CardVisualRegistryScript.get_thumbnail_path(card_id)
+	if thumb_path != "" and ResourceLoader.exists(thumb_path):
+		var tex = load(thumb_path)
+		if tex != null:
+			return tex
+	var full_path: String = CardVisualRegistryScript.get_texture_path(card_id)
+	if full_path != "" and ResourceLoader.exists(full_path):
+		var tex = load(full_path)
+		if tex != null:
+			return tex
+	return null

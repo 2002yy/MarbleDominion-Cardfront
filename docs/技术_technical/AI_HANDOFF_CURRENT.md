@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.4a-real-ui-art-scene-pass`
-- Current slice: `v0.2.4b-card-thumbnail-pass`
+- Current completed slice: `v0.2.4b-card-thumbnail-pass`
+- Current slice: `v0.2.4c-ui-credits-and-asset-doc-sync`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -34,8 +34,10 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
   - v0.2.4a: TopResourceBar uses TextureRect icons (energy/parts) with registry-backed fallback (emoji text if texture missing).
   - v0.2.4a: CardView uses `card_frame` Panel style (CardBorder changed to Panel) and Bg alpha reduced to 0.40 when `card_bg` texture loads.
   - All Cardfront UI scenes now use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback.
-- `CardVisualRegistry.gd` maps card IDs 1001-1004 to illustration paths under `assets/cardfront_runtime/卡牌插图_cards/512/`.
-  - 3 of 4 images exist (frontline_fortify, calibrated_shot, morale_shift). Pioneer beacon image is pending generation; placeholder fallback works.
+- `CardVisualRegistry.gd` maps card IDs 1001-1004 to illustration paths under `assets/cardfront_runtime/卡牌插图_cards/512/` and thumbnail paths under `assets/cardfront_runtime/卡牌插图_cards/256/`.
+  - `get_texture_path()` returns 512 full-art path; `get_thumbnail_path()` returns 256 thumbnail path.
+  - `has_thumbnail()` checks if thumbnail is registered.
+  - All 4 cards have both 512 full art and 256 thumbnail images on disk.
 - `Main.gd:_unhandled_input()` converts mouse clicks to `selection_controller.on_battlefield_clicked(cell)`.
 - `CardfrontFireDirector.gd` has signals: `fire_tick`, `fire_requested`, `fire_issued`, `fire_skipped`.
 - Overlay layers (`RegionOverlay`, `FortifyOverlay`) use ImageTexture caching.
@@ -51,20 +53,19 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - CI matrix now includes `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`, and `CardfrontCardViewInteractionConfigTestRunner.gd`.
 - v0.2.3.3-warning-hud-hand-motion-prepass: GDScript warning cleanup (show/name/tier shadowing, integer division); CardfrontHUD as standalone scene with legacy BallWar HUD nodes hidden in Cardfront mode; hand panel collapsed to 80px height (was 160px) with cards sunk at 70px offset; hover Tween expand/collapse animation (y→0, scale→1.05, z_index→30); selected cards stay expanded after mouse exit; F3 Debug hint relocated from top-left (20,136) to bottom-right (1010,660) with reduced visibility.
 - v0.2.4a-real-ui-art-scene-pass: TopResourceBar uses TextureRect icons (icon_energy SVG, icon_parts SVG) with registry-backed emoji fallback; CardView CardBorder changed to Panel for card_frame texture, Bg alpha lowered to 0.40 when card_bg exists; all Cardfront UI scenes use registry-backed style/font/icon hooks; no gameplay or card-value changes.
+- v0.2.4b-card-thumbnail-pass: 256px thumbnails generated for cards 1001-1004 under `assets/cardfront_runtime/卡牌插图_cards/256/` via Godot headless script (`generate_card_thumbnails.gd`). `CardVisualRegistry.gd` extended with `RUNTIME_BASE_THUMB`, `get_thumbnail_path()`, `has_thumbnail()`, and `thumbnail` fields. `CardfrontCardView.gd` uses `_load_card_texture()` with fallback chain: thumbnail → 512 full art → placeholder. `get_texture_path()` preserved for hover detail. Game-Icons credits untouched.
 
 ## 4. Next Steps / 下一步
 
-Ship `v0.2.4b-card-thumbnail-pass`:
+Ship `v0.2.4c-ui-credits-and-asset-doc-sync`:
 
-- Generate/register 128/256 thumbnails for hand cards using `CardVisualRegistry.thumbnail`.
-- Keep 512px art reserved for hover detail / full-card views.
+- Keep credits and generated asset manifest aligned after UI art and thumbnail wiring.
 - Preserve Game-Icons credits.
 - Keep BallWar mode unchanged.
 - Do not add cards, Deckbuilder, AI Commander, card-value changes, or full Cardfront save/load in this slice.
 
 Beyond v0.2.4:
 
-- Generate/register hand-card thumbnails for `CardVisualRegistry.thumbnail`.
 - Deckbuilder, AI Commander, and full Cardfront save/load remain deferred.
 
 ## 5. Do Not Do / 不要做什么

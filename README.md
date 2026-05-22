@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.4a-real-ui-art-scene-pass**.
-Current next slice: **v0.2.4b-card-thumbnail-pass**.
-TopResourceBar uses TextureRect icons (energy/parts) with registry-backed fallback; CardView uses card_frame Panel and reduced Bg alpha for texture visibility; all Cardfront UI scenes use registry-backed style/font/icon hooks; no gameplay or card-value changes.
+The current completed slice is **v0.2.4b-card-thumbnail-pass**.
+Current next slice: **v0.2.4c-ui-credits-and-asset-doc-sync**.
+TopResourceBar uses TextureRect icons (energy/parts) with registry-backed fallback; CardView uses card_frame Panel and reduced Bg alpha for texture visibility; all Cardfront UI scenes use registry-backed style/font/icon hooks; hand cards load 256px thumbnails (fallback chain: thumbnail → 512 full art → placeholder); no gameplay or card-value changes.
 
 ## Current Slice / 当前阶段
 
@@ -49,6 +49,12 @@ Implemented in this repository:
   - TopResourceBar uses TextureRect icons (icon_energy/icon_parts SVG) with registry-backed emoji fallback.
   - CardView CardBorder changed to Panel for `card_frame` texture; Bg alpha lowered to 0.40 when `card_bg` exists.
   - All Cardfront UI scenes use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback.
+- Cardfront card thumbnail pass (v0.2.4b):
+  - 256px thumbnails generated for cards 1001-1004 under `assets/cardfront_runtime/卡牌插图_cards/256/`.
+  - `CardVisualRegistry.gd` extended with `RUNTIME_BASE_THUMB`, `get_thumbnail_path()`, `has_thumbnail()`, and `thumbnail` fields.
+  - `CardfrontCardView.gd` uses thumbnail-first loading with fallback chain: thumbnail → 512 full art → placeholder.
+  - `get_texture_path()` preserved for hover detail / full-card views.
+  - Game-Icons credits preserved in `ASSET_SOURCES_AND_LICENSES.md`.
 - Cardfront card interaction hotfix:
   - `CardfrontCardView.tscn` root uses `MOUSE_FILTER_STOP`; decorative children use `MOUSE_FILTER_IGNORE`.
   - `CardfrontCardViewInteractionConfigTestRunner.gd` verifies hover/click signal routing to `CardfrontFeedbackBus`.

@@ -8,14 +8,14 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.4a-real-ui-art-scene-pass`
-- Next slice: `v0.2.4b-card-thumbnail-pass`
+- Current completed slice: `v0.2.4b-card-thumbnail-pass`
+- Next slice: `v0.2.4c-ui-credits-and-asset-doc-sync`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - Top resource bar uses TextureRect icons (energy/parts) with registry-backed fallback
   - CardView uses card_frame Panel and reduced Bg alpha for texture visibility
   - All UI scenes use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback
-  - next: generate/register 128/256 thumbnails for hand cards
+  - Hand cards load 256px thumbnails (fallback chain: thumbnail → 512 full art → placeholder)
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
 
@@ -54,7 +54,7 @@ This file is the single place for project direction and phase status.
 | `v0.2.3.2-debug-input-route-hardening` | Done / 已完成 | Keep debug action panel hidden, route F3 through parsed input, show small non-release `F3 Debug` hint, keep release/BallWar isolated. |
 | `v0.2.3.3-warning-hud-hand-motion-prepass` | Done / 已完成 | GDScript warning cleanup; CardfrontHUD as standalone scene, legacy BallWar HUD hidden in Cardfront mode; hand panel collapsed to 80px + hover Tween expand/collapse; DebugHint relocated to bottom-right; regressions all green. |
 | `v0.2.4a-real-ui-art-scene-pass` | Done / 已完成 | TopResourceBar uses TextureRect icons (energy/parts) with registry-backed fallback; CardView uses card_frame Panel and reduced Bg alpha; all scenes use registry-backed style/font hooks with ColorRect / StyleBoxFlat fallback; no gameplay or card-value changes. |
-| `v0.2.4b-card-thumbnail-pass` | Next / 下一步 | Use `CardVisualRegistry.thumbnail` for hand cards and reserve 512 card art for detail/full-card views. |
+| `v0.2.4b-card-thumbnail-pass` | Done / 已完成 | 256px thumbnails for cards 1001-1004; CardVisualRegistry extended with thumbnail paths; CardView loads thumbnail → 512 full art → placeholder fallback chain; Game-Icons credits preserved. |
 | `v0.2.4c-ui-credits-and-asset-doc-sync` | Planned / 计划 | Keep credits and generated asset manifest aligned after UI art and thumbnail wiring. |
 
 ## 3. Design Boundaries / 设计边界

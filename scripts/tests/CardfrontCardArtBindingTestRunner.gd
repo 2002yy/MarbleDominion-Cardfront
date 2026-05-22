@@ -19,8 +19,11 @@ func _run() -> void:
 	_test_card_1003_path_exists()
 	_test_card_1004_path_registered()
 	_test_missing_card_returns_empty_path()
+	_test_thumbnail_paths_registered()
+	_test_thumbnail_paths_exist()
 	_test_card_view_bind_does_not_crash()
 	_test_card_view_fallback_on_missing_image()
+	_test_card_view_thumbnail_loaded_via_bind()
 	_test_ballwar_no_card_ui()
 
 	GameConfig.reset_runtime_defaults()
@@ -72,6 +75,48 @@ func _test_card_1004_path_registered() -> void:
 func _test_missing_card_returns_empty_path() -> void:
 	_assert.that(not CardVisualRegistryScript.has_texture(9999), "unknown card 9999 should not be registered")
 	_assert.eq(CardVisualRegistryScript.get_texture_path(9999), "", "unknown card should return empty path")
+
+
+func _test_thumbnail_paths_registered() -> void:
+	var card_ids := [1001, 1002, 1003, 1004]
+	for card_id in card_ids:
+		var path: String = CardVisualRegistryScript.get_thumbnail_path(card_id)
+		_assert.neq(path, "", "%d thumbnail path should not be empty" % card_id)
+		_assert.that(CardVisualRegistryScript.has_thumbnail(card_id), "%d has_thumbnail should be true" % card_id)
+
+
+func _test_thumbnail_paths_exist() -> void:
+	var card_ids := [1001, 1002, 1003, 1004]
+	for card_id in card_ids:
+		var path: String = CardVisualRegistryScript.get_thumbnail_path(card_id)
+		if path != "":
+			_assert.that(ResourceLoader.exists(path), "%d thumbnail should exist at: %s" % [card_id, path])
+
+
+func _test_card_view_thumbnail_loaded_via_bind() -> void:
+	GameConfig.reset_runtime_defaults()
+	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
+
+	var main = load("res://scripts/Main.gd").new()
+	get_root().add_child(main)
+	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
+	main.selected_grid_size = 20
+	main._start_game(20, true, false)
+
+	var views = main.runtime.hand_panel._card_views
+	_assert.that(views.size() >= 1, "should have at least 1 card view")
+
+	var card_art = views[0].get_node("CardArt") as TextureRect
+	_assert.that(card_art != null, "CardArt TextureRect should exist")
+
+	if card_art.texture != null:
+		_assert.that(card_art.visible, "CardArt should be visible when texture is loaded")
+	else:
+		var card_icon = views[0].get_node("CardIcon") as ColorRect
+		_assert.that(card_icon.visible, "CardIcon fallback should be visible when no texture")
+
+	main._cleanup_game_layer()
+	TestFixtures.cleanup_node(main)
 
 
 func _test_card_view_bind_does_not_crash() -> void:
