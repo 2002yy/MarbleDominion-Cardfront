@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.3.2-debug-input-route-hardening**.
+The current completed slice is **v0.2.3.3-warning-hud-hand-motion-prepass**.
 Current next slice: **v0.2.4a-real-ui-art-scene-pass**.
-Formal HUD (resource bar + hand panel) connected; card hover details, invalid-target/resource toasts, and card-success VFX bridge are active; card views now explicitly receive root mouse input while decorative children ignore it; the left Cardfront debug panel is hidden by default and available through parsed F3 input in non-release builds; UI art paths are centralized in `CardfrontUiAssetRegistry.gd` with fallback styling.
+GDScript warning cleanup (show/name/tier shadowing, integer division) done; CardfrontHUD separated as standalone scene, legacy BallWar HUD nodes hidden in Cardfront mode; hand panel collapsed to 80px height with cards sunk at 70px offset, hover Tween expand/collapse animation with z_index→30; F3 Debug hint relocated from top-left to bottom-right corner; all 11 tests pass with 545 checks across 2 new and 9 regression runners.
 
 ## Current Slice / 当前阶段
 
@@ -42,7 +42,7 @@ Implemented in this repository:
   - `CardfrontEffectVisualBridge` maps the 4 existing card successes into existing `CardfrontVfxLayer` effects.
 - Cardfront debug panel:
   - `CardfrontDebugActionPanel` is hidden by default and toggled through the real F3 input route in Cardfront non-release builds.
-  - `CardfrontTopResourceBar` shows a small non-release `F3 Debug` hint; release builds hide both the hint and debug panel route.
+  - `CardfrontTopResourceBar` shows a small non-release `F3 Debug` hint at bottom-right (1010, 660); release builds hide both the hint and debug panel route.
   - Old BallWar modes do not create the Cardfront debug action panel.
 - Cardfront UI art registry:
   - `CardfrontUiAssetRegistry` centralizes Kenney/Wenrexa/Game-Icons/font paths.

@@ -6,7 +6,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.3.2-debug-input-route-hardening`
+- Current completed slice: `v0.2.3.3-warning-hud-hand-motion-prepass`
 - Current slice: `v0.2.4a-real-ui-art-scene-pass`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
@@ -47,6 +47,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.3.1-cardview-mouse-hotfix: `CardfrontCardView.tscn` root now uses `MOUSE_FILTER_STOP`, decorative children use `MOUSE_FILTER_IGNORE`, and hover/click dispatch reaches `CardfrontFeedbackBus`.
 - v0.2.3.2-debug-input-route-hardening: F3 toggle is covered through `Input.parse_input_event`, the formal UI shows a small non-release `F3 Debug` hint, and release/BallWar paths stay hidden.
 - CI matrix now includes `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`, and `CardfrontCardViewInteractionConfigTestRunner.gd`.
+- v0.2.3.3-warning-hud-hand-motion-prepass: GDScript warning cleanup (show/name/tier shadowing, integer division); CardfrontHUD as standalone scene with legacy BallWar HUD nodes hidden in Cardfront mode; hand panel collapsed to 80px height (was 160px) with cards sunk at 70px offset; hover Tween expand/collapse animation (y→0, scale→1.05, z_index→30); selected cards stay expanded after mouse exit; F3 Debug hint relocated from top-left (20,136) to bottom-right (1010,660) with reduced visibility.
 
 ## 4. Next Steps / 下一步
 

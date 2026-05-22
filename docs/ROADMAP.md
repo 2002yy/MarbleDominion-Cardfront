@@ -8,13 +8,14 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.3.2-debug-input-route-hardening`
+- Current completed slice: `v0.2.3.3-warning-hud-hand-motion-prepass`
 - Next slice: `v0.2.4a-real-ui-art-scene-pass`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
-  - formal Cardfront HUD components (resource bar, hand panel, hover details, toasts) leading the play surface
-  - FireDirector signal seams for testability and external listener hooks
-  - overlay performance via ImageTexture caching instead of per-cell draw_rect
+  - GDScript warning cleanup (show/name/tier shadowing, integer division) done
+  - CardfrontHUD separated as standalone scene; legacy BallWar HUD nodes hidden in Cardfront mode
+  - hand panel collapsed to 80px height with Tween hover expand/collapse animation
+  - F3 Debug hint relocated to bottom-right corner
   - next: use registered art resources in real UI scenes without changing gameplay
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
@@ -51,7 +52,8 @@ This file is the single place for project direction and phase status.
 | `v0.2.2e-card-interaction-feedback-pass` | Done / 已完成 | Add `CardfrontFeedbackBus`, hover detail popup, invalid/success/failure toast layer, card hover/click feedback, and `CardfrontEffectVisualBridge` to map the 4 existing card successes into `CardfrontVfxLayer`. No card expansion, Deckbuilder, AI Commander, target-rule, or card-value changes. |
 | `v0.2.3-debug-panel-toggle` | Done / 已完成 | Keep the Cardfront debug action panel for development, hide it by default, and expose F3 toggle only in Cardfront non-release builds. Adds `CardfrontUiAssetRegistry` prep and registry-backed UI style/font fallbacks. |
 | `v0.2.3.1-cardview-mouse-hotfix` | Done / 已完成 | Fix `CardfrontCardView.tscn` mouse input routing: root receives hover/click, decorative children ignore mouse input, and CI covers feedback-bus hover/click dispatch. |
-| `v0.2.3.2-debug-input-route-hardening` | Done / 已完成 | Keep the debug action panel hidden by default, route F3 through parsed input instead of direct method calls, show a small non-release `F3 Debug` hint, and keep release/BallWar isolated. |
+| `v0.2.3.2-debug-input-route-hardening` | Done / 已完成 | Keep debug action panel hidden, route F3 through parsed input, show small non-release `F3 Debug` hint, keep release/BallWar isolated. |
+| `v0.2.3.3-warning-hud-hand-motion-prepass` | Done / 已完成 | GDScript warning cleanup; CardfrontHUD as standalone scene, legacy BallWar HUD hidden in Cardfront mode; hand panel collapsed to 80px + hover Tween expand/collapse; DebugHint relocated to bottom-right; regressions all green. |
 | `v0.2.4a-real-ui-art-scene-pass` | Next / 下一步 | Start using registered art resources in real UI scenes: resource icons, restrained card frame/panel usage, detail panel prep, and toast panel skinning; no gameplay or card-value changes. |
 | `v0.2.4b-card-thumbnail-pass` | Planned / 计划 | Use `CardVisualRegistry.thumbnail` for hand cards and reserve 512 card art for detail/full-card views. |
 | `v0.2.4c-ui-credits-and-asset-doc-sync` | Planned / 计划 | Keep credits and generated asset manifest aligned after UI art and thumbnail wiring. |
