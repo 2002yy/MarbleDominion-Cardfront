@@ -461,27 +461,43 @@ static func create_card_selection_controller(card_system, resource_states: Dicti
 
 
 static func configure_runtime_hud(hud_nodes: Dictionary) -> void:
+	# CardfrontHUD 场景已不包含 BallWar 专属节点，
+	# 但 fallback 路径（GameHUD.tscn）仍需要隐藏。
+	if hud_nodes.get("game_title_label", null) != null:
+		_hide_node(hud_nodes.get("game_title_label", null))
+		_hide_node(hud_nodes.get("event_label", null))
+		_hide_node(hud_nodes.get("fps_label", null))
+		var ui_canvas = hud_nodes.get("ui_canvas", null)
+		if ui_canvas != null and is_instance_valid(ui_canvas):
+			_hide_node(ui_canvas.get_node_or_null("FPSBg"))
+
+	# Always set event label for Cardfront mode (both CardfrontHUD and GameHUD fallback)
 	var event_label = hud_nodes.get("event_label", null)
-	if event_label == null or not is_instance_valid(event_label):
-		return
-	event_label.text = FIRE_STATUS_TEXT
-	event_label.tooltip_text = "Cardfront FireDirector active; cards can bias target selection."
-	event_label.add_theme_color_override("font_color", Color(0.62, 0.90, 1.0))
-	event_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	if event_label != null and is_instance_valid(event_label):
+		event_label.text = FIRE_STATUS_TEXT
 
-	var fps_label = hud_nodes.get("fps_label", null)
-	if fps_label != null and is_instance_valid(fps_label):
-		fps_label.visible = true
-
-	RuntimeHudController.set_performance_visible(true)
+	RuntimeHudController.set_performance_visible(false)
 	_lower_legacy_side_buttons(hud_nodes)
 
 
 static func restore_ballwar_hud(hud_nodes: Dictionary) -> void:
-	var fps_label = hud_nodes.get("fps_label", null)
-	if fps_label != null and is_instance_valid(fps_label):
-		fps_label.visible = true
+	_show_node(hud_nodes.get("game_title_label", null))
+	_show_node(hud_nodes.get("event_label", null))
+	_show_node(hud_nodes.get("fps_label", null))
+	var ui_canvas = hud_nodes.get("ui_canvas", null)
+	if ui_canvas != null and is_instance_valid(ui_canvas):
+		_show_node(ui_canvas.get_node_or_null("FPSBg"))
 	RuntimeHudController.set_performance_visible(true)
+
+
+static func _hide_node(node) -> void:
+	if node != null and is_instance_valid(node):
+		node.visible = false
+
+
+static func _show_node(node) -> void:
+	if node != null and is_instance_valid(node):
+		node.visible = true
 
 
 static func _lower_legacy_side_buttons(hud_nodes: Dictionary) -> void:

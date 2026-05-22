@@ -60,7 +60,7 @@ func _ensure_ui() -> void:
 
 	var y: float = 36.0
 	for owner_id in [CardfrontRulesScript.PLAYER_FACTION, CardfrontRulesScript.AI_FACTION, CardfrontRulesScript.NEUTRAL_OWNER]:
-		var name := CardfrontRulesScript.owner_display_name(owner_id)
+		var owner_name := CardfrontRulesScript.owner_display_name(owner_id)
 		var c := CardfrontRulesScript.owner_color(owner_id)
 		var label := _make_label(_panel, Vector2(12, y), Vector2(196, 16), "", 11, c)
 		_control_labels[owner_id] = label
@@ -116,10 +116,10 @@ func _update_panel(region_id: int) -> void:
 	_threshold_80.add_theme_color_override("font_color", Color(0.80, 0.72, 0.30) if player_pct >= 80 else Color(0.55, 0.50, 0.45))
 
 	if int(yld.get("energy", 0)) > 0:
-		_yield_label.text = "产出：+%d 能量/s" % int(yld.energy)
+		_yield_label.text = "[T%d] 产出：+%d 能量/s" % [tier, int(yld.energy)]
 		_yield_label.add_theme_color_override("font_color", Color(0.62, 0.90, 1.0))
 	elif int(yld.get("parts", 0)) > 0:
-		_yield_label.text = "产出：+%d 零件/s" % int(yld.parts)
+		_yield_label.text = "[T%d] 产出：+%d 零件/s" % [tier, int(yld.parts)]
 		_yield_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.36))
 	else:
 		_yield_label.text = "产出：无（实验室）"
@@ -167,7 +167,7 @@ func _make_label(parent: Node, pos: Vector2, sz: Vector2, text: String, font_siz
 
 
 func _bar(pct: int) -> String:
-	var filled: int = clampi(int(pct / 5), 0, 20)
+	var filled: int = clampi(floori(float(pct) / 5.0), 0, 20)
 	var bar_str := ""
 	for _i in range(filled):
 		bar_str += "█"

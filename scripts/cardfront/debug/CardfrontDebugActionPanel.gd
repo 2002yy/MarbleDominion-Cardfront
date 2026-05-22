@@ -59,8 +59,8 @@ func toggle_debug_panel() -> bool:
 	return visible
 
 
-func set_debug_panel_visible(show: bool) -> void:
-	visible = bool(show) and _toggle_allowed
+func set_debug_panel_visible(should_show: bool) -> void:
+	visible = should_show and _toggle_allowed
 
 
 func is_toggle_allowed_for_test() -> bool:

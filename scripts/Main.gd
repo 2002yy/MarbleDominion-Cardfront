@@ -24,6 +24,8 @@ const StartMenuUi = preload("res://scripts/StartMenu.gd")
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontStatusFormatterScript = preload("res://scripts/cardfront/ui/CardfrontStatusFormatter.gd")
+const CardfrontHUDScene = preload("res://scenes/ui/cardfront/CardfrontHUD.tscn")
+const GameHUDScene = preload("res://scenes/ui/GameHUD.tscn")
 
 var runtime = GameRuntimeContextScript.new()
 var current_score_counts: Dictionary = {0: 0, 1: 0, 2: 0, 3: 0}
@@ -556,10 +558,15 @@ func _create_control_chambers() -> void:
 
 func _create_ui() -> void:
 	var hud_nodes: Dictionary
-	var scene_path: String = "res://scenes/ui/GameHUD.tscn"
-	if ResourceLoader.exists(scene_path):
-		var scene: PackedScene = load(scene_path)
-		var game_hud: CanvasLayer = scene.instantiate()
+	if _is_cardfront_mode():
+		var cf_hud: CanvasLayer = CardfrontHUDScene.instantiate()
+		cf_hud.name = "UICanvas"
+		game_layer.add_child(cf_hud)
+		cf_hud.setup_static(self, Vector2(VIEW_W, VIEW_H), runtime.current_layout, is_mobile_layout)
+		hud_nodes = cf_hud.get_static_parts()
+		print("[CardfrontHUD] Loaded CardfrontHUD.tscn")
+	elif ResourceLoader.exists("res://scenes/ui/GameHUD.tscn"):
+		var game_hud: CanvasLayer = GameHUDScene.instantiate()
 		game_hud.name = "UICanvas"
 		game_layer.add_child(game_hud)
 		game_hud.setup_static(self, Vector2(VIEW_W, VIEW_H), runtime.current_layout, is_mobile_layout)
