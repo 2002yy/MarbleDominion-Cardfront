@@ -1,60 +1,68 @@
-# AI生成素材清单 / Generated Asset Manifest v0.1
+# Generated Asset Manifest v0.2.3 / AI 生成素材清单
 
-本清单记录 `assets/cardfront/` 下所有 AI 生成素材的原始对应关系、用途和集成状态。
+This manifest tracks AI-generated Cardfront assets under `assets/cardfront/`
+and their processed runtime derivatives under `assets/cardfront_runtime/`.
 
-## 一、卡牌插图 / cards/illustrations
+本清单记录 `assets/cardfront/` 下的 AI 生成源素材，以及
+`assets/cardfront_runtime/` 下已经处理后的运行时派生素材。
 
-| 当前文件名 | 原始中文文件名 | 资源类型 | 生成用途 | 交付模式 | 人工修改 | 可进运行时 | 预计接入 |
-|---|---|---|---|---|---|---|---|
-| 前线加固_frontline_fortify_v01.png | 前线加固.png | 卡牌主图 | 前线加固卡牌展示 | 完整背景 | 否 | 否（待裁切/透明） | v0.2.x card UI |
-| 民心起伏_morale_shift_v01.png | 民心起伏.png | 卡牌主图 | 民心起伏卡牌展示 | 完整背景 | 否 | 否（待裁切/透明） | v0.2.x card UI |
-| 校准射击_calibrated_shot_v01.png | 校准射击.png | 卡牌主图 | 校准射击卡牌展示 | 完整背景 | 否 | 否（待裁切/透明） | v0.2.x card UI |
+## 1. Card Illustrations / 卡牌插图
 
-## 二、装置地图精灵 / devices/map_sprites
-
-| 当前文件名 | 原始中文文件名 | 资源类型 | 生成用途 | 交付模式 | 人工修改 | 可进运行时 | 预计接入 |
-|---|---|---|---|---|---|---|---|
-| 吸弹核心_absorber_core_v01.png | 吸弹核心.png | 地图装置精灵 | 吸弹核心装置地图显示 | 完整背景 | 否 | 否（待透明/缩放） | v0.2.x device visuals |
-| 工程机器人_engineer_bot_v01.png | 工程机器人.png | 地图装置精灵 | 工程机器人装置地图显示 | 完整背景 | 否 | 否（待透明/缩放） | v0.2.x device visuals |
-| 拓荒信标_pioneer_beacon_v01.png | 拓荒信标.png | 地图装置精灵 | 持久拓荒信标装置地图显示 | 完整背景 | 否 | 否（待透明/缩放） | v0.2.x device visuals |
-| 临时反弹板_temporary_reflector_v01.png | 临时反弹板.png | 地图装置精灵 | 未来反弹板机关地图显示 | 完整背景 | 否 | 否（待透明/缩放） | 未来 device slice |
-
-## 三、装置图标 / devices/icons
-
-| 当前文件名 | 原始中文文件名 | 资源类型 | 生成用途 | 交付模式 | 人工修改 | 可进运行时 | 预计接入 |
-|---|---|---|---|---|---|---|---|
-| 加固层盾牌_fortify_shield_v01.png | 加固层盾牌状态.png | 状态图标 | 加固层状态 HUD 盾牌图标 | 完整背景 | 否 | 否（待切透明/缩小） | v0.2.x HUD |
-
-## 四、特效纹理 / vfx/textures
-
-| 当前文件名 | 原始中文文件名 | 资源类型 | 生成用途 | 交付模式 | 人工修改 | 可进运行时 | 预计接入 |
-|---|---|---|---|---|---|---|---|
-| 能量波纹环_energy_ripple_ring_v01.png | 能量波纹环.png | VFX 纹理 | 吸弹/转换等波纹特效 | 透明背景 | 否 | 可试用 | v0.2.x VFX |
-| 护盾裂纹_shield_crack_v01.png | 护盾裂纹.png | VFX 纹理 | 加固层被击中裂纹特效 | 透明背景 | 否 | 可试用 | v0.2.x VFX |
-| 区域控制脉冲_region_threshold_pulse_v01.png | 区域控制脉冲.png | VFX 纹理 | 区域控制阈值脉冲特效 | 透明背景 | 否 | 可试用 | v0.2.x VFX |
-
-## 五、状态说明
-
-- **v0.1 阶段不用这批素材**：当前 Cardfront lite 效果全为逻辑，无 sprite/VFX。
-- **v0.2.x card UI / device visuals** 阶段再接入卡牌图、装置精灵、图标。
-- **VFX 纹理**可先试跑，但当前没有粒子/AudioStreamPlayer 管线。
-- **所有素材为 AI 生成**，仅限本项目使用，不对外做第三方 pack 分发。
-- **所有素材均未人工修改**，接入前可能需要裁切、去背景、缩放、调色。
-
-## 六、Runtime 派生图 / cardfront_runtime
-
-v0.1.7c.1 已从 1024 源图批量导出 runtime 尺寸：
-
-| 源目录 | 导出目录 | 尺寸 | 处理 |
+| Card ID | Runtime file | Source file | Current integration |
 |---|---|---|---|
-| 卡牌插图_cards_illustrations/ | cardfront_runtime/卡牌插图_cards/512/ | 512×512 | Lanczos 缩放 |
-| 装置地图精灵_devices_map_sprites/ | cardfront_runtime/装置精灵_devices/96/ | 96×96 | 自动背景透明 + Lanczos 缩放 |
-| 装置图标_devices_icons/ | cardfront_runtime/装置图标_icons/48/ | 48×48 | 自动背景透明 + Lanczos 缩放 |
-| 特效纹理_vfx_textures/ | cardfront_runtime/视觉特效_vfx/128/ | 128×128 | 保留透明度 + Lanczos 缩放 |
+| 1001 | `assets/cardfront_runtime/卡牌插图_cards/512/前线加固_frontline_fortify_v01.png` | `assets/cardfront/卡牌插图_cards_illustrations/前线加固_frontline_fortify_v01.png` | Wired through `CardVisualRegistry.gd`; shown by `CardfrontCardView.gd`. |
+| 1002 | `assets/cardfront_runtime/卡牌插图_cards/512/校准射击_calibrated_shot_v01.png` | `assets/cardfront/卡牌插图_cards_illustrations/校准射击_calibrated_shot_v01.png` | Wired through `CardVisualRegistry.gd`; shown by `CardfrontCardView.gd`. |
+| 1003 | `assets/cardfront_runtime/卡牌插图_cards/512/民心起伏_morale_shift_v01.png` | `assets/cardfront/卡牌插图_cards_illustrations/民心起伏_morale_shift_v01.png` | Wired through `CardVisualRegistry.gd`; shown by `CardfrontCardView.gd`. |
+| 1004 | `assets/cardfront_runtime/卡牌插图_cards/512/拓荒信标_pioneer_beacon_v01.png` | source/staged Cardfront asset | Wired through `CardVisualRegistry.gd`; shown by `CardfrontCardView.gd` when present. |
 
-处理脚本: `tools/process_cardfront_assets.py`
+Current limitation: hand cards still use 512 images. `v0.2.4b-card-thumbnail-pass`
+should register 128/256 thumbnails in `CardVisualRegistry.thumbnail`.
 
-- `CardfrontDeviceOverlayLayer.gd` 已接入 runtime device sprites (96×96)。
-- 装置图自动抠背景为采样角落色+阈值 60，结果需人工检查修图。
-- VFX 和卡牌图暂未接入渲染层。
+当前限制：手牌小卡仍直接使用 512 图。`v0.2.4b-card-thumbnail-pass`
+应补 128/256 缩略图，并启用 `CardVisualRegistry.thumbnail`。
 
+## 2. Device Sprites / 装置地图精灵
+
+| Device | Runtime file | Current integration |
+|---|---|---|
+| Absorber Core | `assets/cardfront_runtime/装置精灵_devices/96/吸弹核心_absorber_core_v01.png` | Wired through `DeviceVisualRegistry.gd` and `CardfrontDeviceOverlayLayer.gd`. |
+| Engineer Bot | `assets/cardfront_runtime/装置精灵_devices/96/工程机器人_engineer_bot_v01.png` | Wired through `DeviceVisualRegistry.gd` and `CardfrontDeviceOverlayLayer.gd`. |
+| Pioneer Beacon | `assets/cardfront_runtime/装置精灵_devices/96/拓荒信标_pioneer_beacon_v01.png` | Wired through `DeviceVisualRegistry.gd` and `CardfrontDeviceOverlayLayer.gd`. |
+| Temporary Reflector | `assets/cardfront_runtime/装置精灵_devices/96/临时反弹板_temporary_reflector_v01.png` | Registered as a future/placeholder device sprite path. |
+
+## 3. Device Icons / 装置图标
+
+| Icon | Runtime file | Current integration |
+|---|---|---|
+| Fortify shield | `assets/cardfront_runtime/装置图标_icons/48/加固层盾牌_fortify_shield_v01.png` | Staged runtime icon; not yet a primary formal HUD icon. |
+
+## 4. VFX Textures / 特效纹理
+
+| VFX | Runtime file | Current integration |
+|---|---|---|
+| Energy ripple | `assets/cardfront_runtime/视觉特效_vfx/128/能量波纹环_energy_ripple_ring_v01.png` | Used by `CardfrontVfxLayer.play_energy_ripple(...)`. |
+| Shield crack / pulse | `assets/cardfront_runtime/视觉特效_vfx/128/护盾裂纹_shield_crack_v01.png` | Used by `CardfrontVfxLayer.play_shield_crack(...)` and `play_shield_pulse(...)`. |
+| Region pulse | `assets/cardfront_runtime/视觉特效_vfx/128/区域控制脉冲_region_threshold_pulse_v01.png` | Used by `CardfrontVfxLayer.play_region_pulse(...)`. |
+
+`CardfrontEffectVisualBridge.gd` now maps the 4 existing card-success events to
+these VFX methods. Missing textures fall back to procedural draw circles.
+
+## 5. Runtime Derivation / 运行时派生
+
+Processed runtime sizes:
+
+| Source category | Runtime directory | Size | Processing |
+|---|---|---|---|
+| `卡牌插图_cards_illustrations/` | `cardfront_runtime/卡牌插图_cards/512/` | 512x512 | Lanczos resize |
+| `装置地图精灵_devices_map_sprites/` | `cardfront_runtime/装置精灵_devices/96/` | 96x96 | background transparency + Lanczos resize |
+| `装置图标_devices_icons/` | `cardfront_runtime/装置图标_icons/48/` | 48x48 | background transparency + Lanczos resize |
+| `特效纹理_vfx_textures/` | `cardfront_runtime/视觉特效_vfx/128/` | 128x128 | alpha preserved + Lanczos resize |
+
+Processing script: `tools/process_cardfront_assets.py`
+
+## 6. Boundaries / 边界
+
+- These assets are project-specific AI-generated assets, not a reusable third-party pack.
+- Do not use raw 1024 source images directly as small sprites.
+- Use registries (`CardVisualRegistry`, `DeviceVisualRegistry`, `CardfrontUiAssetRegistry`) for runtime paths.
+- Keep `ResourceLoader.exists` fallback behavior in tests and UI code.

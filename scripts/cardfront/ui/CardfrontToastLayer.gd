@@ -3,6 +3,7 @@ class_name CardfrontToastLayer
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontFeedbackTextScript = preload("res://scripts/cardfront/ui/CardfrontFeedbackText.gd")
+const CardfrontUiAssetRegistryScript = preload("res://scripts/cardfront/ui/CardfrontUiAssetRegistry.gd")
 
 const MAX_TOASTS: int = 3
 const DEFAULT_TTL: float = 2.2
@@ -36,6 +37,9 @@ func show_toast(message: String, tone: String = "info", ttl: float = DEFAULT_TTL
 	label.size = Vector2(260.0, 30.0)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.add_theme_font_size_override("font_size", 12)
+	var font = CardfrontUiAssetRegistryScript.load_font()
+	if font != null:
+		label.add_theme_font_override("font", font)
 	label.add_theme_color_override("font_color", _tone_color(tone))
 	label.add_theme_stylebox_override("normal", _make_style(tone))
 	_box.add_child(label)
@@ -113,17 +117,12 @@ func _tone_color(tone: String) -> Color:
 			return Color(0.78, 0.90, 1.0, 1.0)
 
 
-func _make_style(tone: String) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.03, 0.06, 0.11, 0.92)
-	style.border_color = Color(_tone_color(tone).r, _tone_color(tone).g, _tone_color(tone).b, 0.45)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(5)
-	style.content_margin_left = 9.0
-	style.content_margin_right = 9.0
-	style.content_margin_top = 6.0
-	style.content_margin_bottom = 6.0
-	return style
+func _make_style(tone: String) -> StyleBox:
+	return CardfrontUiAssetRegistryScript.make_panel_style(
+		"toast_panel",
+		Color(0.03, 0.06, 0.11, 0.92),
+		Color(_tone_color(tone).r, _tone_color(tone).g, _tone_color(tone).b, 0.45)
+	)
 
 
 func _on_target_invalid(card_id: int, card_data: Dictionary, _cell: Vector2i, reason: String) -> void:

@@ -2,6 +2,7 @@ extends CanvasLayer
 class_name CardfrontTopResourceBar
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const CardfrontUiAssetRegistryScript = preload("res://scripts/cardfront/ui/CardfrontUiAssetRegistry.gd")
 
 var resource_states: Dictionary = {}
 var economy_system = null
@@ -19,6 +20,7 @@ func setup(new_economy_system, new_resource_states: Dictionary, mode_name: Strin
 	visible = CardfrontRulesScript.is_cardfront_mode(mode_name)
 	if not visible:
 		return
+	_apply_art_assets()
 	_connect_economy_signals()
 	refresh(true)
 
@@ -67,3 +69,40 @@ func refresh(force: bool = false) -> void:
 		if _parts_value != null and is_instance_valid(_parts_value):
 			_parts_value.text = str(p)
 		last_parts = p
+
+
+func _apply_art_assets() -> void:
+	var style_energy = CardfrontUiAssetRegistryScript.make_panel_style(
+		"resource_panel_bg",
+		Color(0.04, 0.07, 0.13, 0.95),
+		Color(0.35, 0.72, 1.0, 0.35)
+	)
+	var style_parts = CardfrontUiAssetRegistryScript.make_panel_style(
+		"resource_panel_bg",
+		Color(0.04, 0.07, 0.13, 0.95),
+		Color(1.0, 0.82, 0.36, 0.35)
+	)
+	var energy_box = get_node_or_null("Margin/HBox/EnergyBox")
+	if energy_box is Panel:
+		(energy_box as Panel).add_theme_stylebox_override("panel", style_energy)
+	var parts_box = get_node_or_null("Margin/HBox/PartsBox")
+	if parts_box is Panel:
+		(parts_box as Panel).add_theme_stylebox_override("panel", style_parts)
+	if CardfrontUiAssetRegistryScript.has_asset("resource_panel_bg"):
+		for bg_path in ["Margin/HBox/EnergyBox/Bg", "Margin/HBox/PartsBox/Bg"]:
+			var bg = get_node_or_null(bg_path)
+			if bg is ColorRect:
+				(bg as ColorRect).color = Color(0.04, 0.07, 0.13, 0.44)
+	var font = CardfrontUiAssetRegistryScript.load_font()
+	if font == null:
+		return
+	for label_path in [
+		"Margin/HBox/EnergyBox/Margin2/Inner/Name",
+		"Margin/HBox/EnergyBox/Margin2/Inner/Value",
+		"Margin/HBox/PartsBox/Margin2/Inner/Name",
+		"Margin/HBox/PartsBox/Margin2/Inner/Value",
+		"Margin/HBox/YieldLabel",
+	]:
+		var label = get_node_or_null(label_path)
+		if label is Label:
+			(label as Label).add_theme_font_override("font", font)

@@ -5,6 +5,7 @@ const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd"
 const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
 const RegionYieldCalculatorScript = preload("res://scripts/cardfront/economy/RegionYieldCalculator.gd")
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
+const CardfrontUiAssetRegistryScript = preload("res://scripts/cardfront/ui/CardfrontUiAssetRegistry.gd")
 
 var region_map = null
 var battlefield = null
@@ -43,11 +44,16 @@ func _ensure_ui() -> void:
 	_panel.name = "RegionPanel"
 	_panel.self_modulate = Color(0.06, 0.10, 0.18, 0.92)
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_panel.add_theme_stylebox_override("panel", CardfrontUiAssetRegistryScript.make_panel_style(
+		"region_info_panel",
+		Color(0.04, 0.07, 0.13, 0.95),
+		Color(0.45, 0.78, 1.0, 0.45)
+	))
 	add_child(_panel)
 
 	var bg := ColorRect.new()
 	bg.name = "Bg"
-	bg.color = Color(0.04, 0.07, 0.13, 0.95)
+	bg.color = Color(0.04, 0.07, 0.13, 0.62 if CardfrontUiAssetRegistryScript.has_asset("region_info_panel") else 0.95)
 	_panel.add_child(bg)
 
 	_title_label = _make_label(_panel, Vector2(12, 8), Vector2(196, 22), "", 14, Color(1.0, 0.95, 0.72))
@@ -150,6 +156,9 @@ func _make_label(parent: Node, pos: Vector2, sz: Vector2, text: String, font_siz
 	label.size = sz
 	label.text = text
 	label.add_theme_font_size_override("font_size", font_size)
+	var font = CardfrontUiAssetRegistryScript.load_font()
+	if font != null:
+		label.add_theme_font_override("font", font)
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
 	label.add_theme_constant_override("outline_size", 1)

@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.2e-card-interaction-feedback-pass**.
-Current next slice: **v0.2.3-debug-panel-toggle**.
-Formal HUD (resource bar + hand panel) connected; card hover details, invalid-target/resource toasts, and card-success VFX bridge are active; target preview layer highlights valid cells on card selection; battlefield click is wired to the selection controller; FireDirector signals are active; overlay layers use ImageTexture caches.
+The current completed slice is **v0.2.3-debug-panel-toggle**.
+Current next slice: **v0.2.4-ui-art-resource-pass**.
+Formal HUD (resource bar + hand panel) connected; card hover details, invalid-target/resource toasts, and card-success VFX bridge are active; the left Cardfront debug panel is hidden by default and available through F3 in non-release builds; UI art paths are centralized in `CardfrontUiAssetRegistry.gd` with fallback styling.
 
 ## Current Slice / 当前阶段
 
@@ -40,6 +40,12 @@ Implemented in this repository:
   - `CardfrontCardDetailPopup` explains card type, target, costs, effect summary, and usable/resource/used state.
   - `CardfrontToastLayer` shows invalid target, resource shortage, success, and failure feedback without covering the battlefield core.
   - `CardfrontEffectVisualBridge` maps the 4 existing card successes into existing `CardfrontVfxLayer` effects.
+- Cardfront debug panel:
+  - `CardfrontDebugActionPanel` is hidden by default and toggled with F3 in Cardfront non-release builds.
+  - Old BallWar modes do not create the Cardfront debug action panel.
+- Cardfront UI art registry:
+  - `CardfrontUiAssetRegistry` centralizes Kenney/Wenrexa/Game-Icons/font paths.
+  - Current UI scripts use registry-backed style/font hooks with ColorRect / StyleBoxFlat fallback.
 - Cardfront fire director:
   - Generates low-frequency `CardfrontFireIntent` records.
   - Prioritizes target bias from Calibrated Shot when present.
@@ -59,7 +65,7 @@ Implemented in this repository:
 - New headless runner: `CardfrontFireDirectorTestRunner.gd`.
 - New headless runner: `CardfrontControlChamberDecouplingTestRunner.gd`.
 - New headless runner: `PioneerBeaconLiteTestRunner.gd`.
-- New headless runners: `CardfrontCardDetailPopupTestRunner.gd`, `CardfrontCardFeedbackTestRunner.gd`, `CardfrontToastLayerTestRunner.gd`, `CardfrontEffectVisualBridgeTestRunner.gd`.
+- New headless runners: `CardfrontCardDetailPopupTestRunner.gd`, `CardfrontCardFeedbackTestRunner.gd`, `CardfrontToastLayerTestRunner.gd`, `CardfrontEffectVisualBridgeTestRunner.gd`, `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`.
 
 Not implemented yet:
 
@@ -91,7 +97,7 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 - `scripts/cardfront/effects/CardfrontTargetBiasSystem.gd` — Cardfront-only target-region bias state used by Calibrated Shot.
 - `scripts/cardfront/effects/PioneerBeaconLiteEffect.gd` — one-shot Pioneer Beacon neutral-cell pulse logic.
 - `scripts/cardfront/fire/` — Cardfront-only fire rules, target scoring, fire intent data, and fire director.
-- `scripts/cardfront/ui/` — Cardfront formal HUD, hand cards, selection controller, feedback bus, detail popup, toasts, and light audio/visual feedback bridges.
+- `scripts/cardfront/ui/` — Cardfront formal HUD, hand cards, selection controller, feedback bus, detail popup, toasts, UI asset registry, and light audio/visual feedback bridges.
 - `scripts/cardfront/vfx/CardfrontVfxLayer.gd` — reusable Cardfront visible-effect layer for card/device feedback.
 - `scripts/cardfront/regions/RegionOverlayLayer.gd` — lightweight Cardfront-only region visualization.
 - `scripts/cardfront/CardfrontMode.gd` — thin assembly layer used by `Main.gd`.
@@ -159,16 +165,22 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontCardFeedbackTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontToastLayerTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontEffectVisualBridgeTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDebugPanelToggleTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontUiAssetRegistryTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontUiArtSceneTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for the v0.2.2e interaction-feedback subset:
+Latest local validation for the v0.2.3 debug-panel + UI registry subset:
 
 - `CardfrontCardDetailPopupTestRunner.gd`: 4 checks passed.
 - `CardfrontCardFeedbackTestRunner.gd`: 6 checks passed.
 - `CardfrontToastLayerTestRunner.gd`: 4 checks passed.
 - `CardfrontEffectVisualBridgeTestRunner.gd`: 5 checks passed.
+- `CardfrontDebugPanelToggleTestRunner.gd`: 7 checks passed.
+- `CardfrontUiAssetRegistryTestRunner.gd`: 40 checks passed.
+- `CardfrontUiArtSceneTestRunner.gd`: 14 checks passed.
 - `CardfrontFormalUITestRunner.gd`: 48 checks passed.
 - `CardfrontTargetPreviewTestRunner.gd`: 13 checks passed.
 - `CardfrontBattlefieldClickSelectionTestRunner.gd`: 16 checks passed.
@@ -180,6 +192,6 @@ Latest local validation for the v0.2.2e interaction-feedback subset:
 
 ## Next Milestone / 下一阶段
 
-`v0.2.3-debug-panel-toggle`: keep the left debug action panel available for development, but fold it behind a toggle so the formal Cardfront play surface leads. Deckbuilder, AI Commander, card expansion, and full Cardfront save/load remain deferred.
+`v0.2.4-ui-art-resource-pass`: continue replacing procedural UI styling with registry-backed Kenney/Wenrexa/Game-Icons assets. Keep Deckbuilder, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
 
 MIT License. See [LICENSE](LICENSE).

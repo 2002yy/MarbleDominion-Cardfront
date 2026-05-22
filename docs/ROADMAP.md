@@ -8,14 +8,14 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.2e-card-interaction-feedback-pass`
-- Next slice: `v0.2.3-debug-panel-toggle`
+- Current completed slice: `v0.2.3-debug-panel-toggle`
+- Next slice: `v0.2.4-ui-art-resource-pass`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - formal Cardfront HUD components (resource bar, hand panel, hover details, toasts) leading the play surface
   - FireDirector signal seams for testability and external listener hooks
   - overlay performance via ImageTexture caching instead of per-cell draw_rect
-  - next: keep the debug action panel available but fold it behind a toggle
+  - next: replace remaining procedural UI styling through `CardfrontUiAssetRegistry`
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
 
@@ -49,7 +49,10 @@ This file is the single place for project direction and phase status.
 | `v0.2.1-target-preview` | Done / 已完成 | `CardfrontTargetPreviewLayer.gd`: highlight valid target cells on battlefield; pioneer beacon shows border + adjacent neutral hint cells; `CardfrontBattlefieldClickSelectionTestRunner.gd` verifies select→preview→click→play flow; `Main.gd:_unhandled_input()` wires mouse click to `selection_controller.on_battlefield_clicked()`. |
 | `v0.2.2-card-art-binding` | Done / 已完成 | Replace `CARD_PLACEHOLDERS` icons with actual card illustrations from `cardfront_runtime/卡牌插图_cards/512/` via `CardVisualRegistry.gd`; `TextureRect` in `CardfrontCardView.tscn` with placeholder fallback. |
 | `v0.2.2e-card-interaction-feedback-pass` | Done / 已完成 | Add `CardfrontFeedbackBus`, hover detail popup, invalid/success/failure toast layer, card hover/click feedback, and `CardfrontEffectVisualBridge` to map the 4 existing card successes into `CardfrontVfxLayer`. No card expansion, Deckbuilder, AI Commander, target-rule, or card-value changes. |
-| `v0.2.3-debug-panel-toggle` | Next / 下一步 | Keep the Cardfront debug action panel for development, but hide/show it behind an explicit toggle so it no longer competes with the formal UI. |
+| `v0.2.3-debug-panel-toggle` | Done / 已完成 | Keep the Cardfront debug action panel for development, hide it by default, and expose F3 toggle only in Cardfront non-release builds. Adds `CardfrontUiAssetRegistry` prep and registry-backed UI style/font fallbacks. |
+| `v0.2.4-ui-art-resource-pass` | Next / 下一步 | Continue replacing procedural ColorRect/StyleBoxFlat surfaces with centralized Kenney/Wenrexa/Game-Icons assets through `CardfrontUiAssetRegistry`; no gameplay or card-value changes. |
+| `v0.2.4b-card-thumbnail-pass` | Planned / 计划 | Use `CardVisualRegistry.thumbnail` for hand cards and reserve 512 card art for detail/full-card views. |
+| `v0.2.4c-ui-credits-and-asset-doc-sync` | Planned / 计划 | Keep credits and generated asset manifest aligned after UI art and thumbnail wiring. |
 
 ## 3. Design Boundaries / 设计边界
 
@@ -83,7 +86,8 @@ This file is the single place for project direction and phase status.
 
 - `StartMenu.tscn`, `GameHUD.tscn`, `SettingsPanel.tscn`, and `ResultPanel.tscn` form the current main UI structure.
 - Cardfront has a formal resource bar, fixed-hand panel, hover detail popup, and toast feedback.
-- The Cardfront debug action panel remains visible in development and should move behind a toggle next.
+- The Cardfront debug action panel is hidden by default and can be toggled with F3 in Cardfront non-release builds.
+- UI art resource paths are centralized in `CardfrontUiAssetRegistry.gd`; missing resources keep current fallback styling.
 
 ### Runtime cleanup / 运行时收口
 
@@ -187,8 +191,9 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. `v0.2.3-debug-panel-toggle`: keep `CardfrontDebugActionPanel` available for development, but hide/show it behind a keyboard or UI toggle.
-2. Keep Deckbuilder, deck draw/discard/shuffle, AI Commander, card expansion, and full Cardfront save/load deferred.
+1. `v0.2.4-ui-art-resource-pass`: continue moving Cardfront UI surfaces to registry-backed Kenney/Wenrexa/Game-Icons assets while preserving fallback styling.
+2. `v0.2.4b-card-thumbnail-pass`: generate/register 128/256 thumbnails for hand cards and keep 512 art for hover/detail views.
+3. Keep Deckbuilder, deck draw/discard/shuffle, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
 3. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` for all new wiring.
 
 ### Cardfront Save Schema

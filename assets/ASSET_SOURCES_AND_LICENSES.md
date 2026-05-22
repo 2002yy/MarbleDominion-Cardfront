@@ -89,21 +89,21 @@ Credits rule:
 - usage: card illustrations, device sprites, VFX textures
 - restriction: do not use as third-party source pack; project-specific generated assets
 - manifest: `assets/cardfront/提示词_prompts/generated_asset_manifest_v01.md`
-- current status: source/staged AI-generated originals and prompt manifest; not all files are directly runtime-ready
+- current status: source/staged AI-generated originals plus processed runtime derivatives; runtime use is tracked in section 8
 - imported content (11 files):
-  - 卡牌插图_cards_illustrations/ (3 card illustrations) — deferred to formal card UI
-  - 装置地图精灵_devices_map_sprites/ (4 device sprites) — source originals; processed versions in assets/cardfront_runtime/
+  - 卡牌插图_cards_illustrations/ (3 source card illustrations) — processed 512 runtime versions are wired by `CardVisualRegistry.gd`
+  - 装置地图精灵_devices_map_sprites/ (4 device sprites) — processed 96 runtime versions are wired by `DeviceVisualRegistry.gd`
   - 装置图标_devices_icons/ (1 status icon)
-  - 特效纹理_vfx_textures/ (3 VFX textures) — staged, not yet fully wired
+  - 特效纹理_vfx_textures/ (3 VFX textures) — processed 128 runtime versions are wired by `CardfrontVfxLayer.gd`
 
 ### `assets/cardfront_runtime/`
 
 - processed runtime assets derived from `assets/cardfront/` source
 - device sprites under `装置精灵_devices/96/` are already wired by `DeviceVisualRegistry.gd`
   - registered sprites: absorber core, engineer bot, pioneer beacon, temporary reflector
-- VFX textures under `视觉特效_vfx/128/`: staged but not yet fully wired into runtime
-- device icons under `装置图标_icons/48/`: staged but not yet fully wired
-- card illustrations under `卡牌插图_cards/512/`: remain deferred to formal card UI
+- VFX textures under `视觉特效_vfx/128/` are wired by `CardfrontVfxLayer.gd`
+- device icons under `装置图标_icons/48/` are staged runtime icons for later HUD polish
+- card illustrations under `卡牌插图_cards/512/` are wired by `CardVisualRegistry.gd`
 
 ## 4. Not Mirrored Into `assets/` / 未直接镜像进 `assets/` 的素材
 
@@ -196,49 +196,41 @@ Local source and license evidence:
 - `docs/设计_design/ASSET_GAP_PLAN.md`
 - `assets/音效_sfx/SFX_SELECTION_NOTES.md`
 
-## 8. Asset Integration Status / 素材集成状态 (v2.1.8 audit)
+## 8. Asset Integration Status / 素材集成状态 (v0.2.3)
 
-### Current State: complete disconnect between code and assets
+The old `assets zero references` audit is no longer current. Cardfront now uses
+several curated runtime assets through registries and lightweight feedback
+systems. Some UI surfaces still use procedural `ColorRect` / `StyleBoxFlat`
+fallbacks, but assets are no longer disconnected from code.
 
-All 214 source files in `assets/` are import-ready (with `.import` files) but **zero**
-are referenced by any `.gd` or `.tscn` file. The game renders entirely through
-procedural drawing primitives (`ColorRect`, `draw_rect`, `draw_string`) with
-Godot's built-in `ThemeDB.fallback_font`.
+旧的“assets 零引用”结论已经过时。Cardfront 当前已经通过注册表和轻量反馈系统接入了多类运行时素材；部分 UI 仍保留程序样式 fallback，但代码和素材已经不再完全断开。
 
-### What's unused (exists in `assets/`, not referenced in code)
+### Current wired paths / 当前已接入路径
 
-| Category | Count | License |
+| Area | Runtime entry | Asset status |
 |---|---|---|
-| Kenney Scifi UI (bars/buttons/crosshairs/shadows) | 208 PNG | CC0 |
-| Wenrexa Scifi UI (buttons/arrows/panels/sliders) | 36 PNG | CC0 |
-| Game event icons (bubble-field etc.) | 6 SVG | CC BY 3.0 |
-| Totem candidates (totem icons) | 4 SVG | CC BY 3.0 |
-| Kenney Future fonts (regular + narrow) | 2 TTF | CC0 |
-| Sci-fi background | 2 JPG | CC0 |
+| Card illustrations | `scripts/cardfront/ui/CardVisualRegistry.gd` and `CardfrontCardView.gd` | 1001-1004 load from `assets/cardfront_runtime/卡牌插图_cards/512/`; placeholder fallback remains. |
+| Device sprites | `scripts/cardfront/devices/DeviceVisualRegistry.gd` and `CardfrontDeviceOverlayLayer.gd` | Absorber, Engineer, Pioneer Beacon, and Temporary Reflector sprites load from `assets/cardfront_runtime/装置精灵_devices/96/`. |
+| VFX textures | `scripts/cardfront/vfx/CardfrontVfxLayer.gd` | Energy ripple, shield crack/pulse, and region pulse load from `assets/cardfront_runtime/视觉特效_vfx/128/`, with draw-circle fallback. |
+| Card audio feedback | `scripts/cardfront/ui/CardfrontCardAudioFeedback.gd` | Hover, click, success, and fail feedback use curated `assets/音效_sfx/` files when present; missing assets fail silently. |
+| UI art registry prep | `scripts/cardfront/ui/CardfrontUiAssetRegistry.gd` | Kenney font, Kenney/Wenrexa panels, and Game-Icons paths are centralized with `ResourceLoader.exists` fallback. |
 
-### What's still missing or not yet integrated
+### Current UI art state / 当前 UI 美术状态
+
+The UI is in a **resource-prep / partial skin** state, not final art completion.
+
+- `CardfrontHandPanel`, `CardfrontCardView`, `CardfrontTopResourceBar`, `CardfrontCardDetailPopup`, `CardfrontToastLayer`, and `CardfrontRegionInfoPanel` now query `CardfrontUiAssetRegistry`.
+- Missing textures or fonts keep the current deep-blue `ColorRect` / `StyleBoxFlat` fallback.
+- Do not scatter Kenney/Wenrexa/Game-Icons paths into gameplay scripts or `Main.gd`.
+- Game-Icons entries are `CC BY 3.0`; keep credits when these icons are used in shipped UI:
+  - `Icons made by Lorc and Delapouite via Game-icons.net (CC BY 3.0)`
+
+### Still planned / 仍待处理
 
 | Category | Status |
 |---|---|
-| Audio playback wiring | Audio files now exist, but runtime playback is still not implemented |
-| Button SFX integration | Files prepared, but not yet connected to menu buttons |
-| Background music integration | Files prepared, but not yet connected to menu or battle state |
-| Custom theme resource | No `.tres` files exist |
-| Audio bus configuration | No `[audio]` section in `project.godot` |
-
-### Recommended integration order / 推荐集成顺序
-
-**Round 1 — immediate visual impact:**
-1. Global font: replace `ThemeDB.fallback_font` with `Kenney Future.ttf`
-2. Menu background: load `Background.jpg` instead of solid `ColorRect`
-3. Score bar: use `kenney` bar slices (rounded corners + gloss overlay)
-4. Side buttons: use `kenney` button_square_header shells
-
-**Round 2 — audio foundation:**
-5. Bullet fire SFX + cell capture SFX
-6. Button hover/click feedback
-
-**Round 3 — polish:**
-7. Faction totems from `game_icons_scifi/totem_candidates/`
-8. Event roulette SFX
-9. Victory/defeat jingle
+| Card thumbnails | Planned for `v0.2.4b-card-thumbnail-pass`; use `CardVisualRegistry.thumbnail` for hand cards and reserve 512 art for detail/full-card views. |
+| Final UI art pass | Planned for `v0.2.4-ui-art-resource-pass`; replace remaining procedural panels with registry-backed assets. |
+| Full theme resource | Not yet created; no global `.tres` theme is canonical. |
+| Wider audio system | Card hover/click/success/fail exists; global music, menu SFX, and battle-state audio remain separate future work. |
+| Asset credits polish | Keep this document and `generated_asset_manifest_v01.md` aligned whenever a new asset category becomes shipped UI. |

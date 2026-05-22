@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.2e-card-interaction-feedback-pass`
-- Current slice: `v0.2.3-debug-panel-toggle`
+- Current completed slice: `v0.2.3-debug-panel-toggle`
+- Current slice: `v0.2.4-ui-art-resource-pass`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -27,6 +27,10 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
   - `CardfrontToastLayer.gd` + `.tscn` — max-3 expiring feedback toasts.
   - `CardfrontEffectVisualBridge.gd` — listens to card success and reuses `CardfrontVfxLayer` for the 4 existing effects.
   - `CardfrontCardAudioFeedback.gd` — light hover/click/success/fail audio hook with silent missing-asset fallback.
+- Debug and UI art prep:
+  - `CardfrontDebugActionPanel.gd` — hidden by default; F3 toggles it only in Cardfront non-release builds.
+  - `CardfrontUiAssetRegistry.gd` — centralized Kenney/Wenrexa/Game-Icons/font path registry with ResourceLoader/fallback helpers.
+  - Current UI scripts use registry-backed style/font hooks, but this is still a resource-prep pass, not final art polish.
 - `CardVisualRegistry.gd` maps card IDs 1001-1004 to illustration paths under `assets/cardfront_runtime/卡牌插图_cards/512/`.
   - 3 of 4 images exist (frontline_fortify, calibrated_shot, morale_shift). Pioneer beacon image is pending generation; placeholder fallback works.
 - `Main.gd:_unhandled_input()` converts mouse clicks to `selection_controller.on_battlefield_clicked(cell)`.
@@ -36,24 +40,25 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 
 ## 3. Just Completed / 刚完成的内容
 
-- v0.2.2e-card-interaction-feedback-pass: card hover detail popup, toast feedback, feedback bus, VFX bridge, and optional audio feedback.
-- `CardfrontCardView.gd`: hover emits feedback and applies light scale/uplift-style emphasis without breaking `clicked_callback`.
-- `CardfrontCardSelectionController.gd`: emits selected/deselected/invalid/success/failure through the feedback bus.
-- `CardfrontVfxLayer.gd`: keeps existing VFX surface and adds process wake-up for new card-triggered effects.
-- CI matrix now includes the new Cardfront interaction feedback runner batch.
+- v0.2.3-debug-panel-toggle: Cardfront debug action panel is hidden by default, F3 toggles it in non-release Cardfront builds, and BallWar mode remains isolated.
+- Added `CardfrontUiAssetRegistry.gd` to centralize UI art paths before broader v0.2.4 skin work.
+- Hand panel, card view, resource bar, detail popup, toast layer, and region info panel now consult the registry and fall back to current procedural styling.
+- CI matrix now includes `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, and `CardfrontUiArtSceneTestRunner.gd`.
 
 ## 4. Next Steps / 下一步
 
-Ship `v0.2.3-debug-panel-toggle`:
+Ship `v0.2.4-ui-art-resource-pass`:
 
-- Keep the Cardfront debug action panel available for development.
-- Add a clear toggle path so the panel no longer visually competes with the formal hand/resource/feedback UI.
+- Replace remaining procedural UI surfaces through `CardfrontUiAssetRegistry`; do not scatter paths in `Main.gd` or individual gameplay systems.
+- Prioritize `CardfrontHandPanel`, `CardfrontCardView`, `CardfrontTopResourceBar`, `CardfrontCardDetailPopup`, `CardfrontToastLayer`, and `CardfrontRegionInfoPanel`.
+- Keep `ResourceLoader.exists` fallback behavior for every asset.
+- Preserve Game-Icons credits if those icons move from registry prep into shipped UI.
 - Keep BallWar mode unchanged.
-- Do not add cards, Deckbuilder, AI Commander, or full Cardfront save/load in this slice.
+- Do not add cards, Deckbuilder, AI Commander, card-value changes, or full Cardfront save/load in this slice.
 
-Beyond v0.2.2:
+Beyond v0.2.4:
 
-- Generate or replace any pending card illustration assets only in an art-binding slice.
+- Generate/register hand-card thumbnails for `CardVisualRegistry.thumbnail`.
 - Deckbuilder, AI Commander, and full Cardfront save/load remain deferred.
 
 ## 5. Do Not Do / 不要做什么
@@ -78,6 +83,9 @@ Cardfront formal UI + target preview:
 - `CardfrontCardFeedbackTestRunner.gd`
 - `CardfrontToastLayerTestRunner.gd`
 - `CardfrontEffectVisualBridgeTestRunner.gd`
+- `CardfrontDebugPanelToggleTestRunner.gd`
+- `CardfrontUiAssetRegistryTestRunner.gd`
+- `CardfrontUiArtSceneTestRunner.gd`
 
 Cardfront fire/effects:
 

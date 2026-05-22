@@ -2,6 +2,7 @@ extends CanvasLayer
 class_name CardfrontHandPanel
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const CardfrontUiAssetRegistryScript = preload("res://scripts/cardfront/ui/CardfrontUiAssetRegistry.gd")
 const CardViewScene = preload("res://scenes/ui/cardfront/CardfrontCardView.tscn")
 
 var card_system = null
@@ -31,13 +32,14 @@ func setup(new_card_system, new_resource_states: Dictionary, new_economy_system,
 
 
 func _layout_panel(view_size: Vector2) -> void:
-	var panel_bg: ColorRect = $PanelBg as ColorRect
+	var panel_bg: Control = $PanelBg as Control
 	var hbox: HBoxContainer = $CardHBox as HBoxContainer
 	var panel_w: float = CARD_W * 4 + CARD_GAP * 3 + 24.0
 	var panel_x: float = (view_size.x - panel_w) * 0.5
 	var panel_y: float = view_size.y - PANEL_HEIGHT - 8.0
 	panel_bg.position = Vector2(panel_x, panel_y)
 	panel_bg.size = Vector2(panel_w, PANEL_HEIGHT)
+	_apply_art_assets(panel_bg)
 	hbox.position = Vector2(panel_x + 12.0, panel_y + 5.0)
 	hbox.size = Vector2(panel_w - 24.0, PANEL_HEIGHT - 10.0)
 
@@ -112,3 +114,13 @@ func _on_resources_changed(owner_id: int, _snapshot: Dictionary) -> void:
 	if int(owner_id) != CardfrontRulesScript.PLAYER_FACTION:
 		return
 	refresh()
+
+
+func _apply_art_assets(panel_bg: Control) -> void:
+	if panel_bg is Panel:
+		var style = CardfrontUiAssetRegistryScript.make_panel_style(
+			"hand_panel_bg",
+			Color(0.04, 0.07, 0.12, 0.90),
+			Color(0.20, 0.35, 0.55, 0.45)
+		)
+		(panel_bg as Panel).add_theme_stylebox_override("panel", style)

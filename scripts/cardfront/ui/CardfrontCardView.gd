@@ -2,6 +2,7 @@ extends Panel
 class_name CardfrontCardView
 
 const CardVisualRegistryScript = preload("res://scripts/cardfront/ui/CardVisualRegistry.gd")
+const CardfrontUiAssetRegistryScript = preload("res://scripts/cardfront/ui/CardfrontUiAssetRegistry.gd")
 
 var card_id: int = -1
 var card_data: Dictionary = {}
@@ -42,6 +43,7 @@ func _ready() -> void:
 	mouse_exited.connect(_on_mouse_exited)
 	gui_input.connect(_on_gui_input)
 	pivot_offset = size * 0.5
+	_apply_art_assets()
 
 
 func set_feedback_bus(new_feedback_bus) -> void:
@@ -198,3 +200,21 @@ func _apply_feedback_transform() -> void:
 	else:
 		scale = Vector2.ONE
 		z_index = 0
+
+
+func _apply_art_assets() -> void:
+	var font = CardfrontUiAssetRegistryScript.load_font()
+	if font != null:
+		for node_name in ["CardIconLabel", "CardName", "CostEnergy", "CostParts", "TargetLabel", "StatusLabel"]:
+			var label = get_node_or_null(node_name)
+			if label is Label:
+				(label as Label).add_theme_font_override("font", font)
+	var card_style = CardfrontUiAssetRegistryScript.make_panel_style(
+		"card_bg",
+		Color(0.06, 0.10, 0.18, 0.92),
+		Color(0.20, 0.35, 0.55, 0.25)
+	)
+	add_theme_stylebox_override("panel", card_style)
+	if CardfrontUiAssetRegistryScript.has_asset("card_bg"):
+		var bg: ColorRect = $Bg as ColorRect
+		bg.color = Color(0.03, 0.06, 0.11, 0.72)

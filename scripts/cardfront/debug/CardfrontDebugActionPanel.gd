@@ -11,16 +11,20 @@ var device_layer = null
 var card_system = null
 var battlefield = null
 var region_map = null
+var _is_cardfront_panel: bool = false
+var _toggle_allowed: bool = false
 
 const BUTTON_H: int = 24
 const BUTTON_W: int = 140
 const MARGIN: int = 8
+const DEBUG_FLAG_SETTING: String = "cardfront/debug_action_panel_enabled"
 
 
 func _init() -> void:
 	name = "CardfrontDebugActionPanel"
 	layer = 20
 	visible = false
+	set_process_unhandled_input(false)
 
 
 func setup(new_device_layer, new_card_system, new_battlefield, new_region_map, mode_name: String) -> void:
@@ -28,9 +32,42 @@ func setup(new_device_layer, new_card_system, new_battlefield, new_region_map, m
 	card_system = new_card_system
 	battlefield = new_battlefield
 	region_map = new_region_map
-	visible = mode_name == GameConfig.GAME_MODE_CARDFRONT and OS.has_feature("editor")
-	if visible:
+	_is_cardfront_panel = CardfrontRulesScript.is_cardfront_mode(mode_name)
+	_toggle_allowed = _is_cardfront_panel and _can_toggle_in_current_build()
+	visible = false
+	set_process_unhandled_input(_toggle_allowed)
+	if _is_cardfront_panel:
 		_ensure_ui()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _toggle_allowed:
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3:
+		toggle_debug_panel()
+		var vp = get_viewport()
+		if vp != null:
+			vp.set_input_as_handled()
+
+
+func toggle_debug_panel() -> bool:
+	if not _toggle_allowed:
+		visible = false
+		return false
+	visible = not visible
+	return visible
+
+
+func set_debug_panel_visible(show: bool) -> void:
+	visible = bool(show) and _toggle_allowed
+
+
+func is_toggle_allowed_for_test() -> bool:
+	return _toggle_allowed
+
+
+func is_debug_visible_for_test() -> bool:
+	return visible
 
 
 func _ensure_ui() -> void:
@@ -93,3 +130,9 @@ func get_button_count_for_test() -> int:
 		if child is Button:
 			count += 1
 	return count
+
+
+func _can_toggle_in_current_build() -> bool:
+	if ProjectSettings.has_setting(DEBUG_FLAG_SETTING) and bool(ProjectSettings.get_setting(DEBUG_FLAG_SETTING)):
+		return true
+	return not OS.has_feature("release")

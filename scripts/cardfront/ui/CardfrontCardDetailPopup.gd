@@ -3,6 +3,7 @@ class_name CardfrontCardDetailPopup
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontFeedbackTextScript = preload("res://scripts/cardfront/ui/CardfrontFeedbackText.gd")
+const CardfrontUiAssetRegistryScript = preload("res://scripts/cardfront/ui/CardfrontUiAssetRegistry.gd")
 
 var feedback_bus = null
 var resource_state = null
@@ -88,16 +89,18 @@ func _position_near_card(card_view: Control) -> void:
 
 
 func _apply_style() -> void:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.03, 0.06, 0.11, 0.96)
-	style.border_color = Color(0.45, 0.78, 1.0, 0.55)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(6)
-	style.content_margin_left = 10.0
-	style.content_margin_right = 10.0
-	style.content_margin_top = 8.0
-	style.content_margin_bottom = 8.0
+	var style = CardfrontUiAssetRegistryScript.make_panel_style(
+		"detail_popup_panel",
+		Color(0.03, 0.06, 0.11, 0.96),
+		Color(0.45, 0.78, 1.0, 0.55)
+	)
 	_panel.add_theme_stylebox_override("panel", style)
+	var font = CardfrontUiAssetRegistryScript.load_font()
+	if font == null:
+		return
+	for label in [_name_label, _type_label, _cost_label, _summary_label, _status_label]:
+		if label != null and is_instance_valid(label):
+			label.add_theme_font_override("font", font)
 
 
 func _on_card_hovered(_card_id: int, card_data: Dictionary, card_view: Control) -> void:
