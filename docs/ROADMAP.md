@@ -8,14 +8,14 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.1-target-preview`
-- Next slice: `v0.2.2-card-art-binding`
+- Current completed slice: `v0.2.2e-card-interaction-feedback-pass`
+- Next slice: `v0.2.3-debug-panel-toggle`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
-  - formal Cardfront HUD components (resource bar, hand panel) replacing debug panels
+  - formal Cardfront HUD components (resource bar, hand panel, hover details, toasts) leading the play surface
   - FireDirector signal seams for testability and external listener hooks
   - overlay performance via ImageTexture caching instead of per-cell draw_rect
-  - next: target preview layer for card selection
+  - next: keep the debug action panel available but fold it behind a toggle
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
 
@@ -47,7 +47,9 @@ This file is the single place for project direction and phase status.
 | `v0.2.0a-cardfront-formal-ui-foundation` | Done / 已完成 | Formal `CardfrontTopResourceBar`, `CardfrontHandPanel`, `CardfrontCardView`, `CardfrontCardSelectionController`; FireDirector signals (`fire_tick`/`fire_requested`/`fire_issued`/`fire_skipped`); overlay `ImageTexture` caching. |
 | `v0.2.0b-fix-formal-ui-and-signal-ci` | Done / 已完成 | Fix `CardfrontCardView._create_children()` body, fix `CardfrontFireDirectorSignalTestRunner` fixture errors, add new tests to CI batch matrix, doc alignment. |
 | `v0.2.1-target-preview` | Done / 已完成 | `CardfrontTargetPreviewLayer.gd`: highlight valid target cells on battlefield; pioneer beacon shows border + adjacent neutral hint cells; `CardfrontBattlefieldClickSelectionTestRunner.gd` verifies select→preview→click→play flow; `Main.gd:_unhandled_input()` wires mouse click to `selection_controller.on_battlefield_clicked()`. |
-| `v0.2.2-card-art-binding` | Active / 当前 | Replace `CARD_PLACEHOLDERS` icons with actual card illustrations from `cardfront_runtime/卡牌插图_cards/512/` via `CardVisualRegistry.gd`; `TextureRect` in `CardfrontCardView.tscn` with placeholder fallback. |
+| `v0.2.2-card-art-binding` | Done / 已完成 | Replace `CARD_PLACEHOLDERS` icons with actual card illustrations from `cardfront_runtime/卡牌插图_cards/512/` via `CardVisualRegistry.gd`; `TextureRect` in `CardfrontCardView.tscn` with placeholder fallback. |
+| `v0.2.2e-card-interaction-feedback-pass` | Done / 已完成 | Add `CardfrontFeedbackBus`, hover detail popup, invalid/success/failure toast layer, card hover/click feedback, and `CardfrontEffectVisualBridge` to map the 4 existing card successes into `CardfrontVfxLayer`. No card expansion, Deckbuilder, AI Commander, target-rule, or card-value changes. |
+| `v0.2.3-debug-panel-toggle` | Next / 下一步 | Keep the Cardfront debug action panel for development, but hide/show it behind an explicit toggle so it no longer competes with the formal UI. |
 
 ## 3. Design Boundaries / 设计边界
 
@@ -80,8 +82,8 @@ This file is the single place for project direction and phase status.
 ### UI and product surfaces / UI 与用户面
 
 - `StartMenu.tscn`, `GameHUD.tscn`, `SettingsPanel.tscn`, and `ResultPanel.tscn` form the current main UI structure.
-- Cardfront currently uses a compact economy debug panel, not a final HUD.
-- Formal card UI is intentionally deferred.
+- Cardfront has a formal resource bar, fixed-hand panel, hover detail popup, and toast feedback.
+- The Cardfront debug action panel remains visible in development and should move behind a toggle next.
 
 ### Runtime cleanup / 运行时收口
 
@@ -185,8 +187,8 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. `v0.2.2-card-art-binding`: replace `CARD_PLACEHOLDERS` with actual card illustrations via `CardVisualRegistry`, add `TextureRect` to `CardfrontCardView.tscn` with placeholder fallback.
-2. Keep Deckbuilder, deck draw/discard/shuffle, and AI Commander deferred.
+1. `v0.2.3-debug-panel-toggle`: keep `CardfrontDebugActionPanel` available for development, but hide/show it behind a keyboard or UI toggle.
+2. Keep Deckbuilder, deck draw/discard/shuffle, AI Commander, card expansion, and full Cardfront save/load deferred.
 3. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` for all new wiring.
 
 ### Cardfront Save Schema
@@ -210,7 +212,7 @@ v0.1.9 owns the schema audit and explicit test coverage. Full save/load wiring m
 
 ## 8. Not Now / 暂不处理
 
-- Do not add formal card UI, Deckbuilder, AI Commander, units, or fortification outside their planned slices.
+- Do not add Deckbuilder, AI Commander, units, or fortification outside their planned slices.
 - Do not build cards or AI before the region/deployment foundation is stable.
 - Do not expand bullet-field scale before the performance baseline is stable.
 - Do not push UI logic back into raw code-generated dynamic UI surfaces.

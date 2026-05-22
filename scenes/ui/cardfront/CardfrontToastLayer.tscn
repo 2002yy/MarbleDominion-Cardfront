@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfronttoastlayer01"]
+
+[ext_resource type="Script" path="res://scripts/cardfront/ui/CardfrontToastLayer.gd" id="1_toast"]
+
+[node name="CardfrontToastLayer" type="CanvasLayer"]
+layer = 29
+script = ExtResource("1_toast")
+
+[node name="ToastBox" type="VBoxContainer" parent="."]
+offset_left = 16.0
+offset_top = 292.0
+offset_right = 288.0
+offset_bottom = 416.0
+theme_override_constants/separation = 6

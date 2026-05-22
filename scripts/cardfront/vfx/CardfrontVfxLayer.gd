@@ -40,6 +40,10 @@ func play_shield_crack(cell: Vector2i) -> void:
 	_add_effect(cell, "shield_crack", SHIELD_CRACK_DURATION)
 
 
+func play_shield_pulse(cell: Vector2i) -> void:
+	play_shield_crack(cell)
+
+
 func play_region_pulse(region_id: int) -> void:
 	if region_id < 0 or region_map == null:
 		return
@@ -64,6 +68,9 @@ func _add_effect(cell: Vector2i, effect_type: String, duration: float) -> void:
 		"total": duration,
 		"texture_loaded": tex != null,
 	})
+	if visible:
+		set_process(true)
+	queue_redraw()
 
 
 func _get_texture(effect_type: String) -> Texture2D:

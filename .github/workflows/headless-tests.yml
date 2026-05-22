@@ -61,6 +61,12 @@ jobs:
               CardfrontTargetPreviewTestRunner.gd
               CardfrontBattlefieldClickSelectionTestRunner.gd
               CardfrontCardArtBindingTestRunner.gd
+          - batch: Cardfront interaction feedback
+            scripts: |
+              CardfrontCardDetailPopupTestRunner.gd
+              CardfrontCardFeedbackTestRunner.gd
+              CardfrontToastLayerTestRunner.gd
+              CardfrontEffectVisualBridgeTestRunner.gd
           - batch: Cardfront performance budget
             scripts: |
               CardfrontPerformanceSmokeTestRunner.gd

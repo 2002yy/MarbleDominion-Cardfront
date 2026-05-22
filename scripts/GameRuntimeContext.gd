@@ -32,6 +32,11 @@ var hand_panel = null
 var selection_controller = null
 var target_preview_layer = null
 var region_info_panel = null
+var cardfront_feedback_bus = null
+var card_detail_popup = null
+var toast_layer = null
+var effect_visual_bridge = null
+var card_audio_feedback = null
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
@@ -69,6 +74,11 @@ func reset() -> void:
     selection_controller = null
     target_preview_layer = null
     region_info_panel = null
+    cardfront_feedback_bus = null
+    card_detail_popup = null
+    toast_layer = null
+    effect_visual_bridge = null
+    card_audio_feedback = null
     resource_states.clear()
     last_yield_snapshot.clear()
     current_config.clear()

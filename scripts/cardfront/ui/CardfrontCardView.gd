@@ -7,8 +7,10 @@ var card_id: int = -1
 var card_data: Dictionary = {}
 var current_state: String = "idle"
 var clicked_callback: Callable = func(): pass
+var feedback_bus = null
 
 const CARD_SIZE := Vector2(130, 150)
+const HOVER_SCALE := Vector2(1.035, 1.035)
 const STATE_COLORS := {
 	"idle": Color(0.06, 0.10, 0.18, 0.92),
 	"hover": Color(0.08, 0.14, 0.24, 0.94),
@@ -39,6 +41,11 @@ func _ready() -> void:
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	gui_input.connect(_on_gui_input)
+	pivot_offset = size * 0.5
+
+
+func set_feedback_bus(new_feedback_bus) -> void:
+	feedback_bus = new_feedback_bus
 
 
 func bind(data: Dictionary, resource_state) -> void:
@@ -108,10 +115,13 @@ func bind(data: Dictionary, resource_state) -> void:
 	elif current_state in ["used", "disabled_resource"]:
 		set_state("idle")
 		status_label.text = ""
+	elif current_state != "selected":
+		status_label.text = ""
 
 
 func set_state(state: String) -> void:
 	current_state = state
+	pivot_offset = size * 0.5
 	var bg: ColorRect = $Bg as ColorRect
 	bg.color = STATE_COLORS.get(state, STATE_COLORS["idle"])
 	var card_border: ColorRect = $CardBorder as ColorRect
@@ -141,6 +151,7 @@ func set_state(state: String) -> void:
 			card_border.color = Color(0.05, 0.05, 0.08, 0.6)
 			hover_border.color = Color(0.62, 0.90, 1.0, 0.0)
 			selected_border.color = Color(0.62, 0.90, 1.0, 0.0)
+	_apply_feedback_transform()
 
 
 func is_playable() -> bool:
@@ -159,11 +170,15 @@ func _restore_text_colors() -> void:
 
 
 func _on_mouse_entered() -> void:
+	if feedback_bus != null and feedback_bus.has_method("emit_card_hovered"):
+		feedback_bus.emit_card_hovered(card_id, card_data, self)
 	if current_state == "idle":
 		set_state("hover")
 
 
 func _on_mouse_exited() -> void:
+	if feedback_bus != null and feedback_bus.has_method("emit_card_unhovered"):
+		feedback_bus.emit_card_unhovered(card_id, card_data, self)
 	if current_state == "hover":
 		set_state("idle")
 
@@ -171,4 +186,15 @@ func _on_mouse_exited() -> void:
 func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if is_clickable():
+			if feedback_bus != null and feedback_bus.has_method("emit_card_clicked"):
+				feedback_bus.emit_card_clicked(card_id, card_data, self)
 			clicked_callback.call()
+
+
+func _apply_feedback_transform() -> void:
+	if current_state in ["hover", "selected"]:
+		scale = HOVER_SCALE
+		z_index = 20
+	else:
+		scale = Vector2.ONE
+		z_index = 0

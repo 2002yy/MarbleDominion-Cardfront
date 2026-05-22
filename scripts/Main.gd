@@ -453,6 +453,19 @@ func _create_cardfront_durable_pioneer_beacon_effect() -> void:
 	runtime.durable_pioneer_beacon_effect_system = beacon_setup.get("durable_pioneer_beacon_effect_system", null)
 
 
+func _create_cardfront_feedback_bus() -> void:
+	runtime.cardfront_feedback_bus = null
+	if not _is_cardfront_mode():
+		return
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var bus_setup: Dictionary = CardfrontModeScript.create_feedback_bus(ui_canvas)
+	if not bool(bus_setup.get("configured", false)):
+		return
+	runtime.cardfront_feedback_bus = bus_setup.get("feedback_bus", null)
+
+
 func _create_cardfront_top_resource_bar() -> void:
 	runtime.top_resource_bar = null
 	if not _is_cardfront_mode():
@@ -489,6 +502,33 @@ func _create_cardfront_region_info_panel() -> void:
 	runtime.region_info_panel = panel_setup.get("region_info_panel", null)
 
 
+func _create_cardfront_feedback_layers() -> void:
+	runtime.card_detail_popup = null
+	runtime.toast_layer = null
+	runtime.card_audio_feedback = null
+	if not _is_cardfront_mode():
+		return
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var feedback_setup: Dictionary = CardfrontModeScript.create_feedback_layers(ui_canvas, runtime.cardfront_feedback_bus, runtime.resource_states, Vector2(VIEW_W, VIEW_H))
+	if not bool(feedback_setup.get("configured", false)):
+		return
+	runtime.card_detail_popup = feedback_setup.get("card_detail_popup", null)
+	runtime.toast_layer = feedback_setup.get("toast_layer", null)
+	runtime.card_audio_feedback = feedback_setup.get("card_audio_feedback", null)
+
+
+func _create_cardfront_effect_visual_bridge() -> void:
+	runtime.effect_visual_bridge = null
+	if not _is_cardfront_mode():
+		return
+	var bridge_setup: Dictionary = CardfrontModeScript.create_effect_visual_bridge(game_layer, runtime.cardfront_feedback_bus, runtime.cardfront_vfx_layer)
+	if not bool(bridge_setup.get("configured", false)):
+		return
+	runtime.effect_visual_bridge = bridge_setup.get("effect_visual_bridge", null)
+
+
 func _create_cardfront_hand_panel() -> void:
 	runtime.hand_panel = null
 	runtime.selection_controller = null
@@ -497,11 +537,11 @@ func _create_cardfront_hand_panel() -> void:
 	var ui_canvas = _hud_ref("ui_canvas")
 	if ui_canvas == null:
 		return
-	var hand_setup: Dictionary = CardfrontModeScript.create_hand_panel(ui_canvas, runtime.card_system, runtime.resource_states, runtime.economy_system, Vector2(VIEW_W, VIEW_H))
+	var hand_setup: Dictionary = CardfrontModeScript.create_hand_panel(ui_canvas, runtime.card_system, runtime.resource_states, runtime.economy_system, Vector2(VIEW_W, VIEW_H), runtime.cardfront_feedback_bus)
 	if not bool(hand_setup.get("configured", false)):
 		return
 	runtime.hand_panel = hand_setup.get("hand_panel", null)
-	var ctrl_setup: Dictionary = CardfrontModeScript.create_card_selection_controller(runtime.card_system, runtime.resource_states, runtime.hand_panel, runtime.top_resource_bar, runtime.target_preview_layer)
+	var ctrl_setup: Dictionary = CardfrontModeScript.create_card_selection_controller(runtime.card_system, runtime.resource_states, runtime.hand_panel, runtime.top_resource_bar, runtime.target_preview_layer, runtime.cardfront_feedback_bus)
 	if bool(ctrl_setup.get("configured", false)):
 		runtime.selection_controller = ctrl_setup.get("selection_controller", null)
 
@@ -540,8 +580,11 @@ func _create_ui() -> void:
 
 	if _is_cardfront_mode():
 		CardfrontModeScript.configure_runtime_hud(runtime.hud)
+		_create_cardfront_feedback_bus()
 		_create_cardfront_top_resource_bar()
 		_create_cardfront_hand_panel()
+		_create_cardfront_feedback_layers()
+		_create_cardfront_effect_visual_bridge()
 		_create_cardfront_region_info_panel()
 
 	_on_scores_changed(runtime.battlefield.count_cells_by_team())

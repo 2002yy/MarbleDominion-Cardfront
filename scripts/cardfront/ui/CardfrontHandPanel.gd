@@ -9,16 +9,18 @@ var resource_states: Dictionary = {}
 var _card_views: Array[CardfrontCardView] = []
 var selection_controller = null
 var economy_system = null
+var feedback_bus = null
 
 const PANEL_HEIGHT: float = 160.0
 const CARD_GAP: float = 8.0
 const CARD_W: float = 130.0
 
 
-func setup(new_card_system, new_resource_states: Dictionary, new_economy_system, mode_name: String, view_size: Vector2) -> void:
+func setup(new_card_system, new_resource_states: Dictionary, new_economy_system, mode_name: String, view_size: Vector2, new_feedback_bus = null) -> void:
 	card_system = new_card_system
 	resource_states = new_resource_states.duplicate(false)
 	economy_system = new_economy_system
+	feedback_bus = new_feedback_bus
 	visible = CardfrontRulesScript.is_cardfront_mode(mode_name)
 	if not visible:
 		return
@@ -51,6 +53,7 @@ func _populate_cards() -> void:
 		view.name = "CardView_%d" % i
 		view.custom_minimum_size = Vector2(CARD_W, PANEL_HEIGHT - 10.0)
 		view.size = view.custom_minimum_size
+		view.set_feedback_bus(feedback_bus)
 		var hbox: HBoxContainer = $CardHBox as HBoxContainer
 		hbox.add_child(view)
 		_card_views.append(view)
