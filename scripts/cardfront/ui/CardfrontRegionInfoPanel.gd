@@ -60,7 +60,6 @@ func _ensure_ui() -> void:
 
 	var y: float = 36.0
 	for owner_id in [CardfrontRulesScript.PLAYER_FACTION, CardfrontRulesScript.AI_FACTION, CardfrontRulesScript.NEUTRAL_OWNER]:
-		var owner_name := CardfrontRulesScript.owner_display_name(owner_id)
 		var c := CardfrontRulesScript.owner_color(owner_id)
 		var label := _make_label(_panel, Vector2(12, y), Vector2(196, 16), "", 11, c)
 		_control_labels[owner_id] = label

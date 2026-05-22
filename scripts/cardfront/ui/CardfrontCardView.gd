@@ -238,14 +238,14 @@ func _apply_art_assets() -> void:
 		(card_border as Panel).add_theme_stylebox_override("panel", frame_style)
 
 
-func _load_card_texture(card_id: int) -> Texture2D:
+func _load_card_texture(which_id: int) -> Texture2D:
 	# Priority: thumbnail -> 512 full art -> fallback null (placeholder)
-	var thumb_path: String = CardVisualRegistryScript.get_thumbnail_path(card_id)
+	var thumb_path: String = CardVisualRegistryScript.get_thumbnail_path(which_id)
 	if thumb_path != "" and ResourceLoader.exists(thumb_path):
 		var tex = load(thumb_path)
 		if tex != null:
 			return tex
-	var full_path: String = CardVisualRegistryScript.get_texture_path(card_id)
+	var full_path: String = CardVisualRegistryScript.get_texture_path(which_id)
 	if full_path != "" and ResourceLoader.exists(full_path):
 		var tex = load(full_path)
 		if tex != null:
