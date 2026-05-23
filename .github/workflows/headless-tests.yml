@@ -75,6 +75,7 @@ jobs:
               CardfrontUiArtSceneTestRunner.gd
               CardfrontCardViewInteractionConfigTestRunner.gd
               CardfrontHandRealHitboxTestRunner.gd
+              CardfrontRegionInfoPanelVisibilityTestRunner.gd
               CardfrontTopResourceBarMinimalTestRunner.gd
           - batch: Cardfront performance budget
             scripts: |
