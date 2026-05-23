@@ -3,8 +3,8 @@ class_name CardfrontTutorialOverlay
 
 const PlayerSettingsStoreClass = preload("res://scripts/PlayerSettingsStore.gd")
 
-const VIEW_W: float = 1120.0
-const VIEW_H: float = 720.0
+const REFERENCE_SIZE: Vector2 = Vector2(1120.0, 720.0)
+var _view_size: Vector2 = REFERENCE_SIZE
 
 const DIM_COLOR := Color(0.03, 0.06, 0.15, 0.75)
 const FOCUS_BORDER_COLOR := Color(1.0, 1.0, 1.0, 0.60)
@@ -55,13 +55,36 @@ var _next_button: Button
 var _skip_button: Button
 
 
+static func _scale_rect(rect: Rect2, from_size: Vector2, to_size: Vector2) -> Rect2:
+	var scale_x: float = to_size.x / from_size.x
+	var scale_y: float = to_size.y / from_size.y
+	return Rect2(
+		rect.position.x * scale_x,
+		rect.position.y * scale_y,
+		rect.size.x * scale_x,
+		rect.size.y * scale_y
+	)
+
+
+static func _scale_v(value: Vector2, from_size: Vector2, to_size: Vector2) -> Vector2:
+	return Vector2(
+		value.x * to_size.x / from_size.x,
+		value.y * to_size.y / from_size.y
+	)
+
+
+static func _scale_f(value: float, from_extent: float, to_extent: float) -> float:
+	return value * to_extent / from_extent
+
+
 func _init() -> void:
 	name = "CardfrontTutorialOverlay"
 	layer = 30
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func setup() -> void:
+func setup(view_size: Vector2 = REFERENCE_SIZE) -> void:
+	_view_size = view_size
 	_build_nodes()
 	var settings := PlayerSettingsStoreClass.load_settings()
 	var show_hint: bool = bool(settings.get("show_newbie_hint", true))
@@ -92,14 +115,14 @@ func _build_nodes() -> void:
 
 	_tooltip_panel = Panel.new()
 	_tooltip_panel.name = "TooltipPanel"
-	_tooltip_panel.size = TOOLTIP_SIZE
+	_tooltip_panel.size = _scale_v(TOOLTIP_SIZE, REFERENCE_SIZE, _view_size)
 	_tooltip_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_tooltip_panel)
 
 	_tooltip_bg = ColorRect.new()
 	_tooltip_bg.name = "PanelBg"
 	_tooltip_bg.color = Color(0.06, 0.09, 0.15, 0.96)
-	_tooltip_bg.size = TOOLTIP_SIZE
+	_tooltip_bg.size = _scale_v(TOOLTIP_SIZE, REFERENCE_SIZE, _view_size)
 	_tooltip_panel.add_child(_tooltip_bg)
 
 	_accent_line = ColorRect.new()
@@ -147,8 +170,8 @@ func _build_nodes() -> void:
 
 	_skip_button = Button.new()
 	_skip_button.name = "SkipButton"
-	_skip_button.position = Vector2(VIEW_W - 140.0, 16.0)
-	_skip_button.size = Vector2(124.0, 28.0)
+	_skip_button.position = Vector2(_view_size.x - _scale_f(140.0, REFERENCE_SIZE.x, _view_size.x), _scale_f(16.0, REFERENCE_SIZE.y, _view_size.y))
+	_skip_button.size = _scale_v(Vector2(124.0, 28.0), REFERENCE_SIZE, _view_size)
 	_skip_button.text = "跳过 / 不再提示"
 	_skip_button.add_theme_font_size_override("font_size", 12)
 	_skip_button.add_theme_color_override("font_color", Color(0.62, 0.68, 0.82, 1.0))
@@ -170,19 +193,20 @@ func _apply_step(step_index: int) -> void:
 	if step_index < 0 or step_index >= _total_steps:
 		return
 	var step: Dictionary = STEP_DATA[step_index]
-	var focus: Rect2 = step["focus_rect"]
+	var focus_ref: Rect2 = step["focus_rect"]
+	var focus: Rect2 = _scale_rect(focus_ref, REFERENCE_SIZE, _view_size)
 
 	_dim_top.position = Vector2(0.0, 0.0)
-	_dim_top.size = Vector2(VIEW_W, focus.position.y)
+	_dim_top.size = Vector2(_view_size.x, focus.position.y)
 
 	_dim_bottom.position = Vector2(0.0, focus.position.y + focus.size.y)
-	_dim_bottom.size = Vector2(VIEW_W, VIEW_H - focus.position.y - focus.size.y)
+	_dim_bottom.size = Vector2(_view_size.x, _view_size.y - focus.position.y - focus.size.y)
 
 	_dim_left.position = Vector2(0.0, focus.position.y)
 	_dim_left.size = Vector2(focus.position.x, focus.size.y)
 
 	_dim_right.position = Vector2(focus.position.x + focus.size.x, focus.position.y)
-	_dim_right.size = Vector2(VIEW_W - focus.position.x - focus.size.x, focus.size.y)
+	_dim_right.size = Vector2(_view_size.x - focus.position.x - focus.size.x, focus.size.y)
 
 	_focus_highlight.position = focus.position - Vector2(FOCUS_BORDER_WIDTH, FOCUS_BORDER_WIDTH)
 	_focus_highlight.size = focus.size + Vector2(FOCUS_BORDER_WIDTH * 2.0, FOCUS_BORDER_WIDTH * 2.0)
@@ -196,15 +220,17 @@ func _apply_step(step_index: int) -> void:
 
 
 func _position_tooltip(focus: Rect2) -> void:
-	var tooltip_x: float = (VIEW_W - TOOLTIP_SIZE.x) * 0.5
+	var tt_size: Vector2 = _scale_v(TOOLTIP_SIZE, REFERENCE_SIZE, _view_size)
+	var gap: float = _scale_f(TOOLTIP_GAP, REFERENCE_SIZE.y, _view_size.y)
+	var tooltip_x: float = (_view_size.x - tt_size.x) * 0.5
 	var tooltip_y: float
 	match _current_step:
 		0:
-			tooltip_y = focus.position.y + focus.size.y + TOOLTIP_GAP
+			tooltip_y = focus.position.y + focus.size.y + gap
 		1:
-			tooltip_y = focus.position.y - TOOLTIP_GAP - TOOLTIP_SIZE.y
+			tooltip_y = focus.position.y - gap - tt_size.y
 		_:
-			tooltip_y = VIEW_H - TOOLTIP_SIZE.y - 240.0
+			tooltip_y = _view_size.y - tt_size.y - _scale_f(240.0, REFERENCE_SIZE.y, _view_size.y)
 	_tooltip_panel.position = Vector2(tooltip_x, tooltip_y)
 
 

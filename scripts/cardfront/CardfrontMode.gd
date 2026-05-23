@@ -377,13 +377,13 @@ static func create_feedback_layers(ui_layer: Node, feedback_bus, resource_states
 	}
 
 
-static func create_tutorial_overlay(ui_layer: Node) -> Dictionary:
+static func create_tutorial_overlay(ui_layer: Node, view_size: Vector2 = Vector2(1120, 720)) -> Dictionary:
 	if ui_layer == null or not is_instance_valid(ui_layer):
 		return {"configured": false, "reason": "missing_ui_layer"}
 
 	var overlay = CardfrontTutorialOverlayScene.instantiate()
 	ui_layer.add_child(overlay)
-	overlay.setup()
+	overlay.setup(view_size)
 
 	return {
 		"configured": true,

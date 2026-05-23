@@ -56,6 +56,13 @@ theme_override_colors/font_color = Color(0.88, 0.92, 1, 1)
 theme_override_font_sizes/font_size = 14
 button_pressed = true
 
+[node name="ResetTutorialButton" type="Button" parent="PanelMargin/MainVBox"]
+text = "重新显示卡牌前线教程"
+custom_minimum_size = Vector2(0, 28)
+theme_override_colors/font_color = Color(0.88, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 12
+self_modulate = Color(0.34, 0.34, 0.54, 0.85)
+
 [node name="HintLabel" type="Label" parent="PanelMargin/MainVBox"]
 text = "部分设置重启后生效"
 theme_override_colors/font_color = Color(0.62, 0.68, 0.82, 1)

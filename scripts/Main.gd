@@ -511,7 +511,7 @@ func _create_cardfront_tutorial_overlay() -> void:
 	var ui_canvas = _hud_ref("ui_canvas")
 	if ui_canvas == null:
 		return
-	var overlay_setup: Dictionary = CardfrontModeScript.create_tutorial_overlay(ui_canvas)
+	var overlay_setup: Dictionary = CardfrontModeScript.create_tutorial_overlay(ui_canvas, Vector2(VIEW_W, VIEW_H))
 	if bool(overlay_setup.get("configured", false)):
 		runtime.tutorial_overlay = overlay_setup.get("tutorial_overlay", null)
 		_wire_tutorial_settings_signals(overlay_setup.get("tutorial_overlay", null))
