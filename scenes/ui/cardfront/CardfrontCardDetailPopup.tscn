@@ -9,10 +9,12 @@ script = ExtResource("1_popup")
 [node name="Panel" type="Panel" parent="."]
 position = Vector2(310, 420)
 size = Vector2(260, 126)
+mouse_filter = 2
 
 [node name="CardName" type="Label" parent="Panel"]
 position = Vector2(10, 8)
 size = Vector2(240, 20)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 15
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.55)
@@ -21,18 +23,21 @@ theme_override_constants/outline_size = 1
 [node name="CardType" type="Label" parent="Panel"]
 position = Vector2(10, 31)
 size = Vector2(240, 18)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.68, 0.80, 0.95, 1)
 
 [node name="Cost" type="Label" parent="Panel"]
 position = Vector2(10, 51)
 size = Vector2(240, 18)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(1, 0.82, 0.42, 1)
 
 [node name="Summary" type="Label" parent="Panel"]
 position = Vector2(10, 72)
 size = Vector2(240, 32)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.82, 0.90, 1, 1)
 autowrap_mode = 3
@@ -40,5 +45,6 @@ autowrap_mode = 3
 [node name="Status" type="Label" parent="Panel"]
 position = Vector2(10, 106)
 size = Vector2(240, 16)
+mouse_filter = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.62, 0.90, 1, 1)

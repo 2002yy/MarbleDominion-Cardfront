@@ -18,6 +18,7 @@ var resource_state = null
 
 func _ready() -> void:
 	visible = false
+	_ignore_mouse_recursive(_panel)
 	_apply_style()
 
 
@@ -101,6 +102,13 @@ func _apply_style() -> void:
 	for label in [_name_label, _type_label, _cost_label, _summary_label, _status_label]:
 		if label != null and is_instance_valid(label):
 			label.add_theme_font_override("font", font)
+
+
+func _ignore_mouse_recursive(node: Node) -> void:
+	if node is Control:
+		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_ignore_mouse_recursive(child)
 
 
 func _on_card_hovered(_card_id: int, card_data: Dictionary, card_view: Control) -> void:

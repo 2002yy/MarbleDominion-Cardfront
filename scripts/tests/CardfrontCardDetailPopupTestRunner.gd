@@ -19,6 +19,7 @@ func _run() -> void:
 	_test_hover_shows_popup()
 	_test_unhover_hides_popup()
 	_test_not_enough_resource_text()
+	_test_popup_ignores_mouse_input()
 
 	GameConfig.reset_runtime_defaults()
 	await _flush()
@@ -101,4 +102,14 @@ func _test_not_enough_resource_text() -> void:
 	fixture.bus.emit_card_hovered(1001, _sample_card(99, 99), fixture.view)
 	_assert.that(fixture.popup.visible, "detail popup: resource-poor hover should still show popup")
 	_assert.that(fixture.popup.get_status_text_for_test().contains("资源不足"), "detail popup: should show resource shortage")
+	_cleanup_fixture(fixture)
+
+
+func _test_popup_ignores_mouse_input() -> void:
+	var fixture = _make_fixture()
+	var panel = fixture.popup._panel
+	_assert.eq(panel.mouse_filter, Control.MOUSE_FILTER_IGNORE, "detail popup: panel should ignore mouse")
+	for child in panel.get_children():
+		if child is Control:
+			_assert.eq((child as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE, "detail popup: child controls should ignore mouse")
 	_cleanup_fixture(fixture)

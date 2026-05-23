@@ -24,7 +24,7 @@ func setup(new_device_layer, new_battlefield, mode_name: String) -> void:
 	if battlefield != null and is_instance_valid(battlefield):
 		position = battlefield.position
 	_texture_cache.clear()
-	set_process(visible)
+	set_process(false)
 	mark_dirty()
 
 
@@ -33,13 +33,10 @@ func mark_dirty() -> void:
 	queue_redraw()
 
 
-func _process(_delta: float) -> void:
-	queue_redraw()
-
-
 func _draw() -> void:
-	if not visible or device_layer == null or battlefield == null:
+	if not visible or not _dirty or device_layer == null or battlefield == null:
 		return
+	_dirty = false
 
 	for instance in device_layer.get_all_active_devices():
 		var tex = _get_texture(str(instance.device_type))
@@ -81,4 +78,3 @@ func get_draw_items_for_test() -> Array:
 			"has_fallback": device_visual_registry.get_fallback_color(device_type) != Color.GRAY,
 		})
 	return items
-

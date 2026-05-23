@@ -245,6 +245,7 @@ static func create_device_layer(game_layer: Node, battlefield, region_map) -> Di
 	var device_overlay = CardfrontDeviceOverlayLayerScript.new()
 	device_overlay.setup(device_layer, battlefield, GameConfig.GAME_MODE_CARDFRONT)
 	game_layer.add_child(device_overlay)
+	device_layer.overlay_dirty_callback = Callable(device_overlay, "mark_dirty")
 
 	return {
 		"configured": true,

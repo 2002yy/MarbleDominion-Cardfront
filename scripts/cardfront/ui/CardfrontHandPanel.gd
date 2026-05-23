@@ -17,6 +17,7 @@ const CARD_H: float = 150.0
 const CARD_GAP: float = 8.0
 const CARD_W: float = 130.0
 const COLLAPSED_Y_OFFSET: float = 70.0
+const MAX_VISIBLE_CARDS: int = 4
 
 
 func setup(new_card_system, new_resource_states: Dictionary, new_economy_system, mode_name: String, view_size: Vector2, new_feedback_bus = null) -> void:
@@ -37,7 +38,7 @@ func _layout_panel(view_size: Vector2) -> void:
 	var panel_bg: Control = $PanelBg as Control
 	var panel_border: Control = $PanelBorder as Control
 	var container: Control = $CardHBox as Control
-	var panel_w: float = CARD_W * 4 + CARD_GAP * 3 + 24.0
+	var panel_w: float = CARD_W * float(MAX_VISIBLE_CARDS) + CARD_GAP * float(MAX_VISIBLE_CARDS - 1) + 24.0
 	var panel_x: float = (view_size.x - panel_w) * 0.5
 	var panel_y: float = view_size.y - PANEL_HEIGHT - 8.0
 	panel_bg.position = Vector2(panel_x, panel_y)
@@ -59,7 +60,12 @@ func _populate_cards() -> void:
 	_card_views.clear()
 
 	var container: Control = $CardHBox as Control
-	for i in range(4):
+	var visible_card_count: int = MAX_VISIBLE_CARDS
+	if card_system != null and is_instance_valid(card_system) and card_system.has_method("get_hand_card_data"):
+		var hand_data: Array = card_system.get_hand_card_data()
+		if not hand_data.is_empty():
+			visible_card_count = mini(hand_data.size(), MAX_VISIBLE_CARDS)
+	for i in range(visible_card_count):
 		var view: CardfrontCardView = CardViewScene.instantiate()
 		view.name = "CardView_%d" % i
 		view.size = Vector2(CARD_W, CARD_H)

@@ -12,6 +12,7 @@ var region_map = null
 var _registry = null
 var _devices_by_cell: Dictionary = {}
 var _next_device_id: int = 1
+var overlay_dirty_callback = null
 
 
 func _init() -> void:
@@ -62,6 +63,7 @@ func place(req):
 	instance.active = true
 
 	_devices_by_cell[cell] = instance
+	_notify_overlay()
 
 	if not is_processing():
 		set_process(true)
@@ -73,6 +75,7 @@ func remove_at(cell: Vector2i) -> bool:
 	if not _devices_by_cell.has(cell):
 		return false
 	_devices_by_cell.erase(cell)
+	_notify_overlay()
 	if _devices_by_cell.is_empty():
 		set_process(false)
 	return true
@@ -120,6 +123,9 @@ func tick(delta: float) -> void:
 	for cell in expired_cells:
 		_devices_by_cell.erase(cell)
 
+	if not expired_cells.is_empty():
+		_notify_overlay()
+
 	if _devices_by_cell.is_empty():
 		set_process(false)
 
@@ -141,7 +147,9 @@ func snapshot() -> Dictionary:
 
 func restore(data: Dictionary) -> void:
 	_devices_by_cell.clear()
+	set_process(false)
 	if data.is_empty():
+		_notify_overlay()
 		return
 	_next_device_id = int(data.get("next_device_id", 1))
 	var device_list: Array = data.get("devices", [])
@@ -158,6 +166,7 @@ func restore(data: Dictionary) -> void:
 
 	if not _devices_by_cell.is_empty():
 		set_process(true)
+	_notify_overlay()
 
 
 func _count_owner_type(owner_id: int, device_type: String) -> int:
@@ -170,3 +179,8 @@ func _is_inside(cell: Vector2i) -> bool:
 	if battlefield.has_method("is_inside"):
 		return battlefield.is_inside(cell)
 	return false
+
+
+func _notify_overlay() -> void:
+	if overlay_dirty_callback != null and overlay_dirty_callback is Callable and overlay_dirty_callback.is_valid():
+		overlay_dirty_callback.call()

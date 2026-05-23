@@ -104,18 +104,18 @@ func _draw() -> void:
 		var cell: Vector2i = effect.get("cell", Vector2i.ZERO)
 		var remaining: float = float(effect.get("remaining", 0.0))
 		var total: float = maxf(0.01, float(effect.get("total", 1.0)))
-		var ratio: float = clampf(remaining / total, 0.0, 1.0)
+		var metrics: Dictionary = _visual_metrics(remaining, total, cell_size)
 		var tex = _get_texture(str(effect.get("effect_type", "")))
 		if tex != null:
-			var size: float = float(cell_size) * 2.5 * ratio
+			var size: float = float(metrics.get("size", 0.0))
 			var pos: Vector2 = Vector2(float(cell.x) + 0.5, float(cell.y) + 0.5) * float(cell_size)
 			var rect := Rect2(pos - Vector2(size * 0.5, size * 0.5), Vector2(size, size))
-			draw_texture_rect(tex, rect, false, Color(1.0, 1.0, 1.0, ratio))
+			draw_texture_rect(tex, rect, false, Color(1.0, 1.0, 1.0, float(metrics.get("alpha", 0.0))))
 		else:
 			var fallback: Color = _fallback_color(str(effect.get("effect_type", "")))
-			var r: float = float(cell_size) * ratio
+			var r: float = float(metrics.get("size", 0.0)) * 0.5
 			var pos: Vector2 = Vector2(float(cell.x) + 0.5, float(cell.y) + 0.5) * float(cell_size)
-			draw_circle(pos, r, Color(fallback.r, fallback.g, fallback.b, ratio * 0.5))
+			draw_circle(pos, r, Color(fallback.r, fallback.g, fallback.b, float(metrics.get("alpha", 0.0)) * 0.5))
 
 
 func _fallback_color(effect_type: String) -> Color:
@@ -126,6 +126,17 @@ func _fallback_color(effect_type: String) -> Color:
 			return Color(1.0, 0.35, 0.30)
 		_:
 			return Color(0.72, 0.45, 1.0)
+
+
+func _visual_metrics(remaining: float, total: float, cell_size: int) -> Dictionary:
+	var ratio: float = clampf(remaining / maxf(0.01, total), 0.0, 1.0)
+	var progress: float = 1.0 - ratio
+	var size: float = float(cell_size) * lerpf(0.8, 2.8, progress)
+	return {
+		"progress": progress,
+		"size": size,
+		"alpha": ratio,
+	}
 
 
 func _process(delta: float) -> void:

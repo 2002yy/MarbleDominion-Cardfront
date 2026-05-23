@@ -895,12 +895,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not runtime.battlefield.is_inside(cell):
 		return
 
-	var result: Dictionary = runtime.selection_controller.on_battlefield_clicked(cell)
-	if not result.success:
-		if result.reason == "invalid_target":
-			var status_label = _cardfront_status_label()
-			if status_label != null:
-				status_label.text = "目标无效"
+	runtime.selection_controller.on_battlefield_clicked(cell)
 
 
 func _cleanup_game_layer() -> void:

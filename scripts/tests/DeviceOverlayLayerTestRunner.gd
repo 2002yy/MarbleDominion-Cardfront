@@ -21,6 +21,8 @@ func _run() -> void:
 
 	_test_texture_paths_exist()
 	_test_overlay_created_in_cardfront()
+	_test_overlay_dirty_redraw_contract()
+	_test_device_layer_marks_overlay_dirty()
 	_test_old_ballwar_no_overlay()
 	_test_active_device_in_draw_items()
 	_test_expired_device_not_drawn()
@@ -71,9 +73,71 @@ func _test_overlay_created_in_cardfront() -> void:
 	_assert.that(main.runtime.device_overlay_layer != null, "overlay: Cardfront should have device_overlay_layer")
 	if main.runtime.device_overlay_layer != null:
 		_assert.that(main.runtime.device_overlay_layer.visible, "overlay: Cardfront device_overlay_layer should be visible")
+		_assert.that(not main.runtime.device_overlay_layer.is_processing(), "overlay: device overlay should not redraw every frame")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
+
+
+func _test_overlay_dirty_redraw_contract() -> void:
+	var bf = Battlefield.new()
+	bf.configure(10)
+	get_root().add_child(bf)
+	bf.reset_quadrants()
+
+	var device_layer = DeviceLayerScript.new()
+	device_layer.setup(bf, null)
+	get_root().add_child(device_layer)
+
+	var overlay = CardfrontDeviceOverlayLayerScript.new()
+	overlay.setup(device_layer, bf, GameConfig.GAME_MODE_CARDFRONT)
+	get_root().add_child(overlay)
+
+	_assert.that(not overlay.is_processing(), "overlay dirty: setup should keep process disabled")
+	_assert.that(overlay._dirty, "overlay dirty: setup should request one redraw")
+	overlay._dirty = false
+	overlay.mark_dirty()
+	_assert.that(overlay._dirty, "overlay dirty: mark_dirty should set dirty flag")
+	_assert.that(not overlay.is_processing(), "overlay dirty: mark_dirty should not enable per-frame process")
+
+	TestFixtures.cleanup_node(overlay)
+	TestFixtures.cleanup_node(device_layer)
+	TestFixtures.cleanup_node(bf)
+
+
+func _test_device_layer_marks_overlay_dirty() -> void:
+	var bf = Battlefield.new()
+	bf.configure(10)
+	get_root().add_child(bf)
+	bf.reset_quadrants()
+
+	var device_layer = DeviceLayerScript.new()
+	device_layer.setup(bf, null)
+	get_root().add_child(device_layer)
+
+	var overlay = CardfrontDeviceOverlayLayerScript.new()
+	overlay.setup(device_layer, bf, GameConfig.GAME_MODE_CARDFRONT)
+	get_root().add_child(overlay)
+	device_layer.overlay_dirty_callback = Callable(overlay, "mark_dirty")
+
+	var cell = Vector2i(2, 2)
+	var req = DevicePlacementRequestScript.make(DeviceTypeScript.ABSORBER_CORE, CardfrontRulesScript.PLAYER_FACTION, cell)
+	overlay._dirty = false
+	device_layer.place(req)
+	_assert.that(overlay._dirty, "overlay dirty: placing a device should mark overlay dirty")
+
+	overlay._dirty = false
+	device_layer.remove_at(cell)
+	_assert.that(overlay._dirty, "overlay dirty: removing a device should mark overlay dirty")
+
+	device_layer.place(req)
+	overlay._dirty = false
+	device_layer.tick(100.0)
+	_assert.that(overlay._dirty, "overlay dirty: expiring a device should mark overlay dirty")
+
+	TestFixtures.cleanup_node(overlay)
+	TestFixtures.cleanup_node(device_layer)
+	TestFixtures.cleanup_node(bf)
 
 
 func _test_old_ballwar_no_overlay() -> void:

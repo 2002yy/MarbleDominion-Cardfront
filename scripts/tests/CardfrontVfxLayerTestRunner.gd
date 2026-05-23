@@ -19,6 +19,7 @@ func _run() -> void:
 	_test_old_ballwar_no_vfx_layer()
 	_test_energy_ripple_creates_effect()
 	_test_shield_crack_creates_effect()
+	_test_effect_visual_metrics_expand_and_fade()
 	_test_effect_expires_and_removed()
 	_test_missing_region_pulse_no_crash()
 
@@ -128,6 +129,18 @@ func _test_shield_crack_creates_effect() -> void:
 	if effects.size() > 0:
 		_assert.eq(str(effects[0].get("effect_type", "")), "shield_crack", "vfx: effect type should be shield_crack")
 	_cleanup_fixture(fixture)
+
+
+func _test_effect_visual_metrics_expand_and_fade() -> void:
+	var vfx = CardfrontVfxLayerScript.new()
+	var start: Dictionary = vfx._visual_metrics(1.0, 1.0, 20)
+	var mid: Dictionary = vfx._visual_metrics(0.5, 1.0, 20)
+	var end: Dictionary = vfx._visual_metrics(0.1, 1.0, 20)
+
+	_assert.gt(float(mid.get("size", 0.0)), float(start.get("size", 0.0)), "vfx visual: effect should expand over time")
+	_assert.gt(float(end.get("size", 0.0)), float(mid.get("size", 0.0)), "vfx visual: late effect should be largest")
+	_assert.gt(float(start.get("alpha", 0.0)), float(mid.get("alpha", 0.0)), "vfx visual: alpha should fade after start")
+	_assert.gt(float(mid.get("alpha", 0.0)), float(end.get("alpha", 0.0)), "vfx visual: alpha should keep fading")
 
 
 func _test_effect_expires_and_removed() -> void:
