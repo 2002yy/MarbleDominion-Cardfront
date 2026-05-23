@@ -85,7 +85,33 @@ func on_target_selected(target_cell: Vector2i, target_region_id: int) -> Diction
 func _invalid_target_feedback(cell: Vector2i) -> Dictionary:
 	if feedback_bus != null and feedback_bus.has_method("emit_target_invalid"):
 		feedback_bus.emit_target_invalid(selected_card_id, selected_card_data, cell, "invalid_target")
+	if target_preview != null and target_preview.has_method("flash_invalid_cell"):
+		target_preview.flash_invalid_cell(cell)
 	return {"success": false, "reason": "invalid_target", "cell": cell, "card_id": selected_card_id, "card_name": selected_card_data.get("card_name", "")}
+
+
+func update_hover_target_hint(cell: Vector2i) -> void:
+	if selected_card_id < 0:
+		return
+	if target_preview == null or hand_panel == null:
+		return
+	if not target_preview.has_method("get_hover_target_info"):
+		return
+
+	var info: Dictionary = target_preview.get_hover_target_info(cell)
+	if hand_panel.has_method("show_hover_target_hint"):
+		hand_panel.show_hover_target_hint(
+			bool(info.get("valid", false)),
+			str(info.get("reason", "invalid_target")),
+			selected_card_data
+		)
+
+
+func restore_action_hint() -> void:
+	if selected_card_id < 0:
+		return
+	if hand_panel != null and hand_panel.has_method("set_card_selected"):
+		hand_panel.set_card_selected(selected_card_id)
 
 
 func clear_selection() -> void:

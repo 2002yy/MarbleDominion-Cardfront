@@ -18,6 +18,9 @@ var _preview_type: String = ""
 var _owner_id: int = CardfrontRulesScript.PLAYER_FACTION
 var _pulse_time: float = 0.0
 
+const INVALID_FLASH_DURATION: float = 0.25
+var _invalid_flash_cells: Array[Dictionary] = []
+
 
 func _init() -> void:
 	name = "CardfrontTargetPreviewLayer"
@@ -64,6 +67,7 @@ func clear_preview() -> void:
 	_active = false
 	_valid_cells.clear()
 	_hint_cells.clear()
+	_invalid_flash_cells.clear()
 	_preview_type = ""
 	_pulse_time = 0.0
 	set_process(false)
@@ -113,13 +117,36 @@ func _draw() -> void:
 		draw_rect(rect.grow(-1.5), hint_fill, true)
 		draw_rect(rect.grow(-0.5), hint_outline, false, hint_width)
 
+	var flash_color := Color(1.0, 0.18, 0.18, 0.50)
+	for entry in _invalid_flash_cells:
+		var fc: Vector2i = entry.get("cell", Vector2i(-1, -1))
+		if fc.x < 0 or fc.y < 0:
+			continue
+		var frac: float = clampf(entry.get("remaining", 0.0) / INVALID_FLASH_DURATION, 0.0, 1.0)
+		var flash_alpha: float = 0.60 * frac
+		var rect := Rect2(Vector2(fc.x * cell_size, fc.y * cell_size), Vector2(cell_size, cell_size))
+		draw_rect(rect.grow(-1.0), Color(flash_color.r, flash_color.g, flash_color.b, flash_alpha), true)
+
 
 func _process(delta: float) -> void:
-	if not _active:
+	var needs_redraw: bool = false
+	if _active:
+		_pulse_time += maxf(0.0, delta)
+		needs_redraw = true
+	if not _invalid_flash_cells.is_empty():
+		var all_expired: bool = true
+		for i in range(_invalid_flash_cells.size() - 1, -1, -1):
+			_invalid_flash_cells[i]["remaining"] -= maxf(0.0, delta)
+			if _invalid_flash_cells[i]["remaining"] <= 0.0:
+				_invalid_flash_cells.remove_at(i)
+			else:
+				all_expired = false
+		if not all_expired:
+			needs_redraw = true
+	if needs_redraw:
+		queue_redraw()
+	else:
 		set_process(false)
-		return
-	_pulse_time += maxf(0.0, delta)
-	queue_redraw()
 
 
 func _pulse_value() -> float:
@@ -134,6 +161,50 @@ func _with_alpha(color: Color, alpha: float) -> Color:
 	return Color(color.r, color.g, color.b, clampf(alpha, 0.0, 1.0))
 
 
+
+func get_hover_target_info(cell: Vector2i) -> Dictionary:
+	if not _active:
+		return {
+			"active": false,
+			"valid": false,
+			"reason": "no_active_card",
+		}
+
+	if cell in _valid_cells:
+		return {
+			"active": true,
+			"valid": true,
+			"reason": "valid_target",
+			"preview_type": _preview_type,
+			"region_id": get_target_region_id(cell),
+		}
+
+	return {
+		"active": true,
+		"valid": false,
+		"reason": _invalid_reason_for_preview_type(),
+		"preview_type": _preview_type,
+	}
+
+
+func _invalid_reason_for_preview_type() -> String:
+	match _preview_type:
+		CardTargetTypeScript.OWNED_BORDER:
+			return "need_owned_border"
+		CardTargetTypeScript.ENEMY_REGION:
+			return "need_enemy_region"
+		CardTargetTypeScript.OWNED_REGION:
+			return "need_owned_region"
+	return "invalid_target"
+
+
+func flash_invalid_cell(cell: Vector2i) -> void:
+	_invalid_flash_cells.append({
+		"cell": cell,
+		"remaining": INVALID_FLASH_DURATION,
+	})
+	set_process(true)
+	queue_redraw()
 func _find_owned_border_cells() -> void:
 	_valid_cells.clear()
 	if battlefield == null:
