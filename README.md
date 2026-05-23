@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.4a.1-resource-minibar-cleanup**.
+The current completed slice is **v0.2.4a.2-card-click-hitbox-feedback-hotfix**.
 Current next slice: **v0.2.4c-ui-credits-and-asset-doc-sync**.
-TopResourceBar simplified to compact minibar (icon + value only, no Name/YieldLabel labels); CardView uses card_frame Panel and reduced Bg alpha; all Cardfront UI scenes use registry-backed style/font/icon hooks; hand cards load 256px thumbnails (fallback chain: thumbnail → 512 full art → placeholder); no gameplay or card-value changes.
+TopResourceBar stays a compact player-only minibar; hand-card hitboxes now pass real mouse clicks through the `CardHBox` container; disabled/used cards emit click + failure feedback instead of failing silently; no gameplay, card-value, Deckbuilder, or AI Commander changes.
 
 ## Current Slice / 当前阶段
 
@@ -32,7 +32,7 @@ Implemented in this repository:
   - Calibrated Shot registers a testable target-region bias for the player.
   - Pioneer Beacon converts up to 3 neutral neighbors around an owned border cell.
 - Formal Cardfront HUD:
-  - `CardfrontTopResourceBar` shows live Energy / Parts with yield rate.
+  - `CardfrontTopResourceBar` shows compact player Energy / Parts icon + value only.
   - `CardfrontHandPanel` shows 4 fixed-hand cards with cost, target type, and affordability states.
   - `CardfrontCardSelectionController` manages click-to-select and card-play dispatch.
 - Cardfront interaction feedback:
@@ -51,16 +51,21 @@ Implemented in this repository:
   - All Cardfront UI scenes use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback.
 - Cardfront card thumbnail pass (v0.2.4b):
   - 256px thumbnails generated for cards 1001-1004 under `assets/cardfront_runtime/卡牌插图_cards/256/`.
+  - `CardVisualRegistry.gd` extended with `RUNTIME_BASE_THUMB`, `get_thumbnail_path()`, `has_thumbnail()`, and `thumbnail` fields.
+  - `CardfrontCardView.gd` uses thumbnail-first loading with fallback chain: thumbnail → 512 full art → placeholder.
+  - `get_texture_path()` preserved for hover detail / full-card views.
+  - Game-Icons credits preserved in `ASSET_SOURCES_AND_LICENSES.md`.
 - Resource bar minibar cleanup (v0.2.4a.1):
   - TopResourceBar simplified: removed Name labels ("能量"/"零件"), removed YieldLabel ("本秒无产出"/"+x/s").
   - Added fallback Symbol labels (⚡/⚙) toggled with TextureRect icons.
   - Container widths halved (360→220) to match compact layout.
   - DebugHint (1010, 660) unchanged.
   - No gameplay or card-value changes.
-  - `CardVisualRegistry.gd` extended with `RUNTIME_BASE_THUMB`, `get_thumbnail_path()`, `has_thumbnail()`, and `thumbnail` fields.
-  - `CardfrontCardView.gd` uses thumbnail-first loading with fallback chain: thumbnail → 512 full art → placeholder.
-  - `get_texture_path()` preserved for hover detail / full-card views.
-  - Game-Icons credits preserved in `ASSET_SOURCES_AND_LICENSES.md`.
+- Card click hitbox feedback hotfix (v0.2.4a.2):
+  - `CardfrontHandPanel` gives `CardHBox` a real 4-card hitbox and `MOUSE_FILTER_PASS`; decorative panel nodes ignore mouse input.
+  - `CardfrontCardView` emits `card_clicked` before availability checks.
+  - Resource-disabled cards emit `card_play_failed` with `not_enough_resource`; used cards emit `card_play_failed` with `card_already_used`.
+  - Disabled/used cards do not call the selection callback and do not enter selected state.
 - Cardfront card interaction hotfix:
   - `CardfrontCardView.tscn` root uses `MOUSE_FILTER_STOP`; decorative children use `MOUSE_FILTER_IGNORE`.
   - `CardfrontCardViewInteractionConfigTestRunner.gd` verifies hover/click signal routing to `CardfrontFeedbackBus`.
@@ -83,7 +88,7 @@ Implemented in this repository:
 - New headless runner: `CardfrontFireDirectorTestRunner.gd`.
 - New headless runner: `CardfrontControlChamberDecouplingTestRunner.gd`.
 - New headless runner: `PioneerBeaconLiteTestRunner.gd`.
-- New headless runners: `CardfrontCardDetailPopupTestRunner.gd`, `CardfrontCardFeedbackTestRunner.gd`, `CardfrontToastLayerTestRunner.gd`, `CardfrontEffectVisualBridgeTestRunner.gd`, `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`, `CardfrontCardViewInteractionConfigTestRunner.gd`.
+- New headless runners: `CardfrontCardDetailPopupTestRunner.gd`, `CardfrontCardFeedbackTestRunner.gd`, `CardfrontToastLayerTestRunner.gd`, `CardfrontEffectVisualBridgeTestRunner.gd`, `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`, `CardfrontCardViewInteractionConfigTestRunner.gd`, `CardfrontHandRealHitboxTestRunner.gd`, `CardfrontDisabledCardFeedbackTestRunner.gd`, `CardfrontTopResourceBarMinimalTestRunner.gd`.
 
 Not implemented yet:
 
@@ -181,37 +186,34 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontBattlefieldClickSelectionTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontCardDetailPopupTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontCardFeedbackTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDisabledCardFeedbackTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontToastLayerTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontEffectVisualBridgeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDebugPanelToggleTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontUiAssetRegistryTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontUiArtSceneTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontCardViewInteractionConfigTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontHandRealHitboxTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontTopResourceBarMinimalTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for v0.2.4a-real-ui-art-scene-pass:
+Latest local validation for v0.2.4a.2-card-click-hitbox-feedback-hotfix:
 
+- `CardfrontHandRealHitboxTestRunner.gd`: 31 checks passed.
+- `CardfrontDisabledCardFeedbackTestRunner.gd`: 12 checks passed.
 - `CardfrontCardViewInteractionConfigTestRunner.gd`: 35 checks passed.
-- `CardfrontCardDetailPopupTestRunner.gd`: 4 checks passed.
 - `CardfrontCardFeedbackTestRunner.gd`: 24 checks passed.
-- `CardfrontToastLayerTestRunner.gd`: 4 checks passed.
-- `CardfrontEffectVisualBridgeTestRunner.gd`: 5 checks passed.
-- `CardfrontCardArtBindingTestRunner.gd`: 22 checks passed.
-- `CardfrontDebugPanelToggleTestRunner.gd`: 17 checks passed.
-- `CardfrontUiAssetRegistryTestRunner.gd`: 40 checks passed.
-- `CardfrontUiArtSceneTestRunner.gd`: 18 checks passed.
 - `CardfrontFormalUITestRunner.gd`: 48 checks passed.
 - `CardfrontTargetPreviewTestRunner.gd`: 13 checks passed.
 - `CardfrontBattlefieldClickSelectionTestRunner.gd`: 16 checks passed.
-- `CardfrontModeSmokeTestRunner.gd`: 38 checks passed.
-- `CardfrontPerformanceSmokeTestRunner.gd`: 7 checks passed.
-- `CardfrontVfxLayerTestRunner.gd`: 14 checks passed.
+- `CardfrontTopResourceBarMinimalTestRunner.gd`: 12 checks passed.
 - `SmokeTestRunner.gd`: 215 checks passed.
+- `IntegrationTestRunner.gd`: 133 checks passed.
 
 ## Next Milestone / 下一阶段
 
-`v0.2.4b-card-thumbnail-pass`: generate/register 128/256 thumbnails for hand cards using `CardVisualRegistry.thumbnail` and keep 512 art for hover/detail views. Keep Deckbuilder, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
+`v0.2.4c-ui-credits-and-asset-doc-sync`: align asset credits and generated manifests after UI art, thumbnail, minibar, and click-feedback hotfix work. Keep Deckbuilder, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
 
 MIT License. See [LICENSE](LICENSE).

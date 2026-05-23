@@ -188,15 +188,29 @@ func _on_mouse_exited() -> void:
 
 func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if feedback_bus != null and feedback_bus.has_method("emit_card_clicked"):
+			feedback_bus.emit_card_clicked(card_id, card_data, self)
+		if current_state == "disabled_resource":
+			_emit_click_failed("not_enough_resource")
+			return
+		if current_state == "used":
+			_emit_click_failed("card_already_used")
+			return
 		if is_clickable():
-			if feedback_bus != null and feedback_bus.has_method("emit_card_clicked"):
-				feedback_bus.emit_card_clicked(card_id, card_data, self)
 			clicked_callback.call()
 		else:
-			if feedback_bus != null and feedback_bus.has_method("emit_card_play_failed"):
-				var reason: String = "used" if current_state == "used" else "not_enough_resource"
-				var fail_result := {"success": false, "reason": reason, "card_id": card_id, "card_name": card_data.get("card_name", "")}
-				feedback_bus.emit_card_play_failed(card_id, card_data, fail_result)
+			_emit_click_failed("not_clickable")
+
+
+func _emit_click_failed(reason: String) -> void:
+	if feedback_bus != null and feedback_bus.has_method("emit_card_play_failed"):
+		var fail_result := {
+			"success": false,
+			"reason": str(reason),
+			"card_id": card_id,
+			"card_name": card_data.get("card_name", ""),
+		}
+		feedback_bus.emit_card_play_failed(card_id, card_data, fail_result)
 
 
 func _animate_expand() -> void:

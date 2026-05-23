@@ -8,8 +8,11 @@ script = ExtResource("1_hand")
 
 [node name="PanelBg" type="Panel" parent="."]
 self_modulate = Color(1, 1, 1, 0.92)
+mouse_filter = 2
 
 [node name="PanelBorder" type="ColorRect" parent="."]
+mouse_filter = 2
 color = Color(0.20, 0.35, 0.55, 0.0)
 
 [node name="CardHBox" type="Control" parent="."]
+mouse_filter = 1

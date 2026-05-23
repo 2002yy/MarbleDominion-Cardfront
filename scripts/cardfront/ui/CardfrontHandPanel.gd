@@ -35,16 +35,21 @@ func setup(new_card_system, new_resource_states: Dictionary, new_economy_system,
 
 func _layout_panel(view_size: Vector2) -> void:
 	var panel_bg: Control = $PanelBg as Control
+	var panel_border: Control = $PanelBorder as Control
 	var container: Control = $CardHBox as Control
 	var panel_w: float = CARD_W * 4 + CARD_GAP * 3 + 24.0
 	var panel_x: float = (view_size.x - panel_w) * 0.5
 	var panel_y: float = view_size.y - PANEL_HEIGHT - 8.0
 	panel_bg.position = Vector2(panel_x, panel_y)
 	panel_bg.size = Vector2(panel_w, PANEL_HEIGHT)
+	panel_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel_border.position = panel_bg.position
+	panel_border.size = panel_bg.size
+	panel_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_art_assets(panel_bg)
 	container.position = Vector2(panel_x + 12.0, view_size.y - CARD_H - 8.0)
-	container.size = Vector2(CARD_W * 4 + CARD_GAP * 3, CARD_H)
-	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.size = Vector2(panel_w - 24.0, CARD_H)
+	container.mouse_filter = Control.MOUSE_FILTER_PASS
 
 
 func _populate_cards() -> void:

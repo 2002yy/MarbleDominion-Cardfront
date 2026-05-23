@@ -65,6 +65,7 @@ jobs:
             scripts: |
               CardfrontCardDetailPopupTestRunner.gd
               CardfrontCardFeedbackTestRunner.gd
+              CardfrontDisabledCardFeedbackTestRunner.gd
               CardfrontToastLayerTestRunner.gd
               CardfrontEffectVisualBridgeTestRunner.gd
           - batch: Cardfront UI art and debug
@@ -73,6 +74,8 @@ jobs:
               CardfrontUiAssetRegistryTestRunner.gd
               CardfrontUiArtSceneTestRunner.gd
               CardfrontCardViewInteractionConfigTestRunner.gd
+              CardfrontHandRealHitboxTestRunner.gd
+              CardfrontTopResourceBarMinimalTestRunner.gd
           - batch: Cardfront performance budget
             scripts: |
               CardfrontPerformanceSmokeTestRunner.gd

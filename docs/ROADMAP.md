@@ -8,7 +8,7 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.4a.1-resource-minibar-cleanup`
+- Current completed slice: `v0.2.4a.2-card-click-hitbox-feedback-hotfix`
 - Next slice: `v0.2.4c-ui-credits-and-asset-doc-sync`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
@@ -16,6 +16,7 @@ This file is the single place for project direction and phase status.
   - CardView uses card_frame Panel and reduced Bg alpha for texture visibility
   - All UI scenes use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback
   - Hand cards load 256px thumbnails (fallback chain: thumbnail → 512 full art → placeholder)
+  - Hand-card hitboxes and disabled/used-card feedback are covered by real input/config tests
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
 
@@ -56,6 +57,7 @@ This file is the single place for project direction and phase status.
 | `v0.2.4a-real-ui-art-scene-pass` | Done / 已完成 | TopResourceBar uses TextureRect icons (energy/parts) with registry-backed fallback; CardView uses card_frame Panel and reduced Bg alpha; all scenes use registry-backed style/font hooks with ColorRect / StyleBoxFlat fallback; no gameplay or card-value changes. |
 | `v0.2.4b-card-thumbnail-pass` | Done / 已完成 | 256px thumbnails for cards 1001-1004; CardVisualRegistry extended with thumbnail paths; CardView loads thumbnail → 512 full art → placeholder fallback chain; Game-Icons credits preserved. |
 | `v0.2.4a.1-resource-minibar-cleanup` | Done / 已完成 | TopResourceBar simplified: removed Name/YieldLabel, added Symbol fallback (⚡/⚙) toggled with TextureRect icons, container width halved to 220px. |
+| `v0.2.4a.2-card-click-hitbox-feedback-hotfix` | Done / 已完成 | CardHBox now owns a real pass-through hitbox, hand-panel decoration ignores mouse input, disabled cards emit `not_enough_resource`, and used cards emit `card_already_used` instead of failing silently. |
 | `v0.2.4c-ui-credits-and-asset-doc-sync` | Planned / 计划 | Keep credits and generated asset manifest aligned after UI art and thumbnail wiring. |
 
 ## 3. Design Boundaries / 设计边界
@@ -195,7 +197,7 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. `v0.2.4b-card-thumbnail-pass`: generate/register 128/256 thumbnails for hand cards and keep 512 art for hover/detail views.
+1. `v0.2.4c-ui-credits-and-asset-doc-sync`: align asset credits and generated manifests after UI art, thumbnail, minibar, and click-feedback hotfix work.
 2. Keep Deckbuilder, deck draw/discard/shuffle, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
 3. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` for all new wiring.
 
