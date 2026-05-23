@@ -57,8 +57,11 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if not is_destroyed:
-		sweep_phase += delta * sweep_speed
-		rotation = center_angle + sin(sweep_phase) * sweep_amplitude
+		if burst_directed and burst_remaining > 0:
+			rotation = burst_directed_angle
+		else:
+			sweep_phase += delta * sweep_speed
+			rotation = center_angle + sin(sweep_phase) * sweep_amplitude
 
 	if burst_remaining > 0 and not is_destroyed:
 		burst_timer -= delta
@@ -148,10 +151,12 @@ func fire_directed(count: int, angle: float, spread: float = 0.0) -> bool:
 	burst_directed = true
 	burst_directed_angle = float(angle)
 	burst_directed_spread = maxf(0.0, float(spread))
+	rotation = burst_directed_angle
 	burst_progress_emit_timer = 0.0
 	burst_last_reported_remaining = burst_remaining
 	burst_progress.emit(faction_id, burst_remaining)
 	_set_burst_locked(true)
+	queue_redraw()
 	return true
 
 func cancel_burst() -> int:

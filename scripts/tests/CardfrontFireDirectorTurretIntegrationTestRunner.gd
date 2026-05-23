@@ -21,6 +21,7 @@ func _run() -> void:
 	_test_fire_directed_called_with_real_turret()
 	_test_burst_directed_flag_set()
 	_test_current_burst_shot_angle_matches_intent()
+	_test_directed_burst_aligns_visual_rotation()
 	_test_old_fire_burst_not_affected()
 
 	GameConfig.reset_runtime_defaults()
@@ -142,6 +143,26 @@ func _test_current_burst_shot_angle_matches_intent() -> void:
 	var angle: float = turret._current_burst_shot_angle()
 	_assert.that(not is_equal_approx(angle, turret.rotation) or turret.burst_total <= 1, "integration angle: directed angle should differ from default rotation (or single shot)")
 
+	_cleanup_fixture(fixture)
+
+
+func _test_directed_burst_aligns_visual_rotation() -> void:
+	var fixture: Dictionary = _make_fixture(20)
+	var turret = fixture.turret
+	var target_angle: float = 1.125
+
+	turret.rotation = -0.75
+	var accepted: bool = turret.fire_directed(1, target_angle, 0.10)
+	_assert.that(accepted, "visual angle: directed burst should be accepted")
+	_assert.that(is_equal_approx(turret.rotation, target_angle), "visual angle: fire_directed should rotate barrel before first shot")
+
+	turret.rotation = -0.25
+	turret.burst_timer = 1.0
+	turret._process(0.25)
+	_assert.that(is_equal_approx(turret.rotation, target_angle), "visual angle: directed burst should keep barrel aligned during process")
+	_assert.that(is_equal_approx(turret._current_burst_shot_angle(), target_angle), "visual angle: shot center should match visible barrel")
+
+	turret.cancel_burst()
 	_cleanup_fixture(fixture)
 
 
