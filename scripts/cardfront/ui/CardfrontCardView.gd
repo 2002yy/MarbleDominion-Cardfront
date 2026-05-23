@@ -192,6 +192,11 @@ func _on_gui_input(event: InputEvent) -> void:
 			if feedback_bus != null and feedback_bus.has_method("emit_card_clicked"):
 				feedback_bus.emit_card_clicked(card_id, card_data, self)
 			clicked_callback.call()
+		else:
+			if feedback_bus != null and feedback_bus.has_method("emit_card_play_failed"):
+				var reason: String = "used" if current_state == "used" else "not_enough_resource"
+				var fail_result := {"success": false, "reason": reason, "card_id": card_id, "card_name": card_data.get("card_name", "")}
+				feedback_bus.emit_card_play_failed(card_id, card_data, fail_result)
 
 
 func _animate_expand() -> void:

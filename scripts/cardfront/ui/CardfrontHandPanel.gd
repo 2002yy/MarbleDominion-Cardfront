@@ -43,6 +43,8 @@ func _layout_panel(view_size: Vector2) -> void:
 	panel_bg.size = Vector2(panel_w, PANEL_HEIGHT)
 	_apply_art_assets(panel_bg)
 	container.position = Vector2(panel_x + 12.0, view_size.y - CARD_H - 8.0)
+	container.size = Vector2(CARD_W * 4 + CARD_GAP * 3, CARD_H)
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func _populate_cards() -> void:
