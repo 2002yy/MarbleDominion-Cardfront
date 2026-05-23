@@ -16,6 +16,7 @@ var _preview_color: Color = Color(0.62, 0.90, 1.0, 0.35)
 var _hint_color: Color = Color(0.90, 0.72, 0.18, 0.28)
 var _preview_type: String = ""
 var _owner_id: int = CardfrontRulesScript.PLAYER_FACTION
+var _pulse_time: float = 0.0
 
 
 func _init() -> void:
@@ -37,6 +38,7 @@ func setup(new_battlefield, new_region_map, mode_name: String) -> void:
 func show_for_card(card_id: int, card_data: Dictionary) -> void:
 	clear_preview()
 	_active = true
+	_pulse_time = 0.0
 	var target_type: String = str(card_data.get("target_type", ""))
 	_preview_type = target_type
 	_owner_id = CardfrontRulesScript.PLAYER_FACTION
@@ -54,6 +56,7 @@ func show_for_card(card_id: int, card_data: Dictionary) -> void:
 			_preview_color = Color(0.72, 0.45, 1.0, 0.30)
 			_find_owned_region_cells()
 
+	set_process(visible)
 	queue_redraw()
 
 
@@ -62,6 +65,8 @@ func clear_preview() -> void:
 	_valid_cells.clear()
 	_hint_cells.clear()
 	_preview_type = ""
+	_pulse_time = 0.0
+	set_process(false)
 	queue_redraw()
 
 
@@ -81,17 +86,52 @@ func get_preview_type() -> String:
 	return _preview_type
 
 
+func get_preview_pulse_alpha_for_test() -> float:
+	return _preview_fill_alpha()
+
+
 func _draw() -> void:
 	if not _active:
 		return
+	var pulse: float = _pulse_value()
+	var fill_alpha: float = _preview_fill_alpha()
+	var outline_alpha: float = lerpf(0.76, 1.0, pulse)
+	var outline_width: float = maxf(1.0, float(cell_size) * 0.12) * lerpf(1.0, 1.65, pulse)
+	var fill_color := _with_alpha(_preview_color, fill_alpha)
+	var outline_color := _with_alpha(_preview_color.lightened(0.42), outline_alpha)
 	for cell in _valid_cells:
 		var rect := Rect2(Vector2(cell.x * cell_size, cell.y * cell_size), Vector2(cell_size, cell_size))
-		draw_rect(rect.grow(-1.5), _preview_color, true)
-		draw_rect(rect.grow(-0.5), _preview_color.lightened(0.3), false, maxf(1.0, float(cell_size) * 0.12))
+		draw_rect(rect.grow(-1.5), fill_color, true)
+		draw_rect(rect.grow(-0.5), outline_color, false, outline_width)
+	var hint_alpha: float = lerpf(0.26, 0.48, pulse)
+	var hint_outline_alpha: float = lerpf(0.58, 0.88, pulse)
+	var hint_width: float = maxf(1.0, float(cell_size) * 0.10) * lerpf(1.0, 1.45, pulse)
+	var hint_fill := _with_alpha(_hint_color, hint_alpha)
+	var hint_outline := _with_alpha(_hint_color.lightened(0.36), hint_outline_alpha)
 	for cell in _hint_cells:
 		var rect := Rect2(Vector2(cell.x * cell_size, cell.y * cell_size), Vector2(cell_size, cell_size))
-		draw_rect(rect.grow(-1.5), _hint_color, true)
-		draw_rect(rect.grow(-0.5), _hint_color.lightened(0.3), false, maxf(1.0, float(cell_size) * 0.10))
+		draw_rect(rect.grow(-1.5), hint_fill, true)
+		draw_rect(rect.grow(-0.5), hint_outline, false, hint_width)
+
+
+func _process(delta: float) -> void:
+	if not _active:
+		set_process(false)
+		return
+	_pulse_time += maxf(0.0, delta)
+	queue_redraw()
+
+
+func _pulse_value() -> float:
+	return 0.5 + 0.5 * sin(_pulse_time * 5.4)
+
+
+func _preview_fill_alpha() -> float:
+	return lerpf(0.34, 0.58, _pulse_value())
+
+
+func _with_alpha(color: Color, alpha: float) -> Color:
+	return Color(color.r, color.g, color.b, clampf(alpha, 0.0, 1.0))
 
 
 func _find_owned_border_cells() -> void:

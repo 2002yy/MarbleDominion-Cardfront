@@ -66,6 +66,7 @@ jobs:
               CardfrontCardDetailPopupTestRunner.gd
               CardfrontCardFeedbackTestRunner.gd
               CardfrontDisabledCardFeedbackTestRunner.gd
+              CardfrontActionHintTestRunner.gd
               CardfrontToastLayerTestRunner.gd
               CardfrontEffectVisualBridgeTestRunner.gd
           - batch: Cardfront UI art and debug

@@ -5,6 +5,8 @@ const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd"
 const CardfrontUiAssetRegistryScript = preload("res://scripts/cardfront/ui/CardfrontUiAssetRegistry.gd")
 const CardViewScene = preload("res://scenes/ui/cardfront/CardfrontCardView.tscn")
 
+@onready var _action_hint_label: Label = $ActionHintLabel
+
 var card_system = null
 var resource_states: Dictionary = {}
 var _card_views: Array[CardfrontCardView] = []
@@ -19,6 +21,13 @@ const CARD_W: float = 130.0
 const COLLAPSED_Y_OFFSET: float = 70.0
 const MAX_VISIBLE_CARDS: int = 4
 
+const CARD_HINTS: Dictionary = {
+	1001: "前线加固：点击蓝色高亮的己方边界格，添加加固层",
+	1002: "校准射击：点击青色高亮的敌方区域，6 秒内优先射击该区域",
+	1003: "民心起伏：点击紫色高亮的己方区域，逐步提升区域控制",
+	1004: "拓荒信标：点击己方边界格，向周围中立格扩张",
+}
+
 
 func setup(new_card_system, new_resource_states: Dictionary, new_economy_system, mode_name: String, view_size: Vector2, new_feedback_bus = null) -> void:
 	card_system = new_card_system
@@ -32,6 +41,7 @@ func setup(new_card_system, new_resource_states: Dictionary, new_economy_system,
 	_populate_cards()
 	_connect_economy_signals()
 	refresh()
+	_hide_action_hint()
 
 
 func _layout_panel(view_size: Vector2) -> void:
@@ -51,6 +61,10 @@ func _layout_panel(view_size: Vector2) -> void:
 	container.position = Vector2(panel_x + 12.0, view_size.y - CARD_H - 8.0)
 	container.size = Vector2(panel_w - 24.0, CARD_H)
 	container.mouse_filter = Control.MOUSE_FILTER_PASS
+	_action_hint_label.position = Vector2(panel_x, container.position.y - 34.0)
+	_action_hint_label.size = Vector2(panel_w, 28.0)
+	_action_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_apply_hint_style()
 
 
 func _populate_cards() -> void:
@@ -104,17 +118,50 @@ func get_card_view(card_id: int) -> CardfrontCardView:
 
 
 func set_card_selected(card_id: int) -> void:
+	var selected_card_data: Dictionary = {}
 	for view in _card_views:
 		if view.card_id == card_id:
 			view.set_state("selected")
+			selected_card_data = view.card_data.duplicate(false)
 		elif view.current_state == "selected":
 			view.set_state("idle")
+	if selected_card_data.is_empty():
+		_hide_action_hint()
+	else:
+		_show_action_hint(card_id, selected_card_data)
 
 
 func clear_selection() -> void:
 	for view in _card_views:
 		if view.current_state == "selected":
 			view.set_state("idle")
+	_hide_action_hint()
+
+
+func get_action_hint_text() -> String:
+	if _action_hint_label == null:
+		return ""
+	return str(_action_hint_label.text)
+
+
+func is_action_hint_visible() -> bool:
+	return _action_hint_label != null and _action_hint_label.visible
+
+
+func get_action_hint_for_card(card_id: int, card_data: Dictionary = {}) -> String:
+	var id_key: int = int(card_id)
+	if CARD_HINTS.has(id_key):
+		return str(CARD_HINTS[id_key])
+	match str(card_data.get("effect_id", "")):
+		"fortify_border":
+			return str(CARD_HINTS[1001])
+		"calibrated_shot":
+			return str(CARD_HINTS[1002])
+		"morale_fluctuation":
+			return str(CARD_HINTS[1003])
+		"pioneer_beacon_lite":
+			return str(CARD_HINTS[1004])
+	return ""
 
 
 func _connect_economy_signals() -> void:
@@ -139,3 +186,25 @@ func _apply_art_assets(panel_bg: Control) -> void:
 			Color(0.20, 0.35, 0.55, 0.45)
 		)
 		(panel_bg as Panel).add_theme_stylebox_override("panel", style)
+
+
+func _show_action_hint(card_id: int, card_data: Dictionary) -> void:
+	var hint: String = get_action_hint_for_card(card_id, card_data)
+	if hint == "":
+		_hide_action_hint()
+		return
+	_action_hint_label.text = hint
+	_action_hint_label.visible = true
+
+
+func _hide_action_hint() -> void:
+	if _action_hint_label == null:
+		return
+	_action_hint_label.text = ""
+	_action_hint_label.visible = false
+
+
+func _apply_hint_style() -> void:
+	var font = CardfrontUiAssetRegistryScript.load_font()
+	if font != null:
+		_action_hint_label.add_theme_font_override("font", font)
