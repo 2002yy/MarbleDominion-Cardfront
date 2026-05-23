@@ -69,13 +69,13 @@ func _select_card(main, card_data: Dictionary) -> void:
 func _expected_hint(card_id: int) -> String:
 	match int(card_id):
 		1001:
-			return "前线加固：点击蓝色高亮的己方边界格，添加加固层"
+			return "前线加固：点击蓝色高亮的己方边界格，添加加固层｜右键/Esc 取消"
 		1002:
-			return "校准射击：点击青色高亮的敌方区域，6 秒内优先射击该区域"
+			return "校准射击：点击青色高亮的敌方区域，6 秒内优先射击该区域｜右键/Esc 取消"
 		1003:
-			return "民心起伏：点击紫色高亮的己方区域，逐步提升区域控制"
+			return "民心起伏：点击紫色高亮的己方区域，逐步提升区域控制｜右键/Esc 取消"
 		1004:
-			return "拓荒信标：点击己方边界格，向周围中立格扩张"
+			return "拓荒信标：点击己方边界格，向周围中立格扩张｜右键/Esc 取消"
 	return ""
 
 

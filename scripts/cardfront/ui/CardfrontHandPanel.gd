@@ -6,6 +6,7 @@ const CardfrontUiAssetRegistryScript = preload("res://scripts/cardfront/ui/Cardf
 const CardViewScene = preload("res://scenes/ui/cardfront/CardfrontCardView.tscn")
 
 @onready var _action_hint_label: Label = $ActionHintLabel
+@onready var _action_hint_bg: ColorRect = $ActionHintBg
 
 var card_system = null
 var resource_states: Dictionary = {}
@@ -64,6 +65,9 @@ func _layout_panel(view_size: Vector2) -> void:
 	_action_hint_label.position = Vector2(panel_x, container.position.y - 34.0)
 	_action_hint_label.size = Vector2(panel_w, 28.0)
 	_action_hint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_action_hint_bg.position = _action_hint_label.position
+	_action_hint_bg.size = _action_hint_label.size
+	_action_hint_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_hint_style()
 
 
@@ -193,8 +197,10 @@ func _show_action_hint(card_id: int, card_data: Dictionary) -> void:
 	if hint == "":
 		_hide_action_hint()
 		return
-	_action_hint_label.text = hint
+	_action_hint_label.text = "%s｜右键/Esc 取消" % hint
 	_action_hint_label.visible = true
+	if _action_hint_bg != null:
+		_action_hint_bg.visible = true
 
 
 func _hide_action_hint() -> void:
@@ -202,6 +208,32 @@ func _hide_action_hint() -> void:
 		return
 	_action_hint_label.text = ""
 	_action_hint_label.visible = false
+	if _action_hint_bg != null:
+		_action_hint_bg.visible = false
+
+
+func show_hover_target_hint(valid: bool, reason: String, card_data: Dictionary) -> void:
+	if _action_hint_label == null:
+		return
+	var card_name := str(card_data.get("card_name", "当前卡牌"))
+	if valid:
+		_action_hint_label.text = "可使用【%s】：点击此处释放｜右键/Esc 取消" % card_name
+	else:
+		_action_hint_label.text = _invalid_target_hint(reason, card_name)
+	_action_hint_label.visible = true
+	if _action_hint_bg != null:
+		_action_hint_bg.visible = true
+
+
+func _invalid_target_hint(reason: String, card_name: String) -> String:
+	match reason:
+		"need_owned_border":
+			return "不能选择：%s 只能作用于己方边界格｜右键/Esc 取消" % card_name
+		"need_enemy_region":
+			return "不能选择：%s 只能作用于敌方控制区域｜右键/Esc 取消" % card_name
+		"need_owned_region":
+			return "不能选择：%s 只能作用于己方控制区域｜右键/Esc 取消" % card_name
+	return "不能选择：目标无效｜右键/Esc 取消"
 
 
 func _apply_hint_style() -> void:
