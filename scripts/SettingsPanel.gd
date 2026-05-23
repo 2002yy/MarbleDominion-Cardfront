@@ -7,6 +7,7 @@ signal settings_changed(settings: Dictionary)
 
 @onready var performance_check: CheckButton = get_node("PanelMargin/MainVBox/PerformanceCheck")
 @onready var low_effect_check: CheckButton = get_node("PanelMargin/MainVBox/LowEffectCheck")
+@onready var newbie_hint_check: CheckButton = get_node("PanelMargin/MainVBox/NewbieHintCheck")
 
 var current_settings: Dictionary = {}
 
@@ -17,17 +18,21 @@ func _ready() -> void:
 
 	performance_check.toggled.connect(_on_setting_toggled)
 	low_effect_check.toggled.connect(_on_setting_toggled)
+	newbie_hint_check.toggled.connect(_on_setting_toggled)
 	get_node("PanelMargin/MainVBox/CloseButton").pressed.connect(hide_panel)
 
 
 func _apply_settings_to_controls() -> void:
 	performance_check.button_pressed = bool(current_settings.get("show_performance_info", true))
 	low_effect_check.button_pressed = bool(current_settings.get("low_effect_mode", false))
+	newbie_hint_check.button_pressed = bool(current_settings.get("show_newbie_hint", true))
 
 
 func _on_setting_toggled(_pressed: bool) -> void:
 	current_settings["show_performance_info"] = performance_check.button_pressed
 	current_settings["low_effect_mode"] = low_effect_check.button_pressed
+	current_settings["show_newbie_hint"] = newbie_hint_check.button_pressed
+	current_settings["tutorial_completed"] = bool(current_settings.get("tutorial_completed", false))
 	PlayerSettingsStoreClass.save_settings(current_settings)
 	settings_changed.emit(current_settings.duplicate())
 

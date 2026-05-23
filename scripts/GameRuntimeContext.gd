@@ -37,6 +37,7 @@ var card_detail_popup = null
 var toast_layer = null
 var effect_visual_bridge = null
 var card_audio_feedback = null
+var tutorial_overlay = null
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}

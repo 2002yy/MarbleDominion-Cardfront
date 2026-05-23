@@ -504,6 +504,32 @@ func _create_cardfront_region_info_panel() -> void:
 	runtime.region_info_panel = panel_setup.get("region_info_panel", null)
 
 
+func _create_cardfront_tutorial_overlay() -> void:
+	runtime.tutorial_overlay = null
+	if not _is_cardfront_mode():
+		return
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var overlay_setup: Dictionary = CardfrontModeScript.create_tutorial_overlay(ui_canvas)
+	if bool(overlay_setup.get("configured", false)):
+		runtime.tutorial_overlay = overlay_setup.get("tutorial_overlay", null)
+		_wire_tutorial_settings_signals(overlay_setup.get("tutorial_overlay", null))
+
+
+func _wire_tutorial_settings_signals(overlay) -> void:
+	if overlay == null or not is_instance_valid(overlay):
+		return
+	var settings_panel = _hud_ref("settings_panel")
+	if settings_panel == null or not is_instance_valid(settings_panel):
+		return
+	if not settings_panel.has_signal("settings_changed"):
+		return
+	var callable := Callable(overlay, "on_settings_changed")
+	if not settings_panel.settings_changed.is_connected(callable):
+		settings_panel.settings_changed.connect(callable)
+
+
 func _create_cardfront_feedback_layers() -> void:
 	runtime.card_detail_popup = null
 	runtime.toast_layer = null
@@ -593,6 +619,7 @@ func _create_ui() -> void:
 		_create_cardfront_feedback_layers()
 		_create_cardfront_effect_visual_bridge()
 		_create_cardfront_region_info_panel()
+		_create_cardfront_tutorial_overlay()
 
 	_on_scores_changed(runtime.battlefield.count_cells_by_team())
 
@@ -883,12 +910,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	if runtime.selection_controller == null:
 		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-		_cancel_cardfront_selection()
-		get_viewport().set_input_as_handled()
-		return
+		if runtime.selection_controller.get_selected_card_id() >= 0:
+			_cancel_cardfront_selection()
+			get_viewport().set_input_as_handled()
+			return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
-		_cancel_cardfront_selection()
-		get_viewport().set_input_as_handled()
+		if runtime.selection_controller.get_selected_card_id() >= 0:
+			_cancel_cardfront_selection()
+			get_viewport().set_input_as_handled()
+			return
+	if event is InputEventMouseMotion:
+		_update_cardfront_hover_hint()
 		return
 	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 		return
@@ -909,6 +941,24 @@ func _unhandled_input(event: InputEvent) -> void:
 func _cancel_cardfront_selection() -> void:
 	if runtime.selection_controller != null and runtime.selection_controller.get_selected_card_id() >= 0:
 		runtime.selection_controller.clear_selection()
+
+
+func _update_cardfront_hover_hint() -> void:
+	if not _is_cardfront_mode():
+		return
+	if runtime.selection_controller == null:
+		return
+	if runtime.selection_controller.get_selected_card_id() < 0:
+		return
+	if runtime.battlefield == null or not is_instance_valid(runtime.battlefield):
+		return
+	if not runtime.battlefield.has_method("world_to_cell"):
+		return
+	var cell: Vector2i = runtime.battlefield.world_to_cell(get_global_mouse_position())
+	if not runtime.battlefield.is_inside(cell):
+		runtime.selection_controller.restore_action_hint()
+		return
+	runtime.selection_controller.update_hover_target_hint(cell)
 
 
 func _cleanup_game_layer() -> void:

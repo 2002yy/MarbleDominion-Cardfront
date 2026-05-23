@@ -7,6 +7,8 @@ static func default_settings() -> Dictionary:
 	return {
 		"show_performance_info": OS.is_debug_build(),
 		"low_effect_mode": false,
+		"show_newbie_hint": true,
+		"tutorial_completed": false,
 	}
 
 static func load_settings() -> Dictionary:
@@ -35,6 +37,8 @@ static func sanitize_settings(settings: Dictionary) -> Dictionary:
 	return {
 		"show_performance_info": _coerce_bool(settings.get("show_performance_info", defaults["show_performance_info"]), bool(defaults["show_performance_info"])),
 		"low_effect_mode": _coerce_bool(settings.get("low_effect_mode", defaults["low_effect_mode"]), bool(defaults["low_effect_mode"])),
+		"show_newbie_hint": _coerce_bool(settings.get("show_newbie_hint", defaults["show_newbie_hint"]), bool(defaults["show_newbie_hint"])),
+		"tutorial_completed": _coerce_bool(settings.get("tutorial_completed", defaults["tutorial_completed"]), bool(defaults["tutorial_completed"])),
 	}
 
 static func _coerce_bool(value, default_value: bool) -> bool:

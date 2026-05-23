@@ -33,6 +33,7 @@ const CardfrontCardDetailPopupScene = preload("res://scenes/ui/cardfront/Cardfro
 const CardfrontToastLayerScene = preload("res://scenes/ui/cardfront/CardfrontToastLayer.tscn")
 const CardfrontEffectVisualBridgeScript = preload("res://scripts/cardfront/ui/CardfrontEffectVisualBridge.gd")
 const CardfrontCardAudioFeedbackScript = preload("res://scripts/cardfront/ui/CardfrontCardAudioFeedback.gd")
+const CardfrontTutorialOverlayScene = preload("res://scenes/ui/cardfront/CardfrontTutorialOverlay.tscn")
 const LEGACY_SIDE_BUTTON_TOP_AFTER_REGION: float = 292.0
 const LEGACY_SIDE_BUTTON_GAP: float = 8.0
 
@@ -373,6 +374,20 @@ static func create_feedback_layers(ui_layer: Node, feedback_bus, resource_states
 		"card_detail_popup": detail_popup,
 		"toast_layer": toast_layer,
 		"card_audio_feedback": audio_feedback,
+	}
+
+
+static func create_tutorial_overlay(ui_layer: Node) -> Dictionary:
+	if ui_layer == null or not is_instance_valid(ui_layer):
+		return {"configured": false, "reason": "missing_ui_layer"}
+
+	var overlay = CardfrontTutorialOverlayScene.instantiate()
+	ui_layer.add_child(overlay)
+	overlay.setup()
+
+	return {
+		"configured": true,
+		"tutorial_overlay": overlay,
 	}
 
 
