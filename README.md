@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.4a.2-card-click-hitbox-feedback-hotfix**.
-Current next slice: **v0.2.4c-ui-credits-and-asset-doc-sync**.
-TopResourceBar stays a compact player-only minibar; hand-card hitboxes now pass real mouse clicks through the `CardHBox` container; disabled/used cards emit click + failure feedback instead of failing silently; no gameplay, card-value, Deckbuilder, or AI Commander changes.
+The current completed slice is **v0.2.5-content-foundation**.
+Current next slice: **v0.2.5a-8-card-catalog-on-manifest**.
+Cardfront now has a centralized content manifest, target validator registry, and map definition layer so future cards/maps can be added through configuration-backed content data instead of scattering edits across `CardCatalog`, visual registries, target checks, and region layout code. No new cards, card-value changes, Deckbuilder, or AI Commander changes were included in this slice.
 
 ## Current Slice / 当前阶段
 
@@ -66,6 +66,13 @@ Implemented in this repository:
   - `CardfrontCardView` emits `card_clicked` before availability checks.
   - Resource-disabled cards emit `card_play_failed` with `not_enough_resource`; used cards emit `card_play_failed` with `card_already_used`.
   - Disabled/used cards do not call the selection callback and do not enter selected state.
+- Content foundation (v0.2.5):
+  - `CardfrontContentManifest.gd` centralizes the existing 4 card definitions, costs, target types, effect IDs, effect params, visual IDs, default hand, and test coverage metadata.
+  - `CardCatalog.gd` and `CardVisualRegistry.gd` now read from the manifest.
+  - Existing card effects read params from card data while preserving the current values and behavior.
+  - `CardTargetValidator.gd` plus `CardTargetRuleRegistry.gd` move current target checks out of `CardPlaySystem.gd`.
+  - `CardfrontMapDefinition`, `CardfrontMapRegistry`, and `CardfrontMapBuilder` move default layout data behind map definitions.
+  - CI includes content validation, target validator, and map definition runners.
 - Cardfront card interaction hotfix:
   - `CardfrontCardView.tscn` root uses `MOUSE_FILTER_STOP`; decorative children use `MOUSE_FILTER_IGNORE`.
   - `CardfrontCardViewInteractionConfigTestRunner.gd` verifies hover/click signal routing to `CardfrontFeedbackBus`.

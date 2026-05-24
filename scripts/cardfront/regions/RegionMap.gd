@@ -2,7 +2,8 @@ extends RefCounted
 class_name RegionMap
 
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
-const BattlefieldInitializer = preload("res://scripts/cardfront/CardfrontBattlefieldInitializer.gd")
+const CardfrontMapBuilderScript = preload("res://scripts/cardfront/maps/CardfrontMapBuilder.gd")
+const CardfrontMapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 
 const NORMAL_REGION_ID: int = 0
 
@@ -20,54 +21,21 @@ func configure(new_grid_size: int) -> void:
 
 
 func generate_default_layout() -> void:
+	generate_layout(CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID)
+
+
+func generate_layout(map_id: String) -> void:
 	if grid_size <= 0:
 		configure(40)
-	_reset_regions_to_normal()
+	var definition: Dictionary = CardfrontMapRegistryScript.get_map_definition(map_id, grid_size)
+	generate_from_definition(definition)
 
-	var spawn_columns: int = BattlefieldInitializer.get_spawn_columns(grid_size)
-	var contest_min_x: int = spawn_columns
-	var contest_max_x: int = grid_size - spawn_columns - 1
-	var center: int = grid_size >> 1
-	var resource_radius: int = maxi(1, floori(float(grid_size) / 20.0))
-	var lab_radius: int = maxi(2, floori(float(grid_size) / 12.0))
 
-	var energy_margin: int = maxi(2, floori(float(grid_size) / 20.0))
-	var energy_y_top: int = floori(float(grid_size) / 4.0)
-	var energy_y_bottom: int = grid_size - energy_y_top - 1
-	_paint_rect_instance(
-		contest_min_x + energy_margin,
-		energy_y_top - resource_radius,
-		contest_max_x - energy_margin,
-		energy_y_top + resource_radius,
-		RegionTypeScript.ENERGY
-	)
-	_paint_rect_instance(
-		contest_min_x + energy_margin,
-		energy_y_bottom - resource_radius,
-		contest_max_x - energy_margin,
-		energy_y_bottom + resource_radius,
-		RegionTypeScript.ENERGY
-	)
-
-	var contest_width: int = maxi(1, contest_max_x - contest_min_x + 1)
-	var factory_left_x: int = contest_min_x + floori(float(contest_width) / 4.0)
-	var factory_right_x: int = contest_max_x - floori(float(contest_width) / 4.0)
-	_paint_rect_instance(
-		factory_left_x - resource_radius,
-		center - lab_radius,
-		factory_left_x + resource_radius,
-		center + lab_radius,
-		RegionTypeScript.FACTORY
-	)
-	_paint_rect_instance(
-		factory_right_x - resource_radius,
-		center - lab_radius,
-		factory_right_x + resource_radius,
-		center + lab_radius,
-		RegionTypeScript.FACTORY
-	)
-
-	_paint_diamond_instance(center, center, lab_radius, RegionTypeScript.LAB)
+func generate_from_definition(definition: Dictionary) -> void:
+	if grid_size <= 0:
+		configure(40)
+	if not CardfrontMapBuilderScript.apply_to_region_map(self, definition):
+		_reset_regions_to_normal()
 
 
 func is_inside(cell: Vector2i) -> bool:

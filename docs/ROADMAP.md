@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.4a.2-card-click-hitbox-feedback-hotfix`
-- Next slice: `v0.2.4c-ui-credits-and-asset-doc-sync`
+- Current completed slice: `v0.2.5-content-foundation`
+- Next slice: `v0.2.5a-8-card-catalog-on-manifest`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - TopResourceBar simplified to compact minibar (icon + value only, no Name/YieldLabel)
@@ -17,6 +17,7 @@ This file is the single place for project direction and phase status.
   - All UI scenes use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback
   - Hand cards load 256px thumbnails (fallback chain: thumbnail → 512 full art → placeholder)
   - Hand-card hitboxes and disabled/used-card feedback are covered by real input/config tests
+  - Content expansion now goes through `CardfrontContentManifest`, target-rule registry, and map definitions before adding more cards
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
 
@@ -59,6 +60,8 @@ This file is the single place for project direction and phase status.
 | `v0.2.4a.1-resource-minibar-cleanup` | Done / 已完成 | TopResourceBar simplified: removed Name/YieldLabel, added Symbol fallback (⚡/⚙) toggled with TextureRect icons, container width halved to 220px. |
 | `v0.2.4a.2-card-click-hitbox-feedback-hotfix` | Done / 已完成 | CardHBox now owns a real pass-through hitbox, hand-panel decoration ignores mouse input, disabled cards emit `not_enough_resource`, and used cards emit `card_already_used` instead of failing silently. |
 | `v0.2.4c-ui-credits-and-asset-doc-sync` | Planned / 计划 | Keep credits and generated asset manifest aligned after UI art and thumbnail wiring. |
+| `v0.2.5-content-foundation` | Done / 已完成 | Add `CardfrontContentManifest`, manifest-backed `CardCatalog`/`CardVisualRegistry`, parameterized current card effects, target validator registry, map definition registry/builder, and content validation tests. No new cards. |
+| `v0.2.5a-8-card-catalog-on-manifest` | Planned / 计划 | Expand toward 8 cards only through the manifest + validator path; no Deckbuilder, AI Commander, or full save/load. |
 
 ## 3. Design Boundaries / 设计边界
 

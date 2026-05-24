@@ -2,8 +2,7 @@ extends RefCounted
 class_name CardCatalog
 
 const CardDataScript = preload("res://scripts/cardfront/cards/CardData.gd")
-const CardTypeScript = preload("res://scripts/cardfront/cards/CardType.gd")
-const CardTargetTypeScript = preload("res://scripts/cardfront/cards/CardTargetType.gd")
+const CardfrontContentManifestScript = preload("res://scripts/cardfront/content/CardfrontContentManifest.gd")
 
 const CARD_FRONTLINE_FORTIFY: int = 1001
 const CARD_CALIBRATED_SHOT: int = 1002
@@ -14,10 +13,8 @@ var catalog: Dictionary = {}
 
 
 func _init() -> void:
-	_register(_make_card(CARD_FRONTLINE_FORTIFY, "前线加固", CardTypeScript.FORTIFY, 10, 3, CardTargetTypeScript.OWNED_BORDER, "fortify_border"))
-	_register(_make_card(CARD_CALIBRATED_SHOT, "校准射击", CardTypeScript.CALIBRATED_SHOT, 8, 5, CardTargetTypeScript.ENEMY_REGION, "calibrated_shot"))
-	_register(_make_card(CARD_MORALE_FLUCTUATION, "民心起伏", CardTypeScript.MORALE_FLUCTUATION, 5, 2, CardTargetTypeScript.OWNED_REGION, "morale_fluctuation"))
-	_register(_make_card(CARD_PIONEER_BEACON, "拓荒信标", CardTypeScript.PIONEER_BEACON, 8, 4, CardTargetTypeScript.OWNED_BORDER, "pioneer_beacon_lite"))
+	for card_id in CardfrontContentManifestScript.get_card_ids():
+		_register(_make_card_from_definition(CardfrontContentManifestScript.get_card_definition(int(card_id))))
 
 
 func _make_card(id: int, card_name: String, card_type: String, energy_cost: int, parts_cost: int, target_type: String, effect_id: String = ""):
@@ -32,6 +29,21 @@ func _make_card(id: int, card_name: String, card_type: String, energy_cost: int,
 	return card
 
 
+func _make_card_from_definition(definition: Dictionary):
+	var card = _make_card(
+		int(definition.get("id", 0)),
+		str(definition.get("name", "")),
+		str(definition.get("type", "")),
+		int(definition.get("energy_cost", 0)),
+		int(definition.get("parts_cost", 0)),
+		str(definition.get("target_type", "")),
+		str(definition.get("effect_id", ""))
+	)
+	card.params = (definition.get("params", {}) as Dictionary).duplicate(true)
+	card.visual_id = str(definition.get("visual_id", ""))
+	return card
+
+
 func _register(card) -> void:
 	catalog[int(card.id)] = card
 
@@ -41,4 +53,7 @@ func get_card(card_id: int):
 
 
 func get_default_hand_ids() -> Array[int]:
-	return [CARD_FRONTLINE_FORTIFY, CARD_CALIBRATED_SHOT, CARD_MORALE_FLUCTUATION, CARD_PIONEER_BEACON]
+	var ids: Array[int] = []
+	for card_id in CardfrontContentManifestScript.get_default_hand_ids():
+		ids.append(int(card_id))
+	return ids

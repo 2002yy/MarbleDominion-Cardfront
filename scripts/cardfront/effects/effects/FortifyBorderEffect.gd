@@ -10,7 +10,8 @@ func resolve(req, card, context: Dictionary):
 		return CardPlayResultScript.fail(CardPlayResultScript.REASON_MISSING_SYSTEM, card.card_name)
 
 	var cell: Vector2i = req.target_cell
-	fortify_layer.add_fortify_stack(cell, FortifyRulesScript.DEFAULT_FORTIFY_STACKS)
+	var stacks: int = int(card.params.get("stacks", FortifyRulesScript.DEFAULT_FORTIFY_STACKS))
+	fortify_layer.add_fortify_stack(cell, stacks)
 
 	var region_overlay = context.get("region_overlay", null)
 	if region_overlay != null and is_instance_valid(region_overlay) and region_overlay.has_method("mark_dirty"):

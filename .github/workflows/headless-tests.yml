@@ -27,6 +27,7 @@ jobs:
           - batch: Cardfront map economy
             scripts: |
               RegionMapTestRunner.gd
+              CardfrontMapDefinitionTestRunner.gd
               NeutralOwnerCompatibilityTestRunner.gd
               DeploymentRulesTestRunner.gd
               RegionMoraleTestRunner.gd
@@ -37,6 +38,8 @@ jobs:
           - batch: Cardfront cards effects fire
             scripts: |
               FortifyLayerTestRunner.gd
+              CardfrontContentValidationTestRunner.gd
+              CardfrontTargetValidatorTestRunner.gd
               CardEffectResolverTestRunner.gd
               CardCoreLiteTestRunner.gd
               CardFirstEffectsTestRunner.gd

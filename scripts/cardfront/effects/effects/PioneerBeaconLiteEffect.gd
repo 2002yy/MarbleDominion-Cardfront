@@ -7,7 +7,8 @@ const PioneerBeaconLiteEffectHelperScript = preload("res://scripts/cardfront/eff
 func resolve(req, card, context: Dictionary):
 	var region_map = context.get("region_map", null)
 	var battlefield = context.get("battlefield", null)
-	var effect_result: Dictionary = PioneerBeaconLiteEffectHelperScript.apply(region_map, battlefield, int(req.owner_id), req.target_cell)
+	var max_cells: int = int(card.params.get("max_converted_cells", PioneerBeaconLiteEffectHelperScript.MAX_CONVERTED_CELLS))
+	var effect_result: Dictionary = PioneerBeaconLiteEffectHelperScript.apply(region_map, battlefield, int(req.owner_id), req.target_cell, max_cells)
 	if not bool(effect_result.get("success", false)):
 		var reason: String = str(effect_result.get("reason", PioneerBeaconLiteEffectHelperScript.REASON_INVALID_TARGET))
 		if reason == PioneerBeaconLiteEffectHelperScript.REASON_MISSING_SYSTEM:

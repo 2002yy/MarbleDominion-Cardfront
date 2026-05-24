@@ -5,12 +5,14 @@ const CardPlayRequestScript = preload("res://scripts/cardfront/cards/CardPlayReq
 const CardPlayResultScript = preload("res://scripts/cardfront/cards/CardPlayResult.gd")
 const CardHandStateScript = preload("res://scripts/cardfront/cards/CardHandState.gd")
 const CardTargetTypeScript = preload("res://scripts/cardfront/cards/CardTargetType.gd")
-const DeploymentRulesScript = preload("res://scripts/cardfront/deployment/DeploymentRules.gd")
 const CardEffectResolverScript = preload("res://scripts/cardfront/effects/CardEffectResolver.gd")
 const FortifyBorderEffectScript = preload("res://scripts/cardfront/effects/effects/FortifyBorderEffect.gd")
 const CalibratedShotEffectScript = preload("res://scripts/cardfront/effects/effects/CalibratedShotEffect.gd")
 const MoraleFluctuationEffectScript = preload("res://scripts/cardfront/effects/effects/MoraleFluctuationEffect.gd")
 const PioneerBeaconLiteEffectScript = preload("res://scripts/cardfront/effects/effects/PioneerBeaconLiteEffect.gd")
+const CardTargetValidatorScript = preload("res://scripts/cardfront/targets/CardTargetValidator.gd")
+const OwnedBorderTargetRuleScript = preload("res://scripts/cardfront/targets/target_rules/OwnedBorderTargetRule.gd")
+const ExistingRegionTargetRuleScript = preload("res://scripts/cardfront/targets/target_rules/ExistingRegionTargetRule.gd")
 
 var catalog = null
 var hand = null
@@ -22,6 +24,7 @@ var morale_system = null
 var region_overlay = null
 var target_bias_system = null
 var effect_resolver = null
+var target_validator = null
 
 
 func _init() -> void:
@@ -29,7 +32,9 @@ func _init() -> void:
 	hand = CardHandStateScript.new()
 	hand.initialize_fixed_hand(catalog.get_default_hand_ids())
 	effect_resolver = CardEffectResolverScript.new()
+	target_validator = CardTargetValidatorScript.new()
 	_register_default_effects()
+	_register_default_target_rules()
 
 
 func setup(new_resource_states: Dictionary, new_region_map, new_battlefield, new_fortify_layer, new_morale_system, new_region_overlay, new_target_bias_system = null) -> void:
@@ -41,6 +46,7 @@ func setup(new_resource_states: Dictionary, new_region_map, new_battlefield, new
 	region_overlay = new_region_overlay
 	target_bias_system = new_target_bias_system
 	effect_resolver.setup(_build_effect_context())
+	target_validator.setup(_build_target_context())
 
 
 func can_play(req):
@@ -62,7 +68,7 @@ func can_play(req):
 	if not state.can_pay(card.energy_cost, card.parts_cost):
 		return CardPlayResultScript.fail(CardPlayResultScript.REASON_INSUFFICIENT_RESOURCES, card.card_name)
 
-	var target_result = _validate_target(req, card)
+	var target_result = target_validator.validate(req, card)
 	if not target_result.success:
 		return target_result
 
@@ -91,23 +97,6 @@ func play(req):
 	return CardPlayResultScript.ok(card.card_name, card.energy_cost, card.parts_cost)
 
 
-func _validate_target(req, card):
-	match card.target_type:
-		CardTargetTypeScript.OWNED_BORDER:
-			if battlefield == null or region_map == null:
-				return CardPlayResultScript.fail(CardPlayResultScript.REASON_MISSING_SYSTEM, card.card_name)
-			if not DeploymentRulesScript.is_owned_border(region_map, battlefield, req.target_cell, req.owner_id):
-				return CardPlayResultScript.fail(CardPlayResultScript.REASON_INVALID_TARGET, card.card_name)
-		CardTargetTypeScript.ENEMY_REGION, CardTargetTypeScript.OWNED_REGION:
-			if req.target_region_id < 0:
-				return CardPlayResultScript.fail(CardPlayResultScript.REASON_INVALID_TARGET, card.card_name)
-			if region_map == null or not region_map.has_method("get_region_cells"):
-				return CardPlayResultScript.fail(CardPlayResultScript.REASON_MISSING_SYSTEM, card.card_name)
-			if not _is_valid_region_id(int(req.target_region_id)):
-				return CardPlayResultScript.fail(CardPlayResultScript.REASON_INVALID_TARGET, card.card_name)
-	return CardPlayResultScript.ok(card.card_name)
-
-
 func _resolve_effect(req, card):
 	return effect_resolver.resolve(req, card)
 
@@ -124,11 +113,26 @@ func get_registered_effect_ids() -> Array:
 	return effect_resolver.get_registered_effect_ids()
 
 
+func has_target_rule(target_type: String) -> bool:
+	return target_validator.has_target_rule(str(target_type))
+
+
+func get_registered_target_types() -> Array:
+	return target_validator.get_registered_target_types()
+
+
 func _register_default_effects() -> void:
 	register_effect("fortify_border", FortifyBorderEffectScript.new())
 	register_effect("calibrated_shot", CalibratedShotEffectScript.new())
 	register_effect("morale_fluctuation", MoraleFluctuationEffectScript.new())
 	register_effect("pioneer_beacon_lite", PioneerBeaconLiteEffectScript.new())
+
+
+func _register_default_target_rules() -> void:
+	target_validator.register(CardTargetTypeScript.OWNED_BORDER, OwnedBorderTargetRuleScript.new())
+	var region_rule = ExistingRegionTargetRuleScript.new()
+	target_validator.register(CardTargetTypeScript.ENEMY_REGION, region_rule)
+	target_validator.register(CardTargetTypeScript.OWNED_REGION, region_rule)
 
 
 func _build_effect_context() -> Dictionary:
@@ -142,10 +146,11 @@ func _build_effect_context() -> Dictionary:
 	}
 
 
-func _is_valid_region_id(region_id: int) -> bool:
-	if region_map == null or not region_map.has_method("get_region_cells"):
-		return false
-	return not region_map.get_region_cells(int(region_id)).is_empty()
+func _build_target_context() -> Dictionary:
+	return {
+		"region_map": region_map,
+		"battlefield": battlefield,
+	}
 
 
 func get_hand_card_data() -> Array:

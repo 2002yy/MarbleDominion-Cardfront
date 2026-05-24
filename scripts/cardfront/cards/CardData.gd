@@ -7,6 +7,8 @@ var energy_cost: int = 0
 var parts_cost: int = 0
 var target_type: String = ""
 var effect_id: String = ""
+var params: Dictionary = {}
+var visual_id: String = ""
 
 func snapshot() -> Dictionary:
 	return {
@@ -17,4 +19,6 @@ func snapshot() -> Dictionary:
 		"parts_cost": parts_cost,
 		"target_type": target_type,
 		"effect_id": effect_id,
+		"params": params.duplicate(true),
+		"visual_id": visual_id,
 	}

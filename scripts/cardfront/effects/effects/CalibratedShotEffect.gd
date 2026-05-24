@@ -10,10 +10,11 @@ func resolve(req, card, context: Dictionary):
 	if target_bias_system == null or not target_bias_system.has_method("apply_region_bias"):
 		return CardPlayResultScript.fail(CardPlayResultScript.REASON_MISSING_SYSTEM, card.card_name)
 
+	var duration: float = float(card.params.get("duration", BIAS_DURATION))
 	var applied: bool = bool(target_bias_system.apply_region_bias(
 		int(req.owner_id),
 		int(req.target_region_id),
-		BIAS_DURATION
+		duration
 	))
 	if not applied:
 		return CardPlayResultScript.fail(CardPlayResultScript.REASON_INVALID_TARGET, card.card_name)

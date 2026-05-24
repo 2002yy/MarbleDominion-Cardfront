@@ -1,19 +1,23 @@
 ﻿# AI_HANDOFF_CURRENT
 
-Last updated: 2026-05-23
+Last updated: 2026-05-24
 Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管卡
 
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.4a.2-card-click-hitbox-feedback-hotfix`
-- Current slice: `v0.2.4c-ui-credits-and-asset-doc-sync`
+- Current completed slice: `v0.2.5-content-foundation`
+- Current slice: `v0.2.5a-8-card-catalog-on-manifest`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
 
 - Cardfront is a sidecar mode assembled through `CardfrontMode.gd`; do not move Cardfront rules into `Main.gd`.
-- `CardPlaySystem.gd` owns card play: fixed hand, resource payment, target validation, effect dispatch, and rollback on effect failure.
+- `CardPlaySystem.gd` owns card play flow: fixed hand, resource payment, target-validator dispatch, effect dispatch, and rollback on effect failure.
+- `CardfrontContentManifest.gd` is now the content source for the existing 4 cards, default hand, effect params, visual IDs, target type declarations, and test coverage metadata.
+- `CardCatalog.gd` and `CardVisualRegistry.gd` read card/card-art definitions from `CardfrontContentManifest.gd`.
+- `CardTargetValidator.gd` and `CardTargetRuleRegistry.gd` own target validation dispatch; current rules cover `owned_border`, `enemy_region`, and `owned_region`.
+- `CardfrontMapDefinition.gd`, `CardfrontMapRegistry.gd`, and `CardfrontMapBuilder.gd` own the map-definition seam; `RegionMap.generate_default_layout()` delegates to the `default_duel` definition.
 - Active card catalog remains 4 fixed cards (Frontline Fortify, Calibrated Shot, Morale Fluctuation, Pioneer Beacon).
 - Formal HUD components:
   - `CardfrontTopResourceBar.gd` — top-left Energy/Parts display, signal-driven.
@@ -58,15 +62,17 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.4b-card-thumbnail-pass: 256px thumbnails generated for cards 1001-1004 under `assets/cardfront_runtime/卡牌插图_cards/256/` via Godot headless script (`generate_card_thumbnails.gd`). `CardVisualRegistry.gd` extended with `RUNTIME_BASE_THUMB`, `get_thumbnail_path()`, `has_thumbnail()`, and `thumbnail` fields. `CardfrontCardView.gd` uses `_load_card_texture()` with fallback chain: thumbnail → 512 full art → placeholder. `get_texture_path()` preserved for hover detail. Game-Icons credits untouched.
 - v0.2.4a.1-resource-minibar-cleanup: TopResourceBar simplified to compact minibar. Removed Name labels ("能量"/"零件") and YieldLabel ("本秒无产出"/"+x/s"). Added fallback Symbol labels (⚡/⚙) that toggle visibility with TextureRect icons. Container width halved (360→220) for compact layout. DebugHint unchanged at (1010, 660). No gameplay or card-value changes.
 - v0.2.4a.2-card-click-hitbox-feedback-hotfix: CardfrontHandPanel now sets `CardHBox` to a real `CARD_W*4 + gap*3` / `CARD_H` hitbox with `MOUSE_FILTER_PASS`; decorative panel nodes ignore mouse input. CardfrontCardView emits click feedback before availability checks and returns explicit failure feedback for resource-disabled and used cards. Added `CardfrontHandRealHitboxTestRunner.gd`, `CardfrontDisabledCardFeedbackTestRunner.gd`, and `CardfrontTopResourceBarMinimalTestRunner.gd` to CI.
+- v0.2.5-content-foundation: Added `CardfrontContentManifest.gd`, moved `CardCatalog` and `CardVisualRegistry` to manifest-backed definitions, parameterized the existing 4 card effects without changing values, moved target validation behind `CardTargetValidator`, moved default region layout behind `CardfrontMapDefinition`/`CardfrontMapRegistry`/`CardfrontMapBuilder`, and added content/target/map validation runners to CI.
 
 ## 4. Next Steps / 下一步
 
-Ship `v0.2.4c-ui-credits-and-asset-doc-sync`:
+Ship `v0.2.5a-8-card-catalog-on-manifest`:
 
-- Keep credits and generated asset manifest aligned after UI art and thumbnail wiring.
-- Preserve Game-Icons credits.
+- Add cards only through `CardfrontContentManifest.gd`.
+- Keep `CardfrontContentValidationTestRunner.gd` green after every content entry.
+- Prefer parameterized effect families before adding one-off effect scripts.
 - Keep BallWar mode unchanged.
-- Do not add cards, Deckbuilder, AI Commander, card-value changes, or full Cardfront save/load in this slice.
+- Do not add Deckbuilder, AI Commander, card-value churn, or full Cardfront save/load in this slice.
 
 Beyond v0.2.4:
 
