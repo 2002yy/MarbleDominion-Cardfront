@@ -12,7 +12,9 @@ static func apply_to_region_map(region_map, definition: Dictionary) -> bool:
 		return false
 	if int(region_map.grid_size) != map_grid_size:
 		region_map.configure(map_grid_size)
-	region_map._reset_regions_to_normal()
+	if not region_map.has_method("clear_regions"):
+		return false
+	region_map.clear_regions()
 
 	for raw_region in definition.get("regions", []):
 		if raw_region is Dictionary:
@@ -24,7 +26,9 @@ static func _apply_region(region_map, region: Dictionary) -> void:
 	var region_type: String = str(region.get("type", ""))
 	match str(region.get("shape", "")):
 		CardfrontMapDefinitionScript.SHAPE_RECT:
-			region_map._paint_rect_instance(
+			if not region_map.has_method("paint_region_rect"):
+				return
+			region_map.paint_region_rect(
 				int(region.get("x0", 0)),
 				int(region.get("y0", 0)),
 				int(region.get("x1", 0)),
@@ -32,7 +36,9 @@ static func _apply_region(region_map, region: Dictionary) -> void:
 				region_type
 			)
 		CardfrontMapDefinitionScript.SHAPE_DIAMOND:
-			region_map._paint_diamond_instance(
+			if not region_map.has_method("paint_region_diamond"):
+				return
+			region_map.paint_region_diamond(
 				int(region.get("center_x", 0)),
 				int(region.get("center_y", 0)),
 				int(region.get("radius", 0)),

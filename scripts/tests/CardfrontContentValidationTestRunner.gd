@@ -23,6 +23,7 @@ func _run() -> void:
 	_test_catalog_reads_manifest()
 	_test_effect_registry_covers_manifest()
 	_test_target_types_are_declared()
+	_test_reserved_target_types_are_not_currently_playable()
 	_test_visuals_are_declared()
 	_test_default_hand_refs_exist()
 
@@ -74,7 +75,18 @@ func _test_target_types_are_declared() -> void:
 		var target_type: String = str(definition.get("target_type", ""))
 		_assert.that(CardTypeScript.is_valid(card_type), "content: card type should be valid for %d" % int(card_id))
 		_assert.that(CardTargetTypeScript.is_valid(target_type), "content: target type should be valid for %d" % int(card_id))
+		_assert.that(CardfrontContentManifestScript.is_target_type_implemented(target_type), "content: current card target type should be implemented for %d" % int(card_id))
 		_assert.that(system.has_target_rule(target_type), "targets: current card target type should have a rule: %s" % target_type)
+
+
+func _test_reserved_target_types_are_not_currently_playable() -> void:
+	var system = CardPlaySystemScript.new()
+	var reserved_types: Array = CardfrontContentManifestScript.get_reserved_target_types()
+	_assert.gt(reserved_types.size(), 0, "content: target manifest should distinguish reserved target types")
+	for target_type in reserved_types:
+		_assert.that(CardTargetTypeScript.is_valid(str(target_type)), "content: reserved target type should still be declared: %s" % str(target_type))
+		_assert.that(not CardfrontContentManifestScript.is_target_type_implemented(str(target_type)), "content: reserved target type should not be marked implemented: %s" % str(target_type))
+		_assert.that(not system.has_target_rule(str(target_type)), "targets: reserved target type should not silently have no-test play support: %s" % str(target_type))
 
 
 func _test_visuals_are_declared() -> void:

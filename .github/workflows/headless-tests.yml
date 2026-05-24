@@ -60,6 +60,7 @@ jobs:
               CardfrontVfxLayerTestRunner.gd
               CardfrontVisibleEffectBridgeTestRunner.gd
               CardfrontRuntimeSnapshotTestRunner.gd
+              CardfrontRuntimeBuilderTestRunner.gd
               CardfrontFormalUITestRunner.gd
               CardfrontTargetPreviewTestRunner.gd
               CardfrontBattlefieldClickSelectionTestRunner.gd

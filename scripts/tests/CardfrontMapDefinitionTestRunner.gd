@@ -19,6 +19,7 @@ func _run() -> void:
 	await process_frame
 
 	_test_registered_maps_validate()
+	_test_region_map_public_paint_api()
 	_test_default_map_builds_region_instances()
 	_test_generate_default_layout_uses_default_definition()
 	_test_unknown_map_definition_is_empty()
@@ -42,6 +43,20 @@ func _test_registered_maps_validate() -> void:
 		_assert.eq(errors, [], "map registry: definition should validate: %s" % str(map_id))
 		for card_id in definition.get("allowed_card_pool", []):
 			_assert.that(CardfrontContentManifestScript.has_card(int(card_id)), "map registry: allowed card should exist %d" % int(card_id))
+
+
+func _test_region_map_public_paint_api() -> void:
+	var region_map = RegionMapScript.new()
+	region_map.configure(20)
+	var rect_region_id: int = int(region_map.paint_region_rect(2, 2, 4, 4, RegionTypeScript.ENERGY))
+	var diamond_region_id: int = int(region_map.paint_region_diamond(10, 10, 2, RegionTypeScript.LAB))
+	_assert.neq(rect_region_id, RegionMapScript.NORMAL_REGION_ID, "map public API: rect paint should allocate a non-normal region")
+	_assert.neq(diamond_region_id, RegionMapScript.NORMAL_REGION_ID, "map public API: diamond paint should allocate a non-normal region")
+	_assert.eq(region_map.get_region_type(Vector2i(2, 2)), RegionTypeScript.ENERGY, "map public API: rect paint should assign ENERGY")
+	_assert.eq(region_map.get_region_type(Vector2i(10, 10)), RegionTypeScript.LAB, "map public API: diamond paint should assign LAB")
+	region_map.clear_regions()
+	_assert.eq(region_map.get_controllable_region_ids().size(), 0, "map public API: clear_regions should remove controllable regions")
+	_assert.eq(region_map.get_region_type(Vector2i(2, 2)), RegionTypeScript.NORMAL, "map public API: clear_regions should reset painted cells")
 
 
 func _test_default_map_builds_region_instances() -> void:

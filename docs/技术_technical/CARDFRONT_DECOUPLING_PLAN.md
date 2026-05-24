@@ -105,6 +105,8 @@ Acceptance:
 
 ### Phase 2: Runtime Builder Split / 运行时装配拆分
 
+Status: started in `v0.2.5.2-runtime-builder-split`. Core/world-layer assembly now has `CardfrontRuntimeBuilder`, `CardfrontSystemRegistry`, and `CardfrontRuntimeRefs`; `Main.gd` uses grouped builder calls. The next cleanup should move remaining Cardfront UI/HUD assembly into a dedicated HUD builder instead of growing `CardfrontMode.gd` again.
+
 Target folder:
 
 ```text

@@ -6,18 +6,20 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.5-content-foundation`
+- Current completed slice: `v0.2.5.2-runtime-builder-split`
 - Current slice: `v0.2.5a-8-card-catalog-on-manifest`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
 
-- Cardfront is a sidecar mode assembled through `CardfrontMode.gd`; do not move Cardfront rules into `Main.gd`.
+- Cardfront is a sidecar mode assembled through `scripts/cardfront/runtime/` plus the `CardfrontMode.gd` policy/facade; do not move Cardfront rules into `Main.gd`.
 - `CardPlaySystem.gd` owns card play flow: fixed hand, resource payment, target-validator dispatch, effect dispatch, and rollback on effect failure.
 - `CardfrontContentManifest.gd` is now the content source for the existing 4 cards, default hand, effect params, visual IDs, target type declarations, and test coverage metadata.
+- Target types are split into implemented vs reserved. Current cards may only use implemented target types unless a matching target rule and tests are added.
 - `CardCatalog.gd` and `CardVisualRegistry.gd` read card/card-art definitions from `CardfrontContentManifest.gd`.
 - `CardTargetValidator.gd` and `CardTargetRuleRegistry.gd` own target validation dispatch; current rules cover `owned_border`, `enemy_region`, and `owned_region`.
 - `CardfrontMapDefinition.gd`, `CardfrontMapRegistry.gd`, and `CardfrontMapBuilder.gd` own the map-definition seam; `RegionMap.generate_default_layout()` delegates to the `default_duel` definition.
+- `CardfrontRuntimeBuilder.gd`, `CardfrontSystemRegistry.gd`, and `CardfrontRuntimeRefs.gd` now own the first runtime assembly seam. `Main.gd` calls grouped Cardfront core/world-layer assembly instead of every subsystem constructor.
 - Active card catalog remains 4 fixed cards (Frontline Fortify, Calibrated Shot, Morale Fluctuation, Pioneer Beacon).
 - Formal HUD components:
   - `CardfrontTopResourceBar.gd` — top-left Energy/Parts display, signal-driven.
@@ -63,12 +65,16 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.4a.1-resource-minibar-cleanup: TopResourceBar simplified to compact minibar. Removed Name labels ("能量"/"零件") and YieldLabel ("本秒无产出"/"+x/s"). Added fallback Symbol labels (⚡/⚙) that toggle visibility with TextureRect icons. Container width halved (360→220) for compact layout. DebugHint unchanged at (1010, 660). No gameplay or card-value changes.
 - v0.2.4a.2-card-click-hitbox-feedback-hotfix: CardfrontHandPanel now sets `CardHBox` to a real `CARD_W*4 + gap*3` / `CARD_H` hitbox with `MOUSE_FILTER_PASS`; decorative panel nodes ignore mouse input. CardfrontCardView emits click feedback before availability checks and returns explicit failure feedback for resource-disabled and used cards. Added `CardfrontHandRealHitboxTestRunner.gd`, `CardfrontDisabledCardFeedbackTestRunner.gd`, and `CardfrontTopResourceBarMinimalTestRunner.gd` to CI.
 - v0.2.5-content-foundation: Added `CardfrontContentManifest.gd`, moved `CardCatalog` and `CardVisualRegistry` to manifest-backed definitions, parameterized the existing 4 card effects without changing values, moved target validation behind `CardTargetValidator`, moved default region layout behind `CardfrontMapDefinition`/`CardfrontMapRegistry`/`CardfrontMapBuilder`, and added content/target/map validation runners to CI.
+- v0.2.5.1-content-boundary-hardening: `CardfrontContentManifest` now distinguishes implemented target types (`owned_border`, `owned_region`, `enemy_region`) from reserved target types. `CardfrontContentValidationTestRunner` fails if a current card uses a reserved target without a target rule. `RegionMap` now exposes public `clear_regions`, `paint_region_rect`, and `paint_region_diamond`; `CardfrontMapBuilder` no longer calls underscore RegionMap methods.
+- v0.2.5.2-runtime-builder-split: Added `scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd`, `CardfrontSystemRegistry.gd`, and `CardfrontRuntimeRefs.gd`. Moved Cardfront runtime factory logic out of `CardfrontMode.gd`; `CardfrontMode` now delegates runtime creation to the builder for compatibility. `Main.gd` now calls `build_core_systems()` and `build_world_layers()` instead of wiring every Cardfront subsystem one by one. Added `CardfrontRuntimeBuilderTestRunner.gd` to CI.
 
 ## 4. Next Steps / 下一步
 
 Ship `v0.2.5a-8-card-catalog-on-manifest`:
 
 - Add cards only through `CardfrontContentManifest.gd`.
+- If a new card uses a reserved target type, add the target rule, register it in `CardPlaySystem`, and add focused tests in the same slice.
+- Keep the new `scripts/cardfront/runtime/` seam intact; new runtime systems should be registered through `CardfrontRuntimeBuilder` / `CardfrontSystemRegistry`, not directly from `Main.gd`.
 - Keep `CardfrontContentValidationTestRunner.gd` green after every content entry.
 - Prefer parameterized effect families before adding one-off effect scripts.
 - Keep BallWar mode unchanged.
@@ -127,6 +133,7 @@ Cardfront device/economy:
 - `FortifyLayerTestRunner.gd`
 - `DeploymentRulesTestRunner.gd`
 - `EconomyTickTestRunner.gd`
+- `CardfrontRuntimeBuilderTestRunner.gd`
 - `CardfrontModeSmokeTestRunner.gd`
 
 Runtime baseline:

@@ -22,12 +22,13 @@ const MENU_PREF_PATH: String = "user://menu_preferences.json"
 const GameRuntimeContextScript = preload("res://scripts/GameRuntimeContext.gd")
 const StartMenuUi = preload("res://scripts/StartMenu.gd")
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
-const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
 const CardfrontStatusFormatterScript = preload("res://scripts/cardfront/ui/CardfrontStatusFormatter.gd")
 const CardfrontHUDScene = preload("res://scenes/ui/cardfront/CardfrontHUD.tscn")
 const GameHUDScene = preload("res://scenes/ui/GameHUD.tscn")
 
 var runtime = GameRuntimeContextScript.new()
+var cardfront_runtime_builder = null
 var current_score_counts: Dictionary = {0: 0, 1: 0, 2: 0, 3: 0}
 var is_mobile_layout: bool = false
 
@@ -94,6 +95,11 @@ func _sync_runtime_context(grid_size: int) -> void:
 
 func _is_cardfront_mode() -> bool:
 	return CardfrontModeScript.is_selected(selected_game_mode_name)
+
+func _ensure_cardfront_runtime_builder():
+	if cardfront_runtime_builder == null:
+		cardfront_runtime_builder = CardfrontRuntimeBuilderScript.new()
+	return cardfront_runtime_builder
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -250,22 +256,9 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	add_child(game_layer)
 
 	_create_battlefield(grid_size)
-	_create_cardfront_regions()
-	_create_cardfront_economy()
-	_create_cardfront_morale()
-	_create_cardfront_fortify()
-	_create_cardfront_target_bias()
-	_create_cardfront_card_system()
+	_create_cardfront_runtime_core()
 	_create_turrets()
-	_create_cardfront_fire_director()
-	_create_cardfront_shot_guide()
-	_create_cardfront_device_layer()
-	_create_cardfront_target_preview_layer()
-	_create_cardfront_vfx_layer()
-	_create_cardfront_debug_action_panel()
-	_create_cardfront_absorber_core_effect()
-	_create_cardfront_engineer_bot_effect()
-	_create_cardfront_durable_pioneer_beacon_effect()
+	_create_cardfront_runtime_world_layers()
 	_create_control_chambers()
 	_create_ui()
 	if not _is_cardfront_mode():
@@ -285,85 +278,17 @@ func _create_battlefield(grid_size: int) -> void:
 	if _is_cardfront_mode():
 		CardfrontModeScript.configure_battlefield(runtime.battlefield)
 
-func _create_cardfront_regions() -> void:
-	runtime.region_map = null
-	runtime.region_overlay = null
+func _create_cardfront_runtime_core() -> void:
 	if not _is_cardfront_mode():
 		return
-	var region_setup: Dictionary = CardfrontModeScript.create_regions(game_layer, runtime.battlefield)
-	if not bool(region_setup.get("configured", false)):
-		push_warning("Cardfront region setup failed: %s" % str(region_setup.get("reason", "unknown")))
-		return
-	runtime.region_map = region_setup.get("region_map", null)
-	runtime.region_overlay = region_setup.get("region_overlay", null)
+	var builder = _ensure_cardfront_runtime_builder()
+	var result: Dictionary = builder.build_core_systems(game_layer, runtime, Callable(self, "_on_cardfront_yield_tick"))
+	if not bool(result.get("configured", false)):
+		push_warning("Cardfront runtime core setup failed: %s" % str(result.get("failures", [])))
 
-func _create_cardfront_economy() -> void:
-	runtime.economy_system = null
-	runtime.economy_debug_panel = null
-	runtime.resource_states.clear()
-	runtime.last_yield_snapshot.clear()
-	if not _is_cardfront_mode():
-		return
-	var economy_setup: Dictionary = CardfrontModeScript.create_economy(game_layer, runtime.battlefield, runtime.region_map)
-	if not bool(economy_setup.get("configured", false)):
-		push_warning("Cardfront economy setup failed: %s" % str(economy_setup.get("reason", "unknown")))
-		return
-	runtime.economy_system = economy_setup.get("economy_system", null)
-	runtime.economy_debug_panel = economy_setup.get("economy_debug_panel", null)
-	runtime.resource_states = economy_setup.get("resource_states", {})
-	if runtime.economy_system != null and is_instance_valid(runtime.economy_system):
-		var yield_callable := Callable(self, "_on_cardfront_yield_tick")
-		if not runtime.economy_system.yield_tick.is_connected(yield_callable):
-			runtime.economy_system.yield_tick.connect(yield_callable)
 
 func _on_cardfront_yield_tick(owner_id: int, yield_data: Dictionary) -> void:
 	runtime.last_yield_snapshot[owner_id] = yield_data
-
-func _create_cardfront_morale() -> void:
-	runtime.morale_system = null
-	if not _is_cardfront_mode():
-		return
-	var morale_setup: Dictionary = CardfrontModeScript.create_morale(game_layer, runtime.battlefield, runtime.region_map)
-	if not bool(morale_setup.get("configured", false)):
-		push_warning("Cardfront morale setup failed: %s" % str(morale_setup.get("reason", "unknown")))
-		return
-	runtime.morale_system = morale_setup.get("morale_system", null)
-
-
-func _create_cardfront_fortify() -> void:
-	runtime.fortify_layer = null
-	runtime.fortify_overlay = null
-	runtime.battlefield.capture_interceptor = null
-	if not _is_cardfront_mode():
-		return
-	var fortify_setup: Dictionary = CardfrontModeScript.create_fortify(game_layer, runtime.battlefield, runtime.region_map)
-	if not bool(fortify_setup.get("configured", false)):
-		push_warning("Cardfront fortify setup failed: %s" % str(fortify_setup.get("reason", "unknown")))
-		return
-	runtime.fortify_layer = fortify_setup.get("fortify_layer", null)
-	runtime.fortify_overlay = fortify_setup.get("fortify_overlay", null)
-
-
-func _create_cardfront_target_bias() -> void:
-	runtime.target_bias_system = null
-	if not _is_cardfront_mode():
-		return
-	var target_bias_setup: Dictionary = CardfrontModeScript.create_target_bias(game_layer, runtime.region_map)
-	if not bool(target_bias_setup.get("configured", false)):
-		push_warning("Cardfront target bias setup failed: %s" % str(target_bias_setup.get("reason", "unknown")))
-		return
-	runtime.target_bias_system = target_bias_setup.get("target_bias_system", null)
-
-
-func _create_cardfront_card_system() -> void:
-	runtime.card_system = null
-	if not _is_cardfront_mode():
-		return
-	var card_setup: Dictionary = CardfrontModeScript.create_card_system(runtime.resource_states, runtime.region_map, runtime.battlefield, runtime.fortify_layer, runtime.morale_system, runtime.region_overlay, runtime.target_bias_system)
-	if not bool(card_setup.get("configured", false)):
-		push_warning("Cardfront card system setup failed")
-		return
-	runtime.card_system = card_setup.get("card_system", null)
 
 
 func _create_turrets() -> void:
@@ -372,87 +297,13 @@ func _create_turrets() -> void:
 	if runtime.bullet_pool != null and is_instance_valid(runtime.bullet_pool) and runtime.bullet_pool.has_method("set_tracked_turrets"):
 		runtime.bullet_pool.set_tracked_turrets(runtime.turrets)
 
-func _create_cardfront_fire_director() -> void:
-	runtime.fire_director = null
+func _create_cardfront_runtime_world_layers() -> void:
 	if not _is_cardfront_mode():
 		return
-	var fire_setup: Dictionary = CardfrontModeScript.create_fire_director(game_layer, runtime.region_map, runtime.battlefield, runtime.turrets, runtime.target_bias_system)
-	if not bool(fire_setup.get("configured", false)):
-		push_warning("Cardfront fire director setup failed: %s" % str(fire_setup.get("reason", "unknown")))
-		return
-	runtime.fire_director = fire_setup.get("fire_director", null)
-
-
-func _create_cardfront_shot_guide() -> void:
-	runtime.shot_guide_layer = null
-	if not _is_cardfront_mode():
-		return
-	var guide_setup: Dictionary = CardfrontModeScript.create_shot_guide(game_layer, runtime.battlefield, runtime.target_bias_system, runtime.turrets, runtime.region_map)
-	if not bool(guide_setup.get("configured", false)):
-		return
-	runtime.shot_guide_layer = guide_setup.get("shot_guide_layer", null)
-
-
-func _create_cardfront_device_layer() -> void:
-	runtime.device_layer = null
-	runtime.device_overlay_layer = null
-	if not _is_cardfront_mode():
-		return
-	var device_setup: Dictionary = CardfrontModeScript.create_device_layer(game_layer, runtime.battlefield, runtime.region_map)
-	if not bool(device_setup.get("configured", false)):
-		return
-	runtime.device_layer = device_setup.get("device_layer", null)
-	runtime.device_overlay_layer = device_setup.get("device_overlay", null)
-
-
-func _create_cardfront_vfx_layer() -> void:
-	runtime.cardfront_vfx_layer = null
-	if not _is_cardfront_mode():
-		return
-	var vfx_setup: Dictionary = CardfrontModeScript.create_vfx_layer(game_layer, runtime.battlefield, runtime.region_map)
-	if not bool(vfx_setup.get("configured", false)):
-		return
-	runtime.cardfront_vfx_layer = vfx_setup.get("vfx_layer", null)
-
-
-func _create_cardfront_debug_action_panel() -> void:
-	runtime.debug_action_panel = null
-	if not _is_cardfront_mode():
-		return
-	var panel_setup: Dictionary = CardfrontModeScript.create_debug_action_panel(game_layer, runtime.device_layer, runtime.card_system, runtime.battlefield, runtime.region_map)
-	if not bool(panel_setup.get("configured", false)):
-		return
-	runtime.debug_action_panel = panel_setup.get("debug_action_panel", null)
-
-
-func _create_cardfront_absorber_core_effect() -> void:
-	runtime.absorber_core_effect_system = null
-	if not _is_cardfront_mode():
-		return
-	var absorber_setup: Dictionary = CardfrontModeScript.create_absorber_core_effect_system(game_layer, runtime.device_layer, runtime.bullet_pool, runtime.resource_states, runtime.battlefield, runtime.cardfront_vfx_layer)
-	if not bool(absorber_setup.get("configured", false)):
-		return
-	runtime.absorber_core_effect_system = absorber_setup.get("absorber_core_effect_system", null)
-
-
-func _create_cardfront_engineer_bot_effect() -> void:
-	runtime.engineer_bot_effect_system = null
-	if not _is_cardfront_mode():
-		return
-	var engineer_setup: Dictionary = CardfrontModeScript.create_engineer_bot_effect_system(game_layer, runtime.device_layer, runtime.fortify_layer, runtime.battlefield, runtime.region_map, runtime.cardfront_vfx_layer)
-	if not bool(engineer_setup.get("configured", false)):
-		return
-	runtime.engineer_bot_effect_system = engineer_setup.get("engineer_bot_effect_system", null)
-
-
-func _create_cardfront_durable_pioneer_beacon_effect() -> void:
-	runtime.durable_pioneer_beacon_effect_system = null
-	if not _is_cardfront_mode():
-		return
-	var beacon_setup: Dictionary = CardfrontModeScript.create_durable_pioneer_beacon_effect_system(game_layer, runtime.device_layer, runtime.battlefield, runtime.region_map, runtime.cardfront_vfx_layer)
-	if not bool(beacon_setup.get("configured", false)):
-		return
-	runtime.durable_pioneer_beacon_effect_system = beacon_setup.get("durable_pioneer_beacon_effect_system", null)
+	var builder = _ensure_cardfront_runtime_builder()
+	var result: Dictionary = builder.build_world_layers(game_layer, runtime)
+	if not bool(result.get("configured", false)):
+		push_warning("Cardfront runtime world-layer setup failed: %s" % str(result.get("failures", [])))
 
 
 func _create_cardfront_feedback_bus() -> void:
@@ -479,16 +330,6 @@ func _create_cardfront_top_resource_bar() -> void:
 	if not bool(bar_setup.get("configured", false)):
 		return
 	runtime.top_resource_bar = bar_setup.get("top_resource_bar", null)
-
-
-func _create_cardfront_target_preview_layer() -> void:
-	runtime.target_preview_layer = null
-	if not _is_cardfront_mode():
-		return
-	var preview_setup: Dictionary = CardfrontModeScript.create_target_preview_layer(game_layer, runtime.battlefield, runtime.region_map)
-	if not bool(preview_setup.get("configured", false)):
-		return
-	runtime.target_preview_layer = preview_setup.get("target_preview_layer", null)
 
 
 func _create_cardfront_region_info_panel() -> void:
@@ -967,6 +808,7 @@ func _cleanup_game_layer() -> void:
 		game_layer.queue_free()
 		game_layer = null
 	runtime.reset()
+	cardfront_runtime_builder = null
 	pending_restore_bullets.clear()
 	pending_restore_index = 0
 

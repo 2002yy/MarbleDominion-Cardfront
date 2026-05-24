@@ -30,6 +30,12 @@ const TARGET_TYPES: Array[String] = [
 	TARGET_AREA,
 ]
 
+const IMPLEMENTED_TARGET_TYPES: Array[String] = [
+	TARGET_OWNED_BORDER,
+	TARGET_OWNED_REGION,
+	TARGET_ENEMY_REGION,
+]
+
 const DEFAULT_HAND_IDS: Array[int] = [
 	CARD_FRONTLINE_FORTIFY,
 	CARD_CALIBRATED_SHOT,
@@ -137,8 +143,24 @@ static func get_target_types() -> Array:
 	return TARGET_TYPES.duplicate()
 
 
+static func get_implemented_target_types() -> Array:
+	return IMPLEMENTED_TARGET_TYPES.duplicate()
+
+
+static func get_reserved_target_types() -> Array:
+	var reserved: Array = []
+	for target_type in TARGET_TYPES:
+		if not IMPLEMENTED_TARGET_TYPES.has(str(target_type)):
+			reserved.append(str(target_type))
+	return reserved
+
+
 static func is_target_type_valid(target_type: String) -> bool:
 	return str(target_type) in TARGET_TYPES
+
+
+static func is_target_type_implemented(target_type: String) -> bool:
+	return str(target_type) in IMPLEMENTED_TARGET_TYPES
 
 
 static func get_declared_effect_ids() -> Array:
@@ -179,6 +201,8 @@ static func validate_card_definition(card_id: int) -> Array:
 		errors.append("negative_parts:%d" % int(card_id))
 	if not is_target_type_valid(str(definition.get("target_type", ""))):
 		errors.append("invalid_target_type:%d" % int(card_id))
+	elif not is_target_type_implemented(str(definition.get("target_type", ""))):
+		errors.append("unimplemented_target_type:%d:%s" % [int(card_id), str(definition.get("target_type", ""))])
 	var effect_id: String = str(definition.get("effect_id", ""))
 	if effect_id == "":
 		errors.append("missing_effect:%d" % int(card_id))

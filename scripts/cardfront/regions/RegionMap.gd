@@ -35,7 +35,19 @@ func generate_from_definition(definition: Dictionary) -> void:
 	if grid_size <= 0:
 		configure(40)
 	if not CardfrontMapBuilderScript.apply_to_region_map(self, definition):
-		_reset_regions_to_normal()
+		clear_regions()
+
+
+func clear_regions() -> void:
+	_reset_regions_to_normal()
+
+
+func paint_region_rect(x0: int, y0: int, x1: int, y1: int, region_type: String) -> int:
+	return _paint_rect_instance(x0, y0, x1, y1, region_type)
+
+
+func paint_region_diamond(center_x: int, center_y: int, radius: int, region_type: String) -> int:
+	return _paint_diamond_instance(center_x, center_y, radius, region_type)
 
 
 func is_inside(cell: Vector2i) -> bool:

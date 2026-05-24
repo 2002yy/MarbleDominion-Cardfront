@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.5-content-foundation**.
+The current completed slice is **v0.2.5.2-runtime-builder-split**.
 Current next slice: **v0.2.5a-8-card-catalog-on-manifest**.
-Cardfront now has a centralized content manifest, target validator registry, and map definition layer so future cards/maps can be added through configuration-backed content data instead of scattering edits across `CardCatalog`, visual registries, target checks, and region layout code. No new cards, card-value changes, Deckbuilder, or AI Commander changes were included in this slice.
+Cardfront now has a centralized content manifest, target validator registry, map definition layer, and runtime builder seam. Current cards/maps still use the same rules and values; this line is about making future content additions go through explicit data and assembly boundaries instead of scattering edits across `Main.gd`, `CardCatalog`, visual registries, target checks, and region layout code.
 
 ## Current Slice / 当前阶段
 
@@ -73,6 +73,14 @@ Implemented in this repository:
   - `CardTargetValidator.gd` plus `CardTargetRuleRegistry.gd` move current target checks out of `CardPlaySystem.gd`.
   - `CardfrontMapDefinition`, `CardfrontMapRegistry`, and `CardfrontMapBuilder` move default layout data behind map definitions.
   - CI includes content validation, target validator, and map definition runners.
+- Content boundary hardening (v0.2.5.1):
+  - Current cards may only use implemented target rules: `owned_border`, `owned_region`, and `enemy_region`.
+  - Reserved target types stay declared but fail validation if used before a target rule and tests exist.
+  - `RegionMap` exposes public map-paint APIs for `CardfrontMapBuilder`.
+- Runtime builder split (v0.2.5.2):
+  - `scripts/cardfront/runtime/` adds `CardfrontRuntimeBuilder`, `CardfrontSystemRegistry`, and `CardfrontRuntimeRefs`.
+  - `Main.gd` now creates Cardfront core systems and battlefield layers through grouped runtime-builder entrypoints.
+  - `CardfrontMode.gd` remains a compatibility/policy facade for older tests and call sites.
 - Cardfront card interaction hotfix:
   - `CardfrontCardView.tscn` root uses `MOUSE_FILTER_STOP`; decorative children use `MOUSE_FILTER_IGNORE`.
   - `CardfrontCardViewInteractionConfigTestRunner.gd` verifies hover/click signal routing to `CardfrontFeedbackBus`.
@@ -127,10 +135,11 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 - `scripts/cardfront/effects/CardfrontTargetBiasSystem.gd` — Cardfront-only target-region bias state used by Calibrated Shot.
 - `scripts/cardfront/effects/PioneerBeaconLiteEffect.gd` — one-shot Pioneer Beacon neutral-cell pulse logic.
 - `scripts/cardfront/fire/` — Cardfront-only fire rules, target scoring, fire intent data, and fire director.
+- `scripts/cardfront/runtime/` — Cardfront runtime assembly builder, named refs, and result-to-runtime registry.
 - `scripts/cardfront/ui/` — Cardfront formal HUD, hand cards, selection controller, feedback bus, detail popup, toasts, UI asset registry, and light audio/visual feedback bridges.
 - `scripts/cardfront/vfx/CardfrontVfxLayer.gd` — reusable Cardfront visible-effect layer for card/device feedback.
 - `scripts/cardfront/regions/RegionOverlayLayer.gd` — lightweight Cardfront-only region visualization.
-- `scripts/cardfront/CardfrontMode.gd` — thin assembly layer used by `Main.gd`.
+- `scripts/cardfront/CardfrontMode.gd` — mode policy/facade for Cardfront identity and compatibility calls.
 - `scripts/Battlefield.gd` — owns generic owner grids, owner counts, painting, and draw color overrides.
 - `scripts/WinConditionEvaluator.gd` — adds Cardfront win evaluation beside the existing BallWar modes.
 - `scripts/Main.gd` — stays orchestration-only and delegates Cardfront rules to `scripts/cardfront/`.
@@ -165,6 +174,7 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVfxLayerTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVisibleEffectBridgeTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontRuntimeSnapshotTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontRuntimeBuilderTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeviceOverlayLayerTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeviceCoreTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/AbsorberCoreLiteTestRunner.gd
@@ -206,21 +216,28 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
 ```
 
-Latest local validation for v0.2.4a.2-card-click-hitbox-feedback-hotfix:
+Latest local validation for v0.2.5.2-runtime-builder-split:
 
-- `CardfrontHandRealHitboxTestRunner.gd`: 31 checks passed.
-- `CardfrontDisabledCardFeedbackTestRunner.gd`: 12 checks passed.
-- `CardfrontCardViewInteractionConfigTestRunner.gd`: 35 checks passed.
-- `CardfrontCardFeedbackTestRunner.gd`: 24 checks passed.
-- `CardfrontFormalUITestRunner.gd`: 48 checks passed.
+- Headless parse check: passed.
+- `CardfrontRuntimeBuilderTestRunner.gd`: 22 checks passed.
+- `CardfrontModeSmokeTestRunner.gd`: 38 checks passed.
+- `CardfrontContentValidationTestRunner.gd`: 108 checks passed.
+- `CardfrontMapDefinitionTestRunner.gd`: 28 checks passed.
+- `RegionMapTestRunner.gd`: 3737 checks passed.
+- `CardCoreLiteTestRunner.gd`: 40 checks passed.
+- `CardfrontTargetValidatorTestRunner.gd`: 9 checks passed.
 - `CardfrontTargetPreviewTestRunner.gd`: 13 checks passed.
 - `CardfrontBattlefieldClickSelectionTestRunner.gd`: 16 checks passed.
-- `CardfrontTopResourceBarMinimalTestRunner.gd`: 12 checks passed.
+- `CardfrontFormalUITestRunner.gd`: 48 checks passed.
+- `CardfrontRuntimeSnapshotTestRunner.gd`: 14 checks passed.
+- `CardfrontFireDirectorTestRunner.gd`: 21 checks passed.
+- `CardfrontFireDirectorTurretIntegrationTestRunner.gd`: 16 checks passed.
+- `CardfrontFireDirectorSignalTestRunner.gd`: 22 checks passed.
 - `SmokeTestRunner.gd`: 215 checks passed.
 - `IntegrationTestRunner.gd`: 133 checks passed.
 
 ## Next Milestone / 下一阶段
 
-`v0.2.4c-ui-credits-and-asset-doc-sync`: align asset credits and generated manifests after UI art, thumbnail, minibar, and click-feedback hotfix work. Keep Deckbuilder, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
+`v0.2.5a-8-card-catalog-on-manifest`: expand toward 8 cards only through `CardfrontContentManifest`, implemented target rules, and focused tests. Keep Deckbuilder, AI Commander, card-value churn, and full Cardfront save/load deferred.
 
 MIT License. See [LICENSE](LICENSE).
