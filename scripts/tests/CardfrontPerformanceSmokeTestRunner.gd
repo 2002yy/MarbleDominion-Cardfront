@@ -46,6 +46,11 @@ func _test_overlay_dirty_redraw_does_not_break() -> void:
 	if main.runtime.region_overlay != null:
 		main.runtime.region_overlay.mark_dirty()
 
+	_assert.that(main.runtime.region_control_block_layer != null, "perf: region control block layer should exist")
+	if main.runtime.region_control_block_layer != null:
+		_assert.that(not main.runtime.region_control_block_layer.is_processing(), "perf: region control blocks should use score-driven dirty redraw, not per-frame processing")
+		main.runtime.region_control_block_layer.mark_dirty()
+
 	_assert.that(main.runtime.fortify_overlay != null, "perf: fortify overlay should exist")
 	if main.runtime.fortify_overlay != null:
 		main.runtime.fortify_overlay.mark_dirty()

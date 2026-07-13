@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.5.2-runtime-builder-split**.
-Current next slice: **v0.2.5a-8-card-catalog-on-manifest**.
-Cardfront now has a centralized content manifest, target validator registry, map definition layer, and runtime builder seam. Current cards/maps still use the same rules and values; this line is about making future content additions go through explicit data and assembly boundaries instead of scattering edits across `Main.gd`, `CardCatalog`, visual registries, target checks, and region layout code.
+The current completed slice is **v0.2.5.3-playability-region-block-pass**.
+Current next slice: **v0.2.5.4-playtest-flow-polish**.
+Cardfront now has a verified real-input card-to-target flow plus bold, score-driven region control blocks. Content expansion stays paused until another hands-on playtest confirms that selection, target feedback, territory changes, and win pressure are understandable end to end.
 
 ## Current Slice / 当前阶段
 
@@ -81,6 +81,12 @@ Implemented in this repository:
   - `scripts/cardfront/runtime/` adds `CardfrontRuntimeBuilder`, `CardfrontSystemRegistry`, and `CardfrontRuntimeRefs`.
   - `Main.gd` now creates Cardfront core systems and battlefield layers through grouped runtime-builder entrypoints.
   - `CardfrontMode.gd` remains a compatibility/policy facade for older tests and call sites.
+- Playability and region readability pass (v0.2.5.3):
+  - Fixed the full-screen `MainBackground` consuming battlefield clicks; decorative Cardfront HUD, toast, and resource controls now pass mouse input through.
+  - Battlefield click routing uses the active event position transformed into canvas/world coordinates, which works reliably in embedded and stretched windows.
+  - `RegionControlBlockLayer` renders each contested resource region as a unified cartoon block with a dark outer stroke, faction-color inner stroke, and a large `玩家/AI/中立 XX%` badge.
+  - Region blocks rebuild only from score-change dirty signals; they do not redraw every frame.
+  - Real-input CI covers card click -> selection -> valid battlefield click -> card play.
 - Cardfront card interaction hotfix:
   - `CardfrontCardView.tscn` root uses `MOUSE_FILTER_STOP`; decorative children use `MOUSE_FILTER_IGNORE`.
   - `CardfrontCardViewInteractionConfigTestRunner.gd` verifies hover/click signal routing to `CardfrontFeedbackBus`.
@@ -103,7 +109,7 @@ Implemented in this repository:
 - New headless runner: `CardfrontFireDirectorTestRunner.gd`.
 - New headless runner: `CardfrontControlChamberDecouplingTestRunner.gd`.
 - New headless runner: `PioneerBeaconLiteTestRunner.gd`.
-- New headless runners: `CardfrontCardDetailPopupTestRunner.gd`, `CardfrontCardFeedbackTestRunner.gd`, `CardfrontToastLayerTestRunner.gd`, `CardfrontEffectVisualBridgeTestRunner.gd`, `CardfrontDebugPanelToggleTestRunner.gd`, `CardfrontUiAssetRegistryTestRunner.gd`, `CardfrontUiArtSceneTestRunner.gd`, `CardfrontCardViewInteractionConfigTestRunner.gd`, `CardfrontHandRealHitboxTestRunner.gd`, `CardfrontDisabledCardFeedbackTestRunner.gd`, `CardfrontTopResourceBarMinimalTestRunner.gd`.
+- New headless runners include `CardfrontRegionControlBlockTestRunner.gd` and `CardfrontUiClickThroughTestRunner.gd`, alongside the existing formal UI, feedback, hitbox, and asset runners.
 
 Not implemented yet:
 

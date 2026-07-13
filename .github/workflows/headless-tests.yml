@@ -64,6 +64,7 @@ jobs:
               CardfrontFormalUITestRunner.gd
               CardfrontTargetPreviewTestRunner.gd
               CardfrontBattlefieldClickSelectionTestRunner.gd
+              CardfrontRegionControlBlockTestRunner.gd
               CardfrontCardArtBindingTestRunner.gd
           - batch: Cardfront interaction feedback
             scripts: |
@@ -80,6 +81,7 @@ jobs:
               CardfrontUiArtSceneTestRunner.gd
               CardfrontCardViewInteractionConfigTestRunner.gd
               CardfrontHandRealHitboxTestRunner.gd
+              CardfrontUiClickThroughTestRunner.gd
               CardfrontRegionInfoPanelVisibilityTestRunner.gd
               CardfrontTopResourceBarMinimalTestRunner.gd
           - batch: Cardfront performance budget

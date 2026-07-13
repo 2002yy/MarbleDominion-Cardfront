@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.5.2-runtime-builder-split`
-- Next slice: `v0.2.5a-8-card-catalog-on-manifest`
+- Current completed slice: `v0.2.5.3-playability-region-block-pass`
+- Next slice: `v0.2.5.4-playtest-flow-polish`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - TopResourceBar simplified to compact minibar (icon + value only, no Name/YieldLabel)
@@ -19,6 +19,8 @@ This file is the single place for project direction and phase status.
   - Hand-card hitboxes and disabled/used-card feedback are covered by real input/config tests
   - Content expansion now goes through `CardfrontContentManifest`, target-rule registry, and map definitions before adding more cards
   - Cardfront runtime assembly now starts moving into `scripts/cardfront/runtime/` builder/registry/ref objects
+  - Real card and battlefield clicks are covered end to end; non-interactive full-screen UI no longer consumes gameplay input
+  - Contested resource regions read as bold unified blocks with explicit dominant-owner percentages
 
 ## 2. Cardfront Version Plan / 卡牌前线版本规划
 
@@ -64,6 +66,8 @@ This file is the single place for project direction and phase status.
 | `v0.2.5-content-foundation` | Done / 已完成 | Add `CardfrontContentManifest`, manifest-backed `CardCatalog`/`CardVisualRegistry`, parameterized current card effects, target validator registry, map definition registry/builder, and content validation tests. No new cards. |
 | `v0.2.5.1-content-boundary-hardening` | Done / 已完成 | Split target types into implemented vs reserved, require current cards to use implemented target rules, and expose public `RegionMap` map-paint APIs so `CardfrontMapBuilder` no longer calls underscore methods. |
 | `v0.2.5.2-runtime-builder-split` | Done / 已完成 | Add `CardfrontRuntimeBuilder`, `CardfrontSystemRegistry`, and `CardfrontRuntimeRefs`; route Main Cardfront core/world-layer assembly through grouped runtime builder calls while keeping CardfrontMode as a compatibility facade. |
+| `v0.2.5.3-playability-region-block-pass` | Done / 已完成 | Fix full-screen background/HUD click interception, verify real card-to-target input routing, and add score-driven thick-outline region blocks with large owner percentages. No rule or card-value changes. |
+| `v0.2.5.4-playtest-flow-polish` | Planned / 计划 | Run another hands-on playtest and tighten only the remaining selection, target, territory-change, and win-pressure comprehension gaps before expanding content. |
 | `v0.2.5a-8-card-catalog-on-manifest` | Planned / 计划 | Expand toward 8 cards only through the manifest + validator path; no Deckbuilder, AI Commander, or full save/load. |
 
 ## 3. Design Boundaries / 设计边界

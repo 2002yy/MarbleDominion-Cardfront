@@ -11,6 +11,7 @@ var event_controller = null
 var event_view = null
 var region_map = null
 var region_overlay = null
+var region_control_block_layer = null
 var economy_system = null
 var economy_debug_panel = null
 var morale_system = null
@@ -54,6 +55,7 @@ func reset() -> void:
     event_view = null
     region_map = null
     region_overlay = null
+    region_control_block_layer = null
     economy_system = null
     economy_debug_panel = null
     morale_system = null

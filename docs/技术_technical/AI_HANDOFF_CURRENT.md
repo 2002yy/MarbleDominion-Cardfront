@@ -1,13 +1,13 @@
 ﻿# AI_HANDOFF_CURRENT
 
-Last updated: 2026-05-24
+Last updated: 2026-07-13
 Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管卡
 
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.5.2-runtime-builder-split`
-- Current slice: `v0.2.5a-8-card-catalog-on-manifest`
+- Current completed slice: `v0.2.5.3-playability-region-block-pass`
+- Current slice: `v0.2.5.4-playtest-flow-polish`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -47,6 +47,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
   - `has_thumbnail()` checks if thumbnail is registered.
   - All 4 cards have both 512 full art and 256 thumbnail images on disk.
 - `Main.gd:_unhandled_input()` converts mouse clicks to `selection_controller.on_battlefield_clicked(cell)`.
+- `MainBackground`, Cardfront toast/resource/HUD decoration use mouse pass-through; real input tests now prove card click -> select -> valid battlefield click -> play.
+- `RegionControlBlockLayer.gd` draws thick unified region outlines plus large dominant-owner percentages and refreshes only on score-change dirty signals.
 - `CardfrontFireDirector.gd` has signals: `fire_tick`, `fire_requested`, `fire_issued`, `fire_skipped`.
 - Overlay layers (`RegionOverlay`, `FortifyOverlay`) use ImageTexture caching.
 - Old BallWar modes should not create or depend on Cardfront card/effect/fire systems.
@@ -67,17 +69,16 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.5-content-foundation: Added `CardfrontContentManifest.gd`, moved `CardCatalog` and `CardVisualRegistry` to manifest-backed definitions, parameterized the existing 4 card effects without changing values, moved target validation behind `CardTargetValidator`, moved default region layout behind `CardfrontMapDefinition`/`CardfrontMapRegistry`/`CardfrontMapBuilder`, and added content/target/map validation runners to CI.
 - v0.2.5.1-content-boundary-hardening: `CardfrontContentManifest` now distinguishes implemented target types (`owned_border`, `owned_region`, `enemy_region`) from reserved target types. `CardfrontContentValidationTestRunner` fails if a current card uses a reserved target without a target rule. `RegionMap` now exposes public `clear_regions`, `paint_region_rect`, and `paint_region_diamond`; `CardfrontMapBuilder` no longer calls underscore RegionMap methods.
 - v0.2.5.2-runtime-builder-split: Added `scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd`, `CardfrontSystemRegistry.gd`, and `CardfrontRuntimeRefs.gd`. Moved Cardfront runtime factory logic out of `CardfrontMode.gd`; `CardfrontMode` now delegates runtime creation to the builder for compatibility. `Main.gd` now calls `build_core_systems()` and `build_world_layers()` instead of wiring every Cardfront subsystem one by one. Added `CardfrontRuntimeBuilderTestRunner.gd` to CI.
+- v0.2.5.3-playability-region-block-pass: Fixed the full-screen background and decorative UI controls consuming battlefield clicks, routed clicks from the active event position, added dirty-redrawn thick-outline region blocks with explicit percentages, and added real-input/region-readability CI runners.
 
 ## 4. Next Steps / 下一步
 
-Ship `v0.2.5a-8-card-catalog-on-manifest`:
+Ship `v0.2.5.4-playtest-flow-polish` before adding cards:
 
-- Add cards only through `CardfrontContentManifest.gd`.
-- If a new card uses a reserved target type, add the target rule, register it in `CardPlaySystem`, and add focused tests in the same slice.
-- Keep the new `scripts/cardfront/runtime/` seam intact; new runtime systems should be registered through `CardfrontRuntimeBuilder` / `CardfrontSystemRegistry`, not directly from `Main.gd`.
-- Keep `CardfrontContentValidationTestRunner.gd` green after every content entry.
-- Prefer parameterized effect families before adding one-off effect scripts.
-- Keep BallWar mode unchanged.
+- Perform a hands-on click-through from game start to card selection, legal/illegal target feedback, visible region percentage change, and match conclusion.
+- Adjust only remaining comprehension or hit-target issues found by that playtest.
+- Keep the 4-card values, target rules, FireDirector, Deckbuilder, AI Commander, and save/load scope unchanged.
+- Resume `v0.2.5a-8-card-catalog-on-manifest` only after the basic loop is visibly understandable.
 - Do not add Deckbuilder, AI Commander, card-value churn, or full Cardfront save/load in this slice.
 
 Beyond v0.2.4:

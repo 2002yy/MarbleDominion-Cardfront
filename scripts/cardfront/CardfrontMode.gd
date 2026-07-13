@@ -58,6 +58,10 @@ static func create_regions(game_layer: Node, battlefield) -> Dictionary:
 	return CardfrontRuntimeBuilderScript.create_regions(game_layer, battlefield)
 
 
+static func create_region_control_blocks(game_layer: Node, region_map, battlefield) -> Dictionary:
+	return CardfrontRuntimeBuilderScript.create_region_control_blocks(game_layer, region_map, battlefield)
+
+
 static func create_economy(game_layer: Node, battlefield, region_map) -> Dictionary:
 	return CardfrontRuntimeBuilderScript.create_economy(game_layer, battlefield, region_map)
 

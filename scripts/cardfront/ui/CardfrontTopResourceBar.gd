@@ -20,6 +20,8 @@ var _release_mode_override_for_test: int = -1
 
 
 func setup(new_economy_system, new_resource_states: Dictionary, mode_name: String) -> void:
+	_set_mouse_passthrough($Margin)
+	_debug_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	economy_system = new_economy_system
 	resource_states = new_resource_states.duplicate(false)
 	visible = CardfrontRulesScript.is_cardfront_mode(mode_name)
@@ -29,6 +31,13 @@ func setup(new_economy_system, new_resource_states: Dictionary, mode_name: Strin
 	_apply_art_assets()
 	_connect_economy_signals()
 	refresh(true)
+
+
+func _set_mouse_passthrough(node: Node) -> void:
+	if node is Control:
+		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_set_mouse_passthrough(child)
 
 
 func _connect_economy_signals() -> void:

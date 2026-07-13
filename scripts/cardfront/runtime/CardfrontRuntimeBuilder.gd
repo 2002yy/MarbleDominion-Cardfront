@@ -4,6 +4,7 @@ class_name CardfrontRuntimeBuilder
 const Rules = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
 const RegionOverlayLayerScript = preload("res://scripts/cardfront/regions/RegionOverlayLayer.gd")
+const RegionControlBlockLayerScript = preload("res://scripts/cardfront/regions/RegionControlBlockLayer.gd")
 const CardfrontResourceStateScript = preload("res://scripts/cardfront/economy/CardfrontResourceState.gd")
 const EconomyTickSystemScript = preload("res://scripts/cardfront/economy/EconomyTickSystem.gd")
 const CardfrontEconomyDebugPanelScript = preload("res://scripts/cardfront/economy/CardfrontEconomyDebugPanel.gd")
@@ -39,6 +40,8 @@ func build_core_systems(game_layer: Node, runtime, yield_callback: Callable = Ca
 	_clear_core_refs(runtime)
 
 	if not _record_or_fail("regions", create_regions(game_layer, runtime.battlefield), runtime):
+		return _build_result(false)
+	if not _record_or_fail("region_control_blocks", create_region_control_blocks(game_layer, runtime.region_map, runtime.battlefield), runtime):
 		return _build_result(false)
 	if not _record_or_fail("economy", create_economy(game_layer, runtime.battlefield, runtime.region_map), runtime):
 		return _build_result(false)
@@ -124,6 +127,7 @@ func _connect_yield_tick(runtime, yield_callback: Callable) -> void:
 func _clear_core_refs(runtime) -> void:
 	runtime.region_map = null
 	runtime.region_overlay = null
+	runtime.region_control_block_layer = null
 	runtime.economy_system = null
 	runtime.economy_debug_panel = null
 	runtime.resource_states.clear()
@@ -169,6 +173,19 @@ static func create_regions(game_layer: Node, battlefield) -> Dictionary:
 		"region_map": region_map,
 		"region_overlay": overlay,
 	}
+
+
+static func create_region_control_blocks(game_layer: Node, region_map, battlefield) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if region_map == null:
+		return {"configured": false, "reason": "missing_region_map"}
+	if battlefield == null or not is_instance_valid(battlefield):
+		return {"configured": false, "reason": "missing_battlefield"}
+	var layer = RegionControlBlockLayerScript.new()
+	layer.setup(region_map, battlefield, GameConfig.GAME_MODE_CARDFRONT)
+	game_layer.add_child(layer)
+	return {"configured": true, "region_control_block_layer": layer}
 
 
 static func create_economy(game_layer: Node, battlefield, region_map) -> Dictionary:

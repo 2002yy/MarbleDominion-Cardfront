@@ -188,6 +188,7 @@ func _create_background() -> void:
 	background.name = "MainBackground"
 	background.color = Color(0.03, 0.07, 0.14)
 	background.size = Vector2(VIEW_W, VIEW_H)
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(background)
 	background.z_index = -100
 
@@ -772,11 +773,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not runtime.battlefield.has_method("world_to_cell"):
 		return
 
-	var cell: Vector2i = runtime.battlefield.world_to_cell(get_global_mouse_position())
+	var canvas_transform: Transform2D = get_viewport().get_canvas_transform()
+	var world_position: Vector2 = canvas_transform.affine_inverse() * event.position
+	var cell: Vector2i = runtime.battlefield.world_to_cell(world_position)
 	if not runtime.battlefield.is_inside(cell):
 		return
 
 	runtime.selection_controller.on_battlefield_clicked(cell)
+	get_viewport().set_input_as_handled()
 
 
 func _cancel_cardfront_selection() -> void:

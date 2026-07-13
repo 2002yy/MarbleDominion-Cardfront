@@ -15,6 +15,7 @@ var _toast_items: Array = []
 
 
 func _ready() -> void:
+	_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(false)
 
 
@@ -36,6 +37,7 @@ func show_toast(message: String, tone: String = "info", ttl: float = DEFAULT_TTL
 	label.custom_minimum_size = Vector2(260.0, 30.0)
 	label.size = Vector2(260.0, 30.0)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.add_theme_font_size_override("font_size", 12)
 	var font = CardfrontUiAssetRegistryScript.load_font()
 	if font != null:

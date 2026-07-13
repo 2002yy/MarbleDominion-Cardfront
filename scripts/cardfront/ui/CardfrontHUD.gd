@@ -30,8 +30,19 @@ var top_bar_total_width: float = 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_set_mouse_passthrough(top_panel)
+	fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	event_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	winner_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_collect_top_bar_nodes()
 	_load_settings_panel()
+
+
+func _set_mouse_passthrough(node: Node) -> void:
+	if node is Control:
+		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_set_mouse_passthrough(child)
 
 
 func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary = {}, mobile_mode: bool = false) -> void:

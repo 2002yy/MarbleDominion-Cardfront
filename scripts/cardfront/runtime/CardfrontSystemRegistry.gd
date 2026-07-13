@@ -6,6 +6,7 @@ const RuntimeRefsScript = preload("res://scripts/cardfront/runtime/CardfrontRunt
 const RUNTIME_FIELD_BY_RESULT_KEY: Dictionary = {
 	"region_map": "region_map",
 	"region_overlay": "region_overlay",
+	"region_control_block_layer": "region_control_block_layer",
 	"economy_system": "economy_system",
 	"resource_states": "resource_states",
 	"economy_debug_panel": "economy_debug_panel",

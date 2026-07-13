@@ -7,6 +7,7 @@ layer = 17
 script = ExtResource("1_bar")
 
 [node name="Margin" type="MarginContainer" parent="."]
+mouse_filter = 2
 position = Vector2(0, 98)
 size = Vector2(220, 36)
 theme_override_constants/margin_left = 18
@@ -90,6 +91,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.6)
 theme_override_constants/outline_size = 1
 
 [node name="DebugHint" type="Label" parent="."]
+mouse_filter = 2
 visible = false
 position = Vector2(1010, 660)
 text = "F3 Debug"
