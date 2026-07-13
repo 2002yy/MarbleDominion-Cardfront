@@ -98,6 +98,19 @@ static func load_font(asset_id: String = "font_kenney_future"):
 	return load(path)
 
 
+static func apply_body_font(label: Label) -> void:
+	if label != null and is_instance_valid(label):
+		label.add_theme_font_override("font", ThemeDB.fallback_font)
+
+
+static func apply_numeric_font(label: Label) -> void:
+	if label == null or not is_instance_valid(label):
+		return
+	var font = load_font()
+	if font != null:
+		label.add_theme_font_override("font", font)
+
+
 static func make_panel_style(asset_id: String, fallback_bg: Color, fallback_border: Color):
 	var tex = load_texture(asset_id)
 	if tex != null:

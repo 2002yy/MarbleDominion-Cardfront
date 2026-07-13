@@ -223,7 +223,7 @@ func _layout_status_labels(view_size: Vector2, mobile_mode: bool, current_layout
 	var fps_label_rect: Rect2 = hud_positions.get("fps_label_rect", Rect2(Vector2(402.0, 649.0), Vector2(702.0, 24.0)))
 	fps_label.position = fps_label_rect.position
 	fps_label.size = fps_label_rect.size
-	fps_label.visible = true
+	fps_label.visible = false
 
 	var default_event_rect := Rect2(
 		Vector2(view_size.x - 272.0, view_size.y - 84.0),

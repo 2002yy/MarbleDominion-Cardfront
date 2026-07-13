@@ -39,9 +39,7 @@ func show_toast(message: String, tone: String = "info", ttl: float = DEFAULT_TTL
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.add_theme_font_size_override("font_size", 12)
-	var font = CardfrontUiAssetRegistryScript.load_font()
-	if font != null:
-		label.add_theme_font_override("font", font)
+	CardfrontUiAssetRegistryScript.apply_body_font(label)
 	label.add_theme_color_override("font_color", _tone_color(tone))
 	label.add_theme_stylebox_override("normal", _make_style(tone))
 	_box.add_child(label)

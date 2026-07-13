@@ -82,6 +82,7 @@ jobs:
               CardfrontUiArtSceneTestRunner.gd
               CardfrontCardViewInteractionConfigTestRunner.gd
               CardfrontHandRealHitboxTestRunner.gd
+              CardfrontHandCollapseLayoutTestRunner.gd
               CardfrontUiClickThroughTestRunner.gd
               CardfrontRegionInfoPanelVisibilityTestRunner.gd
               CardfrontTopResourceBarMinimalTestRunner.gd

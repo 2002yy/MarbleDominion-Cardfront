@@ -19,14 +19,14 @@ const PANEL_HEIGHT: float = 80.0
 const CARD_H: float = 150.0
 const CARD_GAP: float = 8.0
 const CARD_W: float = 130.0
-const COLLAPSED_Y_OFFSET: float = 70.0
+const COLLAPSED_Y_OFFSET: float = 38.0
 const MAX_VISIBLE_CARDS: int = 4
 
 const CARD_HINTS: Dictionary = {
-	1001: "前线加固：点击蓝色高亮的己方边界格，添加加固层",
-	1002: "校准射击：点击青色高亮的敌方区域，6 秒内优先射击该区域",
-	1003: "民心起伏：点击紫色高亮的己方区域，逐步提升区域控制",
-	1004: "拓荒信标：点击己方边界格，向周围中立格扩张",
+	1001: "前线加固｜点蓝色己方边界格，增加 3 层加固",
+	1002: "校准射击｜点青色敌方区域，优先射击 6 秒",
+	1003: "民心起伏｜点紫色己方区域，提升控制度",
+	1004: "拓荒信标｜点金色己方边界格，扩张至相邻中立格",
 }
 
 
@@ -197,7 +197,7 @@ func _show_action_hint(card_id: int, card_data: Dictionary) -> void:
 	if hint == "":
 		_hide_action_hint()
 		return
-	_action_hint_label.text = "%s｜右键/Esc 取消" % hint
+	_action_hint_label.text = "%s　[右键/Esc 取消]" % hint
 	_action_hint_label.visible = true
 	if _action_hint_bg != null:
 		_action_hint_bg.visible = true
@@ -237,6 +237,4 @@ func _invalid_target_hint(reason: String, card_name: String) -> String:
 
 
 func _apply_hint_style() -> void:
-	var font = CardfrontUiAssetRegistryScript.load_font()
-	if font != null:
-		_action_hint_label.add_theme_font_override("font", font)
+	CardfrontUiAssetRegistryScript.apply_body_font(_action_hint_label)

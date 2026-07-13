@@ -125,7 +125,7 @@ func _test_hud_accepts_neutral_owner() -> void:
 	get_root().add_child(leader_label)
 
 	RuntimeHudController.update_meta(timer_label, stage_label, leader_label, counts, 12.0)
-	_assert.eq(stage_label.text, "目标 70%", "hud meta: Cardfront stage text should render the current objective")
+	_assert.eq(stage_label.text, "胜利目标 70%", "hud meta: Cardfront stage text should render the current objective")
 	_assert.that(leader_label.text.length() > 0, "hud meta: leader label should render with neutral present")
 
 	var top_bar_segments: Dictionary = {}

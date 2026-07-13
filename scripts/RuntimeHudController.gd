@@ -17,7 +17,7 @@ static func format_time_text(seconds: float) -> String:
 static func current_stage_name(game_elapsed_time: float) -> String:
 	var mode_name: String = GameConfig.get_game_mode_name()
 	if mode_name == GameConfig.GAME_MODE_CARDFRONT:
-		return "\u76ee\u6807 %d%%" % CardfrontRulesScript.CAPTURE_TARGET_PERCENT
+		return "胜利目标 %d%%" % CardfrontRulesScript.CAPTURE_TARGET_PERCENT
 	if mode_name == GameConfig.GAME_MODE_OCCUPATION:
 		return "占领目标 %d%%" % GameConfig.get_occupation_target_percent()
 	if mode_name == GameConfig.GAME_MODE_TIMED:
@@ -140,10 +140,10 @@ static func update_meta(timer_label, stage_label, leader_label, current_score_co
 
 		if leaders.size() == 1:
 			var leader_id: int = int(leaders[0])
-			leader_label.text = "领先：%s %d%%" % [_owner_display_name(leader_id), percent]
+			leader_label.text = "领先方  %s %d%%" % [_owner_display_name(leader_id), percent]
 			leader_label.add_theme_color_override("font_color", _owner_display_color(leader_id).lightened(0.42))
 		else:
-			leader_label.text = "并列：%d%%" % percent
+			leader_label.text = "双方持平  %d%%" % percent
 			leader_label.add_theme_color_override("font_color", Color(0.92, 0.88, 0.72))
 
 static func update_top_bar(counts: Dictionary, top_bar_segments: Dictionary, top_bar_labels: Dictionary, top_bar_name_labels: Dictionary, top_bar_total_width: float, is_mobile_layout: bool) -> void:

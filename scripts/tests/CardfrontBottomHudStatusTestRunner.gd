@@ -13,7 +13,7 @@ func _run() -> void:
 	await process_frame
 
 	_test_cardfront_event_label_has_fire_status()
-	_test_cardfront_fps_label_visible()
+	_test_cardfront_fps_label_hidden()
 	_test_ballwar_old_event_hud_still_works()
 	_test_device_count_updates_status_text()
 	_test_status_text_updates_after_device_change()
@@ -52,7 +52,7 @@ func _test_cardfront_event_label_has_fire_status() -> void:
 	TestFixtures.cleanup_node(main)
 
 
-func _test_cardfront_fps_label_visible() -> void:
+func _test_cardfront_fps_label_hidden() -> void:
 	GameConfig.reset_runtime_defaults()
 	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
 
@@ -64,7 +64,7 @@ func _test_cardfront_fps_label_visible() -> void:
 
 	var fps_label = main._hud_ref("fps_label")
 	_assert.that(fps_label != null, "hud: fps_label should exist")
-	_assert.that(fps_label.visible, "hud: fps_label should be visible in Cardfront")
+	_assert.that(not fps_label.visible, "hud: technical FPS text should stay hidden in the formal Cardfront HUD")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

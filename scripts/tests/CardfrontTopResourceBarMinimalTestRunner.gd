@@ -50,15 +50,17 @@ func _test_cardfront_minibar_only_shows_player_values() -> void:
 		var margin = bar.get_node_or_null("Margin")
 		_assert.that(margin is Control, "top minibar: Margin should exist")
 		if margin is Control:
-			_assert.gte(220.0, (margin as Control).size.x, "top minibar: resource bar should stay compact")
+			_assert.gte(300.0, (margin as Control).size.x, "top minibar: labeled resource bar should stay compact")
 		_assert.that(bar.get_node_or_null("Margin/HBox/EnergyBox/Margin2/Inner/Value") is Label, "top minibar: energy value should exist")
 		_assert.that(bar.get_node_or_null("Margin/HBox/PartsBox/Margin2/Inner/Value") is Label, "top minibar: parts value should exist")
 		var energy_value = bar.get_node_or_null("Margin/HBox/EnergyBox/Margin2/Inner/Value") as Label
 		var parts_value = bar.get_node_or_null("Margin/HBox/PartsBox/Margin2/Inner/Value") as Label
 		_assert.that(str(energy_value.text).is_valid_int(), "top minibar: energy should be numeric")
 		_assert.that(str(parts_value.text).is_valid_int(), "top minibar: parts should be numeric")
-		_assert.eq(bar.get_node_or_null("Margin/HBox/EnergyBox/Margin2/Inner/Name"), null, "top minibar: energy name label should be removed")
-		_assert.eq(bar.get_node_or_null("Margin/HBox/PartsBox/Margin2/Inner/Name"), null, "top minibar: parts name label should be removed")
+		var energy_name = bar.get_node_or_null("Margin/HBox/EnergyBox/Margin2/Inner/Name") as Label
+		var parts_name = bar.get_node_or_null("Margin/HBox/PartsBox/Margin2/Inner/Name") as Label
+		_assert.that(energy_name != null and energy_name.text == "能量", "top minibar: energy should have a direct Chinese label")
+		_assert.that(parts_name != null and parts_name.text == "零件", "top minibar: parts should have a direct Chinese label")
 		_assert.eq(bar.get_node_or_null("Margin/HBox/YieldLabel"), null, "top minibar: yield label should be removed")
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

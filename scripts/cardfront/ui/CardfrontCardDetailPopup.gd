@@ -42,16 +42,16 @@ func setup(new_feedback_bus, new_resource_state, mode_name: String) -> void:
 
 func show_card(card_data: Dictionary, card_view: Control = null) -> void:
 	_name_label.text = str(card_data.get("card_name", "未知卡牌"))
-	_type_label.text = "类型 %s / 目标 %s" % [
+	_type_label.text = "类型：%s　目标：%s" % [
 		CardfrontFeedbackTextScript.card_type_to_text(str(card_data.get("card_type", ""))),
 		CardfrontFeedbackTextScript.target_type_to_text(str(card_data.get("target_type", ""))),
 	]
-	_cost_label.text = "消耗 能量 %d / 零件 %d" % [
+	_cost_label.text = "消耗：能量 %d　零件 %d" % [
 		int(card_data.get("energy_cost", 0)),
 		int(card_data.get("parts_cost", 0)),
 	]
 	_summary_label.text = CardfrontFeedbackTextScript.effect_summary(str(card_data.get("effect_id", "")))
-	_status_label.text = "当前状态：%s" % _status_text(card_data)
+	_status_label.text = "状态：%s" % _status_text(card_data)
 	_position_near_card(card_view)
 	visible = true
 
@@ -96,12 +96,9 @@ func _apply_style() -> void:
 		Color(0.45, 0.78, 1.0, 0.55)
 	)
 	_panel.add_theme_stylebox_override("panel", style)
-	var font = CardfrontUiAssetRegistryScript.load_font()
-	if font == null:
-		return
 	for label in [_name_label, _type_label, _cost_label, _summary_label, _status_label]:
 		if label != null and is_instance_valid(label):
-			label.add_theme_font_override("font", font)
+			CardfrontUiAssetRegistryScript.apply_body_font(label)
 
 
 func _ignore_mouse_recursive(node: Node) -> void:

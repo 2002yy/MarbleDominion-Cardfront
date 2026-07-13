@@ -49,6 +49,8 @@ func _test_cardfront_blocks(main) -> void:
 	_assert.eq(visuals.size(), main.runtime.region_map.get_controllable_region_ids().size(), "region blocks: every controllable region needs one large block")
 	for visual in visuals:
 		_assert.that(str(visual.label).contains("%"), "region blocks: each block label should contain an explicit percentage")
+		_assert.that(str(visual.type_label).length() > 0, "region blocks: each badge should have a dedicated region-type line")
+		_assert.that(str(visual.owner_label).contains("%"), "region blocks: each badge should have a dedicated owner-percentage line")
 		_assert.that(int(visual.percent) >= 0 and int(visual.percent) <= 100, "region blocks: percentages should stay in range")
 		_assert.gte((visual.bounds as Rect2).size.x, float(layer.cell_size) * 2.0, "region blocks: badge region should span multiple cells")
 		_assert.gte((visual.bounds as Rect2).size.y, float(layer.cell_size) * 2.0, "region blocks: badge region should span multiple rows")

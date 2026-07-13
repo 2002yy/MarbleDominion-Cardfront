@@ -9,7 +9,7 @@ script = ExtResource("1_bar")
 [node name="Margin" type="MarginContainer" parent="."]
 mouse_filter = 2
 position = Vector2(0, 98)
-size = Vector2(220, 36)
+size = Vector2(300, 36)
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 4
 
@@ -18,10 +18,11 @@ theme_override_constants/separation = 10
 
 [node name="EnergyBox" type="Panel" parent="Margin/HBox"]
 self_modulate = Color(0.06, 0.10, 0.18, 0.88)
-custom_minimum_size = Vector2(80, 28)
+custom_minimum_size = Vector2(130, 28)
 
 [node name="Bg" type="ColorRect" parent="Margin/HBox/EnergyBox"]
-size = Vector2(80, 28)
+anchor_right = 1.0
+anchor_bottom = 1.0
 color = Color(0.04, 0.07, 0.13, 0.95)
 
 [node name="Margin2" type="MarginContainer" parent="Margin/HBox/EnergyBox"]
@@ -33,7 +34,7 @@ theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 2
 
 [node name="Inner" type="HBoxContainer" parent="Margin/HBox/EnergyBox/Margin2"]
-theme_override_constants/separation = 6
+theme_override_constants/separation = 4
 
 [node name="EnergyIcon" type="TextureRect" parent="Margin/HBox/EnergyBox/Margin2/Inner"]
 custom_minimum_size = Vector2(18, 18)
@@ -46,19 +47,25 @@ text = "⚡"
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.72, 0.88, 1.0, 1.0)
 
+[node name="Name" type="Label" parent="Margin/HBox/EnergyBox/Margin2/Inner"]
+text = "能量"
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.72, 0.88, 1.0, 1.0)
+
 [node name="Value" type="Label" parent="Margin/HBox/EnergyBox/Margin2/Inner"]
 text = "0"
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.6)
 theme_override_constants/outline_size = 1
 
 [node name="PartsBox" type="Panel" parent="Margin/HBox"]
 self_modulate = Color(0.06, 0.10, 0.18, 0.88)
-custom_minimum_size = Vector2(80, 28)
+custom_minimum_size = Vector2(130, 28)
 
 [node name="Bg" type="ColorRect" parent="Margin/HBox/PartsBox"]
-size = Vector2(80, 28)
+anchor_right = 1.0
+anchor_bottom = 1.0
 color = Color(0.04, 0.07, 0.13, 0.95)
 
 [node name="Margin2" type="MarginContainer" parent="Margin/HBox/PartsBox"]
@@ -70,7 +77,7 @@ theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 2
 
 [node name="Inner" type="HBoxContainer" parent="Margin/HBox/PartsBox/Margin2"]
-theme_override_constants/separation = 6
+theme_override_constants/separation = 4
 
 [node name="PartsIcon" type="TextureRect" parent="Margin/HBox/PartsBox/Margin2/Inner"]
 custom_minimum_size = Vector2(18, 18)
@@ -83,9 +90,14 @@ text = "⚙"
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(1.0, 0.82, 0.36, 1.0)
 
+[node name="Name" type="Label" parent="Margin/HBox/PartsBox/Margin2/Inner"]
+text = "零件"
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(1.0, 0.82, 0.36, 1.0)
+
 [node name="Value" type="Label" parent="Margin/HBox/PartsBox/Margin2/Inner"]
 text = "0"
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.6)
 theme_override_constants/outline_size = 1

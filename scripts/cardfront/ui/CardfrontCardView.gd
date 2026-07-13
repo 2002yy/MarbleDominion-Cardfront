@@ -14,7 +14,7 @@ var _is_selected: bool = false
 var _is_pointer_inside: bool = false
 var _is_pressed: bool = false
 
-const COLLAPSED_OFFSET: float = 70.0
+const COLLAPSED_OFFSET: float = 38.0
 const EXPANDED_SCALE := Vector2(1.05, 1.05)
 const PRESSED_SCALE := Vector2(0.94, 0.94)
 const PRESS_OFFSET_Y: float = 4.0
@@ -274,12 +274,10 @@ func _animate_press_release() -> void:
 
 
 func _apply_art_assets() -> void:
-	var font = CardfrontUiAssetRegistryScript.load_font()
-	if font != null:
-		for node_name in ["CardIconLabel", "CardName", "CostEnergy", "CostParts", "TargetLabel", "StatusLabel"]:
-			var label = get_node_or_null(node_name)
-			if label is Label:
-				(label as Label).add_theme_font_override("font", font)
+	for node_name in ["CardIconLabel", "CardName", "CostEnergy", "CostParts", "TargetLabel", "StatusLabel"]:
+		var label = get_node_or_null(node_name)
+		if label is Label:
+			CardfrontUiAssetRegistryScript.apply_body_font(label)
 	var card_style = CardfrontUiAssetRegistryScript.make_panel_style(
 		"card_bg",
 		Color(0.06, 0.10, 0.18, 0.92),

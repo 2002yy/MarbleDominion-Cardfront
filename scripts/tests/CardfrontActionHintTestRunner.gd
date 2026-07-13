@@ -1,6 +1,7 @@
 extends SceneTree
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const CardfrontTutorialOverlayScript = preload("res://scripts/cardfront/ui/CardfrontTutorialOverlay.gd")
 
 var _assert: TestAssert
 
@@ -15,6 +16,7 @@ func _run() -> void:
 	await process_frame
 
 	_test_each_card_shows_distinct_action_hint()
+	_test_tutorial_copy_matches_current_ui()
 	_test_preview_pulse_is_active()
 	_test_valid_target_hides_hint_after_play()
 	_test_failed_play_hides_hint()
@@ -69,13 +71,13 @@ func _select_card(main, card_data: Dictionary) -> void:
 func _expected_hint(card_id: int) -> String:
 	match int(card_id):
 		1001:
-			return "前线加固：点击蓝色高亮的己方边界格，添加加固层｜右键/Esc 取消"
+			return "前线加固｜点蓝色己方边界格，增加 3 层加固　[右键/Esc 取消]"
 		1002:
-			return "校准射击：点击青色高亮的敌方区域，6 秒内优先射击该区域｜右键/Esc 取消"
+			return "校准射击｜点青色敌方区域，优先射击 6 秒　[右键/Esc 取消]"
 		1003:
-			return "民心起伏：点击紫色高亮的己方区域，逐步提升区域控制｜右键/Esc 取消"
+			return "民心起伏｜点紫色己方区域，提升控制度　[右键/Esc 取消]"
 		1004:
-			return "拓荒信标：点击己方边界格，向周围中立格扩张｜右键/Esc 取消"
+			return "拓荒信标｜点金色己方边界格，扩张至相邻中立格　[右键/Esc 取消]"
 	return ""
 
 
@@ -96,6 +98,13 @@ func _test_each_card_shows_distinct_action_hint() -> void:
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
+
+
+func _test_tutorial_copy_matches_current_ui() -> void:
+	var resource_step: Dictionary = CardfrontTutorialOverlayScript.STEP_DATA[0]
+	var focus: Rect2 = resource_step.get("focus_rect", Rect2())
+	_assert.that(focus.position.x < 100.0, "tutorial: resource focus should point to the current top-left resource bar")
+	_assert.that(str(resource_step.get("text", "")).contains("普通领土"), "tutorial: resource copy should explain ordinary-territory baseline income")
 
 
 func _test_preview_pulse_is_active() -> void:

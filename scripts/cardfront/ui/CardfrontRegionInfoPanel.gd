@@ -20,7 +20,7 @@ var _status_label: Label
 var _no_region_label: Label
 
 const PANEL_W: float = 248.0
-const PANEL_H: float = 184.0
+const PANEL_H: float = 196.0
 const MARGIN_RIGHT: float = 14.0
 const MARGIN_TOP: float = 96.0
 const CONTENT_X: float = 14.0
@@ -63,18 +63,18 @@ func _ensure_ui() -> void:
 	var y: float = 38.0
 	for owner_id in [CardfrontRulesScript.PLAYER_FACTION, CardfrontRulesScript.AI_FACTION, CardfrontRulesScript.NEUTRAL_OWNER]:
 		var c := CardfrontRulesScript.owner_color(owner_id)
-		var label := _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 12, c)
+		var label := _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 20), "", 14, c)
 		_control_labels[owner_id] = label
-		y += 19.0
+		y += 21.0
 
 	y += 4.0
-	_threshold_50 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 16), "", 11, Color(0.68, 0.78, 0.92))
-	y += 17.0
-	_threshold_80 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 16), "", 11, Color(0.68, 0.78, 0.92))
-	y += 17.0
-	_yield_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 16), "", 11, Color(0.72, 0.94, 1.0))
-	y += 17.0
-	_status_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 16), "", 11, Color(0.94, 0.97, 1.0))
+	_threshold_50 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 12, Color(0.68, 0.78, 0.92))
+	y += 19.0
+	_threshold_80 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 12, Color(0.68, 0.78, 0.92))
+	y += 19.0
+	_yield_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 12, Color(0.72, 0.94, 1.0))
+	y += 19.0
+	_status_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 12, Color(0.94, 0.97, 1.0))
 
 	_no_region_label = _make_label(_panel, Vector2(CONTENT_X, 66), Vector2(CONTENT_W, 34), "", 12, Color(0.74, 0.82, 0.92))
 
@@ -99,7 +99,6 @@ func _update_panel(region_id: int) -> void:
 	var ai_pct: int = RegionControlCalculatorScript.get_owner_percent(control, CardfrontRulesScript.AI_FACTION)
 	var neutral_pct: int = RegionControlCalculatorScript.get_owner_percent(control, CardfrontRulesScript.NEUTRAL_OWNER)
 	var status: String = RegionControlCalculatorScript.get_region_status(control)
-	var tier: int = RegionControlCalculatorScript.get_yield_tier(control, CardfrontRulesScript.PLAYER_FACTION)
 	var yield_data: Dictionary = RegionYieldCalculatorScript.calculate_region_yield(region_map, battlefield, region_id, CardfrontRulesScript.PLAYER_FACTION)
 	var yld: Dictionary = yield_data.get("yield", {})
 
@@ -107,23 +106,23 @@ func _update_panel(region_id: int) -> void:
 	_title_label.text = "◆ %s" % type_name
 	_title_label.add_theme_color_override("font_color", _region_type_color(region_type))
 
-	_control_labels[CardfrontRulesScript.PLAYER_FACTION].text = "玩家 %d%%%s" % [player_pct, _bar(player_pct)]
-	_control_labels[CardfrontRulesScript.AI_FACTION].text = "AI %d%%%s" % [ai_pct, _bar(ai_pct)]
-	_control_labels[CardfrontRulesScript.NEUTRAL_OWNER].text = "中立 %d%%%s" % [neutral_pct, _bar(neutral_pct)]
+	_control_labels[CardfrontRulesScript.PLAYER_FACTION].text = "玩家占领　%d%%" % player_pct
+	_control_labels[CardfrontRulesScript.AI_FACTION].text = "AI 占领　%d%%" % ai_pct
+	_control_labels[CardfrontRulesScript.NEUTRAL_OWNER].text = "中立区域　%d%%" % neutral_pct
 
-	_threshold_50.text = "50%% %s" % ("✓ 已达成" if player_pct >= 50 else "✗ %d%%" % (50 - player_pct))
+	_threshold_50.text = "基础产出：%s" % ("已解锁" if player_pct >= 50 else "还差 %d%%" % (50 - player_pct))
 	_threshold_50.add_theme_color_override("font_color", Color(0.45, 0.80, 0.50) if player_pct >= 50 else Color(0.55, 0.50, 0.45))
-	_threshold_80.text = "80%% %s" % ("✓ 已达成" if player_pct >= 80 else "✗ %d%%" % (80 - player_pct))
+	_threshold_80.text = "强化产出：%s" % ("已解锁" if player_pct >= 80 else "还差 %d%%" % (80 - player_pct))
 	_threshold_80.add_theme_color_override("font_color", Color(0.80, 0.72, 0.30) if player_pct >= 80 else Color(0.55, 0.50, 0.45))
 
 	if int(yld.get("energy", 0)) > 0:
-		_yield_label.text = "[T%d] 产出：+%d 能量/s" % [tier, int(yld.energy)]
+		_yield_label.text = "当前产出：+%d 能量/秒" % int(yld.energy)
 		_yield_label.add_theme_color_override("font_color", Color(0.62, 0.90, 1.0))
 	elif int(yld.get("parts", 0)) > 0:
-		_yield_label.text = "[T%d] 产出：+%d 零件/s" % [tier, int(yld.parts)]
+		_yield_label.text = "当前产出：+%d 零件/秒" % int(yld.parts)
 		_yield_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.36))
 	else:
-		_yield_label.text = "产出：无（实验室）"
+		_yield_label.text = "当前产出：无"
 		_yield_label.add_theme_color_override("font_color", Color(0.50, 0.50, 0.55))
 
 	_status_label.text = "状态：%s" % _status_text(status)
@@ -157,24 +156,12 @@ func _make_label(parent: Node, pos: Vector2, sz: Vector2, text: String, font_siz
 	label.size = sz
 	label.text = text
 	label.add_theme_font_size_override("font_size", font_size)
-	var font = CardfrontUiAssetRegistryScript.load_font()
-	if font != null:
-		label.add_theme_font_override("font", font)
+	CardfrontUiAssetRegistryScript.apply_body_font(label)
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.68))
 	label.add_theme_constant_override("outline_size", 2)
 	parent.add_child(label)
 	return label
-
-
-func _bar(pct: int) -> String:
-	var filled: int = clampi(floori(float(pct) / 5.0), 0, 20)
-	var bar_str := ""
-	for _i in range(filled):
-		bar_str += "█"
-	for _i in range(20 - filled):
-		bar_str += "░"
-	return " %s" % bar_str
 
 
 func _region_type_name(rt: String) -> String:

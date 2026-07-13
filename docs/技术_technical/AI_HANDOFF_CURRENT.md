@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.5.6-aim-and-supply-hotfix`
-- Current slice: `v0.2.5.7-windowed-playtest-acceptance`
+- Current completed slice: `v0.2.5.7-ui-copy-readability-pass`
+- Current slice: `v0.2.5.8-windowed-playtest-acceptance`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -77,12 +77,14 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.5.4-card-press-map-readability-pass: Added card press compression/rebound, redesigned the default map as five isolated symmetric strongholds, included region type in percentage badges, and added strict map readability CI coverage.
 - v0.2.5.5-match-flow-clarity: Changed Cardfront meta HUD to remaining time plus a fixed 70% objective, added a five-stronghold opening hint, and introduced a Cardfront-only formal result panel with final percentages, replay, and return-to-menu actions.
 - v0.2.5.6-aim-and-supply-hotfix: Replaced directed-fire snapping with aim-before-release plus hold/return motion, unified barrel and bullet release angle, and added normal-territory resource guarantees so all current cards become affordable without requiring a Factory stronghold.
+- v0.2.5.7-ui-copy-readability-pass: Added explicit Energy/Parts labels, CJK-safe body typography, two-line stronghold badges, readable collapsed-card names/costs, direct action and region text, corrected tutorial resource guidance, and a quieter formal HUD without persistent FPS/VFX diagnostics.
 
 ## 4. Next Steps / 下一步
 
-Ship `v0.2.5.7-windowed-playtest-acceptance` before adding cards:
+Ship `v0.2.5.8-windowed-playtest-acceptance` before adding cards:
 
 - Perform a hands-on click-through from game start to card selection, legal/illegal target feedback, visible region percentage change, and match conclusion.
+- Add automated screenshot/layout checks for at least one wider desktop viewport and one shorter window; current layout assertions are still centered on 1120x720.
 - Adjust only remaining comprehension or hit-target issues found by that playtest.
 - Keep the 4-card values, target rules, FireDirector, Deckbuilder, AI Commander, and save/load scope unchanged.
 - Resume `v0.2.5a-8-card-catalog-on-manifest` only after the basic loop is visibly understandable.

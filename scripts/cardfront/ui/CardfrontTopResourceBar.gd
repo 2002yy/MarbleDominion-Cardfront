@@ -17,6 +17,8 @@ var _release_mode_override_for_test: int = -1
 @onready var _parts_icon: TextureRect = $Margin/HBox/PartsBox/Margin2/Inner/PartsIcon
 @onready var _energy_symbol: Label = $Margin/HBox/EnergyBox/Margin2/Inner/EnergySymbol
 @onready var _parts_symbol: Label = $Margin/HBox/PartsBox/Margin2/Inner/PartsSymbol
+@onready var _energy_name: Label = $Margin/HBox/EnergyBox/Margin2/Inner/Name
+@onready var _parts_name: Label = $Margin/HBox/PartsBox/Margin2/Inner/Name
 
 
 func setup(new_economy_system, new_resource_states: Dictionary, mode_name: String) -> void:
@@ -118,18 +120,10 @@ func _apply_art_assets() -> void:
 			var bg = get_node_or_null(bg_path)
 			if bg is ColorRect:
 				(bg as ColorRect).color = Color(0.04, 0.07, 0.13, 0.44)
-	var font = CardfrontUiAssetRegistryScript.load_font()
-	if font != null:
-		for label_path in [
-			"Margin/HBox/EnergyBox/Margin2/Inner/EnergySymbol",
-			"Margin/HBox/EnergyBox/Margin2/Inner/Value",
-			"Margin/HBox/PartsBox/Margin2/Inner/PartsSymbol",
-			"Margin/HBox/PartsBox/Margin2/Inner/Value",
-			"DebugHint",
-		]:
-			var label = get_node_or_null(label_path)
-			if label is Label:
-				(label as Label).add_theme_font_override("font", font)
+	for label in [_energy_symbol, _parts_symbol, _energy_name, _parts_name, _debug_hint]:
+		CardfrontUiAssetRegistryScript.apply_body_font(label)
+	CardfrontUiAssetRegistryScript.apply_numeric_font(_energy_value)
+	CardfrontUiAssetRegistryScript.apply_numeric_font(_parts_value)
 	_apply_icon(_energy_icon, _energy_symbol, "icon_energy")
 	_apply_icon(_parts_icon, _parts_symbol, "icon_parts")
 

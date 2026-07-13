@@ -69,7 +69,11 @@ func _test_cards_have_collapsed_offset() -> void:
 		var views = main.runtime.hand_panel._card_views
 		_assert.eq(views.size(), 4, "should have 4 card views")
 		for i in range(views.size()):
-			_assert.gte(views[i].position.y, 58.0, "card view %d should have collapsed y offset >= 58" % i)
+			_assert.gte(views[i].position.y, 30.0, "card view %d should retain a compact collapsed offset" % i)
+			_assert.gte(48.0, views[i].position.y, "card view %d should keep its name and costs visible while collapsed" % i)
+			var name_label := views[i].get_node("CardName") as Label
+			var name_bottom: float = views[i].global_position.y + name_label.position.y + name_label.size.y
+			_assert.gte(get_root().get_visible_rect().size.y, name_bottom, "card view %d name should remain inside the viewport" % i)
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

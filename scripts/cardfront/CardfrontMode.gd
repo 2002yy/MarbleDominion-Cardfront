@@ -14,10 +14,10 @@ const CardfrontToastLayerScene = preload("res://scenes/ui/cardfront/CardfrontToa
 const CardfrontEffectVisualBridgeScript = preload("res://scripts/cardfront/ui/CardfrontEffectVisualBridge.gd")
 const CardfrontCardAudioFeedbackScript = preload("res://scripts/cardfront/ui/CardfrontCardAudioFeedback.gd")
 const CardfrontTutorialOverlayScene = preload("res://scenes/ui/cardfront/CardfrontTutorialOverlay.tscn")
-const LEGACY_SIDE_BUTTON_TOP_AFTER_REGION: float = 292.0
+const LEGACY_SIDE_BUTTON_TOP_AFTER_REGION: float = 300.0
 const LEGACY_SIDE_BUTTON_GAP: float = 8.0
 
-const FIRE_STATUS_TEXT: String = "自动射击中 / 卡牌改写射击"
+const FIRE_STATUS_TEXT: String = "炮塔自动射击｜选择卡牌可改变战局"
 
 
 static func is_selected(mode_name: String) -> bool:

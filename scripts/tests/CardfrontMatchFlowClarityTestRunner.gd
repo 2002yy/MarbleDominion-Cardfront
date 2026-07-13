@@ -40,7 +40,7 @@ func _test_objective_and_countdown_text() -> void:
 	var stage := Label.new()
 	var leader := Label.new()
 	RuntimeHudController.update_meta(timer, stage, leader, {0: 320, 1: 320, -1: 960}, 65.0)
-	_assert.eq(stage.text, "\u76ee\u6807 70%", "match flow: top HUD should state the capture objective")
+	_assert.eq(stage.text, "胜利目标 70%", "match flow: top HUD should state the capture objective")
 	_assert.eq(timer.text, "\u5269\u4f59 06:55", "match flow: top HUD should show remaining time instead of elapsed time")
 	_assert.that(CardfrontMatchFlowTextScript.opening_hint_text().contains("70%"), "match flow: opening hint should state the victory threshold")
 	_assert.that(CardfrontMatchFlowTextScript.opening_hint_text().contains("\u4e94\u4e2a\u636e\u70b9"), "match flow: opening hint should identify the five strongholds")

@@ -54,6 +54,8 @@ func _rebuild_visuals() -> void:
 			continue
 		var control: Dictionary = RegionControlCalculatorScript.calculate(region_map, battlefield, region_id)
 		var leader: Dictionary = _get_leader(control)
+		var type_label: String = _region_type_name(str(control.get("region_type", "normal")))
+		var owner_label: String = "%s %d%%" % [CardfrontRulesScript.owner_display_name(int(leader.owner_id)), int(leader.percent)]
 		_visuals.append({
 			"region_id": region_id,
 			"region_type": str(control.get("region_type", "normal")),
@@ -61,7 +63,9 @@ func _rebuild_visuals() -> void:
 			"bounds": _cell_bounds(cells),
 			"owner_id": int(leader.owner_id),
 			"percent": int(leader.percent),
-			"label": "%s · %s %d%%" % [_region_type_name(str(control.get("region_type", "normal"))), CardfrontRulesScript.owner_display_name(int(leader.owner_id)), int(leader.percent)],
+			"type_label": type_label,
+			"owner_label": owner_label,
+			"label": "%s / %s" % [type_label, owner_label],
 		})
 
 
@@ -102,14 +106,17 @@ func _draw_boundary_edges(cell: Vector2i, region_id: int, width: float, color: C
 
 func _draw_badge(visual: Dictionary, owner_color: Color) -> void:
 	var bounds: Rect2 = visual.bounds
-	var font_size: int = clampi(int(round(float(cell_size) * 0.95)), 14, 24)
-	var badge_size := Vector2(clampf(bounds.size.x - 12.0, 92.0, 154.0), float(font_size + 16))
+	var type_font_size: int = clampi(int(round(float(cell_size) * 0.72)), 12, 16)
+	var owner_font_size: int = clampi(int(round(float(cell_size) * 1.02)), 16, 22)
+	var badge_size := Vector2(clampf(bounds.size.x - 10.0, 100.0, 172.0), float(type_font_size + owner_font_size + 18))
 	var badge := Rect2(bounds.get_center() - badge_size * 0.5, badge_size)
 	draw_rect(badge, BADGE_BG, true)
 	draw_rect(badge, DARK_OUTLINE, false, 5.0)
 	draw_rect(badge.grow(-2.0), owner_color.lightened(0.25), false, 2.0)
-	var baseline := Vector2(badge.position.x, badge.position.y + (badge.size.y + float(font_size)) * 0.5 - 4.0)
-	draw_string(ThemeDB.fallback_font, baseline, str(visual.label), HORIZONTAL_ALIGNMENT_CENTER, badge.size.x, font_size, Color.WHITE)
+	var type_baseline := Vector2(badge.position.x, badge.position.y + float(type_font_size) + 7.0)
+	var owner_baseline := Vector2(badge.position.x, badge.position.y + float(type_font_size + owner_font_size) + 10.0)
+	draw_string(ThemeDB.fallback_font, type_baseline, str(visual.type_label), HORIZONTAL_ALIGNMENT_CENTER, badge.size.x, type_font_size, Color(0.78, 0.86, 0.96))
+	draw_string(ThemeDB.fallback_font, owner_baseline, str(visual.owner_label), HORIZONTAL_ALIGNMENT_CENTER, badge.size.x, owner_font_size, Color.WHITE)
 
 
 func _get_leader(control: Dictionary) -> Dictionary:
