@@ -91,16 +91,16 @@ func _test_region_control_thresholds() -> void:
 	var fixture: Dictionary = _make_fixture()
 	var region_id: int = int(fixture.region_map.get_region_ids_by_type(RegionTypeScript.ENERGY)[0])
 
-	_set_region_owner_percent(fixture.battlefield, fixture.region_map, region_id, CardfrontRulesScript.PLAYER_FACTION, 49)
+	_set_region_owner_percent(fixture.battlefield, fixture.region_map, region_id, CardfrontRulesScript.PLAYER_FACTION, 48)
 	var below_result = DeploymentRulesScript.evaluate(fixture.region_map, fixture.battlefield, _make_region_query(CardfrontRulesScript.PLAYER_FACTION, region_id, 50))
-	_assert.that(not below_result.allowed, "region controlled: 49 percent should not satisfy 50 percent rule")
+	_assert.that(not below_result.allowed, "region controlled: 48 percent should not satisfy 50 percent rule")
 	_assert.eq(below_result.reason, DeploymentRulesScript.REASON_REGION_CONTROL_TOO_LOW, "region controlled: below threshold should explain low control")
-	_assert.eq(below_result.owner_percent, 49, "region controlled: below threshold should report owner percent")
+	_assert.eq(below_result.owner_percent, 48, "region controlled: below threshold should report owner percent")
 
-	_set_region_owner_percent(fixture.battlefield, fixture.region_map, region_id, CardfrontRulesScript.PLAYER_FACTION, 50)
+	_set_region_owner_percent(fixture.battlefield, fixture.region_map, region_id, CardfrontRulesScript.PLAYER_FACTION, 52)
 	var equal_result = DeploymentRulesScript.evaluate(fixture.region_map, fixture.battlefield, _make_region_query(CardfrontRulesScript.PLAYER_FACTION, region_id, 50))
-	_assert.that(equal_result.allowed, "region controlled: 50 percent should satisfy 50 percent rule")
-	_assert.eq(equal_result.owner_percent, 50, "region controlled: equal threshold should report owner percent")
+	_assert.that(equal_result.allowed, "region controlled: first attainable percentage above 50 should satisfy the rule")
+	_assert.eq(equal_result.owner_percent, 52, "region controlled: above-threshold result should report the attainable owner percent")
 
 	_set_region_owner_percent(fixture.battlefield, fixture.region_map, region_id, CardfrontRulesScript.PLAYER_FACTION, 80)
 	var high_result = DeploymentRulesScript.evaluate(fixture.region_map, fixture.battlefield, _make_region_query(CardfrontRulesScript.PLAYER_FACTION, region_id, 50))

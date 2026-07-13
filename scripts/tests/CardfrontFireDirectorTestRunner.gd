@@ -76,7 +76,7 @@ func _test_base_intent_without_target_bias() -> void:
 
 func _test_target_bias_controls_intent_region() -> void:
 	var fixture: Dictionary = _make_fixture()
-	var biased_region_id: int = _first_controllable_region_id(fixture.rm)
+	var biased_region_id: int = _first_targetable_region_id(fixture.rm, fixture.bf, CardfrontRulesScript.PLAYER_FACTION)
 	fixture.target_bias_system.apply_region_bias(CardfrontRulesScript.PLAYER_FACTION, biased_region_id, 5.0)
 
 	var intent = fixture.director.build_intent(CardfrontRulesScript.PLAYER_FACTION)
@@ -212,11 +212,15 @@ func _make_fixture(include_ai: bool = false) -> Dictionary:
 	}
 
 
-func _first_controllable_region_id(region_map) -> int:
+func _first_targetable_region_id(region_map, battlefield, owner_id: int) -> int:
 	var ids: Array = region_map.get_controllable_region_ids()
-	if ids.is_empty():
-		return 0
-	return int(ids[0])
+	for region_id_value in ids:
+		var region_id: int = int(region_id_value)
+		for cell_value in region_map.get_region_cells(region_id):
+			var cell: Vector2i = cell_value
+			if int(battlefield.owners[cell.x][cell.y]) != owner_id:
+				return region_id
+	return -1
 
 
 func _cleanup_fixture(fixture: Dictionary) -> void:
