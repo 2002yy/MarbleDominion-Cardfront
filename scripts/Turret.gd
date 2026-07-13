@@ -31,9 +31,15 @@ var burst_origin_angle: float = 0.0
 var burst_directed: bool = false
 var burst_directed_angle: float = 0.0
 var burst_directed_spread: float = 0.0
+var directed_visual_hold_remaining: float = 0.0
 var burst_progress_emit_timer: float = 0.0
 var burst_last_reported_remaining: int = -1
 var _bullet_container_can_spawn: bool = false
+
+const DIRECTED_AIM_SPEED: float = 7.5
+const DIRECTED_AIM_EPSILON: float = deg_to_rad(0.75)
+const DIRECTED_VISUAL_HOLD_SECONDS: float = 0.32
+const SWEEP_FOLLOW_SPEED: float = 10.0
 
 func setup(new_faction_id: int, new_position: Vector2, new_battlefield, new_bullet_container) -> void:
 	faction_id = new_faction_id
@@ -57,18 +63,18 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if not is_destroyed:
-		if burst_directed and burst_remaining > 0:
-			rotation = burst_directed_angle
-		else:
-			sweep_phase += delta * sweep_speed
-			rotation = center_angle + sin(sweep_phase) * sweep_amplitude
+		_update_visual_aim(delta)
 
 	if burst_remaining > 0 and not is_destroyed:
 		burst_timer -= delta
 		burst_progress_emit_timer -= delta
+		if burst_directed and not _is_barrel_ready_to_fire():
+			burst_timer = maxf(0.0, burst_timer)
 		var shots_this_frame: int = 0
 		var frame_budget: int = _max_shots_this_frame()
-		while burst_remaining > 0 and burst_timer <= 0.0 and shots_this_frame < frame_budget:
+		while burst_remaining > 0 and burst_timer <= 0.0 and shots_this_frame < frame_budget and _is_barrel_ready_to_fire():
+			if burst_directed:
+				rotation = burst_directed_angle
 			_spawn_bullet()
 			burst_remaining -= 1
 			burst_index += 1
@@ -77,6 +83,8 @@ func _process(delta: float) -> void:
 				burst_timer += _next_burst_interval()
 			else:
 				burst_total = 0
+				if burst_directed:
+					directed_visual_hold_remaining = DIRECTED_VISUAL_HOLD_SECONDS
 				burst_directed = false
 				burst_directed_spread = 0.0
 				_emit_burst_progress(true)
@@ -125,6 +133,7 @@ func fire_burst(count: int) -> void:
 	burst_directed = false
 	burst_directed_angle = rotation
 	burst_directed_spread = 0.0
+	directed_visual_hold_remaining = 0.0
 	burst_progress_emit_timer = 0.0
 	burst_last_reported_remaining = burst_remaining
 	burst_progress.emit(faction_id, burst_remaining)
@@ -151,7 +160,7 @@ func fire_directed(count: int, angle: float, spread: float = 0.0) -> bool:
 	burst_directed = true
 	burst_directed_angle = float(angle)
 	burst_directed_spread = maxf(0.0, float(spread))
-	rotation = burst_directed_angle
+	directed_visual_hold_remaining = DIRECTED_VISUAL_HOLD_SECONDS
 	burst_progress_emit_timer = 0.0
 	burst_last_reported_remaining = burst_remaining
 	burst_progress.emit(faction_id, burst_remaining)
@@ -167,6 +176,7 @@ func cancel_burst() -> int:
 	burst_timer = 0.0
 	burst_directed = false
 	burst_directed_spread = 0.0
+	directed_visual_hold_remaining = 0.0
 	burst_progress_emit_timer = 0.0
 	burst_last_reported_remaining = 0
 	burst_progress.emit(faction_id, 0)
@@ -185,6 +195,7 @@ func restore_from_state(state: Dictionary) -> void:
 	burst_directed = false
 	burst_directed_angle = rotation
 	burst_directed_spread = 0.0
+	directed_visual_hold_remaining = 0.0
 	burst_remaining = clampi(int(state.get("turret_burst_remaining", 0)), 0, GameConfig.get_max_pending_count())
 	burst_total = clampi(int(state.get("turret_burst_total", burst_remaining)), burst_remaining, GameConfig.get_max_pending_count())
 	burst_index = clampi(int(state.get("turret_burst_index", 0)), 0, GameConfig.get_max_pending_count())
@@ -202,6 +213,7 @@ func restore_from_state(state: Dictionary) -> void:
 		burst_timer = 0.0
 		burst_directed = false
 		burst_directed_spread = 0.0
+		directed_visual_hold_remaining = 0.0
 		burst_last_reported_remaining = 0
 		_set_burst_locked(false)
 
@@ -215,6 +227,27 @@ func _next_burst_interval() -> float:
 	var pulse_pattern: Array = [0.028, 0.032, 0.030, 0.038, 0.031, 0.036, 0.033, 0.040]
 	var idx: int = burst_index % pulse_pattern.size()
 	return float(pulse_pattern[idx]) * _burst_interval_multiplier()
+
+
+func _update_visual_aim(delta: float) -> void:
+	var safe_delta: float = maxf(0.0, delta)
+	sweep_phase += safe_delta * sweep_speed
+	if burst_directed and burst_remaining > 0:
+		rotation = rotate_toward(rotation, burst_directed_angle, DIRECTED_AIM_SPEED * safe_delta)
+		return
+	if directed_visual_hold_remaining > 0.0:
+		directed_visual_hold_remaining = maxf(0.0, directed_visual_hold_remaining - safe_delta)
+		rotation = burst_directed_angle
+		return
+	var sweep_target: float = center_angle + sin(sweep_phase) * sweep_amplitude
+	var follow_weight: float = 1.0 - exp(-SWEEP_FOLLOW_SPEED * safe_delta)
+	rotation = lerp_angle(rotation, sweep_target, clampf(follow_weight, 0.0, 1.0))
+
+
+func _is_barrel_ready_to_fire() -> bool:
+	if not burst_directed:
+		return true
+	return absf(angle_difference(rotation, burst_directed_angle)) <= DIRECTED_AIM_EPSILON
 
 func _burst_interval_multiplier() -> float:
 	var fps: int = floori(Engine.get_frames_per_second())

@@ -154,13 +154,25 @@ func _test_directed_burst_aligns_visual_rotation() -> void:
 	turret.rotation = -0.75
 	var accepted: bool = turret.fire_directed(1, target_angle, 0.10)
 	_assert.that(accepted, "visual angle: directed burst should be accepted")
-	_assert.that(is_equal_approx(turret.rotation, target_angle), "visual angle: fire_directed should rotate barrel before first shot")
+	_assert.that(is_equal_approx(turret.rotation, -0.75), "visual angle: fire_directed should not snap the barrel")
 
-	turret.rotation = -0.25
-	turret.burst_timer = 1.0
-	turret._process(0.25)
-	_assert.that(is_equal_approx(turret.rotation, target_angle), "visual angle: directed burst should keep barrel aligned during process")
-	_assert.that(is_equal_approx(turret._current_burst_shot_angle(), target_angle), "visual angle: shot center should match visible barrel")
+	var initial_error: float = absf(angle_difference(turret.rotation, target_angle))
+	turret._process(0.10)
+	var turning_error: float = absf(angle_difference(turret.rotation, target_angle))
+	_assert.that(turning_error < initial_error, "visual angle: barrel should turn smoothly toward the directed target")
+	_assert.eq(int(turret.burst_remaining), 1, "visual angle: turret should not fire before the barrel is aligned")
+
+	for _step in range(10):
+		if turret.burst_remaining <= 0:
+			break
+		turret._process(0.05)
+	_assert.eq(int(turret.burst_remaining), 0, "visual angle: turret should fire after completing the aim motion")
+	_assert.that(absf(angle_difference(turret.rotation, target_angle)) <= Turret.DIRECTED_AIM_EPSILON, "visual angle: visible barrel should match the fired center angle")
+	var held_rotation: float = turret.rotation
+	turret._process(Turret.DIRECTED_VISUAL_HOLD_SECONDS * 0.5)
+	_assert.that(is_equal_approx(turret.rotation, held_rotation), "visual angle: barrel should briefly hold after firing instead of snapping back")
+	turret._process(Turret.DIRECTED_VISUAL_HOLD_SECONDS)
+	_assert.that(absf(angle_difference(turret.rotation, held_rotation)) < 0.8, "visual angle: return to sweep should begin without an abrupt jump")
 
 	turret.cancel_burst()
 	_cleanup_fixture(fixture)

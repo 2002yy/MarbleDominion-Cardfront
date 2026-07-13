@@ -25,6 +25,7 @@ func _run() -> void:
 	_test_resource_state()
 	_test_region_yield_rules()
 	_test_region_yield_calculator()
+	_test_normal_territory_guarantee()
 	_test_economy_tick_interval()
 	_test_tick_once_and_owner_grid_safety()
 	await _test_main_economy_integration()
@@ -123,6 +124,25 @@ func _test_region_yield_calculator() -> void:
 	TestFixtures.cleanup_node(bf)
 
 
+func _test_normal_territory_guarantee() -> void:
+	var region_map = _make_region_map(40)
+	var bf := _make_battlefield(40)
+	var normal_cells: Array = region_map.get_region_cells(RegionMapScript.NORMAL_REGION_ID)
+	var owners: Array = bf.owners.duplicate(true)
+	for i in range(mini(320, normal_cells.size())):
+		var cell: Vector2i = normal_cells[i]
+		owners[cell.x][cell.y] = CardfrontRulesScript.PLAYER_FACTION
+	bf.replace_owners(owners, false)
+
+	var normal_supply: Dictionary = RegionYieldCalculatorScript.calculate_normal_territory_yield(region_map, bf, CardfrontRulesScript.PLAYER_FACTION)
+	_assert.eq(int(normal_supply.get("owned_normal_cells", 0)), mini(320, normal_cells.size()), "normal supply: should count ordinary occupied cells")
+	_assert.eq(normal_supply.get("yield", {}), {"energy": 1, "parts": 1}, "normal supply: ordinary territory should guarantee both resources")
+	var total: Dictionary = RegionYieldCalculatorScript.calculate_for_owner(region_map, bf, CardfrontRulesScript.PLAYER_FACTION)
+	_assert.eq(total.get("total_yield", {}), {"energy": 1, "parts": 1}, "normal supply: guarantee should be included in the settled tick total")
+
+	TestFixtures.cleanup_node(bf)
+
+
 func _test_economy_tick_interval() -> void:
 	var region_map = _make_region_map(40)
 	var bf := _make_battlefield(40)
@@ -207,6 +227,10 @@ func _test_main_economy_integration() -> void:
 	_assert.that(main.runtime.resource_states.has(CardfrontRulesScript.AI_FACTION), "main integration: Cardfront should create AI resource state")
 	_assert.that(main.runtime.economy_debug_panel.get_debug_text().find("能量：0") >= 0, "main integration: economy debug panel should show player energy")
 	_assert.that(main.runtime.economy_debug_panel.get_debug_text().find("本tick") >= 0, "main integration: economy debug panel should show compact tick summary")
+	var player_state = main.runtime.resource_states.get(CardfrontRulesScript.PLAYER_FACTION, null)
+	for _tick in range(10):
+		main.runtime.economy_system.tick_once()
+	_assert.that(player_state != null and player_state.can_pay(10, 5), "main integration: ordinary starting territory should make every current card affordable within ten ticks")
 
 	TestFixtures.cleanup_node(main)
 	await _flush()

@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.5.5-match-flow-clarity**.
-Current next slice: **v0.2.5.6-windowed-playtest-acceptance**.
-Cardfront now states the 70% objective and remaining time during play, introduces the five-stronghold objective at match start, and provides a formal result panel with final percentages, replay, and menu actions. Content expansion stays paused until another windowed hands-on playtest confirms the complete loop.
+The current completed slice is **v0.2.5.6-aim-and-supply-hotfix**.
+Current next slice: **v0.2.5.7-windowed-playtest-acceptance**.
+Cardfront now combines smooth turret aiming with shot release, and ordinary controlled territory supplies both Energy and Parts so a faction cannot be locked out of all four cards by stronghold distribution. Content expansion stays paused until another windowed hands-on playtest confirms the complete loop.
 
 ## Current Slice / 当前阶段
 
@@ -96,6 +96,10 @@ Implemented in this repository:
   - The top HUD shows remaining match time and the fixed 70% capture objective instead of repeating elapsed and remaining time.
   - The opening banner identifies the five strongholds and the 70% victory condition.
   - A formal Cardfront-only result panel shows the final player/AI/neutral percentages and offers replay or return-to-menu actions.
+- Aim and supply hotfix (v0.2.5.6):
+  - Directed fire smoothly turns the visible barrel toward the intent angle, releases only after alignment, briefly holds, then blends back into the sweep.
+  - Bullet direction and visible barrel direction share the same final angle at release.
+  - Every 320 ordinary controlled cells provide `+1 Energy/s` and `+1 Parts/s`, with a minimum `+1/+1` while a faction owns ordinary territory; strongholds remain bonus income.
 - Cardfront card interaction hotfix:
   - `CardfrontCardView.tscn` root uses `MOUSE_FILTER_STOP`; decorative children use `MOUSE_FILTER_IGNORE`.
   - `CardfrontCardViewInteractionConfigTestRunner.gd` verifies hover/click signal routing to `CardfrontFeedbackBus`.

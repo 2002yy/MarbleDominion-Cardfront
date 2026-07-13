@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.5.5-match-flow-clarity`
-- Next slice: `v0.2.5.6-windowed-playtest-acceptance`
+- Current completed slice: `v0.2.5.6-aim-and-supply-hotfix`
+- Next slice: `v0.2.5.7-windowed-playtest-acceptance`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - TopResourceBar simplified to compact minibar (icon + value only, no Name/YieldLabel)
@@ -71,7 +71,8 @@ This file is the single place for project direction and phase status.
 | `v0.2.5.3-playability-region-block-pass` | Done / 已完成 | Fix full-screen background/HUD click interception, verify real card-to-target input routing, and add score-driven thick-outline region blocks with large owner percentages. No rule or card-value changes. |
 | `v0.2.5.4-card-press-map-readability-pass` | Done / 已完成 | Add dedicated card press/rebound animation; replace intersecting default regions with five independent symmetric strongholds; show region type plus owner percentage in each large badge. |
 | `v0.2.5.5-match-flow-clarity` | Done / 已完成 | Make the 70% objective and remaining time persistent in battle, explain the five-stronghold objective at match start, and add a Cardfront-only final-score panel with replay/menu actions. No gameplay rules changed. |
-| `v0.2.5.6-windowed-playtest-acceptance` | Planned / 计划 | Run another real-window hands-on playtest from card selection through match conclusion and tune only remaining visual density, target clarity, and territory-change comprehension gaps. |
+| `v0.2.5.6-aim-and-supply-hotfix` | Done / 已完成 | Integrate directed aiming into the turret sweep, delay release until the barrel is aligned, and add symmetric Energy/Parts baseline income from ordinary controlled territory so stronghold distribution cannot disable the entire hand. |
+| `v0.2.5.7-windowed-playtest-acceptance` | Planned / 计划 | Run another real-window hands-on playtest from card selection through match conclusion and tune only remaining visual density, target clarity, and territory-change comprehension gaps. |
 | `v0.2.5a-8-card-catalog-on-manifest` | Planned / 计划 | Expand toward 8 cards only through the manifest + validator path; no Deckbuilder, AI Commander, or full save/load. |
 
 ## 3. Design Boundaries / 设计边界
@@ -211,9 +212,10 @@ This file is the single place for project direction and phase status.
 
 ## 6. Next / 下一步
 
-1. `v0.2.5a-8-card-catalog-on-manifest`: add cards only through manifest + implemented target rules + focused tests.
-2. Keep Deckbuilder, deck draw/discard/shuffle, AI Commander, card expansion, card-value changes, and full Cardfront save/load deferred.
-3. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` for all new wiring.
+1. `v0.2.5.7-windowed-playtest-acceptance`: verify smooth aiming, baseline card availability, card selection, legal/illegal targets, region percentage changes, and match conclusion in one real-window session.
+2. `v0.2.5a-8-card-catalog-on-manifest`: add cards only after the acceptance pass and only through manifest + implemented target rules + focused tests.
+3. Keep Deckbuilder, deck draw/discard/shuffle, AI Commander, card-value changes, and full Cardfront save/load deferred.
+4. Follow the high-coupling split order in `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` for all new wiring.
 
 ### Cardfront Save Schema
 
