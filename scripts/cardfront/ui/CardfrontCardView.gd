@@ -11,8 +11,15 @@ var clicked_callback: Callable = func(): pass
 var feedback_bus = null
 var _tween: Tween = null
 var _is_selected: bool = false
+var _is_pointer_inside: bool = false
+var _is_pressed: bool = false
 
 const COLLAPSED_OFFSET: float = 70.0
+const EXPANDED_SCALE := Vector2(1.05, 1.05)
+const PRESSED_SCALE := Vector2(0.94, 0.94)
+const PRESS_OFFSET_Y: float = 4.0
+const PRESS_DOWN_DURATION: float = 0.065
+const PRESS_RELEASE_DURATION: float = 0.16
 
 const CARD_SIZE := Vector2(130, 150)
 const HOVER_SCALE := Vector2(1.035, 1.035)
@@ -170,6 +177,7 @@ func _restore_text_colors() -> void:
 
 
 func _on_mouse_entered() -> void:
+	_is_pointer_inside = true
 	if feedback_bus != null and feedback_bus.has_method("emit_card_hovered"):
 		feedback_bus.emit_card_hovered(card_id, card_data, self)
 	if current_state == "idle":
@@ -178,6 +186,8 @@ func _on_mouse_entered() -> void:
 
 
 func _on_mouse_exited() -> void:
+	_is_pointer_inside = false
+	_is_pressed = false
 	if feedback_bus != null and feedback_bus.has_method("emit_card_unhovered"):
 		feedback_bus.emit_card_unhovered(card_id, card_data, self)
 	if current_state == "hover":
@@ -187,19 +197,22 @@ func _on_mouse_exited() -> void:
 
 
 func _on_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
+		return
+	if event.pressed:
 		if feedback_bus != null and feedback_bus.has_method("emit_card_clicked"):
 			feedback_bus.emit_card_clicked(card_id, card_data, self)
 		if current_state == "disabled_resource":
 			_emit_click_failed("not_enough_resource")
-			return
-		if current_state == "used":
+		elif current_state == "used":
 			_emit_click_failed("card_already_used")
-			return
-		if is_clickable():
+		elif is_clickable():
 			clicked_callback.call()
 		else:
 			_emit_click_failed("not_clickable")
+		_animate_press_down()
+	else:
+		_animate_press_release()
 
 
 func _emit_click_failed(reason: String) -> void:
@@ -214,21 +227,50 @@ func _emit_click_failed(reason: String) -> void:
 
 
 func _animate_expand() -> void:
+	if _is_pressed:
+		return
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
 	_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_tween.parallel().tween_property(self, "position:y", 0.0, 0.2)
-	_tween.parallel().tween_property(self, "scale", Vector2(1.05, 1.05), 0.2)
+	_tween.parallel().tween_property(self, "scale", EXPANDED_SCALE, 0.2)
 	_tween.parallel().tween_property(self, "z_index", 30, 0.15)
 
 
 func _animate_collapse() -> void:
+	if _is_pressed:
+		return
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
 	_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_tween.parallel().tween_property(self, "position:y", COLLAPSED_OFFSET, 0.2)
 	_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.2)
 	_tween.parallel().tween_property(self, "z_index", 0, 0.15)
+
+
+func _animate_press_down() -> void:
+	_is_pressed = true
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	var rest_y: float = 0.0 if (_is_pointer_inside or _is_selected) else COLLAPSED_OFFSET
+	z_index = 31
+	_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_tween.parallel().tween_property(self, "scale", PRESSED_SCALE, PRESS_DOWN_DURATION)
+	_tween.parallel().tween_property(self, "position:y", rest_y + PRESS_OFFSET_Y, PRESS_DOWN_DURATION)
+
+
+func _animate_press_release() -> void:
+	_is_pressed = false
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	var expanded: bool = _is_pointer_inside or _is_selected
+	var target_scale: Vector2 = EXPANDED_SCALE if expanded else Vector2.ONE
+	var target_y: float = 0.0 if expanded else COLLAPSED_OFFSET
+	var target_z: int = 30 if expanded else 0
+	_tween = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_tween.parallel().tween_property(self, "scale", target_scale, PRESS_RELEASE_DURATION)
+	_tween.parallel().tween_property(self, "position:y", target_y, PRESS_RELEASE_DURATION)
+	_tween.parallel().tween_property(self, "z_index", target_z, PRESS_RELEASE_DURATION)
 
 
 func _apply_art_assets() -> void:

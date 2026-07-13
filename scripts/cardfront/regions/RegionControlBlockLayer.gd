@@ -61,7 +61,7 @@ func _rebuild_visuals() -> void:
 			"bounds": _cell_bounds(cells),
 			"owner_id": int(leader.owner_id),
 			"percent": int(leader.percent),
-			"label": "%s %d%%" % [CardfrontRulesScript.owner_display_name(int(leader.owner_id)), int(leader.percent)],
+			"label": "%s · %s %d%%" % [_region_type_name(str(control.get("region_type", "normal"))), CardfrontRulesScript.owner_display_name(int(leader.owner_id)), int(leader.percent)],
 		})
 
 
@@ -139,3 +139,15 @@ func _neighbor_region(cell: Vector2i) -> int:
 	if region_map == null or not region_map.is_inside(cell):
 		return -1
 	return int(region_map.get_region_id(cell))
+
+
+func _region_type_name(region_type: String) -> String:
+	match region_type:
+		"energy":
+			return "能源"
+		"factory":
+			return "工厂"
+		"lab":
+			return "实验室"
+		_:
+			return "区域"

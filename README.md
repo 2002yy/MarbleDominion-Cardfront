@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.5.3-playability-region-block-pass**.
-Current next slice: **v0.2.5.4-playtest-flow-polish**.
-Cardfront now has a verified real-input card-to-target flow plus bold, score-driven region control blocks. Content expansion stays paused until another hands-on playtest confirms that selection, target feedback, territory changes, and win pressure are understandable end to end.
+The current completed slice is **v0.2.5.4-card-press-map-readability-pass**.
+Current next slice: **v0.2.5.5-windowed-playtest-acceptance**.
+Cardfront now has press-and-rebound card feedback plus a symmetric five-stronghold default map. Content expansion stays paused until a windowed hands-on playtest confirms that selection, target feedback, territory changes, and win pressure are understandable end to end.
 
 ## Current Slice / 当前阶段
 
@@ -87,6 +87,11 @@ Implemented in this repository:
   - `RegionControlBlockLayer` renders each contested resource region as a unified cartoon block with a dark outer stroke, faction-color inner stroke, and a large `玩家/AI/中立 XX%` badge.
   - Region blocks rebuild only from score-change dirty signals; they do not redraw every frame.
   - Real-input CI covers card click -> selection -> valid battlefield click -> card play.
+- Card press and map readability pass (v0.2.5.4):
+  - Card presses compress to `0.94` scale and move down briefly, then rebound to the correct hover/selected/rest pose on release.
+  - The default map is now five separate strongholds: mirrored Energy/Factory blocks around one large central Lab.
+  - Strongholds do not overlap or touch, remain rotationally symmetric, and scale cleanly across supported grid sizes.
+  - Region badges now include strategic type plus control state, for example `能源 · 玩家 64%`.
 - Cardfront card interaction hotfix:
   - `CardfrontCardView.tscn` root uses `MOUSE_FILTER_STOP`; decorative children use `MOUSE_FILTER_IGNORE`.
   - `CardfrontCardViewInteractionConfigTestRunner.gd` verifies hover/click signal routing to `CardfrontFeedbackBus`.

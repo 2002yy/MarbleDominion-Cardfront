@@ -36,6 +36,11 @@ func _run() -> void:
 	TestFixtures.cleanup_node(f4.view)
 	TestFixtures.cleanup_node(f4.bus)
 
+	var f5 := await _make_fixture()
+	await _test_press_shrinks_and_release_rebounds(f5.view)
+	TestFixtures.cleanup_node(f5.view)
+	TestFixtures.cleanup_node(f5.bus)
+
 	await _flush()
 	_assert.report("[CardfrontCardHoverMotionTest]")
 	if _assert.failures.is_empty():
@@ -132,3 +137,23 @@ func _test_feedback_bus_signals_unchanged(fixture: Dictionary) -> void:
 	event.pressed = true
 	view.emit_signal("gui_input", event)
 	_assert.eq(counts.clicked, 1, "gui_input click should emit card_clicked via feedback bus")
+
+
+func _test_press_shrinks_and_release_rebounds(view: Control) -> void:
+	view.emit_signal("mouse_entered")
+	await create_timer(0.25).timeout
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	view.emit_signal("gui_input", press)
+	await create_timer(0.09).timeout
+	_assert.that(view.scale.x < 0.98, "press feedback: card should compress below normal scale")
+	_assert.that(view.position.y >= 3.0, "press feedback: card should move down slightly")
+
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	view.emit_signal("gui_input", release)
+	await create_timer(0.22).timeout
+	_assert.that(view.scale.x > 1.02, "press feedback: release should rebound to hover scale")
+	_assert.that(view.position.y < 1.0, "press feedback: release should return to expanded position")

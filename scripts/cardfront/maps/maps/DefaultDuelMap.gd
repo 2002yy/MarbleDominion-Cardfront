@@ -14,24 +14,25 @@ static func make(grid_size: int) -> Dictionary:
 	var contest_min_x: int = spawn_columns
 	var contest_max_x: int = size - spawn_columns - 1
 	var center: int = size >> 1
-	var resource_radius: int = maxi(1, floori(float(size) / 20.0))
-	var lab_radius: int = maxi(2, floori(float(size) / 12.0))
-	var energy_margin: int = maxi(2, floori(float(size) / 20.0))
-	var energy_y_top: int = floori(float(size) / 4.0)
-	var energy_y_bottom: int = size - energy_y_top - 1
 	var contest_width: int = maxi(1, contest_max_x - contest_min_x + 1)
-	var factory_left_x: int = contest_min_x + floori(float(contest_width) / 4.0)
-	var factory_right_x: int = contest_max_x - floori(float(contest_width) / 4.0)
+	var stronghold_radius: int = maxi(1, floori(float(size) / 16.0))
+	var core_radius: int = maxi(2, floori(float(size) / 10.0))
+	var side_inset: int = maxi(stronghold_radius + 1, floori(float(contest_width) * 0.18))
+	var left_x: int = contest_min_x + side_inset
+	var right_x: int = contest_max_x - side_inset
+	var top_y: int = clampi(floori(float(size) * 0.23), stronghold_radius, size - stronghold_radius - 1)
+	var bottom_y: int = size - top_y - 1
 
 	var regions: Array = [
-		_rect(contest_min_x + energy_margin, energy_y_top - resource_radius, contest_max_x - energy_margin, energy_y_top + resource_radius, RegionTypeScript.ENERGY),
-		_rect(contest_min_x + energy_margin, energy_y_bottom - resource_radius, contest_max_x - energy_margin, energy_y_bottom + resource_radius, RegionTypeScript.ENERGY),
-		_rect(factory_left_x - resource_radius, center - lab_radius, factory_left_x + resource_radius, center + lab_radius, RegionTypeScript.FACTORY),
-		_rect(factory_right_x - resource_radius, center - lab_radius, factory_right_x + resource_radius, center + lab_radius, RegionTypeScript.FACTORY),
-		_diamond(center, center, lab_radius, RegionTypeScript.LAB),
+		_square(left_x, top_y, stronghold_radius, RegionTypeScript.ENERGY),
+		_square(right_x, top_y, stronghold_radius, RegionTypeScript.FACTORY),
+		_rect(center - core_radius, center - core_radius, center + core_radius - 1, center + core_radius - 1, RegionTypeScript.LAB),
+		_square(left_x, bottom_y, stronghold_radius, RegionTypeScript.FACTORY),
+		_square(right_x, bottom_y, stronghold_radius, RegionTypeScript.ENERGY),
 	]
 	return CardfrontMapDefinitionScript.make("default_duel", size, regions, {
-		"display_name": "Default Duel",
+		"display_name": "Five Strongholds",
+		"layout_style": "symmetric_five_strongholds",
 		"spawn_zones": [
 			{"owner": CardfrontRulesScript.PLAYER_FACTION, "x0": 0, "x1": spawn_columns - 1},
 			{"owner": CardfrontRulesScript.AI_FACTION, "x0": size - spawn_columns, "x1": size - 1},
@@ -47,6 +48,10 @@ static func make(grid_size: int) -> Dictionary:
 
 static func _rect(x0: int, y0: int, x1: int, y1: int, region_type: String) -> Dictionary:
 	return {"shape": CardfrontMapDefinitionScript.SHAPE_RECT, "x0": x0, "y0": y0, "x1": x1, "y1": y1, "type": region_type}
+
+
+static func _square(center_x: int, center_y: int, radius: int, region_type: String) -> Dictionary:
+	return _rect(center_x - radius, center_y - radius, center_x + radius, center_y + radius, region_type)
 
 
 static func _diamond(center_x: int, center_y: int, radius: int, region_type: String) -> Dictionary:

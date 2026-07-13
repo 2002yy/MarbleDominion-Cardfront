@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.5.3-playability-region-block-pass`
-- Current slice: `v0.2.5.4-playtest-flow-polish`
+- Current completed slice: `v0.2.5.4-card-press-map-readability-pass`
+- Current slice: `v0.2.5.5-windowed-playtest-acceptance`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -49,6 +49,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - `Main.gd:_unhandled_input()` converts mouse clicks to `selection_controller.on_battlefield_clicked(cell)`.
 - `MainBackground`, Cardfront toast/resource/HUD decoration use mouse pass-through; real input tests now prove card click -> select -> valid battlefield click -> play.
 - `RegionControlBlockLayer.gd` draws thick unified region outlines plus large dominant-owner percentages and refreshes only on score-change dirty signals.
+- `CardfrontCardView.gd` owns hover plus dedicated press-down/release-rebound motion; gameplay callbacks and feedback-bus timing remain unchanged.
+- `DefaultDuelMap.gd` is a five-stronghold layout: two Energy, two Factory, and one central Lab, with no touching regions and full rotational symmetry.
 - `CardfrontFireDirector.gd` has signals: `fire_tick`, `fire_requested`, `fire_issued`, `fire_skipped`.
 - Overlay layers (`RegionOverlay`, `FortifyOverlay`) use ImageTexture caching.
 - Old BallWar modes should not create or depend on Cardfront card/effect/fire systems.
@@ -70,10 +72,11 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.5.1-content-boundary-hardening: `CardfrontContentManifest` now distinguishes implemented target types (`owned_border`, `owned_region`, `enemy_region`) from reserved target types. `CardfrontContentValidationTestRunner` fails if a current card uses a reserved target without a target rule. `RegionMap` now exposes public `clear_regions`, `paint_region_rect`, and `paint_region_diamond`; `CardfrontMapBuilder` no longer calls underscore RegionMap methods.
 - v0.2.5.2-runtime-builder-split: Added `scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd`, `CardfrontSystemRegistry.gd`, and `CardfrontRuntimeRefs.gd`. Moved Cardfront runtime factory logic out of `CardfrontMode.gd`; `CardfrontMode` now delegates runtime creation to the builder for compatibility. `Main.gd` now calls `build_core_systems()` and `build_world_layers()` instead of wiring every Cardfront subsystem one by one. Added `CardfrontRuntimeBuilderTestRunner.gd` to CI.
 - v0.2.5.3-playability-region-block-pass: Fixed the full-screen background and decorative UI controls consuming battlefield clicks, routed clicks from the active event position, added dirty-redrawn thick-outline region blocks with explicit percentages, and added real-input/region-readability CI runners.
+- v0.2.5.4-card-press-map-readability-pass: Added card press compression/rebound, redesigned the default map as five isolated symmetric strongholds, included region type in percentage badges, and added strict map readability CI coverage.
 
 ## 4. Next Steps / 下一步
 
-Ship `v0.2.5.4-playtest-flow-polish` before adding cards:
+Ship `v0.2.5.5-windowed-playtest-acceptance` before adding cards:
 
 - Perform a hands-on click-through from game start to card selection, legal/illegal target feedback, visible region percentage change, and match conclusion.
 - Adjust only remaining comprehension or hit-target issues found by that playtest.

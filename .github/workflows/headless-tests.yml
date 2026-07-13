@@ -28,6 +28,7 @@ jobs:
             scripts: |
               RegionMapTestRunner.gd
               CardfrontMapDefinitionTestRunner.gd
+              CardfrontMapReadabilityTestRunner.gd
               NeutralOwnerCompatibilityTestRunner.gd
               DeploymentRulesTestRunner.gd
               RegionMoraleTestRunner.gd
