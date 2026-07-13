@@ -6,8 +6,8 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 ## 1. Current Version / 当前版本
 
 - Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.5.4-card-press-map-readability-pass`
-- Current slice: `v0.2.5.5-windowed-playtest-acceptance`
+- Current completed slice: `v0.2.5.5-match-flow-clarity`
+- Current slice: `v0.2.5.6-windowed-playtest-acceptance`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
 ## 2. Current Status / 当前状态
@@ -73,10 +73,11 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.5.2-runtime-builder-split: Added `scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd`, `CardfrontSystemRegistry.gd`, and `CardfrontRuntimeRefs.gd`. Moved Cardfront runtime factory logic out of `CardfrontMode.gd`; `CardfrontMode` now delegates runtime creation to the builder for compatibility. `Main.gd` now calls `build_core_systems()` and `build_world_layers()` instead of wiring every Cardfront subsystem one by one. Added `CardfrontRuntimeBuilderTestRunner.gd` to CI.
 - v0.2.5.3-playability-region-block-pass: Fixed the full-screen background and decorative UI controls consuming battlefield clicks, routed clicks from the active event position, added dirty-redrawn thick-outline region blocks with explicit percentages, and added real-input/region-readability CI runners.
 - v0.2.5.4-card-press-map-readability-pass: Added card press compression/rebound, redesigned the default map as five isolated symmetric strongholds, included region type in percentage badges, and added strict map readability CI coverage.
+- v0.2.5.5-match-flow-clarity: Changed Cardfront meta HUD to remaining time plus a fixed 70% objective, added a five-stronghold opening hint, and introduced a Cardfront-only formal result panel with final percentages, replay, and return-to-menu actions.
 
 ## 4. Next Steps / 下一步
 
-Ship `v0.2.5.5-windowed-playtest-acceptance` before adding cards:
+Ship `v0.2.5.6-windowed-playtest-acceptance` before adding cards:
 
 - Perform a hands-on click-through from game start to card selection, legal/illegal target feedback, visible region percentage change, and match conclusion.
 - Adjust only remaining comprehension or hit-target issues found by that playtest.

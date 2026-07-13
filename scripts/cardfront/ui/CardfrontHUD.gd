@@ -21,6 +21,7 @@ class_name CardfrontHUD
 @onready var resume_button: Button = get_node("PauseOverlay/PausePanel/ResumeButton")
 @onready var save_exit_button: Button = get_node("PauseOverlay/PausePanel/SaveExitButton")
 @onready var winner_label: Label = get_node("WinnerLabel")
+@onready var match_result_panel = get_node("MatchResultPanel")
 
 var settings_panel: Control
 var top_bar_segments: Dictionary = {}
@@ -94,6 +95,7 @@ func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary
 	_layout_side_buttons(view_size, mobile_mode, layout)
 	_layout_status_labels(view_size, mobile_mode, layout)
 	_layout_pause_overlay(view_size)
+	match_result_panel.setup(controller_ref, view_size)
 
 	var winner_label_rect: Rect2 = hud_positions.get("winner_label_rect", Rect2(Vector2(0.0, float(layout.get("winner_y", 666.0))), Vector2(view_size.x, 34.0)))
 	winner_label.position = winner_label_rect.position
@@ -126,6 +128,7 @@ func get_static_parts() -> Dictionary:
 		"timer_label": timer_label,
 		"stage_label": stage_label,
 		"event_label": event_label,
+		"match_result_panel": match_result_panel,
 	}
 
 

@@ -22,8 +22,10 @@ const MENU_PREF_PATH: String = "user://menu_preferences.json"
 const GameRuntimeContextScript = preload("res://scripts/GameRuntimeContext.gd")
 const StartMenuUi = preload("res://scripts/StartMenu.gd")
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
+const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
 const CardfrontStatusFormatterScript = preload("res://scripts/cardfront/ui/CardfrontStatusFormatter.gd")
+const CardfrontMatchFlowTextScript = preload("res://scripts/cardfront/ui/CardfrontMatchFlowText.gd")
 const CardfrontHUDScene = preload("res://scenes/ui/cardfront/CardfrontHUD.tscn")
 const GameHUDScene = preload("res://scenes/ui/GameHUD.tscn")
 
@@ -267,7 +269,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_create_control_buttons()
 	if not suppress_banner:
 		if _is_cardfront_mode():
-			_show_center_banner("卡牌前线", "玩家 vs AI 基线", Color(0.62, 0.90, 1.0), true)
+			_show_center_banner("卡牌前线", CardfrontMatchFlowTextScript.opening_hint_text(), Color(0.62, 0.90, 1.0), true)
 		else:
 			_show_center_banner("领土战争", "开战！", Color(1.0, 0.94, 0.48), true)
 
@@ -592,9 +594,43 @@ func _check_winner() -> void:
 
 func _finish_with_winner(faction_id: int, sub_text: String) -> void:
 	GameStateCoordinator.finish_with_winner(self, _hud_ref("winner_label"), faction_id, sub_text)
+	if _is_cardfront_mode():
+		_show_cardfront_match_result(faction_id, false)
 
 func _finish_as_draw(sub_text: String) -> void:
 	GameStateCoordinator.finish_as_draw(self, _hud_ref("winner_label"), sub_text)
+	if _is_cardfront_mode():
+		_show_cardfront_match_result(-1, true)
+
+
+func _show_cardfront_match_result(winner_id: int, draw: bool) -> void:
+	var result_panel = _hud_ref("match_result_panel")
+	if result_panel == null or not is_instance_valid(result_panel) or not result_panel.has_method("show_result"):
+		return
+	var time_expired: bool = game_elapsed_time >= CardfrontModeScript.get_match_duration_seconds()
+	var title_text: String = "\u5e73\u5c40" if draw else "%s\u80dc\u5229\uff01" % CardfrontRulesScript.owner_display_name(winner_id)
+	var accent: Color = Color(0.92, 0.94, 1.0) if draw else CardfrontRulesScript.owner_color(winner_id)
+	result_panel.show_result(
+		title_text,
+		CardfrontMatchFlowTextScript.result_reason(time_expired),
+		current_score_counts,
+		_runtime_grid_size() * _runtime_grid_size(),
+		accent
+	)
+
+
+func _restart_current_cardfront_match() -> void:
+	if not _is_cardfront_mode():
+		return
+	_start_game(selected_grid_size, false, true)
+
+
+func _exit_cardfront_result_to_menu() -> void:
+	if not _is_cardfront_mode():
+		return
+	get_tree().paused = false
+	_cleanup_game_layer()
+	_create_start_menu()
 
 func _stop_all_actions_for_game_over() -> void:
 	GameStateCoordinator.stop_actions_for_game_over(

@@ -16,6 +16,8 @@ static func format_time_text(seconds: float) -> String:
 
 static func current_stage_name(game_elapsed_time: float) -> String:
 	var mode_name: String = GameConfig.get_game_mode_name()
+	if mode_name == GameConfig.GAME_MODE_CARDFRONT:
+		return "\u76ee\u6807 %d%%" % CardfrontRulesScript.CAPTURE_TARGET_PERCENT
 	if mode_name == GameConfig.GAME_MODE_OCCUPATION:
 		return "占领目标 %d%%" % GameConfig.get_occupation_target_percent()
 	if mode_name == GameConfig.GAME_MODE_TIMED:
@@ -23,9 +25,6 @@ static func current_stage_name(game_elapsed_time: float) -> String:
 		return "限时 %s" % format_time_text(remain)
 	if mode_name == GameConfig.GAME_MODE_WILD:
 		return "狂野 x3 / 上限 %d" % GameConfig.get_max_pending_count()
-	if mode_name == GameConfig.GAME_MODE_CARDFRONT:
-		var remain: float = maxf(0.0, CardfrontRulesScript.MATCH_DURATION_SECONDS - game_elapsed_time)
-		return "卡牌前线 %s" % format_time_text(remain)
 
 	if game_elapsed_time < 120.0:
 		return "前期扩张"
@@ -113,7 +112,11 @@ static func get_perf_debug_text(bullet_container, battlefield, selected_grid_siz
 
 static func update_meta(timer_label, stage_label, leader_label, current_score_counts: Dictionary, game_elapsed_time: float) -> void:
 	if timer_label != null and is_instance_valid(timer_label):
-		timer_label.text = format_time_text(game_elapsed_time)
+		if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT:
+			var remain: float = maxf(0.0, CardfrontRulesScript.MATCH_DURATION_SECONDS - game_elapsed_time)
+			timer_label.text = "\u5269\u4f59 %s" % format_time_text(remain)
+		else:
+			timer_label.text = format_time_text(game_elapsed_time)
 	if stage_label != null and is_instance_valid(stage_label):
 		stage_label.text = current_stage_name(game_elapsed_time)
 	if leader_label != null and is_instance_valid(leader_label):

@@ -1,0 +1,108 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cardfront/ui/CardfrontMatchResultPanel.gd" id="1_result"]
+
+[node name="CardfrontMatchResultPanel" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1120.0
+offset_bottom = 720.0
+mouse_filter = 0
+script = ExtResource("1_result")
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 1120.0
+offset_bottom = 720.0
+mouse_filter = 0
+color = Color(0.01, 0.02, 0.04, 0.76)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 330.0
+offset_top = 214.0
+offset_right = 790.0
+offset_bottom = 506.0
+mouse_filter = 0
+self_modulate = Color(0.1, 0.14, 0.22, 0.99)
+
+[node name="Inner" type="ColorRect" parent="Panel"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 455.0
+offset_bottom = 287.0
+mouse_filter = 2
+color = Color(0.025, 0.045, 0.075, 0.98)
+
+[node name="Accent" type="ColorRect" parent="Panel"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 12.0
+offset_right = 442.0
+offset_bottom = 18.0
+mouse_filter = 2
+color = Color(0.2, 0.65, 1, 1)
+
+[node name="TitleLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 34.0
+offset_right = 436.0
+offset_bottom = 84.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.64, 0.9, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 38
+text = "Result"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ReasonLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 94.0
+offset_right = 432.0
+offset_bottom = 124.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.91, 0.58, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 17
+text = "Match result"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 138.0
+offset_right = 432.0
+offset_bottom = 180.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.92, 0.96, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "Player 70%   AI 20%   Neutral 10%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RestartButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 52.0
+offset_top = 214.0
+offset_right = 218.0
+offset_bottom = 264.0
+theme_override_font_sizes/font_size = 18
+text = "Replay"
+
+[node name="MenuButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 242.0
+offset_top = 214.0
+offset_right = 408.0
+offset_bottom = 264.0
+theme_override_font_sizes/font_size = 18
+text = "Menu"

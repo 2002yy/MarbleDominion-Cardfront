@@ -6,9 +6,9 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 
 > 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
 
-The current completed slice is **v0.2.5.4-card-press-map-readability-pass**.
-Current next slice: **v0.2.5.5-windowed-playtest-acceptance**.
-Cardfront now has press-and-rebound card feedback plus a symmetric five-stronghold default map. Content expansion stays paused until a windowed hands-on playtest confirms that selection, target feedback, territory changes, and win pressure are understandable end to end.
+The current completed slice is **v0.2.5.5-match-flow-clarity**.
+Current next slice: **v0.2.5.6-windowed-playtest-acceptance**.
+Cardfront now states the 70% objective and remaining time during play, introduces the five-stronghold objective at match start, and provides a formal result panel with final percentages, replay, and menu actions. Content expansion stays paused until another windowed hands-on playtest confirms the complete loop.
 
 ## Current Slice / 当前阶段
 
@@ -92,6 +92,10 @@ Implemented in this repository:
   - The default map is now five separate strongholds: mirrored Energy/Factory blocks around one large central Lab.
   - Strongholds do not overlap or touch, remain rotationally symmetric, and scale cleanly across supported grid sizes.
   - Region badges now include strategic type plus control state, for example `能源 · 玩家 64%`.
+- Match-flow clarity pass (v0.2.5.5):
+  - The top HUD shows remaining match time and the fixed 70% capture objective instead of repeating elapsed and remaining time.
+  - The opening banner identifies the five strongholds and the 70% victory condition.
+  - A formal Cardfront-only result panel shows the final player/AI/neutral percentages and offers replay or return-to-menu actions.
 - Cardfront card interaction hotfix:
   - `CardfrontCardView.tscn` root uses `MOUSE_FILTER_STOP`; decorative children use `MOUSE_FILTER_IGNORE`.
   - `CardfrontCardViewInteractionConfigTestRunner.gd` verifies hover/click signal routing to `CardfrontFeedbackBus`.

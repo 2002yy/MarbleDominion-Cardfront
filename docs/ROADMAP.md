@@ -8,8 +8,8 @@ This file is the single place for project direction and phase status.
 ## 1. Current Line / 当前主线
 
 - Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.5.4-card-press-map-readability-pass`
-- Next slice: `v0.2.5.5-windowed-playtest-acceptance`
+- Current completed slice: `v0.2.5.5-match-flow-clarity`
+- Next slice: `v0.2.5.6-windowed-playtest-acceptance`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 - Current theme:
   - TopResourceBar simplified to compact minibar (icon + value only, no Name/YieldLabel)
@@ -70,7 +70,8 @@ This file is the single place for project direction and phase status.
 | `v0.2.5.2-runtime-builder-split` | Done / 已完成 | Add `CardfrontRuntimeBuilder`, `CardfrontSystemRegistry`, and `CardfrontRuntimeRefs`; route Main Cardfront core/world-layer assembly through grouped runtime builder calls while keeping CardfrontMode as a compatibility facade. |
 | `v0.2.5.3-playability-region-block-pass` | Done / 已完成 | Fix full-screen background/HUD click interception, verify real card-to-target input routing, and add score-driven thick-outline region blocks with large owner percentages. No rule or card-value changes. |
 | `v0.2.5.4-card-press-map-readability-pass` | Done / 已完成 | Add dedicated card press/rebound animation; replace intersecting default regions with five independent symmetric strongholds; show region type plus owner percentage in each large badge. |
-| `v0.2.5.5-windowed-playtest-acceptance` | Planned / 计划 | Run a real-window hands-on playtest and tune only remaining visual density, target clarity, territory-change, and win-pressure comprehension gaps. |
+| `v0.2.5.5-match-flow-clarity` | Done / 已完成 | Make the 70% objective and remaining time persistent in battle, explain the five-stronghold objective at match start, and add a Cardfront-only final-score panel with replay/menu actions. No gameplay rules changed. |
+| `v0.2.5.6-windowed-playtest-acceptance` | Planned / 计划 | Run another real-window hands-on playtest from card selection through match conclusion and tune only remaining visual density, target clarity, and territory-change comprehension gaps. |
 | `v0.2.5a-8-card-catalog-on-manifest` | Planned / 计划 | Expand toward 8 cards only through the manifest + validator path; no Deckbuilder, AI Commander, or full save/load. |
 
 ## 3. Design Boundaries / 设计边界

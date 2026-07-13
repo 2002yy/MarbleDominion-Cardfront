@@ -85,6 +85,7 @@ jobs:
               CardfrontUiClickThroughTestRunner.gd
               CardfrontRegionInfoPanelVisibilityTestRunner.gd
               CardfrontTopResourceBarMinimalTestRunner.gd
+              CardfrontMatchFlowClarityTestRunner.gd
           - batch: Cardfront performance budget
             scripts: |
               CardfrontPerformanceSmokeTestRunner.gd

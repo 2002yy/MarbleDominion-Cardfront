@@ -1,6 +1,7 @@
-[gd_scene format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/cardfront/ui/CardfrontHUD.gd" id="1_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/cardfront/CardfrontMatchResultPanel.tscn" id="2_result"]
 
 [node name="CardfrontHUD" type="CanvasLayer"]
 process_mode = 3
@@ -482,3 +483,5 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 5
 theme_override_font_sizes/font_size = 28
 horizontal_alignment = 1
+
+[node name="MatchResultPanel" parent="." instance=ExtResource("2_result")]
