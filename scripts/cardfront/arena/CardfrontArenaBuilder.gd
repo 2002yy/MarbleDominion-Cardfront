@@ -3,6 +3,7 @@ class_name CardfrontArenaBuilder
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontArenaPresentationLayerScript = preload("res://scripts/cardfront/arena/CardfrontArenaPresentationLayer.gd")
+const CardfrontOrthographicArenaViewScript = preload("res://scripts/cardfront/arena/CardfrontOrthographicArenaView.gd")
 const CardfrontCommandChamberViewScript = preload("res://scripts/cardfront/arena/CardfrontCommandChamberView.gd")
 const CardfrontDirectionControllerScript = preload("res://scripts/cardfront/arena/CardfrontDirectionController.gd")
 const CardfrontAimGuideLayerScript = preload("res://scripts/cardfront/arena/CardfrontAimGuideLayer.gd")
@@ -18,6 +19,17 @@ static func create_presentation(game_layer: Node, battlefield, layout: Dictionar
 		return {"configured": false, "reason": "invalid_arena_layout"}
 	game_layer.add_child(layer)
 	return {"configured": true, "arena_presentation_layer": layer}
+
+
+static func create_orthographic_view(game_layer: Node, battlefield, region_map, bullet_pool, turrets: Dictionary, layout: Dictionary) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	var view = CardfrontOrthographicArenaViewScript.new()
+	if not view.setup(battlefield, region_map, bullet_pool, turrets, layout):
+		view.free()
+		return {"configured": false, "reason": "orthographic_view_setup_failed"}
+	game_layer.add_child(view)
+	return {"configured": true, "orthographic_arena_view": view}
 
 
 static func create_command_chambers(game_layer: Node, turrets: Dictionary) -> Dictionary:

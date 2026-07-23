@@ -100,6 +100,7 @@ jobs:
               CardfrontArenaLayoutTestRunner.gd
               CardfrontDirectionControllerTestRunner.gd
               CardfrontArenaRuntimeTestRunner.gd
+              CardfrontOrthographicArenaTestRunner.gd
           - batch: Cardfront v0.3 three-choice slice
             scripts: |
               CardfrontThreeChoiceRuntimeTestRunner.gd

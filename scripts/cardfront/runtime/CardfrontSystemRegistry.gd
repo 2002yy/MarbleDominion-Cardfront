@@ -38,6 +38,7 @@ const RUNTIME_FIELD_BY_RESULT_KEY: Dictionary = {
 	"card_audio_feedback": "card_audio_feedback",
 	"effect_visual_bridge": "effect_visual_bridge",
 	"arena_presentation_layer": "arena_presentation_layer",
+	"orthographic_arena_view": "orthographic_arena_view",
 	"command_chambers": "command_chambers",
 	"direction_controller": "direction_controller",
 	"aim_guide_layer": "aim_guide_layer",
