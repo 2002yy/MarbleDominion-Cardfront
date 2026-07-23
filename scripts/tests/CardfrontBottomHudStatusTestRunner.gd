@@ -124,7 +124,8 @@ func _test_status_text_updates_after_device_change() -> void:
 	var DeviceTypeScript = load("res://scripts/cardfront/devices/DeviceType.gd")
 	var CardfrontRulesScript = load("res://scripts/cardfront/CardfrontRules.gd")
 
-	var req = DevicePlacementRequestScript.make(DeviceTypeScript.ENGINEER_BOT, CardfrontRulesScript.PLAYER_FACTION, Vector2i(2, 2))
+	var player_cell := Vector2i(2, int(main.runtime.battlefield.grid_size) - 1)
+	var req = DevicePlacementRequestScript.make(DeviceTypeScript.ENGINEER_BOT, CardfrontRulesScript.PLAYER_FACTION, player_cell)
 	main.runtime.device_layer.place(req)
 	main._update_cardfront_status_label()
 
