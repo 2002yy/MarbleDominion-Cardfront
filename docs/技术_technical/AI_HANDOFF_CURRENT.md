@@ -1,16 +1,19 @@
 ﻿# AI_HANDOFF_CURRENT
 
 Last updated: 2026-07-13
-Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管卡
+Role / 作用: archived v0.2.x technical snapshot / 已归档的 v0.2.x 技术快照
 
-## 1. Current Version / 当前版本
+This file is not the current project-status source. Use [`docs/PROJECT_STATUS.md`](../PROJECT_STATUS.md) for the active version and next step.
+当前版本和实施进度只看 [`docs/PROJECT_STATUS.md`](../PROJECT_STATUS.md)。
 
-- Current line: `v0.2.x` Cardfront formal UI
-- Current completed slice: `v0.2.5.7-ui-copy-readability-pass`
-- Current slice: `v0.2.5.8-windowed-playtest-acceptance`
+## 1. Archived Version / 已归档版本
+
+- Archived line: `v0.2.x` Cardfront formal UI
+- Final completed slice in this snapshot: `v0.2.5.7-ui-copy-readability-pass`
+- Superseded slice: `v0.2.5.8-windowed-playtest-acceptance`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
 
-## 2. Current Status / 当前状态
+## 2. Archived Status / 已归档状态
 
 - Cardfront is a sidecar mode assembled through `scripts/cardfront/runtime/` plus the `CardfrontMode.gd` policy/facade; do not move Cardfront rules into `Main.gd`.
 - `CardPlaySystem.gd` owns card play flow: fixed hand, resource payment, target-validator dispatch, effect dispatch, and rollback on effect failure.
@@ -79,7 +82,7 @@ Role / 作用: quick takeover card for Cardfront work / 卡牌前线快速接管
 - v0.2.5.6-aim-and-supply-hotfix: Replaced directed-fire snapping with aim-before-release plus hold/return motion, unified barrel and bullet release angle, and added normal-territory resource guarantees so all current cards become affordable without requiring a Factory stronghold.
 - v0.2.5.7-ui-copy-readability-pass: Added explicit Energy/Parts labels, CJK-safe body typography, two-line stronghold badges, readable collapsed-card names/costs, direct action and region text, corrected tutorial resource guidance, and a quieter formal HUD without persistent FPS/VFX diagnostics.
 
-## 4. Next Steps / 下一步
+## 4. Archived Next Steps / 已归档的后续计划
 
 Ship `v0.2.5.8-windowed-playtest-acceptance` before adding cards:
 
@@ -153,8 +156,9 @@ Runtime baseline:
 
 ## 7. Canonical Docs / 主文档分工
 
-- `README.md` — current project entrypoint
-- `docs/ROADMAP.md` — main progress board
+- `README.md` — project entrypoint
+- `docs/PROJECT_STATUS.md` — the only current progress source
+- `docs/ROADMAP.md` — archived version plan
 - `docs/历史_history/README.md` — historical stage index
-- `docs/技术_technical/AI_HANDOFF_CURRENT.md` — this file
+- `docs/技术_technical/AI_HANDOFF_CURRENT.md` — this archived snapshot
 - `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md` — Cardfront high-coupling split order

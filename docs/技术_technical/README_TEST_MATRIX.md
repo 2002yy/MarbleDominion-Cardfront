@@ -17,11 +17,8 @@ This file answers:
 - 哪些属于 performance probe
 - 不同类型改动后应该跑哪些测试
 
-Development progress belongs in `docs/ROADMAP.md`.  
-开发进度请看 `docs/ROADMAP.md`。
-
-Session takeover belongs in `docs/技术_technical/AI_HANDOFF_CURRENT.md`.  
-交接卡片请看 `docs/技术_technical/AI_HANDOFF_CURRENT.md`。
+Current version and development progress belong only in `docs/PROJECT_STATUS.md`.
+当前版本和开发进度只看 `docs/PROJECT_STATUS.md`。
 
 ## 1. Scene Wiring Tests / 场景接线测试
 
@@ -223,7 +220,7 @@ The GitHub Actions workflow (`.github/workflows/headless-tests.yml`) runs parse/
 
 Total: 1096 expected checks across 10 runners.
 
-Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, and the Cardfront performance budget smoke runner.
+Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, performance budget, and the v0.3 draft/run-state/volley contract.
 
 CI status: [`.github/workflows/headless-tests.yml`](/.github/workflows/headless-tests.yml) — `Headless Tests` workflow.
 
@@ -256,6 +253,14 @@ CI status: [`.github/workflows/headless-tests.yml`](/.github/workflows/headless-
 1. `GameStateCoordinatorTestRunner.gd`
 2. `SmokeTestRunner.gd`
 3. `IntegrationTestRunner.gd` if save or win flow is involved
+
+### If editing the v0.3 draft, run state, or volley contract
+
+1. `CardfrontUpgradeContentTestRunner.gd`
+2. `CardfrontMatchPhaseControllerTestRunner.gd`
+3. `CardfrontUpgradeResolverTestRunner.gd`
+4. `SmokeTestRunner.gd`
+5. `IntegrationTestRunner.gd`
 
 ### If adding a new gameplay feature / 如果新增玩法功能
 

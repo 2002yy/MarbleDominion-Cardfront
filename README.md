@@ -4,13 +4,12 @@
 
 Cardfront is a controlled prototype branch for turning BallWar's marble territory-control arena into a strategy game:
 
-> 占领格子 -> 产生经济 -> 打出卡牌 -> 改写炮塔、地图和单位规则 -> 继续争夺关键区域。
+> 调整炮口 -> 暂停三选一 -> 自动齐射 -> 争夺路线与防御 -> 摧毁敌方控制舱。
 
-The current completed slice is **v0.2.5.7-ui-copy-readability-pass**.
-Current next slice: **v0.2.5.8-windowed-playtest-acceptance**.
-Cardfront now combines smooth turret aiming and guaranteed baseline resources with a clearer player-facing HUD: labeled resources, two-line stronghold badges, readable collapsed cards, direct action hints, and simplified region/status copy. Content expansion stays paused until another windowed hands-on playtest confirms the complete loop.
+Current version, active implementation slice, next step, and deferred scope are maintained only in [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
+当前版本与实施进度只在 [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) 维护。
 
-## Current Slice / 当前阶段
+## Existing v0.2.x Baseline / 现有 v0.2.x 基线
 
 Implemented in this repository:
 
@@ -261,8 +260,8 @@ Latest local validation for v0.2.5.2-runtime-builder-split:
 - `SmokeTestRunner.gd`: 215 checks passed.
 - `IntegrationTestRunner.gd`: 133 checks passed.
 
-## Next Milestone / 下一阶段
+## Project Status / 项目状态
 
-`v0.2.5a-8-card-catalog-on-manifest`: expand toward 8 cards only through `CardfrontContentManifest`, implemented target rules, and focused tests. Keep Deckbuilder, AI Commander, card-value churn, and full Cardfront save/load deferred.
+See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md). No other document maintains the current milestone or next step.
 
 MIT License. See [LICENSE](LICENSE).

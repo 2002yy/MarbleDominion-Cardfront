@@ -90,6 +90,11 @@ jobs:
           - batch: Cardfront performance budget
             scripts: |
               CardfrontPerformanceSmokeTestRunner.gd
+          - batch: Cardfront v0.3 core loop
+            scripts: |
+              CardfrontUpgradeContentTestRunner.gd
+              CardfrontMatchPhaseControllerTestRunner.gd
+              CardfrontUpgradeResolverTestRunner.gd
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip

@@ -33,6 +33,7 @@ Baseline subtotal: **1096 expected checks** across 10 runners.
 | Cardfront cards effects fire | `FortifyLayerTestRunner`, `CardEffectResolverTestRunner`, `CardCoreLiteTestRunner`, `CardFirstEffectsTestRunner`, `CardfrontTargetBiasTestRunner`, `PioneerBeaconLiteTestRunner`, FireDirector tests, control-chamber decoupling |
 | Cardfront devices visuals schema | device core/effect runners, device overlay, bottom HUD status, VFX bridge, `CardfrontRuntimeSnapshotTestRunner` |
 | Cardfront performance budget | `CardfrontPerformanceSmokeTestRunner` |
+| Cardfront v0.3 core loop | `CardfrontUpgradeContentTestRunner`, `CardfrontMatchPhaseControllerTestRunner`, `CardfrontUpgradeResolverTestRunner` |
 
 The v0.1.9 engineering closeout treats local-only Cardfront success as incomplete until the relevant runner is also present in `headless-tests.yml`.
 
@@ -56,6 +57,14 @@ Run the benchmark probes when tuning firing or pressure policies, collecting rel
 - `scripts/tests/TestFixtures.gd`
 
 ## What To Run / 改动后跑什么
+
+### Editing the v0.3 draft, run state, or volley contract
+
+1. `CardfrontUpgradeContentTestRunner.gd`.
+2. `CardfrontMatchPhaseControllerTestRunner.gd`.
+3. `CardfrontUpgradeResolverTestRunner.gd`.
+4. `SmokeTestRunner.gd`.
+5. `IntegrationTestRunner.gd`.
 
 ### Editing `.tscn` or UI wiring
 

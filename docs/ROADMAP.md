@@ -1,17 +1,17 @@
 ﻿# Roadmap / 路线图
 
-Role / 作用: main progress board / 主进度板
+Role / 作用: historical version plan / 历史版本规划
 
-This file is the single place for project direction and phase status.  
-这份文档只回答项目已经完成什么、正在推进什么、接下来做什么、哪些内容暂缓。
+This file preserves the completed v0.1.x-v0.2.x plan. It is not the current status source.
+当前版本、正在实施内容、下一步和暂缓范围只看 [`docs/PROJECT_STATUS.md`](PROJECT_STATUS.md)。
 
-## 1. Current Line / 当前主线
+## 1. Archived Line / 已归档主线
 
-- Current line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
-- Current completed slice: `v0.2.5.7-ui-copy-readability-pass`
-- Next slice: `v0.2.5.8-windowed-playtest-acceptance`
+- Archived line: `v0.2.x` Cardfront formal UI / 卡牌前线正式 UI 线
+- Final completed slice in this plan: `v0.2.5.7-ui-copy-readability-pass`
+- Superseded next slice: `v0.2.5.8-windowed-playtest-acceptance`
 - Foundation baseline: BallWar / Marble Dominion Ricochet War `v2.1.11.1`
-- Current theme:
+- Archived theme:
   - TopResourceBar simplified to compact minibar (icon + value only, no Name/YieldLabel)
   - CardView uses card_frame Panel and reduced Bg alpha for texture visibility
   - All UI scenes use registry-backed style/font/icon hooks with ColorRect / StyleBoxFlat fallback
@@ -211,7 +211,7 @@ This file is the single place for project direction and phase status.
   - old BallWar modes still create control chambers and +ball buttons
   - `CardfrontControlChamberDecouplingTestRunner.gd`
 
-## 6. Next / 下一步
+## 6. Archived Next Steps / 已归档的后续计划
 
 1. `v0.2.5.8-windowed-playtest-acceptance`: verify smooth aiming, baseline card availability, card selection, legal/illegal targets, region percentage changes, and match conclusion in one real-window session; add wide and short viewport screenshot checks.
 2. `v0.2.5a-8-card-catalog-on-manifest`: add cards only after the acceptance pass and only through manifest + implemented target rules + focused tests.
@@ -257,6 +257,7 @@ v0.1.9 owns the schema audit and explicit test coverage. Full save/load wiring m
 - `docs/技术_technical/CARDFRONT_DECOUPLING_PLAN.md`: Cardfront high-coupling split order and acceptance criteria.
 - `docs/ANDROID_EXPORT.md`: Android export checklist.
 - `docs/RELEASE_PROCESS.md`: packaging and release workflow.
-- `docs/ROADMAP.md`: current direction, completed work, next step, and deferred scope.
+- `docs/PROJECT_STATUS.md`: the only current status, active slice, next step, and deferred scope.
+- `docs/ROADMAP.md`: archived v0.1.x-v0.2.x direction and completed work.
 - `docs/历史_history/README.md`: historical stage index.
-- `docs/技术_technical/AI_HANDOFF_CURRENT.md`: AI / Codex handoff card.
+- `docs/技术_technical/AI_HANDOFF_CURRENT.md`: archived v0.2.x AI / Codex handoff snapshot.
