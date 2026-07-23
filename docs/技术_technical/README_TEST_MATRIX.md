@@ -220,7 +220,7 @@ The GitHub Actions workflow (`.github/workflows/headless-tests.yml`) runs parse/
 
 Total: 1096 expected checks across 10 runners.
 
-Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, performance budget, and the v0.3 draft/run-state/volley contract.
+Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, performance budget, the v0.3 draft/run-state/volley contract, and the v0.3 arena/direction-control spike.
 
 CI status: [`.github/workflows/headless-tests.yml`](/.github/workflows/headless-tests.yml) — `Headless Tests` workflow.
 

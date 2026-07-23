@@ -1,0 +1,99 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cardfront/ui/CardfrontAimControl.gd" id="1_aim"]
+
+[node name="CardfrontAimControl" type="CanvasLayer"]
+layer = 26
+process_mode = 3
+script = ExtResource("1_aim")
+
+[node name="Panel" type="Panel" parent="."]
+offset_left = 26.0
+offset_top = 420.0
+offset_right = 318.0
+offset_bottom = 504.0
+
+[node name="Bg" type="ColorRect" parent="Panel"]
+mouse_filter = 2
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 288.0
+offset_bottom = 80.0
+color = Color(0.025, 0.055, 0.075, 0.96)
+
+[node name="Accent" type="ColorRect" parent="Panel"]
+mouse_filter = 2
+layout_mode = 0
+offset_left = 9.0
+offset_top = 5.0
+offset_right = 283.0
+offset_bottom = 8.0
+color = Color(0.3, 0.9, 1, 0.72)
+
+[node name="Title" type="Label" parent="Panel"]
+mouse_filter = 2
+layout_mode = 0
+offset_left = 13.0
+offset_top = 9.0
+offset_right = 132.0
+offset_bottom = 31.0
+theme_override_colors/font_color = Color(0.84, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "发射方向"
+
+[node name="AngleValue" type="Label" parent="Panel"]
+mouse_filter = 2
+layout_mode = 0
+offset_left = 152.0
+offset_top = 8.0
+offset_right = 277.0
+offset_bottom = 31.0
+theme_override_colors/font_color = Color(1, 0.84, 0.34, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 18
+text = "正前方 0°"
+horizontal_alignment = 2
+
+[node name="LeftButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 11.0
+offset_top = 35.0
+offset_right = 43.0
+offset_bottom = 64.0
+tooltip_text = "向左调整发射方向"
+theme_override_font_sizes/font_size = 18
+text = "<"
+
+[node name="DirectionSlider" type="HSlider" parent="Panel"]
+layout_mode = 0
+offset_left = 49.0
+offset_top = 35.0
+offset_right = 243.0
+offset_bottom = 64.0
+min_value = -60.0
+max_value = 60.0
+step = 1.0
+
+[node name="RightButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 249.0
+offset_top = 35.0
+offset_right = 281.0
+offset_bottom = 64.0
+tooltip_text = "向右调整发射方向"
+theme_override_font_sizes/font_size = 18
+text = ">"
+
+[node name="Hint" type="Label" parent="Panel"]
+mouse_filter = 2
+layout_mode = 0
+offset_left = 12.0
+offset_top = 64.0
+offset_right = 280.0
+offset_bottom = 81.0
+theme_override_colors/font_color = Color(0.62, 0.74, 0.79, 1)
+theme_override_font_sizes/font_size = 11
+text = "拖动滑杆，或使用 A / D、左右方向键"
+horizontal_alignment = 1

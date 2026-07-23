@@ -28,6 +28,7 @@ var _shot_window_elapsed: float = 0.0
 var _total_shots_in_window: int = 0
 var _owner_shots_in_window: Dictionary = {}
 var _last_intents: Dictionary = {}
+var _manual_angles: Dictionary = {}
 
 
 func _init() -> void:
@@ -51,7 +52,24 @@ func setup(new_region_map, new_battlefield, new_turrets: Dictionary, new_target_
 	_shot_window_elapsed = 0.0
 	_total_shots_in_window = 0
 	_last_intents.clear()
+	_manual_angles.clear()
 	set_process(true)
+
+
+func set_owner_manual_angle(owner_id: int, angle: float) -> void:
+	_manual_angles[int(owner_id)] = wrapf(float(angle), -PI, PI)
+
+
+func clear_owner_manual_angle(owner_id: int) -> void:
+	_manual_angles.erase(int(owner_id))
+
+
+func has_owner_manual_angle(owner_id: int) -> bool:
+	return _manual_angles.has(int(owner_id))
+
+
+func get_owner_manual_angle(owner_id: int, fallback: float = 0.0) -> float:
+	return float(_manual_angles.get(int(owner_id), fallback))
 
 
 func tick(delta: float) -> Array:
@@ -108,7 +126,10 @@ func build_intent(owner_id: int, shot_count: int = -1):
 	intent.shot_count = clampi(int(shot_count if shot_count > 0 else base_shot_count), 1, _max_intent_shots())
 	intent.spread = maxf(0.0, float(base_spread))
 	intent.reason = str(target.get("reason", FireRulesScript.REASON_BASE))
-	intent.angle = _angle_to_cell(owner_id, intent.target_cell)
+	if _manual_angles.has(int(owner_id)):
+		intent.angle = float(_manual_angles[int(owner_id)])
+	else:
+		intent.angle = _angle_to_cell(owner_id, intent.target_cell)
 	return intent
 
 

@@ -35,6 +35,10 @@ const RUNTIME_FIELD_BY_RESULT_KEY: Dictionary = {
 	"toast_layer": "toast_layer",
 	"card_audio_feedback": "card_audio_feedback",
 	"effect_visual_bridge": "effect_visual_bridge",
+	"arena_presentation_layer": "arena_presentation_layer",
+	"command_chambers": "command_chambers",
+	"direction_controller": "direction_controller",
+	"aim_guide_layer": "aim_guide_layer",
 }
 
 var refs = RuntimeRefsScript.new()

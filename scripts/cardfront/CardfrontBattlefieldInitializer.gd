@@ -21,7 +21,8 @@ static func configure_duel(battlefield) -> Dictionary:
 	return {
 		"configured": true,
 		"grid_size": int(battlefield.grid_size),
-		"spawn_columns": get_spawn_columns(int(battlefield.grid_size)),
+		"spawn_rows": get_spawn_rows(int(battlefield.grid_size)),
+		"spawn_columns": get_spawn_rows(int(battlefield.grid_size)),
 	}
 
 
@@ -36,15 +37,19 @@ static func build_duel_owner_grid(grid_size: int) -> Array:
 
 
 static func get_spawn_columns(grid_size: int) -> int:
+	return get_spawn_rows(grid_size)
+
+
+static func get_spawn_rows(grid_size: int) -> int:
 	var safe_size: int = maxi(4, grid_size)
 	var desired: int = int(round(float(safe_size) * 0.20))
 	return clampi(desired, 2, maxi(2, floori(float(safe_size) / 2.0) - 1))
 
 
-static func duel_owner_for_cell(x: int, _y: int, grid_size: int) -> int:
-	var spawn_columns: int = get_spawn_columns(grid_size)
-	if x < spawn_columns:
-		return Rules.PLAYER_FACTION
-	if x >= grid_size - spawn_columns:
+static func duel_owner_for_cell(_x: int, y: int, grid_size: int) -> int:
+	var spawn_rows: int = get_spawn_rows(grid_size)
+	if y < spawn_rows:
 		return Rules.AI_FACTION
+	if y >= grid_size - spawn_rows:
+		return Rules.PLAYER_FACTION
 	return Rules.NEUTRAL_OWNER

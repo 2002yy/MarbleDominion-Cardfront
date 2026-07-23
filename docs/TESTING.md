@@ -34,6 +34,7 @@ Baseline subtotal: **1096 expected checks** across 10 runners.
 | Cardfront devices visuals schema | device core/effect runners, device overlay, bottom HUD status, VFX bridge, `CardfrontRuntimeSnapshotTestRunner` |
 | Cardfront performance budget | `CardfrontPerformanceSmokeTestRunner` |
 | Cardfront v0.3 core loop | `CardfrontUpgradeContentTestRunner`, `CardfrontMatchPhaseControllerTestRunner`, `CardfrontUpgradeResolverTestRunner` |
+| Cardfront v0.3 arena spike | `CardfrontArenaLayoutTestRunner`, `CardfrontDirectionControllerTestRunner`, `CardfrontArenaRuntimeTestRunner` |
 
 The v0.1.9 engineering closeout treats local-only Cardfront success as incomplete until the relevant runner is also present in `headless-tests.yml`.
 
@@ -65,6 +66,15 @@ Run the benchmark probes when tuning firing or pressure policies, collecting rel
 3. `CardfrontUpgradeResolverTestRunner.gd`.
 4. `SmokeTestRunner.gd`.
 5. `IntegrationTestRunner.gd`.
+
+### Editing the v0.3 arena, turret direction, or aim UI
+
+1. `CardfrontArenaLayoutTestRunner.gd`.
+2. `CardfrontDirectionControllerTestRunner.gd`.
+3. `CardfrontArenaRuntimeTestRunner.gd`.
+4. `CardfrontFireDirectorTurretIntegrationTestRunner.gd`.
+5. `CardfrontModeSmokeTestRunner.gd`.
+6. `LayoutSanityTestRunner.gd`, `SmokeTestRunner.gd`, and `IntegrationTestRunner.gd` when shared runtime surfaces change.
 
 ### Editing `.tscn` or UI wiring
 

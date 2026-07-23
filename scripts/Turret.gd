@@ -4,6 +4,7 @@ class_name Turret
 signal destroyed(faction_id)
 signal burst_lock_changed(faction_id, locked)
 signal burst_progress(faction_id, remaining)
+signal health_changed(faction_id, health, max_health)
 
 var faction_id: int = GameConfig.Faction.BLUE
 var battlefield
@@ -14,6 +15,9 @@ var sweep_phase: float = 0.0
 var sweep_speed: float = 0.95
 var center_angle: float = 0.0
 var sweep_amplitude: float = deg_to_rad(50.0) # total sweep about 100 degrees
+var aim_profile_overridden: bool = false
+var manual_aim_enabled: bool = false
+var manual_aim_angle: float = 0.0
 
 var max_health: int = GameConfig.TURRET_MAX_HEALTH
 var health: int = GameConfig.TURRET_MAX_HEALTH
@@ -40,6 +44,7 @@ const DIRECTED_AIM_SPEED: float = 7.5
 const DIRECTED_AIM_EPSILON: float = deg_to_rad(0.75)
 const DIRECTED_VISUAL_HOLD_SECONDS: float = 0.32
 const SWEEP_FOLLOW_SPEED: float = 10.0
+const MANUAL_AIM_FOLLOW_SPEED: float = 12.0
 
 func setup(new_faction_id: int, new_position: Vector2, new_battlefield, new_bullet_container) -> void:
 	faction_id = new_faction_id
@@ -54,10 +59,33 @@ func setup(new_faction_id: int, new_position: Vector2, new_battlefield, new_bull
 func set_all_turrets(turret_map: Dictionary) -> void:
 	all_turrets = turret_map
 
+
+func set_aim_profile(new_center_angle: float, new_sweep_amplitude: float) -> void:
+	aim_profile_overridden = true
+	center_angle = wrapf(float(new_center_angle), -PI, PI)
+	sweep_amplitude = maxf(0.0, float(new_sweep_amplitude))
+	if not manual_aim_enabled and not burst_directed:
+		rotation = center_angle
+	queue_redraw()
+
+
+func set_manual_aim(angle: float) -> void:
+	manual_aim_enabled = true
+	manual_aim_angle = wrapf(float(angle), -PI, PI)
+	if burst_remaining <= 0 and directed_visual_hold_remaining <= 0.0:
+		rotation = manual_aim_angle
+	queue_redraw()
+
+
+func clear_manual_aim() -> void:
+	manual_aim_enabled = false
+
+
 func _ready() -> void:
-	center_angle = _inward_center_angle()
+	if not aim_profile_overridden:
+		center_angle = _inward_center_angle()
 	sweep_phase = randf_range(0.0, TAU)
-	rotation = center_angle
+	rotation = manual_aim_angle if manual_aim_enabled else center_angle
 	z_index = 15
 	queue_redraw()
 
@@ -239,6 +267,10 @@ func _update_visual_aim(delta: float) -> void:
 		directed_visual_hold_remaining = maxf(0.0, directed_visual_hold_remaining - safe_delta)
 		rotation = burst_directed_angle
 		return
+	if manual_aim_enabled:
+		var manual_weight: float = 1.0 - exp(-MANUAL_AIM_FOLLOW_SPEED * safe_delta)
+		rotation = lerp_angle(rotation, manual_aim_angle, clampf(manual_weight, 0.0, 1.0))
+		return
 	var sweep_target: float = center_angle + sin(sweep_phase) * sweep_amplitude
 	var follow_weight: float = 1.0 - exp(-SWEEP_FOLLOW_SPEED * safe_delta)
 	rotation = lerp_angle(rotation, sweep_target, clampf(follow_weight, 0.0, 1.0))
@@ -371,6 +403,7 @@ func take_damage(amount: int) -> void:
 		return
 	health = max(0, health - amount)
 	damage_flash = 1.0
+	health_changed.emit(faction_id, health, max_health)
 	queue_redraw()
 	if health <= 0:
 		_destroy()

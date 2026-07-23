@@ -13,7 +13,7 @@ class_name GameSceneBuilder
 
 static func create_battlefield(owner, game_layer: Node, grid_size: int, current_layout: Dictionary, view_size: Vector2) -> Dictionary:
     var battlefield = Battlefield.new()
-    battlefield.configure(grid_size)
+    battlefield.configure(grid_size, int(current_layout.get("battlefield_cell_size", -1)))
     var battlefield_rect: Rect2 = current_layout.get("battlefield_rect", Rect2())
     var map_pixel_size: float = battlefield.grid_size * battlefield.cell_size
     var origin: Vector2 = battlefield_rect.position
@@ -43,6 +43,8 @@ static func create_battlefield(owner, game_layer: Node, grid_size: int, current_
 static func create_turrets(owner, game_layer: Node, battlefield, bullet_container, current_layout: Dictionary = {}, active_factions: Array = []) -> Dictionary:
     var turrets: Dictionary = {}
     var positions: Dictionary = current_layout.get("turret_positions", {})
+    var center_angles: Dictionary = current_layout.get("turret_center_angles", {})
+    var sweep_amplitudes: Dictionary = current_layout.get("turret_sweep_amplitudes", {})
     if positions.is_empty():
         var size: float = battlefield.grid_size * battlefield.cell_size
         var margin: float = 16.0
@@ -59,6 +61,11 @@ static func create_turrets(owner, game_layer: Node, battlefield, bullet_containe
             continue
         var turret = Turret.new()
         turret.setup(faction_id, positions[faction_id], battlefield, bullet_container)
+        if center_angles.has(faction_id):
+            turret.set_aim_profile(
+                float(center_angles[faction_id]),
+                float(sweep_amplitudes.get(faction_id, turret.sweep_amplitude))
+            )
         turret.name = "Turret_%s" % GameConfig.faction_name(faction_id)
         turret.destroyed.connect(Callable(owner, "_on_turret_destroyed"))
         turret.burst_lock_changed.connect(Callable(owner, "_on_turret_burst_lock_changed"))

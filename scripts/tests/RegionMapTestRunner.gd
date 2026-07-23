@@ -66,12 +66,12 @@ func _test_default_layout_size_and_counts(grid_size: int, expected_total: int) -
 
 func _test_spawn_edges_do_not_create_labs(grid_size: int) -> void:
 	var region_map = _make_region_map(grid_size)
-	var spawn_columns: int = CardfrontBattlefieldInitializerScript.get_spawn_columns(grid_size)
-	for x in range(spawn_columns):
-		for y in range(grid_size):
+	var spawn_rows: int = CardfrontBattlefieldInitializerScript.get_spawn_rows(grid_size)
+	for y in range(spawn_rows):
+		for x in range(grid_size):
 			_assert.neq(region_map.get_region_type(Vector2i(x, y)), RegionTypeScript.LAB, "region map %d: player spawn edge should not contain LAB" % grid_size)
-	for x in range(grid_size - spawn_columns, grid_size):
-		for y in range(grid_size):
+	for y in range(grid_size - spawn_rows, grid_size):
+		for x in range(grid_size):
 			_assert.neq(region_map.get_region_type(Vector2i(x, y)), RegionTypeScript.LAB, "region map %d: AI spawn edge should not contain LAB" % grid_size)
 
 

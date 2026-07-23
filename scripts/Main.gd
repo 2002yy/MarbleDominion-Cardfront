@@ -82,6 +82,8 @@ func _set_ui_runtime_ref(key: String, value) -> void:
 func _build_runtime_layout(grid_size: int) -> Dictionary:
 	var layout: Dictionary = LayoutProfiles.get_profile(grid_size).duplicate(true)
 	layout.merge(LayoutCoordinator.calculate_layout(grid_size, Vector2(VIEW_W, VIEW_H), is_mobile_layout), true)
+	if _is_cardfront_mode():
+		layout = CardfrontModeScript.configure_runtime_layout(layout, grid_size, Vector2(VIEW_W, VIEW_H))
 	return layout
 
 func _sync_runtime_context(grid_size: int) -> void:
@@ -335,6 +337,18 @@ func _create_cardfront_top_resource_bar() -> void:
 	runtime.top_resource_bar = bar_setup.get("top_resource_bar", null)
 
 
+func _create_cardfront_aim_control() -> void:
+	runtime.aim_control = null
+	if not _is_cardfront_mode():
+		return
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var control_setup: Dictionary = CardfrontModeScript.create_aim_control(ui_canvas, runtime.direction_controller, runtime.current_layout)
+	if bool(control_setup.get("configured", false)):
+		runtime.aim_control = control_setup.get("aim_control", null)
+
+
 func _create_cardfront_region_info_panel() -> void:
 	runtime.region_info_panel = null
 	if not _is_cardfront_mode():
@@ -459,6 +473,7 @@ func _create_ui() -> void:
 		CardfrontModeScript.configure_runtime_hud(runtime.hud)
 		_create_cardfront_feedback_bus()
 		_create_cardfront_top_resource_bar()
+		_create_cardfront_aim_control()
 		_create_cardfront_hand_panel()
 		_create_cardfront_feedback_layers()
 		_create_cardfront_effect_visual_bridge()

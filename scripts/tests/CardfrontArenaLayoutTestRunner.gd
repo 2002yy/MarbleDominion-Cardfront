@@ -1,0 +1,78 @@
+extends SceneTree
+
+const CardfrontArenaLayoutScript = preload("res://scripts/cardfront/arena/CardfrontArenaLayout.gd")
+const CardfrontBattlefieldInitializerScript = preload("res://scripts/cardfront/CardfrontBattlefieldInitializer.gd")
+const CardfrontMapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
+const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+
+var _assert: TestAssert
+
+
+func _initialize() -> void:
+	call_deferred("_run")
+
+
+func _run() -> void:
+	_assert = TestAssert.new()
+	print("[CardfrontArenaLayoutTest] Starting arena layout tests")
+	await process_frame
+
+	_test_desktop_layout(40)
+	_test_desktop_layout(60)
+	_test_top_bottom_spawn_contract()
+	_test_default_map_declares_vertical_spawns()
+
+	_assert.report("[CardfrontArenaLayoutTest]")
+	quit(0 if _assert.failures.is_empty() else 1)
+
+
+func _test_desktop_layout(grid_size: int) -> void:
+	var viewport_size := Vector2(1120.0, 720.0)
+	var base: Dictionary = LayoutCoordinator.calculate_layout(grid_size, viewport_size, false)
+	var layout: Dictionary = CardfrontArenaLayoutScript.apply_to(base, grid_size, viewport_size)
+	var battlefield_rect: Rect2 = layout.get("battlefield_rect", Rect2())
+	var player_pos: Vector2 = layout.get("turret_positions", {}).get(CardfrontRulesScript.PLAYER_FACTION, Vector2.ZERO)
+	var ai_pos: Vector2 = layout.get("turret_positions", {}).get(CardfrontRulesScript.AI_FACTION, Vector2.ZERO)
+	var aim_rect: Rect2 = layout.get("aim_control_rect", Rect2())
+
+	_assert.that(CardfrontArenaLayoutScript.is_arena_layout(layout), "arena layout: Cardfront marker should be enabled")
+	_assert.gte(int(layout.get("battlefield_cell_size", 0)), 7, "arena layout: cell size should stay readable")
+	_assert.gte(battlefield_rect.position.x, 0.0, "arena layout: battlefield should stay inside left edge")
+	_assert.gte(battlefield_rect.position.y, 100.0, "arena layout: battlefield should leave room for top HUD")
+	_assert.that(battlefield_rect.end.x <= viewport_size.x, "arena layout: battlefield should stay inside right edge")
+	_assert.that(battlefield_rect.end.y <= viewport_size.y - 130.0, "arena layout: battlefield should leave room for bottom UI")
+	_assert.that(ai_pos.y < battlefield_rect.get_center().y, "arena layout: AI turret should be above center")
+	_assert.that(player_pos.y > battlefield_rect.get_center().y, "arena layout: player turret should be below center")
+	_assert.that(is_equal_approx(ai_pos.x, player_pos.x), "arena layout: duel turrets should share the center lane")
+	_assert.that(not aim_rect.intersects(battlefield_rect), "arena layout: direction control should not cover the battlefield")
+
+
+func _test_top_bottom_spawn_contract() -> void:
+	var size: int = 40
+	var rows: int = CardfrontBattlefieldInitializerScript.get_spawn_rows(size)
+	_assert.gte(rows, 2, "arena spawn: should reserve at least two rows")
+	_assert.eq(
+		CardfrontBattlefieldInitializerScript.duel_owner_for_cell(0, 0, size),
+		CardfrontRulesScript.AI_FACTION,
+		"arena spawn: top edge should belong to AI"
+	)
+	_assert.eq(
+		CardfrontBattlefieldInitializerScript.duel_owner_for_cell(size - 1, size - 1, size),
+		CardfrontRulesScript.PLAYER_FACTION,
+		"arena spawn: bottom edge should belong to player"
+	)
+	_assert.eq(
+		CardfrontBattlefieldInitializerScript.duel_owner_for_cell(size >> 1, size >> 1, size),
+		CardfrontRulesScript.NEUTRAL_OWNER,
+		"arena spawn: center should remain neutral"
+	)
+
+
+func _test_default_map_declares_vertical_spawns() -> void:
+	var definition: Dictionary = CardfrontMapRegistryScript.get_map_definition(CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID, 40)
+	var spawn_zones: Array = definition.get("spawn_zones", [])
+	_assert.eq(spawn_zones.size(), 2, "arena map: default duel should define two spawn zones")
+	for raw_zone in spawn_zones:
+		var zone: Dictionary = raw_zone
+		_assert.that(zone.has("y0") and zone.has("y1"), "arena map: spawn zones should use vertical row bounds")
+		_assert.that(not zone.has("x0") and not zone.has("x1"), "arena map: spawn zones should no longer use side columns")

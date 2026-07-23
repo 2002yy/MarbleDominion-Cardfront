@@ -19,19 +19,19 @@ const PULSE_ALPHA_MAX: float = 0.80
 
 const STEP_DATA: Array[Dictionary] = [
 	{
-		"title": "① 能量与零件",
-		"text": "左上角显示能量与零件。普通领土提供保底产出，\n占领能源区和工厂区可获得更多资源。",
-		"focus_rect": Rect2(14, 96, 304, 44),
+		"title": "① 调整发射方向",
+		"text": "拖动左侧滑杆，或使用 A / D、左右方向键。\n青色瞄准线就是下一次射击的中心方向。",
+		"focus_rect": Rect2(18, 408, 310, 112),
 	},
 	{
-		"title": "② 选择卡牌",
-		"text": "点击底部卡牌，再点击战场上的高亮目标。\n资源不足的卡牌仍可点击查看缺少的资源。",
-		"focus_rect": Rect2(276, 562, 568, 158),
+		"title": "② 上下对阵",
+		"text": "AI 控制舱位于上方，玩家控制舱位于下方。\n子弹经过地块会改变归属，粗线区域显示控制百分比。",
+		"focus_rect": Rect2(330, 108, 460, 450),
 	},
 	{
-		"title": "③ 点击高亮目标",
+		"title": "③ 选择卡牌目标",
 		"text": "蓝色、青色、紫色或金色呼吸高亮表示合法目标。\n右键或 Esc 可取消当前卡牌。",
-		"focus_rect": Rect2(100, 150, 600, 400),
+		"focus_rect": Rect2(276, 562, 568, 158),
 	},
 ]
 
@@ -226,11 +226,11 @@ func _position_tooltip(focus: Rect2) -> void:
 	var tooltip_y: float
 	match _current_step:
 		0:
-			tooltip_y = focus.position.y + focus.size.y + gap
-		1:
 			tooltip_y = focus.position.y - gap - tt_size.y
+		1:
+			tooltip_y = focus.position.y + _scale_f(90.0, REFERENCE_SIZE.y, _view_size.y)
 		_:
-			tooltip_y = _view_size.y - tt_size.y - _scale_f(240.0, REFERENCE_SIZE.y, _view_size.y)
+			tooltip_y = focus.position.y - gap - tt_size.y
 	_tooltip_panel.position = Vector2(tooltip_x, tooltip_y)
 
 

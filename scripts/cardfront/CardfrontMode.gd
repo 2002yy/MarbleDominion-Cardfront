@@ -3,6 +3,7 @@ class_name CardfrontMode
 
 const Rules = preload("res://scripts/cardfront/CardfrontRules.gd")
 const BattlefieldInitializer = preload("res://scripts/cardfront/CardfrontBattlefieldInitializer.gd")
+const CardfrontArenaLayoutScript = preload("res://scripts/cardfront/arena/CardfrontArenaLayout.gd")
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
 const CardfrontTopResourceBarScene = preload("res://scenes/ui/cardfront/CardfrontTopResourceBar.tscn")
 const CardfrontHandPanelScene = preload("res://scenes/ui/cardfront/CardfrontHandPanel.tscn")
@@ -14,10 +15,11 @@ const CardfrontToastLayerScene = preload("res://scenes/ui/cardfront/CardfrontToa
 const CardfrontEffectVisualBridgeScript = preload("res://scripts/cardfront/ui/CardfrontEffectVisualBridge.gd")
 const CardfrontCardAudioFeedbackScript = preload("res://scripts/cardfront/ui/CardfrontCardAudioFeedback.gd")
 const CardfrontTutorialOverlayScene = preload("res://scenes/ui/cardfront/CardfrontTutorialOverlay.tscn")
+const CardfrontAimControlScene = preload("res://scenes/ui/cardfront/CardfrontAimControl.tscn")
 const LEGACY_SIDE_BUTTON_TOP_AFTER_REGION: float = 300.0
 const LEGACY_SIDE_BUTTON_GAP: float = 8.0
 
-const FIRE_STATUS_TEXT: String = "炮塔自动射击｜选择卡牌可改变战局"
+const FIRE_STATUS_TEXT: String = "拖动左侧方向滑杆｜炮塔按设定方向自动射击"
 
 
 static func is_selected(mode_name: String) -> bool:
@@ -38,6 +40,10 @@ static func get_active_factions() -> Array:
 
 static func get_match_duration_seconds() -> float:
 	return Rules.MATCH_DURATION_SECONDS
+
+
+static func configure_runtime_layout(base_layout: Dictionary, grid_size: int, viewport_size: Vector2) -> Dictionary:
+	return CardfrontArenaLayoutScript.apply_to(base_layout, grid_size, viewport_size)
 
 
 static func configure_battlefield(battlefield) -> Dictionary:
@@ -166,6 +172,19 @@ static func create_tutorial_overlay(ui_layer: Node, view_size: Vector2 = Vector2
 		"configured": true,
 		"tutorial_overlay": overlay,
 	}
+
+
+static func create_aim_control(ui_layer: Node, direction_controller, layout: Dictionary) -> Dictionary:
+	if ui_layer == null or not is_instance_valid(ui_layer):
+		return {"configured": false, "reason": "missing_ui_layer"}
+	if direction_controller == null or not is_instance_valid(direction_controller):
+		return {"configured": false, "reason": "missing_direction_controller"}
+	var control = CardfrontAimControlScene.instantiate()
+	ui_layer.add_child(control)
+	if not control.setup(direction_controller, layout, GameConfig.GAME_MODE_CARDFRONT):
+		control.queue_free()
+		return {"configured": false, "reason": "aim_control_setup_failed"}
+	return {"configured": true, "aim_control": control}
 
 
 static func create_effect_visual_bridge(game_layer: Node, feedback_bus, vfx_layer) -> Dictionary:

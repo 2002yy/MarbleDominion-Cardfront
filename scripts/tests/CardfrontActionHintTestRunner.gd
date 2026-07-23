@@ -101,10 +101,10 @@ func _test_each_card_shows_distinct_action_hint() -> void:
 
 
 func _test_tutorial_copy_matches_current_ui() -> void:
-	var resource_step: Dictionary = CardfrontTutorialOverlayScript.STEP_DATA[0]
-	var focus: Rect2 = resource_step.get("focus_rect", Rect2())
-	_assert.that(focus.position.x < 100.0, "tutorial: resource focus should point to the current top-left resource bar")
-	_assert.that(str(resource_step.get("text", "")).contains("普通领土"), "tutorial: resource copy should explain ordinary-territory baseline income")
+	var direction_step: Dictionary = CardfrontTutorialOverlayScript.STEP_DATA[0]
+	var focus: Rect2 = direction_step.get("focus_rect", Rect2())
+	_assert.that(focus.position.x < 100.0 and focus.position.y > 350.0, "tutorial: first focus should point to the left-side direction control")
+	_assert.that(str(direction_step.get("text", "")).contains("青色瞄准线"), "tutorial: first step should explain the visible aim guide")
 
 
 func _test_preview_pulse_is_active() -> void:

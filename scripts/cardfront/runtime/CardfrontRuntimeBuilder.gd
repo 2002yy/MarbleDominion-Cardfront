@@ -24,6 +24,7 @@ const CardfrontDeviceOverlayLayerScript = preload("res://scripts/cardfront/devic
 const CardfrontVfxLayerScript = preload("res://scripts/cardfront/vfx/CardfrontVfxLayer.gd")
 const CardfrontDebugActionPanelScript = preload("res://scripts/cardfront/debug/CardfrontDebugActionPanel.gd")
 const CardfrontTargetPreviewLayerScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
+const CardfrontArenaBuilderScript = preload("res://scripts/cardfront/arena/CardfrontArenaBuilder.gd")
 const SystemRegistryScript = preload("res://scripts/cardfront/runtime/CardfrontSystemRegistry.gd")
 
 var registry = SystemRegistryScript.new()
@@ -63,7 +64,13 @@ func build_world_layers(game_layer: Node, runtime) -> Dictionary:
 		return _failure("world_layers", "missing_runtime")
 	_clear_world_layer_refs(runtime)
 
+	if not _record_or_fail("arena_presentation", CardfrontArenaBuilderScript.create_presentation(game_layer, runtime.battlefield, runtime.current_layout), runtime):
+		return _build_result(false)
+	if not _record_or_fail("command_chambers", CardfrontArenaBuilderScript.create_command_chambers(game_layer, runtime.turrets), runtime):
+		return _build_result(false)
 	if not _record_or_fail("fire_director", create_fire_director(game_layer, runtime.region_map, runtime.battlefield, runtime.turrets, runtime.target_bias_system), runtime):
+		return _build_result(false)
+	if not _record_or_fail("direction_control", CardfrontArenaBuilderScript.create_direction_control(game_layer, runtime.battlefield, runtime.turrets, runtime.fire_director, runtime.current_layout), runtime):
 		return _build_result(false)
 	if not _record_or_fail("shot_guide", create_shot_guide(game_layer, runtime.battlefield, runtime.target_bias_system, runtime.turrets, runtime.region_map), runtime):
 		return _build_result(false)
@@ -152,6 +159,10 @@ func _clear_world_layer_refs(runtime) -> void:
 	runtime.absorber_core_effect_system = null
 	runtime.engineer_bot_effect_system = null
 	runtime.durable_pioneer_beacon_effect_system = null
+	runtime.arena_presentation_layer = null
+	runtime.command_chambers.clear()
+	runtime.direction_controller = null
+	runtime.aim_guide_layer = null
 
 
 static func create_regions(game_layer: Node, battlefield) -> Dictionary:

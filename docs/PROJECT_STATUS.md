@@ -28,58 +28,55 @@ Confirmed product decisions:
 
 - Stable baseline: `v0.2.5.7-ui-copy-readability-pass`
 - Baseline commit: `9eadf9b`
-- Current completed slice: `v0.3.0a-core-loop-contract`
-- Next slice: `v0.3.0b-2.5d-arena-spike`
+- Core-loop foundation commit: `bef12ce`
+- Current completed slice: `v0.3.0b-2.5d-arena-spike`
+- Next slice: `v0.3.0c-three-choice-vertical-slice`
 - Active branch: `main`
 
 ## Completed Slice / 已完成阶段
 
-`v0.3.0a-core-loop-contract` builds the new rules as isolated, testable logic without changing the currently playable Cardfront scene.
+`v0.3.0b-2.5d-arena-spike` establishes the new player-bottom versus AI-top battlefield while preserving the existing 2D simulation.
 
 Scope:
 
-- Match phase contract: battle countdown, paused draft, resolve, launch.
-- Per-faction run state.
-- Six initial text-and-symbol upgrades.
-- Deterministic three-choice generation with rarity weighting.
-- Random timeout fallback.
-- Upgrade resolution, including mirror.
-- Volley plan resolution and one-shot modifier consumption.
-- Native Godot tests and GitHub Actions coverage.
+- Cardfront-only arena layout with a smaller, readable central battlefield.
+- AI spawn and turret at the top; player spawn and turret at the bottom.
+- Orthographic 2.5D floor, depth edges, lane rails, and faction accents over the unchanged 2D collision grid.
+- Two command-chamber shells that display the real turret health instead of creating a second combat state.
+- Player direction controller with a formal slider UI, `A` / `D`, and arrow-key input.
+- A visible aim guide that does not cover the battlefield with UI.
+- Manual player firing angle wired into `CardfrontFireDirector`; AI targeting remains automatic.
+- Cardfront-only runtime references and BallWar isolation.
+- Native Godot tests and a dedicated GitHub Actions batch.
 
 Acceptance:
 
-- A draft always returns three unique valid upgrades.
-- The same seed and state produce the same offer.
-- Timeout can resolve a valid offered upgrade.
-- Permanent upgrades remain after a volley.
-- `+5` and `x2` are consumed by one volley.
-- Mirror doubles the next selected upgrade once.
-- Match phases cannot skip required choices.
-- Existing Cardfront and BallWar runtime behavior remains unchanged.
+- The battlefield and direction UI remain inside `1120 x 720` without overlapping each other.
+- The two active turrets share a center lane and face inward.
+- Player aim is clamped to a readable `-60` to `+60` degree arc.
+- The visible barrel, directed intent, and projectile angle use the same player-selected direction.
+- AI does not inherit the player's manual angle.
+- Cardfront creates two command-chamber views; legacy BallWar creates none of the new arena nodes.
+- Existing card, map, effect, performance, Smoke, and Integration gates remain green.
 
 Implementation result:
 
-- Added isolated `run/`, `draft/`, and `volley/` logic.
-- Added six text-and-symbol upgrade definitions with no generated card-art dependency.
-- Added dead-choice filtering for capped rarity and an already-armed mirror.
-- Added three native runners to the dedicated `Cardfront v0.3 core loop` CI batch.
-- Local Godot 4.6.2 parse, new foundation tests, Cardfront regressions, Smoke, and Integration pass.
+- Added `scripts/cardfront/arena/` for layout, presentation, command-chamber views, direction control, aim guide, and assembly.
+- Added `CardfrontAimControl.tscn` as the formal direction UI.
+- Added optional Battlefield cell-size override without changing BallWar defaults.
+- Rotated the Cardfront ownership contract and default map spawn metadata from left-right to top-bottom.
+- Added `CardfrontArenaLayoutTestRunner`, `CardfrontDirectionControllerTestRunner`, and `CardfrontArenaRuntimeTestRunner`.
 
-The initial `10`-shot volley, `12`-second battle interval, `8`-second draft timeout, rarity weights, and `512`-shot safety cap are provisional contract defaults, not final balance.
+The legacy fixed hand, resources, click-target cards, continuous firing cadence, and territory-percentage victory remain temporarily active. They are compatibility scaffolding for this spike, not the target product loop.
 
 ## Planned Slices / 后续阶段
 
-1. `v0.3.0b-2.5d-arena-spike`
-   - Player at the bottom, AI at the top.
-   - Orthographic 2.5D presentation over a 2D simulation contract.
-   - Two command chambers, one readable large-block map, and direction control.
-2. `v0.3.0c-three-choice-vertical-slice`
+1. `v0.3.0c-three-choice-vertical-slice`
    - Runtime pause integration.
    - Formal three-choice UI and timeout.
    - AI choice policy and revealed AI selection.
    - Automatic volley launch and command-chamber victory.
-3. `v0.3.1-map-and-summon`
+2. `v0.3.1-map-and-summon`
    - Distinct map mechanics.
    - Chaos effects.
    - Allied and neutral summoned creatures.

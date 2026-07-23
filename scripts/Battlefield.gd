@@ -59,23 +59,26 @@ func _process(delta: float) -> void:
 		cell_changes_this_second = 0
 		debug_elapsed = 0.0
 
-func configure(new_grid_size: int) -> void:
+func configure(new_grid_size: int, cell_size_override: int = -1) -> void:
 	grid_size = new_grid_size
-	match grid_size:
-		10:
-			cell_size = 34
-		20:
-			cell_size = 22
-		30:
-			cell_size = 16
-		40:
-			cell_size = 13
-		50:
-			cell_size = 11
-		60:
-			cell_size = 9
-		_:
-			cell_size = GameConfig.CELL_SIZE
+	if cell_size_override > 0:
+		cell_size = cell_size_override
+	else:
+		match grid_size:
+			10:
+				cell_size = 34
+			20:
+				cell_size = 22
+			30:
+				cell_size = 16
+			40:
+				cell_size = 13
+			50:
+				cell_size = 11
+			60:
+				cell_size = 9
+			_:
+				cell_size = GameConfig.CELL_SIZE
 	_ensure_decor_layer()
 	decor_layer.configure(grid_size, cell_size)
 	decor_layer.apply_visual_settings()

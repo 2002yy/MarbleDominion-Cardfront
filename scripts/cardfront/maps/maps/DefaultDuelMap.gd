@@ -10,16 +10,16 @@ const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd"
 
 static func make(grid_size: int) -> Dictionary:
 	var size: int = maxi(1, int(grid_size))
-	var spawn_columns: int = BattlefieldInitializer.get_spawn_columns(size)
-	var contest_min_x: int = spawn_columns
-	var contest_max_x: int = size - spawn_columns - 1
+	var spawn_rows: int = BattlefieldInitializer.get_spawn_rows(size)
+	var contest_min_y: int = spawn_rows
+	var contest_max_y: int = size - spawn_rows - 1
 	var center: int = size >> 1
-	var contest_width: int = maxi(1, contest_max_x - contest_min_x + 1)
+	var contest_width: int = maxi(1, contest_max_y - contest_min_y + 1)
 	var stronghold_radius: int = maxi(1, floori(float(size) / 16.0))
 	var core_radius: int = maxi(2, floori(float(size) / 10.0))
 	var side_inset: int = maxi(stronghold_radius + 1, floori(float(contest_width) * 0.18))
-	var left_x: int = contest_min_x + side_inset
-	var right_x: int = contest_max_x - side_inset
+	var left_x: int = side_inset
+	var right_x: int = size - side_inset - 1
 	var top_y: int = clampi(floori(float(size) * 0.23), stronghold_radius, size - stronghold_radius - 1)
 	var bottom_y: int = size - top_y - 1
 
@@ -34,10 +34,10 @@ static func make(grid_size: int) -> Dictionary:
 		"display_name": "Five Strongholds",
 		"layout_style": "symmetric_five_strongholds",
 		"spawn_zones": [
-			{"owner": CardfrontRulesScript.PLAYER_FACTION, "x0": 0, "x1": spawn_columns - 1},
-			{"owner": CardfrontRulesScript.AI_FACTION, "x0": size - spawn_columns, "x1": size - 1},
+			{"owner": CardfrontRulesScript.AI_FACTION, "y0": 0, "y1": spawn_rows - 1},
+			{"owner": CardfrontRulesScript.PLAYER_FACTION, "y0": size - spawn_rows, "y1": size - 1},
 		],
-		"neutral_zones": [{"x0": contest_min_x, "x1": contest_max_x}],
+		"neutral_zones": [{"y0": contest_min_y, "y1": contest_max_y}],
 		"win_rule": "capture_target_percent",
 		"time_limit": CardfrontRulesScript.MATCH_DURATION_SECONDS,
 		"resource_multiplier": 1.0,

@@ -39,6 +39,11 @@ var toast_layer = null
 var effect_visual_bridge = null
 var card_audio_feedback = null
 var tutorial_overlay = null
+var arena_presentation_layer = null
+var command_chambers: Dictionary = {}
+var direction_controller = null
+var aim_guide_layer = null
+var aim_control = null
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
@@ -82,6 +87,12 @@ func reset() -> void:
     toast_layer = null
     effect_visual_bridge = null
     card_audio_feedback = null
+    tutorial_overlay = null
+    arena_presentation_layer = null
+    command_chambers.clear()
+    direction_controller = null
+    aim_guide_layer = null
+    aim_control = null
     resource_states.clear()
     last_yield_snapshot.clear()
     current_config.clear()
