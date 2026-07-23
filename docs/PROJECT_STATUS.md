@@ -31,84 +31,63 @@ Confirmed product decisions:
 - Stable baseline: `v0.2.5.7-ui-copy-readability-pass`
 - Baseline commit: `9eadf9b`
 - Core-loop foundation commit: `bef12ce`
-- Current completed slice: `v0.3.0d-vertical-slice-playtest-closeout`
-- Next slice: `v0.3.1a-map-identity-foundation`
+- Current completed slice: `v0.3.1a-tactical-stronghold-contract`
+- Next slice: `v0.3.1b-orthographic-2_5d-arena-spike`
 - Active branch: `main`
 
 ## Completed Slice / 已完成阶段
 
-`v0.3.0d-vertical-slice-playtest-closeout` closes the first playable direction, draft, volley, territory-defense, and command-chamber loop.
+`v0.3.1a-tactical-stronghold-contract` turns the three special region identities into explicit, readable tactical objectives for the current draft-and-volley loop.
 
 Scope:
 
-- Four-second opening aim window, then six-second aim windows between volleys.
-- Full simulation pause during an eight-second three-choice draft, while the draft timeout continues in real time.
-- Three formal text-first upgrade cards with hover and press feedback.
-- Timeout fallback that selects from the three visible offers.
-- AI upgrade selection, lock-in, and reveal.
-- Six manifest upgrades wired through the run-state resolver.
-- Next-volley `+5` and `x2`, plus permanent projectile power, defense-cap, rarity, and mirror state.
-- Twelve-projectile base volleys, with player manual direction and AI automatic targeting resolved simultaneously.
-- Territory defense refills each owned cell to its faction cap when a volley launches; incoming enemy hits remove defense before ownership can flip.
-- Owner-colored defense outlines and pips make the current protection visible on the battlefield.
-- Both command chambers use a 40-point health pool.
-- Command-chamber destruction as the immediate primary victory condition.
-- Command-chamber damage flashes, shakes, and shows the damage amount.
-- Volley launch shows a short `强化生效` confirmation for the selected upgrade.
-- The default Cardfront runtime no longer constructs the legacy fixed hand, resource economy, morale, target-bias, device, debug-action, old target-preview, or old feedback chain.
-- Legacy systems remain available only through an explicit compatibility flag used by their focused regression tests.
-- Native Godot tests and a dedicated GitHub Actions batch.
+- Special regions activate only when one duel faction controls at least 80% of the region at draft-open sampling time.
+- Factory grants `+4` shots to the following volley.
+- Energy relay grants `+1` projectile power to the following volley.
+- Lab guarantees at least one uncommon-or-better option in that three-choice offer.
+- A faction can receive each stronghold type only once, even when it controls two regions of the same type.
+- Losing control removes the bonus at the next draft sample.
+- Map metadata now declares command-chamber destruction and the tactical stronghold ruleset instead of retired resource/card-pool/capture-victory fields.
+- AI target scoring now names and evaluates tactical strongholds explicitly; enemy stronghold priority starts at the same 80% activation threshold.
+- Region badges, the right-side region panel, the battle status panel, and the draft explanation expose active bonuses directly.
+- The stronghold runtime exists only in live Cardfront; BallWar and the explicit legacy-compatibility assembly remain isolated.
 
 Acceptance:
 
-- Exactly three upgrade cards are visible during each draft.
-- A real card click and the timeout fallback both lock a valid visible offer.
-- AI choice locks before reveal and is shown alongside the player choice.
-- The simulation resumes before both directed bursts are issued.
-- Projectile-power upgrades propagate to real bullets and multiply turret damage.
-- Territory-defense upgrades change the visible per-cell armor cap and block the corresponding number of enemy capture hits.
-- Neutral cells receive no territory defense.
-- Chamber hit feedback and upgrade-application feedback expire without leaving persistent overlays.
-- Territory dominance alone no longer ends a Cardfront match.
-- Destroying the enemy command chamber ends the match immediately.
-- Legacy BallWar creates none of the new round-director or three-choice UI nodes.
-- The live-runtime boundary test proves the retired v0.2 systems are absent by default and available only when compatibility is explicitly enabled.
-- Existing card, map, effect, performance, Smoke, and Integration gates remain green.
+- 79% control grants no stronghold bonus; 80% control does.
+- Two factories still grant only one `+4` shot bonus.
+- Lab visibly changes the current offer and never reduces it below three unique choices.
+- Factory and Energy contributions are recorded separately in the real `CardfrontVolleyPlan`.
+- Stronghold shot bonuses respect the 512-shot safety limit.
+- Losing a region before the next draft removes its sampled bonus.
+- The player can see both the 80% requirement and the concrete effect without consulting documentation.
+- Existing three-choice, fire, region, live-runtime, BallWar, Smoke, and Integration behavior remains covered.
 
 Implementation result:
 
-- Added `CardfrontTerritoryDefenseSystem` and bound it to `volley_launched`.
-- Reused `FortifyLayer` as per-cell territory armor with a six-point maximum and dirty-only overlay redraw.
-- Added centralized `CardfrontRunTuning` for aim cadence, draft/reveal duration, volley count, chamber health, defense cap, and feedback duration.
-- Added command-chamber hit feedback and post-draft upgrade confirmation.
-- Added live-only runtime-builder entrypoints while preserving the previous builder as an explicit compatibility assembly.
-- Reworded the region panel around route control, firing lanes, and territory defense instead of retired Energy/Parts income.
-- Added `CardfrontTerritoryDefenseTestRunner`, `CardfrontVerticalSliceFeedbackTestRunner`, and `CardfrontLiveRuntimeBoundaryTestRunner`.
+- Added `CardfrontStrongholdRules` and `CardfrontStrongholdSystem`.
+- Extended draft selection with an optional uncommon-or-better guarantee.
+- Extended volley plans with explicit stronghold shot and projectile-power contributions.
+- Added stronghold sampling to `CardfrontRoundDirector` without moving region logic into the director.
+- Updated map definitions, target-scoring reasons, region badges, region details, and battle/draft feedback.
+- Added `CardfrontStrongholdSystemTestRunner` and a dedicated GitHub Actions batch.
 
 Known transition boundaries:
 
-- `ENERGY`, `FACTORY`, and `LAB` region identities still exist in map data and visuals, but the retired resource economy no longer gives them a player-facing effect in the live loop.
-- AI target scoring still recognizes those legacy resource identities, so the next slice must replace that hidden weighting with explicit tactical-stronghold rules.
-- Current map metadata still contains retired `capture_target_percent`, `resource_multiplier`, and fixed-card-pool fields.
 - The arena floor is still drawn by `Node2D`; its trapezoid is only a perspective cue, not an orthographic 2.5D camera.
+- Stronghold sampling is intentionally round-based, so control changes during a volley take effect when the next draft opens.
+- The three registered map definitions share one stronghold ruleset; their route geometry and visual identity remain a later slice.
 
 ## Planned Slices / 后续阶段
 
-1. `v0.3.1a-tactical-stronghold-contract`
-   - Remove retired economy/card-pool/win-rule metadata from the live map contract.
-   - Activate special-region bonuses only at 80% control, sampled before draft resolution.
-   - Factory: `+4` shots to the next volley.
-   - Energy relay: `+1` projectile power for the next volley.
-   - Lab: guarantee at least one uncommon-or-better option in the next three-choice draft.
-   - Limit each region type to one active bonus per faction and remove the bonus when control is lost.
-2. `v0.3.1b-orthographic-2_5d-arena-spike`
+1. `v0.3.1b-orthographic-2_5d-arena-spike`
    - Use a real orthographic `Camera3D` over an XZ battlefield.
    - Mirror the existing 2D simulation into 3D tile, marble, turret, chamber, and effect presenters.
    - Validate one map end to end before expanding the catalog; keep the formal HUD in `CanvasLayer`.
-3. `v0.3.1c-map-identity-expansion`
+2. `v0.3.1c-map-identity-expansion`
    - Add visibly distinct route structures, chamber approaches, and stronghold placements.
    - Keep chamber destruction, the six-upgrade pool, and stronghold bonus rules stable while comparing layouts.
-4. `v0.3.2a-summon-rule-foundation`
+3. `v0.3.2a-summon-rule-foundation`
    - Define allied and neutral summon ownership, movement, collision, targeting, and despawn rules.
    - Add chaos/summon content only after the rule layer is covered by native tests.
 

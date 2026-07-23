@@ -2,10 +2,10 @@ extends RefCounted
 class_name DefaultDuelMap
 
 const BattlefieldInitializer = preload("res://scripts/cardfront/CardfrontBattlefieldInitializer.gd")
-const CardfrontContentManifestScript = preload("res://scripts/cardfront/content/CardfrontContentManifest.gd")
 const CardfrontMapDefinitionScript = preload("res://scripts/cardfront/maps/CardfrontMapDefinition.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
+const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 
 
 static func make(grid_size: int) -> Dictionary:
@@ -38,10 +38,9 @@ static func make(grid_size: int) -> Dictionary:
 			{"owner": CardfrontRulesScript.PLAYER_FACTION, "y0": size - spawn_rows, "y1": size - 1},
 		],
 		"neutral_zones": [{"y0": contest_min_y, "y1": contest_max_y}],
-		"win_rule": "capture_target_percent",
+		"objective_rule": CardfrontMapDefinitionScript.OBJECTIVE_DESTROY_COMMAND_CHAMBER,
+		"stronghold_ruleset": StrongholdRulesScript.RULESET_ID,
 		"time_limit": CardfrontRulesScript.MATCH_DURATION_SECONDS,
-		"resource_multiplier": 1.0,
-		"allowed_card_pool": CardfrontContentManifestScript.get_default_hand_ids(),
 		"ai_profile": "baseline_duel",
 	})
 

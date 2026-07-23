@@ -19,6 +19,7 @@ func _run() -> void:
 	_test_manifest_is_valid()
 	_test_cards_are_text_and_symbol_driven()
 	_test_seeded_offers_are_unique_and_deterministic()
+	_test_lab_guarantees_uncommon_or_better()
 	_test_rarity_growth_changes_weights()
 	_test_capped_or_armed_upgrades_are_not_offered()
 	_test_timeout_fallback_comes_from_offer()
@@ -75,6 +76,23 @@ func _test_rarity_growth_changes_weights() -> void:
 
 	_assert.gt(draft.weight_for_definition(rare_definition, state), base_rare_weight, "rarity: rare weight should increase")
 	_assert.that(draft.weight_for_definition(common_definition, state) < base_common_weight, "rarity: common weight should decrease")
+
+
+func _test_lab_guarantees_uncommon_or_better() -> void:
+	var state = RunStateScript.new()
+	state.setup(0)
+	var draft = DraftSystemScript.new()
+	draft.set_seed(3)
+	var offer: Array = draft.draw_three(state, true)
+	var qualifying_count: int = 0
+	for definition in offer:
+		if str((definition as Dictionary).get("rarity", "")) in [
+			UpgradeManifestScript.RARITY_UNCOMMON,
+			UpgradeManifestScript.RARITY_RARE,
+		]:
+			qualifying_count += 1
+	_assert.eq(offer.size(), 3, "lab: guaranteed offer should still contain three unique choices")
+	_assert.gte(qualifying_count, 1, "lab: guaranteed offer should contain uncommon or rare content")
 
 
 func _test_timeout_fallback_comes_from_offer() -> void:

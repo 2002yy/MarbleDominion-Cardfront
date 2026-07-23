@@ -2,6 +2,8 @@ extends SceneTree
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const MatchPhaseScript = preload("res://scripts/cardfront/run/CardfrontMatchPhase.gd")
+const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
+const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 
 var _assert: TestAssert
 
@@ -16,6 +18,7 @@ func _run() -> void:
 	await process_frame
 
 	await _test_player_choice_pauses_resolves_and_launches()
+	await _test_strongholds_modify_draft_and_volley()
 	await _test_timeout_selects_player_fallback()
 	await _test_ballwar_is_isolated()
 	GameConfig.reset_runtime_defaults()
@@ -94,6 +97,34 @@ func _test_timeout_selects_player_fallback() -> void:
 	await _flush()
 
 
+func _test_strongholds_modify_draft_and_volley() -> void:
+	var main = await _start_main(GameConfig.GAME_MODE_CARDFRONT)
+	var director = main.runtime.round_director
+	_paint_all_strongholds(main, RulesScript.PLAYER_FACTION)
+	director.set_seed_for_tests(91)
+	director.force_open_draft_for_test()
+
+	var player_bonus: Dictionary = director.get_stronghold_bonus(RulesScript.PLAYER_FACTION)
+	_assert.eq(int(player_bonus.get("shot_count_bonus", 0)), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold: factory should grant +4 once")
+	_assert.eq(int(player_bonus.get("projectile_power_bonus", 0)), StrongholdRulesScript.ENERGY_POWER_BONUS, "runtime stronghold: energy should grant +1 power")
+	_assert.that(bool(player_bonus.get("guarantee_uncommon", false)), "runtime stronghold: lab should arm the draft guarantee")
+	_assert.that(_has_uncommon_or_better(director.get_player_offer()), "runtime stronghold: lab should affect the visible player offer")
+	_assert.that(str(main.runtime.three_choice_panel.stronghold_label.text).contains("工厂"), "runtime stronghold: battle HUD should name active bonuses")
+	_assert.that(str(main.runtime.three_choice_panel.result_label.text).contains("实验室"), "runtime stronghold: draft should explain the lab guarantee")
+
+	_assert.that(main.runtime.three_choice_panel.choose_index_for_test(0), "runtime stronghold: player should still choose normally")
+	var plan = director.current_plans.get(RulesScript.PLAYER_FACTION, null)
+	_assert.that(plan != null, "runtime stronghold: resolution should build a player plan")
+	if plan != null:
+		_assert.eq(int(plan.stronghold_shot_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold: plan should record +4 factory shots")
+		_assert.eq(int(plan.stronghold_projectile_power_bonus), StrongholdRulesScript.ENERGY_POWER_BONUS, "runtime stronghold: plan should record +1 energy power")
+	director.complete_reveal_for_test()
+
+	main._cleanup_game_layer()
+	TestFixtures.cleanup_node(main)
+	await _flush()
+
+
 func _test_ballwar_is_isolated() -> void:
 	var main = await _start_main(GameConfig.GAME_MODE_BASIC)
 	_assert.eq(main.runtime.round_director, null, "BallWar: should not create Cardfront round director")
@@ -115,6 +146,23 @@ func _start_main(mode_name: String):
 	main._start_game(20, true, false)
 	await _flush()
 	return main
+
+
+func _paint_all_strongholds(main, owner_id: int) -> void:
+	var owners: Array = main.runtime.battlefield.owners.duplicate(true)
+	for raw_region_id in main.runtime.region_map.get_controllable_region_ids():
+		for raw_cell in main.runtime.region_map.get_region_cells(int(raw_region_id)):
+			var cell: Vector2i = raw_cell
+			owners[cell.x][cell.y] = owner_id
+	main.runtime.battlefield.replace_owners(owners, false)
+
+
+func _has_uncommon_or_better(offer: Array) -> bool:
+	for raw_definition in offer:
+		var rarity: String = str((raw_definition as Dictionary).get("rarity", ""))
+		if rarity in [UpgradeManifestScript.RARITY_UNCOMMON, UpgradeManifestScript.RARITY_RARE]:
+			return true
+	return false
 
 
 func _flush() -> void:

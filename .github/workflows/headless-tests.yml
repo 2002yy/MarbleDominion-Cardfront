@@ -111,6 +111,13 @@ jobs:
               CardfrontVerticalSliceFeedbackTestRunner.gd
               CardfrontLiveRuntimeBoundaryTestRunner.gd
               CardfrontPerformanceSmokeTestRunner.gd
+          - batch: Cardfront v0.3 tactical strongholds
+            scripts: |
+              CardfrontStrongholdSystemTestRunner.gd
+              CardfrontMapDefinitionTestRunner.gd
+              CardfrontUpgradeContentTestRunner.gd
+              CardfrontThreeChoiceRuntimeTestRunner.gd
+              CardfrontLiveRuntimeBoundaryTestRunner.gd
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip

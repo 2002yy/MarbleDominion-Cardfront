@@ -17,7 +17,7 @@ const CardfrontCardAudioFeedbackScript = preload("res://scripts/cardfront/ui/Car
 const CardfrontTutorialOverlayScene = preload("res://scenes/ui/cardfront/CardfrontTutorialOverlay.tscn")
 const CardfrontAimControlScene = preload("res://scenes/ui/cardfront/CardfrontAimControl.tscn")
 const CardfrontThreeChoicePanelScene = preload("res://scenes/ui/cardfront/CardfrontThreeChoicePanel.tscn")
-const LEGACY_SIDE_BUTTON_TOP_AFTER_REGION: float = 300.0
+const LEGACY_SIDE_BUTTON_TOP_AFTER_REGION: float = 324.0
 const LEGACY_SIDE_BUTTON_GAP: float = 8.0
 
 const FIRE_STATUS_TEXT: String = "拖动左侧方向滑杆｜炮塔按设定方向自动射击"
@@ -56,7 +56,6 @@ static func configure_battlefield(battlefield) -> Dictionary:
 		"mode_name": GameConfig.GAME_MODE_CARDFRONT,
 		"active_factions": get_active_factions(),
 		"match_duration_seconds": get_match_duration_seconds(),
-		"capture_target_percent": Rules.CAPTURE_TARGET_PERCENT,
 	}, true)
 	return result
 
@@ -254,12 +253,12 @@ static func create_target_preview_layer(game_layer: Node, battlefield, region_ma
 	return CardfrontRuntimeBuilderScript.create_target_preview_layer(game_layer, battlefield, region_map)
 
 
-static func create_region_info_panel(ui_layer: Node, region_map, battlefield, territory_defense_system = null) -> Dictionary:
+static func create_region_info_panel(ui_layer: Node, region_map, battlefield, territory_defense_system = null, stronghold_system = null) -> Dictionary:
 	if ui_layer == null or not is_instance_valid(ui_layer):
 		return {"configured": false, "reason": "missing_ui_layer"}
 
 	var panel = CardfrontRegionInfoPanelScript.new()
-	panel.setup(region_map, battlefield, GameConfig.GAME_MODE_CARDFRONT, territory_defense_system)
+	panel.setup(region_map, battlefield, GameConfig.GAME_MODE_CARDFRONT, territory_defense_system, stronghold_system)
 	ui_layer.add_child(panel)
 
 	return {

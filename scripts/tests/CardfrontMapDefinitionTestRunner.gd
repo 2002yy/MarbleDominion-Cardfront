@@ -1,6 +1,5 @@
 extends SceneTree
 
-const CardfrontContentManifestScript = preload("res://scripts/cardfront/content/CardfrontContentManifest.gd")
 const CardfrontMapDefinitionScript = preload("res://scripts/cardfront/maps/CardfrontMapDefinition.gd")
 const CardfrontMapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
@@ -41,8 +40,10 @@ func _test_registered_maps_validate() -> void:
 		var definition: Dictionary = CardfrontMapRegistryScript.get_map_definition(str(map_id), 40)
 		var errors: Array = CardfrontMapDefinitionScript.validate(definition)
 		_assert.eq(errors, [], "map registry: definition should validate: %s" % str(map_id))
-		for card_id in definition.get("allowed_card_pool", []):
-			_assert.that(CardfrontContentManifestScript.has_card(int(card_id)), "map registry: allowed card should exist %d" % int(card_id))
+		_assert.eq(str(definition.get("objective_rule", "")), CardfrontMapDefinitionScript.OBJECTIVE_DESTROY_COMMAND_CHAMBER, "map registry: chamber destruction should be the explicit objective")
+		_assert.that(str(definition.get("stronghold_ruleset", "")) != "", "map registry: tactical stronghold ruleset should be explicit")
+		for retired_key in ["win_rule", "resource_multiplier", "allowed_card_pool"]:
+			_assert.that(not definition.has(retired_key), "map registry: retired metadata should be absent: %s" % retired_key)
 
 
 func _test_region_map_public_paint_api() -> void:

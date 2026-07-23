@@ -5,6 +5,7 @@ signal phase_changed(previous_phase, next_phase)
 signal countdown_updated(time_remaining, round_number, player_state)
 signal draft_opened(player_offer, ai_offer, timeout_seconds, round_number)
 signal draft_time_updated(time_remaining, timeout_seconds)
+signal strongholds_sampled(bonuses)
 signal choice_locked(owner_id, upgrade_id, automatic)
 signal choices_revealed(player_definition, ai_definition, resolution_results)
 signal volley_launched(plans, issued_intents)
@@ -28,11 +29,13 @@ const REVEAL_DURATION: float = TuningScript.REVEAL_SECONDS
 var fire_director = null
 var turrets: Dictionary = {}
 var direction_controller = null
+var stronghold_system = null
 var phase_controller = MatchPhaseControllerScript.new()
 var run_states: Dictionary = {}
 var current_offers: Dictionary = {}
 var current_plans: Dictionary = {}
 var last_resolution_results: Dictionary = {}
+var current_stronghold_bonuses: Dictionary = {}
 var round_number: int = 0
 var active: bool = false
 
@@ -50,10 +53,11 @@ func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func setup(new_fire_director, new_turrets: Dictionary, new_direction_controller = null) -> bool:
+func setup(new_fire_director, new_turrets: Dictionary, new_direction_controller = null, new_stronghold_system = null) -> bool:
 	fire_director = new_fire_director
 	turrets = new_turrets.duplicate(false)
 	direction_controller = new_direction_controller
+	stronghold_system = new_stronghold_system
 	if fire_director == null or not is_instance_valid(fire_director):
 		return false
 	for owner_id in RulesScript.get_duel_factions():
@@ -143,6 +147,10 @@ func get_ai_offer() -> Array:
 	return (current_offers.get(RulesScript.AI_FACTION, []) as Array).duplicate(true)
 
 
+func get_stronghold_bonus(owner_id: int) -> Dictionary:
+	return (current_stronghold_bonuses.get(int(owner_id), {}) as Dictionary).duplicate(true)
+
+
 func set_seed_for_tests(seed_value: int) -> void:
 	_draft_system.set_seed(seed_value)
 
@@ -182,9 +190,16 @@ func _open_draft() -> void:
 	_resolution_started = false
 	current_plans.clear()
 	last_resolution_results.clear()
+	current_stronghold_bonuses = _sample_strongholds()
 	current_offers = {
-		RulesScript.PLAYER_FACTION: _draft_system.draw_three(get_run_state(RulesScript.PLAYER_FACTION)),
-		RulesScript.AI_FACTION: _draft_system.draw_three(get_run_state(RulesScript.AI_FACTION)),
+		RulesScript.PLAYER_FACTION: _draft_system.draw_three(
+			get_run_state(RulesScript.PLAYER_FACTION),
+			_guarantees_uncommon(RulesScript.PLAYER_FACTION)
+		),
+		RulesScript.AI_FACTION: _draft_system.draw_three(
+			get_run_state(RulesScript.AI_FACTION),
+			_guarantees_uncommon(RulesScript.AI_FACTION)
+		),
 	}
 	var ai_choice: Dictionary = _ai_policy.choose(get_ai_offer(), get_run_state(RulesScript.AI_FACTION))
 	var ai_choice_id: String = str(ai_choice.get("id", ""))
@@ -216,7 +231,10 @@ func _begin_resolution() -> void:
 	for owner_id in RulesScript.get_duel_factions():
 		var upgrade_id: String = phase_controller.get_selected_upgrade_id(int(owner_id))
 		last_resolution_results[int(owner_id)] = _upgrade_resolver.resolve(get_run_state(int(owner_id)), upgrade_id)
-		current_plans[int(owner_id)] = _volley_resolver.build_and_consume(get_run_state(int(owner_id)))
+		var plan = _volley_resolver.build_and_consume(get_run_state(int(owner_id)))
+		if stronghold_system != null and is_instance_valid(stronghold_system):
+			stronghold_system.apply_to_volley_plan(int(owner_id), plan, current_stronghold_bonuses)
+		current_plans[int(owner_id)] = plan
 	var player_definition: Dictionary = _definition_for_choice(RulesScript.PLAYER_FACTION)
 	var ai_definition: Dictionary = _definition_for_choice(RulesScript.AI_FACTION)
 	_reveal_remaining = REVEAL_DURATION
@@ -257,6 +275,23 @@ func _offer_contains(owner_id: int, upgrade_id: String) -> bool:
 		if raw_definition is Dictionary and str((raw_definition as Dictionary).get("id", "")) == str(upgrade_id):
 			return true
 	return false
+
+
+func _sample_strongholds() -> Dictionary:
+	if stronghold_system == null or not is_instance_valid(stronghold_system):
+		var empty: Dictionary = {}
+		for owner_id in RulesScript.get_duel_factions():
+			empty[int(owner_id)] = {}
+		strongholds_sampled.emit(empty.duplicate(true))
+		return empty
+	var sampled: Dictionary = stronghold_system.sample_bonuses()
+	strongholds_sampled.emit(sampled.duplicate(true))
+	return sampled
+
+
+func _guarantees_uncommon(owner_id: int) -> bool:
+	var bonus: Dictionary = current_stronghold_bonuses.get(int(owner_id), {}) as Dictionary
+	return bool(bonus.get("guarantee_uncommon", false))
 
 
 func _set_draft_pause(paused: bool) -> void:

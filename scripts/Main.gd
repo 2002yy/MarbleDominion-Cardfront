@@ -385,7 +385,8 @@ func _create_cardfront_region_info_panel() -> void:
 		ui_canvas,
 		runtime.region_map,
 		runtime.battlefield,
-		runtime.territory_defense_system
+		runtime.territory_defense_system,
+		runtime.stronghold_system
 	)
 	if not bool(panel_setup.get("configured", false)):
 		return

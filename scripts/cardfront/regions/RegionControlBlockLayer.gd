@@ -3,6 +3,7 @@ class_name RegionControlBlockLayer
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
+const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 
 const DARK_OUTLINE: Color = Color(0.015, 0.025, 0.045, 0.96)
 const BADGE_BG: Color = Color(0.02, 0.035, 0.065, 0.90)
@@ -54,15 +55,23 @@ func _rebuild_visuals() -> void:
 			continue
 		var control: Dictionary = RegionControlCalculatorScript.calculate(region_map, battlefield, region_id)
 		var leader: Dictionary = _get_leader(control)
-		var type_label: String = _region_type_name(str(control.get("region_type", "normal")))
+		var region_type: String = str(control.get("region_type", "normal"))
+		var active: bool = (
+			int(leader.owner_id) != CardfrontRulesScript.NEUTRAL_OWNER
+			and int(leader.percent) >= StrongholdRulesScript.ACTIVATION_PERCENT
+		)
+		var type_label: String = StrongholdRulesScript.badge_name(region_type)
+		if active:
+			type_label += " · 已激活"
 		var owner_label: String = "%s %d%%" % [CardfrontRulesScript.owner_display_name(int(leader.owner_id)), int(leader.percent)]
 		_visuals.append({
 			"region_id": region_id,
-			"region_type": str(control.get("region_type", "normal")),
+			"region_type": region_type,
 			"cells": cells,
 			"bounds": _cell_bounds(cells),
 			"owner_id": int(leader.owner_id),
 			"percent": int(leader.percent),
+			"active": active,
 			"type_label": type_label,
 			"owner_label": owner_label,
 			"label": "%s / %s" % [type_label, owner_label],
@@ -146,15 +155,3 @@ func _neighbor_region(cell: Vector2i) -> int:
 	if region_map == null or not region_map.is_inside(cell):
 		return -1
 	return int(region_map.get_region_id(cell))
-
-
-func _region_type_name(region_type: String) -> String:
-	match region_type:
-		"energy":
-			return "能源"
-		"factory":
-			return "工厂"
-		"lab":
-			return "实验室"
-		_:
-			return "区域"

@@ -3,6 +3,7 @@ class_name CardfrontMapDefinition
 
 const SHAPE_RECT: String = "rect"
 const SHAPE_DIAMOND: String = "diamond"
+const OBJECTIVE_DESTROY_COMMAND_CHAMBER: String = "destroy_command_chamber"
 
 
 static func make(map_id: String, grid_size: int, regions: Array, metadata: Dictionary = {}) -> Dictionary:
@@ -29,8 +30,10 @@ static func validate(definition: Dictionary) -> Array:
 			errors.append("invalid_shape:%d" % int(index))
 		if str(region.get("type", "")) == "":
 			errors.append("missing_region_type:%d" % int(index))
-	if (definition.get("allowed_card_pool", []) as Array).is_empty():
-		errors.append("missing_allowed_card_pool")
+	if str(definition.get("objective_rule", "")) != OBJECTIVE_DESTROY_COMMAND_CHAMBER:
+		errors.append("invalid_objective_rule")
+	if str(definition.get("stronghold_ruleset", "")) == "":
+		errors.append("missing_stronghold_ruleset")
 	if str(definition.get("ai_profile", "")) == "":
 		errors.append("missing_ai_profile")
 	return errors

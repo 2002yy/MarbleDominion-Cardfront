@@ -7,6 +7,9 @@ var projectile_power: int = 1
 var territory_defense_cap: int = 1
 var applied_bonus: int = 0
 var applied_multiplier: int = 1
+var stronghold_shot_bonus: int = 0
+var stronghold_projectile_power_bonus: int = 0
+var active_stronghold_types: Array = []
 
 
 func snapshot() -> Dictionary:
@@ -17,4 +20,7 @@ func snapshot() -> Dictionary:
 		"territory_defense_cap": territory_defense_cap,
 		"applied_bonus": applied_bonus,
 		"applied_multiplier": applied_multiplier,
+		"stronghold_shot_bonus": stronghold_shot_bonus,
+		"stronghold_projectile_power_bonus": stronghold_projectile_power_bonus,
+		"active_stronghold_types": active_stronghold_types.duplicate(),
 	}

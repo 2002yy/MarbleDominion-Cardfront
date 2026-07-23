@@ -27,6 +27,7 @@ func _test_default_cardfront_uses_live_runtime_only() -> void:
 	var runtime = main.runtime
 
 	_assert.that(runtime.region_map != null, "live: region map should exist")
+	_assert.that(runtime.stronghold_system != null, "live: tactical stronghold system should exist")
 	_assert.that(runtime.fortify_layer != null, "live: territory defense storage should exist")
 	_assert.that(runtime.territory_defense_system != null, "live: territory defense system should exist")
 	_assert.that(runtime.fire_director != null, "live: volley fire director should exist")
@@ -76,6 +77,7 @@ func _test_legacy_compatibility_is_explicit() -> void:
 func _test_ballwar_is_unchanged() -> void:
 	var main = await _start_main(GameConfig.GAME_MODE_BASIC, false)
 	_assert.eq(main.runtime.round_director, null, "BallWar: should not create Cardfront round director")
+	_assert.eq(main.runtime.stronghold_system, null, "BallWar: should not create Cardfront strongholds")
 	_assert.eq(main.runtime.territory_defense_system, null, "BallWar: should not create Cardfront territory defense")
 	_assert.eq(main.runtime.three_choice_panel, null, "BallWar: should not create Cardfront choice panel")
 

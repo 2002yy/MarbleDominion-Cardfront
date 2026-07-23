@@ -5,6 +5,7 @@ const Rules = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
 const RegionOverlayLayerScript = preload("res://scripts/cardfront/regions/RegionOverlayLayer.gd")
 const RegionControlBlockLayerScript = preload("res://scripts/cardfront/regions/RegionControlBlockLayer.gd")
+const CardfrontStrongholdSystemScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdSystem.gd")
 const CardfrontResourceStateScript = preload("res://scripts/cardfront/economy/CardfrontResourceState.gd")
 const EconomyTickSystemScript = preload("res://scripts/cardfront/economy/EconomyTickSystem.gd")
 const CardfrontEconomyDebugPanelScript = preload("res://scripts/cardfront/economy/CardfrontEconomyDebugPanel.gd")
@@ -70,6 +71,8 @@ func build_live_core_systems(game_layer: Node, runtime) -> Dictionary:
 		return _build_result(false)
 	if not _record_or_fail("region_control_blocks", create_region_control_blocks(game_layer, runtime.region_map, runtime.battlefield), runtime):
 		return _build_result(false)
+	if not _record_or_fail("strongholds", create_stronghold_system(game_layer, runtime.region_map, runtime.battlefield), runtime):
+		return _build_result(false)
 	if not _record_or_fail("fortify", create_fortify(game_layer, runtime.battlefield, runtime.region_map), runtime):
 		return _build_result(false)
 	return _build_result(true)
@@ -89,7 +92,7 @@ func build_world_layers(game_layer: Node, runtime) -> Dictionary:
 		return _build_result(false)
 	if not _record_or_fail("direction_control", CardfrontArenaBuilderScript.create_direction_control(game_layer, runtime.battlefield, runtime.turrets, runtime.fire_director, runtime.current_layout), runtime):
 		return _build_result(false)
-	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller), runtime):
+	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller, runtime.stronghold_system), runtime):
 		return _build_result(false)
 	if not _record_or_fail("shot_guide", create_shot_guide(game_layer, runtime.battlefield, runtime.target_bias_system, runtime.turrets, runtime.region_map), runtime):
 		return _build_result(false)
@@ -124,7 +127,7 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		return _build_result(false)
 	if not _record_or_fail("direction_control", CardfrontArenaBuilderScript.create_direction_control(game_layer, runtime.battlefield, runtime.turrets, runtime.fire_director, runtime.current_layout), runtime):
 		return _build_result(false)
-	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller), runtime):
+	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller, runtime.stronghold_system), runtime):
 		return _build_result(false)
 	if not _record_or_fail("territory_defense", create_territory_defense_system(game_layer, runtime.battlefield, runtime.region_map, runtime.fortify_layer, runtime.round_director), runtime):
 		return _build_result(false)
@@ -175,6 +178,7 @@ func _clear_core_refs(runtime) -> void:
 	runtime.region_map = null
 	runtime.region_overlay = null
 	runtime.region_control_block_layer = null
+	runtime.stronghold_system = null
 	runtime.economy_system = null
 	runtime.economy_debug_panel = null
 	runtime.resource_states.clear()
@@ -241,6 +245,20 @@ static func create_region_control_blocks(game_layer: Node, region_map, battlefie
 	layer.setup(region_map, battlefield, GameConfig.GAME_MODE_CARDFRONT)
 	game_layer.add_child(layer)
 	return {"configured": true, "region_control_block_layer": layer}
+
+
+static func create_stronghold_system(game_layer: Node, region_map, battlefield) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	var system = CardfrontStrongholdSystemScript.new()
+	game_layer.add_child(system)
+	if not system.setup(region_map, battlefield):
+		system.queue_free()
+		return {"configured": false, "reason": "stronghold_setup_failed"}
+	return {
+		"configured": true,
+		"stronghold_system": system,
+	}
 
 
 static func create_economy(game_layer: Node, battlefield, region_map) -> Dictionary:
@@ -362,12 +380,12 @@ static func create_fire_director(game_layer: Node, region_map, battlefield, turr
 	}
 
 
-static func create_round_director(game_layer: Node, fire_director, turrets: Dictionary, direction_controller = null) -> Dictionary:
+static func create_round_director(game_layer: Node, fire_director, turrets: Dictionary, direction_controller = null, stronghold_system = null) -> Dictionary:
 	if game_layer == null or not is_instance_valid(game_layer):
 		return {"configured": false, "reason": "missing_game_layer"}
 	var director = CardfrontRoundDirectorScript.new()
 	game_layer.add_child(director)
-	if not director.setup(fire_director, turrets, direction_controller):
+	if not director.setup(fire_director, turrets, direction_controller, stronghold_system):
 		director.queue_free()
 		return {"configured": false, "reason": "round_director_setup_failed"}
 	return {

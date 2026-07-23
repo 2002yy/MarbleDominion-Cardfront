@@ -36,6 +36,7 @@ Baseline subtotal: **1093 expected checks** across 10 runners.
 | Cardfront v0.3 core loop | `CardfrontUpgradeContentTestRunner`, `CardfrontMatchPhaseControllerTestRunner`, `CardfrontUpgradeResolverTestRunner` |
 | Cardfront v0.3 arena spike | `CardfrontArenaLayoutTestRunner`, `CardfrontDirectionControllerTestRunner`, `CardfrontArenaRuntimeTestRunner` |
 | Cardfront v0.3 three-choice slice | `CardfrontThreeChoiceRuntimeTestRunner`, `CardfrontRoundCombatTestRunner`, `CardfrontModeSmokeTestRunner` |
+| Cardfront v0.3 tactical strongholds | `CardfrontStrongholdSystemTestRunner`, `CardfrontMapDefinitionTestRunner`, `CardfrontUpgradeContentTestRunner`, `CardfrontThreeChoiceRuntimeTestRunner` |
 | Cardfront v0.3 vertical-slice closeout | `CardfrontTerritoryDefenseTestRunner`, `CardfrontVerticalSliceFeedbackTestRunner`, `CardfrontLiveRuntimeBoundaryTestRunner`, `CardfrontPerformanceSmokeTestRunner` |
 
 The v0.1.9 engineering closeout treats local-only Cardfront success as incomplete until the relevant runner is also present in `headless-tests.yml`.
