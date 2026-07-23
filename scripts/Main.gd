@@ -31,6 +31,7 @@ const GameHUDScene = preload("res://scenes/ui/GameHUD.tscn")
 
 var runtime = GameRuntimeContextScript.new()
 var cardfront_runtime_builder = null
+var cardfront_legacy_compatibility_enabled: bool = false
 var current_score_counts: Dictionary = {0: 0, 1: 0, 2: 0, 3: 0}
 var is_mobile_layout: bool = false
 
@@ -287,7 +288,11 @@ func _create_cardfront_runtime_core() -> void:
 	if not _is_cardfront_mode():
 		return
 	var builder = _ensure_cardfront_runtime_builder()
-	var result: Dictionary = builder.build_core_systems(game_layer, runtime, Callable(self, "_on_cardfront_yield_tick"))
+	var result: Dictionary
+	if cardfront_legacy_compatibility_enabled:
+		result = builder.build_core_systems(game_layer, runtime, Callable(self, "_on_cardfront_yield_tick"))
+	else:
+		result = builder.build_live_core_systems(game_layer, runtime)
 	if not bool(result.get("configured", false)):
 		push_warning("Cardfront runtime core setup failed: %s" % str(result.get("failures", [])))
 
@@ -306,7 +311,11 @@ func _create_cardfront_runtime_world_layers() -> void:
 	if not _is_cardfront_mode():
 		return
 	var builder = _ensure_cardfront_runtime_builder()
-	var result: Dictionary = builder.build_world_layers(game_layer, runtime)
+	var result: Dictionary
+	if cardfront_legacy_compatibility_enabled:
+		result = builder.build_world_layers(game_layer, runtime)
+	else:
+		result = builder.build_live_world_layers(game_layer, runtime)
 	if not bool(result.get("configured", false)):
 		push_warning("Cardfront runtime world-layer setup failed: %s" % str(result.get("failures", [])))
 
@@ -372,7 +381,12 @@ func _create_cardfront_region_info_panel() -> void:
 	var ui_canvas = _hud_ref("ui_canvas")
 	if ui_canvas == null:
 		return
-	var panel_setup: Dictionary = CardfrontModeScript.create_region_info_panel(ui_canvas, runtime.region_map, runtime.battlefield)
+	var panel_setup: Dictionary = CardfrontModeScript.create_region_info_panel(
+		ui_canvas,
+		runtime.region_map,
+		runtime.battlefield,
+		runtime.territory_defense_system
+	)
 	if not bool(panel_setup.get("configured", false)):
 		return
 	runtime.region_info_panel = panel_setup.get("region_info_panel", null)
@@ -487,14 +501,15 @@ func _create_ui() -> void:
 
 	if _is_cardfront_mode():
 		CardfrontModeScript.configure_runtime_hud(runtime.hud)
-		_create_cardfront_feedback_bus()
-		_create_cardfront_top_resource_bar()
 		_create_cardfront_aim_control()
-		_create_cardfront_hand_panel()
-		_create_cardfront_feedback_layers()
-		_create_cardfront_effect_visual_bridge()
 		_create_cardfront_region_info_panel()
-		_create_cardfront_tutorial_overlay()
+		if cardfront_legacy_compatibility_enabled:
+			_create_cardfront_feedback_bus()
+			_create_cardfront_top_resource_bar()
+			_create_cardfront_hand_panel()
+			_create_cardfront_feedback_layers()
+			_create_cardfront_effect_visual_bridge()
+			_create_cardfront_tutorial_overlay()
 		_create_cardfront_three_choice_panel()
 		_configure_cardfront_three_choice_ui()
 

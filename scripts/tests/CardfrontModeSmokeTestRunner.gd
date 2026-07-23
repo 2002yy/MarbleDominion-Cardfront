@@ -133,9 +133,9 @@ func _test_main_enters_cardfront_mode() -> void:
 	_assert.eq(main.runtime.chambers.size(), 0, "main entry: Cardfront should not create legacy control chambers")
 	_assert.eq(main.runtime.ui_runtime_ref("add_ball_buttons", {}).size(), 0, "main entry: Cardfront should not create add-ball buttons")
 	_assert.eq(main.runtime.event_controller, null, "main entry: Cardfront should skip EventRouletteController")
-	_assert.that(main.runtime.target_bias_system != null and is_instance_valid(main.runtime.target_bias_system), "main entry: Cardfront should create target bias system")
-	_assert.that(main.runtime.card_system != null, "main entry: Cardfront should create card play system")
-	_assert.eq(main.runtime.card_system.target_bias_system, main.runtime.target_bias_system, "main entry: card play system should receive target bias system")
+	_assert.eq(main.runtime.target_bias_system, null, "main entry: live Cardfront should not construct legacy target bias")
+	_assert.eq(main.runtime.card_system, null, "main entry: live Cardfront should not construct legacy card play system")
+	_assert.that(main.runtime.territory_defense_system != null and is_instance_valid(main.runtime.territory_defense_system), "main entry: Cardfront should create live territory defense")
 	_assert.that(main.runtime.fire_director != null and is_instance_valid(main.runtime.fire_director), "main entry: Cardfront should create fire director")
 	_assert.eq(main.runtime.hud_ref("event_label").text, CardfrontModeScript.FIRE_STATUS_TEXT, "main entry: Cardfront HUD should explain automatic card-directed fire")
 

@@ -36,6 +36,7 @@ Baseline subtotal: **1093 expected checks** across 10 runners.
 | Cardfront v0.3 core loop | `CardfrontUpgradeContentTestRunner`, `CardfrontMatchPhaseControllerTestRunner`, `CardfrontUpgradeResolverTestRunner` |
 | Cardfront v0.3 arena spike | `CardfrontArenaLayoutTestRunner`, `CardfrontDirectionControllerTestRunner`, `CardfrontArenaRuntimeTestRunner` |
 | Cardfront v0.3 three-choice slice | `CardfrontThreeChoiceRuntimeTestRunner`, `CardfrontRoundCombatTestRunner`, `CardfrontModeSmokeTestRunner` |
+| Cardfront v0.3 vertical-slice closeout | `CardfrontTerritoryDefenseTestRunner`, `CardfrontVerticalSliceFeedbackTestRunner`, `CardfrontLiveRuntimeBoundaryTestRunner`, `CardfrontPerformanceSmokeTestRunner` |
 
 The v0.1.9 engineering closeout treats local-only Cardfront success as incomplete until the relevant runner is also present in `headless-tests.yml`.
 
@@ -85,6 +86,17 @@ Run the benchmark probes when tuning firing or pressure policies, collecting rel
 4. `CardfrontModeSmokeTestRunner.gd`.
 5. `CardfrontUiClickThroughTestRunner.gd`.
 6. `CardfrontMatchFlowClarityTestRunner.gd`.
+
+### Editing territory defense, chamber feedback, tuning, or live runtime assembly
+
+1. `CardfrontTerritoryDefenseTestRunner.gd`.
+2. `CardfrontVerticalSliceFeedbackTestRunner.gd`.
+3. `CardfrontLiveRuntimeBoundaryTestRunner.gd`.
+4. `CardfrontThreeChoiceRuntimeTestRunner.gd`.
+5. `CardfrontModeSmokeTestRunner.gd`.
+6. `CardfrontPerformanceSmokeTestRunner.gd`.
+
+Tests for retired v0.2 card/economy/device UI must explicitly set `cardfront_legacy_compatibility_enabled = true` before starting Cardfront. New live-path tests must leave it false.
 7. `LayoutSanityTestRunner.gd`, `SmokeTestRunner.gd`, and `IntegrationTestRunner.gd` when shared runtime surfaces change.
 
 ### Editing `.tscn` or UI wiring

@@ -1,6 +1,9 @@
 extends RefCounted
 class_name FortifyLayer
 
+signal stack_changed(cell, previous_value, current_value)
+signal refill_completed(owner_caps, defended_cell_count)
+
 const FortifyRulesScript = preload("res://scripts/cardfront/fortify/FortifyRules.gd")
 
 var grid_size: int = 0
@@ -27,15 +30,18 @@ func get_fortify_stack(cell: Vector2i) -> int:
 func set_fortify_stack(cell: Vector2i, value: int) -> void:
 	if not _is_inside(cell):
 		return
-	stacks[cell.x][cell.y] = clampi(value, 0, FortifyRulesScript.MAX_FORTIFY_STACKS)
+	var previous: int = int(stacks[cell.x][cell.y])
+	var current: int = clampi(value, 0, FortifyRulesScript.MAX_FORTIFY_STACKS)
+	stacks[cell.x][cell.y] = current
+	if previous != current:
+		stack_changed.emit(cell, previous, current)
 	_notify_overlay()
 
 
 func add_fortify_stack(cell: Vector2i, amount: int = 1) -> void:
 	if not _is_inside(cell):
 		return
-	stacks[cell.x][cell.y] = clampi(int(stacks[cell.x][cell.y]) + amount, 0, FortifyRulesScript.MAX_FORTIFY_STACKS)
-	_notify_overlay()
+	set_fortify_stack(cell, int(stacks[cell.x][cell.y]) + amount)
 
 
 func clear_fortify_stack(cell: Vector2i) -> void:
@@ -61,7 +67,37 @@ func consume_hit(cell: Vector2i) -> bool:
 	if current <= 0:
 		return false
 	stacks[cell.x][cell.y] = current - 1
+	stack_changed.emit(cell, current, current - 1)
+	_notify_overlay()
 	return true
+
+
+func refill_from_owner_caps(owner_grid: Array, owner_caps: Dictionary) -> int:
+	if owner_grid.size() != grid_size:
+		return 0
+	var defended_cell_count: int = 0
+	var changed: bool = false
+	for x in range(grid_size):
+		if not (owner_grid[x] is Array) or (owner_grid[x] as Array).size() < grid_size:
+			return 0
+		for y in range(grid_size):
+			var owner_id: int = int(owner_grid[x][y])
+			var target: int = clampi(
+				int(owner_caps.get(owner_id, 0)),
+				0,
+				FortifyRulesScript.MAX_FORTIFY_STACKS
+			)
+			var previous: int = int(stacks[x][y])
+			if previous != target:
+				stacks[x][y] = target
+				stack_changed.emit(Vector2i(x, y), previous, target)
+				changed = true
+			if target > 0:
+				defended_cell_count += 1
+	if changed:
+		_notify_overlay()
+	refill_completed.emit(owner_caps.duplicate(), defended_cell_count)
+	return defended_cell_count
 
 
 func is_fortified(cell: Vector2i) -> bool:

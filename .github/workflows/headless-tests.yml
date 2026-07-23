@@ -105,6 +105,12 @@ jobs:
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontModeSmokeTestRunner.gd
+          - batch: Cardfront v0.3 vertical-slice closeout
+            scripts: |
+              CardfrontTerritoryDefenseTestRunner.gd
+              CardfrontVerticalSliceFeedbackTestRunner.gd
+              CardfrontLiveRuntimeBoundaryTestRunner.gd
+              CardfrontPerformanceSmokeTestRunner.gd
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip

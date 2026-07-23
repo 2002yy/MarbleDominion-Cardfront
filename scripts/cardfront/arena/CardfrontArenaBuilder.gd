@@ -6,6 +6,7 @@ const CardfrontArenaPresentationLayerScript = preload("res://scripts/cardfront/a
 const CardfrontCommandChamberViewScript = preload("res://scripts/cardfront/arena/CardfrontCommandChamberView.gd")
 const CardfrontDirectionControllerScript = preload("res://scripts/cardfront/arena/CardfrontDirectionController.gd")
 const CardfrontAimGuideLayerScript = preload("res://scripts/cardfront/arena/CardfrontAimGuideLayer.gd")
+const CardfrontRunTuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
 
 
 static func create_presentation(game_layer: Node, battlefield, layout: Dictionary) -> Dictionary:
@@ -25,6 +26,8 @@ static func create_command_chambers(game_layer: Node, turrets: Dictionary) -> Di
 	var command_chambers: Dictionary = {}
 	for owner_id in CardfrontRulesScript.get_duel_factions():
 		var turret = turrets.get(owner_id, null)
+		if turret != null and is_instance_valid(turret) and turret.has_method("configure_health_pool"):
+			turret.configure_health_pool(CardfrontRunTuningScript.COMMAND_CHAMBER_HEALTH, true)
 		var view = CardfrontCommandChamberViewScript.new()
 		if not view.setup(int(owner_id), turret, int(owner_id) == CardfrontRulesScript.PLAYER_FACTION):
 			view.free()

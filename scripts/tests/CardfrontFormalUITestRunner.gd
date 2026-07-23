@@ -42,6 +42,7 @@ func _test_top_resource_bar_visible() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -63,6 +64,7 @@ func _test_top_resource_bar_refreshes_on_resources_changed() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -84,6 +86,7 @@ func _test_hand_panel_visible() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -104,6 +107,7 @@ func _test_hand_panel_has_four_cards() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -136,6 +140,7 @@ func _test_card_click_selection_controller() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -159,6 +164,7 @@ func _test_legacy_buttons_below_region_panel() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -191,6 +197,7 @@ func _test_card_play_consumes_resources() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -221,6 +228,7 @@ func _test_ballwar_no_formal_ui() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_BASIC
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)

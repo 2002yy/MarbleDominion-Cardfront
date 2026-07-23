@@ -26,6 +26,7 @@ const CardfrontDebugActionPanelScript = preload("res://scripts/cardfront/debug/C
 const CardfrontTargetPreviewLayerScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
 const CardfrontArenaBuilderScript = preload("res://scripts/cardfront/arena/CardfrontArenaBuilder.gd")
 const CardfrontRoundDirectorScript = preload("res://scripts/cardfront/run/CardfrontRoundDirector.gd")
+const CardfrontTerritoryDefenseSystemScript = preload("res://scripts/cardfront/defense/CardfrontTerritoryDefenseSystem.gd")
 const SystemRegistryScript = preload("res://scripts/cardfront/runtime/CardfrontSystemRegistry.gd")
 
 var registry = SystemRegistryScript.new()
@@ -55,6 +56,21 @@ func build_core_systems(game_layer: Node, runtime, yield_callback: Callable = Ca
 	if not _record_or_fail("target_bias", create_target_bias(game_layer, runtime.region_map), runtime):
 		return _build_result(false)
 	if not _record_or_fail("card_system", create_card_system(runtime.resource_states, runtime.region_map, runtime.battlefield, runtime.fortify_layer, runtime.morale_system, runtime.region_overlay, runtime.target_bias_system), runtime):
+		return _build_result(false)
+	return _build_result(true)
+
+
+func build_live_core_systems(game_layer: Node, runtime) -> Dictionary:
+	clear()
+	if runtime == null:
+		return _failure("live_core", "missing_runtime")
+	_clear_core_refs(runtime)
+
+	if not _record_or_fail("regions", create_regions(game_layer, runtime.battlefield), runtime):
+		return _build_result(false)
+	if not _record_or_fail("region_control_blocks", create_region_control_blocks(game_layer, runtime.region_map, runtime.battlefield), runtime):
+		return _build_result(false)
+	if not _record_or_fail("fortify", create_fortify(game_layer, runtime.battlefield, runtime.region_map), runtime):
 		return _build_result(false)
 	return _build_result(true)
 
@@ -90,6 +106,27 @@ func build_world_layers(game_layer: Node, runtime) -> Dictionary:
 	if not _record_or_fail("engineer_bot_effect", create_engineer_bot_effect_system(game_layer, runtime.device_layer, runtime.fortify_layer, runtime.battlefield, runtime.region_map, runtime.cardfront_vfx_layer), runtime):
 		return _build_result(false)
 	if not _record_or_fail("durable_pioneer_beacon_effect", create_durable_pioneer_beacon_effect_system(game_layer, runtime.device_layer, runtime.battlefield, runtime.region_map, runtime.cardfront_vfx_layer), runtime):
+		return _build_result(false)
+	return _build_result(true)
+
+
+func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
+	clear()
+	if runtime == null:
+		return _failure("live_world_layers", "missing_runtime")
+	_clear_world_layer_refs(runtime)
+
+	if not _record_or_fail("arena_presentation", CardfrontArenaBuilderScript.create_presentation(game_layer, runtime.battlefield, runtime.current_layout), runtime):
+		return _build_result(false)
+	if not _record_or_fail("command_chambers", CardfrontArenaBuilderScript.create_command_chambers(game_layer, runtime.turrets), runtime):
+		return _build_result(false)
+	if not _record_or_fail("fire_director", create_fire_director(game_layer, runtime.region_map, runtime.battlefield, runtime.turrets), runtime):
+		return _build_result(false)
+	if not _record_or_fail("direction_control", CardfrontArenaBuilderScript.create_direction_control(game_layer, runtime.battlefield, runtime.turrets, runtime.fire_director, runtime.current_layout), runtime):
+		return _build_result(false)
+	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller), runtime):
+		return _build_result(false)
+	if not _record_or_fail("territory_defense", create_territory_defense_system(game_layer, runtime.battlefield, runtime.region_map, runtime.fortify_layer, runtime.round_director), runtime):
 		return _build_result(false)
 	return _build_result(true)
 
@@ -145,6 +182,7 @@ func _clear_core_refs(runtime) -> void:
 	runtime.morale_system = null
 	runtime.fortify_layer = null
 	runtime.fortify_overlay = null
+	runtime.territory_defense_system = null
 	if runtime.battlefield != null and is_instance_valid(runtime.battlefield):
 		runtime.battlefield.capture_interceptor = null
 	runtime.target_bias_system = null
@@ -168,6 +206,7 @@ func _clear_world_layer_refs(runtime) -> void:
 	runtime.aim_guide_layer = null
 	runtime.round_director = null
 	runtime.faction_run_states.clear()
+	runtime.territory_defense_system = null
 
 
 static func create_regions(game_layer: Node, battlefield) -> Dictionary:
@@ -335,6 +374,20 @@ static func create_round_director(game_layer: Node, fire_director, turrets: Dict
 		"configured": true,
 		"round_director": director,
 		"faction_run_states": director.run_states,
+	}
+
+
+static func create_territory_defense_system(game_layer: Node, battlefield, region_map, fortify_layer, round_director) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	var system = CardfrontTerritoryDefenseSystemScript.new()
+	game_layer.add_child(system)
+	if not system.setup(battlefield, region_map, fortify_layer, round_director):
+		system.queue_free()
+		return {"configured": false, "reason": "territory_defense_setup_failed"}
+	return {
+		"configured": true,
+		"territory_defense_system": system,
 	}
 
 

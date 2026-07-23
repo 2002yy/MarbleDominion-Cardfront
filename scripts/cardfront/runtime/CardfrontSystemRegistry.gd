@@ -13,6 +13,7 @@ const RUNTIME_FIELD_BY_RESULT_KEY: Dictionary = {
 	"morale_system": "morale_system",
 	"fortify_layer": "fortify_layer",
 	"fortify_overlay": "fortify_overlay",
+	"territory_defense_system": "territory_defense_system",
 	"target_bias_system": "target_bias_system",
 	"card_system": "card_system",
 	"fire_director": "fire_director",

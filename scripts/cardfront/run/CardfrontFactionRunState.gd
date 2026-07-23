@@ -1,7 +1,9 @@
 extends RefCounted
 class_name CardfrontFactionRunState
 
-const DEFAULT_BASE_VOLLEY_COUNT: int = 10
+const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
+
+const DEFAULT_BASE_VOLLEY_COUNT: int = TuningScript.BASE_VOLLEY_COUNT
 const DEFAULT_PROJECTILE_POWER: int = 1
 const DEFAULT_TERRITORY_DEFENSE_CAP: int = 1
 const MAX_RARITY_LEVEL: int = 5
@@ -49,7 +51,11 @@ func increase_projectile_power(amount: int) -> void:
 
 
 func increase_territory_defense_cap(amount: int) -> void:
-	territory_defense_cap = maxi(1, territory_defense_cap + maxi(0, int(amount)))
+	territory_defense_cap = clampi(
+		territory_defense_cap + maxi(0, int(amount)),
+		1,
+		TuningScript.MAX_TERRITORY_DEFENSE_CAP
+	)
 
 
 func increase_rarity_level(amount: int) -> void:

@@ -3,12 +3,12 @@ class_name CardfrontRegionInfoPanel
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
-const RegionYieldCalculatorScript = preload("res://scripts/cardfront/economy/RegionYieldCalculator.gd")
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
 const CardfrontUiAssetRegistryScript = preload("res://scripts/cardfront/ui/CardfrontUiAssetRegistry.gd")
 
 var region_map = null
 var battlefield = null
+var territory_defense_system = null
 
 var _panel: Panel
 var _title_label: Label
@@ -32,9 +32,10 @@ func _init() -> void:
 	layer = 17
 
 
-func setup(new_region_map, new_battlefield, mode_name: String) -> void:
+func setup(new_region_map, new_battlefield, mode_name: String, new_territory_defense_system = null) -> void:
 	region_map = new_region_map
 	battlefield = new_battlefield
+	territory_defense_system = new_territory_defense_system
 	visible = CardfrontRulesScript.is_cardfront_mode(mode_name)
 	if visible:
 		_ensure_ui()
@@ -99,8 +100,7 @@ func _update_panel(region_id: int) -> void:
 	var ai_pct: int = RegionControlCalculatorScript.get_owner_percent(control, CardfrontRulesScript.AI_FACTION)
 	var neutral_pct: int = RegionControlCalculatorScript.get_owner_percent(control, CardfrontRulesScript.NEUTRAL_OWNER)
 	var status: String = RegionControlCalculatorScript.get_region_status(control)
-	var yield_data: Dictionary = RegionYieldCalculatorScript.calculate_region_yield(region_map, battlefield, region_id, CardfrontRulesScript.PLAYER_FACTION)
-	var yld: Dictionary = yield_data.get("yield", {})
+	var leader_owner: int = _leading_owner(player_pct, ai_pct, neutral_pct)
 
 	var type_name: String = _region_type_name(region_type)
 	_title_label.text = "◆ %s" % type_name
@@ -110,19 +110,23 @@ func _update_panel(region_id: int) -> void:
 	_control_labels[CardfrontRulesScript.AI_FACTION].text = "AI 占领　%d%%" % ai_pct
 	_control_labels[CardfrontRulesScript.NEUTRAL_OWNER].text = "中立区域　%d%%" % neutral_pct
 
-	_threshold_50.text = "基础产出：%s" % ("已解锁" if player_pct >= 50 else "还差 %d%%" % (50 - player_pct))
+	_threshold_50.text = "过半控制：%s" % ("已达成" if player_pct >= 50 else "还差 %d%%" % (50 - player_pct))
 	_threshold_50.add_theme_color_override("font_color", Color(0.45, 0.80, 0.50) if player_pct >= 50 else Color(0.55, 0.50, 0.45))
-	_threshold_80.text = "强化产出：%s" % ("已解锁" if player_pct >= 80 else "还差 %d%%" % (80 - player_pct))
+	_threshold_80.text = "稳固控制：%s" % ("已达成" if player_pct >= 80 else "还差 %d%%" % (80 - player_pct))
 	_threshold_80.add_theme_color_override("font_color", Color(0.80, 0.72, 0.30) if player_pct >= 80 else Color(0.55, 0.50, 0.45))
 
-	if int(yld.get("energy", 0)) > 0:
-		_yield_label.text = "当前产出：+%d 能量/秒" % int(yld.energy)
-		_yield_label.add_theme_color_override("font_color", Color(0.62, 0.90, 1.0))
-	elif int(yld.get("parts", 0)) > 0:
-		_yield_label.text = "当前产出：+%d 零件/秒" % int(yld.parts)
-		_yield_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.36))
+	if leader_owner == CardfrontRulesScript.NEUTRAL_OWNER:
+		_yield_label.text = "阵地防守：中立区域无护盾"
+		_yield_label.add_theme_color_override("font_color", Color(0.62, 0.68, 0.76))
+	elif territory_defense_system != null and is_instance_valid(territory_defense_system):
+		var defense: Dictionary = territory_defense_system.get_region_defense_summary(region_id, leader_owner)
+		_yield_label.text = "阵地防守：%.1f / 上限 %d" % [
+			float(defense.get("average", 0.0)),
+			int(defense.get("cap", 0)),
+		]
+		_yield_label.add_theme_color_override("font_color", CardfrontRulesScript.owner_color(leader_owner).lightened(0.25))
 	else:
-		_yield_label.text = "当前产出：无"
+		_yield_label.text = "阵地防守：等待下一轮补充"
 		_yield_label.add_theme_color_override("font_color", Color(0.50, 0.50, 0.55))
 
 	_status_label.text = "状态：%s" % _status_text(status)
@@ -196,6 +200,14 @@ func _status_color(s: String) -> Color:
 		RegionControlCalculatorScript.STATUS_CONTESTED: return Color(1.0, 0.75, 0.34)
 		RegionControlCalculatorScript.STATUS_EMPTY: return Color(0.50, 0.50, 0.55)
 		_: return Color(0.80, 0.80, 0.80)
+
+
+func _leading_owner(player_pct: int, ai_pct: int, neutral_pct: int) -> int:
+	if player_pct >= ai_pct and player_pct >= neutral_pct:
+		return CardfrontRulesScript.PLAYER_FACTION
+	if ai_pct >= player_pct and ai_pct >= neutral_pct:
+		return CardfrontRulesScript.AI_FACTION
+	return CardfrontRulesScript.NEUTRAL_OWNER
 
 
 func _view_width() -> float:

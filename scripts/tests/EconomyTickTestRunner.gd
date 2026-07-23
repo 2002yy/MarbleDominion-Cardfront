@@ -205,6 +205,7 @@ func _test_main_economy_integration() -> void:
 	var scene: PackedScene = load("res://scenes/Main.tscn")
 	var main = scene.instantiate()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	await process_frame
 
 	main.selected_game_mode_name = GameConfig.GAME_MODE_BASIC

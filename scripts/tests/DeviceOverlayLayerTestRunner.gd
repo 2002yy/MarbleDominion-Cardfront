@@ -65,6 +65,7 @@ func _test_overlay_created_in_cardfront() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -146,6 +147,7 @@ func _test_old_ballwar_no_overlay() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_BASIC
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)

@@ -2,6 +2,7 @@ extends Node2D
 class_name FortifyOverlayLayer
 
 const FortifyRulesScript = preload("res://scripts/cardfront/fortify/FortifyRules.gd")
+const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 
 var fortify_layer = null
 var battlefield = null
@@ -59,12 +60,10 @@ func _build_texture() -> void:
 			if stack <= 0:
 				continue
 			var rect := Rect2i(Vector2i(x * cell_size, y * cell_size), Vector2i(cell_size, cell_size))
-			var alpha: float = 0.30 + float(stack) * 0.15
-			var border_color: Color
-			match stack:
-				3: border_color = Color(0.20, 0.60, 1.0, alpha)
-				2: border_color = Color(0.30, 0.55, 0.90, alpha)
-				_: border_color = Color(0.40, 0.50, 0.80, alpha)
+			var alpha: float = 0.34 + float(mini(stack, 4)) * 0.08
+			var owner_id: int = int(battlefield.owners[x][y])
+			var owner_color: Color = CardfrontRulesScript.owner_color(owner_id)
+			var border_color := Color(owner_color.r, owner_color.g, owner_color.b, alpha)
 
 			if cell_size > 3:
 				image.fill_rect(Rect2i(rect.position + Vector2i(1, 1), rect.size - Vector2i(2, 2)), Color(0.05, 0.08, 0.16, alpha * 0.5))
@@ -73,6 +72,16 @@ func _build_texture() -> void:
 			image.fill_rect(Rect2i(Vector2i(x * cell_size + b, y * cell_size + cell_size - b), Vector2i(maxi(1, cell_size - b * 2), b)), border_color)
 			image.fill_rect(Rect2i(Vector2i(x * cell_size + b, y * cell_size + b), Vector2i(b, maxi(1, cell_size - b * 2))), border_color)
 			image.fill_rect(Rect2i(Vector2i(x * cell_size + cell_size - b, y * cell_size + b), Vector2i(b, maxi(1, cell_size - b * 2))), border_color)
+			var pip_count: int = mini(stack, 6)
+			var pip_gap: int = 1
+			var pip_width: int = maxi(1, int(floor(float(cell_size - 4 - pip_gap * (pip_count - 1)) / float(pip_count))))
+			for pip_index in range(pip_count):
+				var pip_x: int = x * cell_size + 2 + pip_index * (pip_width + pip_gap)
+				var pip_y: int = y * cell_size + cell_size - maxi(3, b + 1)
+				image.fill_rect(
+					Rect2i(Vector2i(pip_x, pip_y), Vector2i(pip_width, maxi(1, b))),
+					Color(owner_color.r, owner_color.g, owner_color.b, minf(1.0, alpha + 0.28))
+				)
 
 	var texture := ImageTexture.create_from_image(image)
 	_sprite.texture = texture

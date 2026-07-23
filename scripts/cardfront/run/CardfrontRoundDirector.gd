@@ -18,11 +18,12 @@ const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgrad
 const UpgradeResolverScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeResolver.gd")
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
 const AiUpgradePolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
+const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
 
-const BATTLE_INTERVAL: float = 8.0
-const FIRST_DRAFT_COUNTDOWN: float = 4.0
-const DRAFT_TIMEOUT: float = 8.0
-const REVEAL_DURATION: float = 0.85
+const BATTLE_INTERVAL: float = TuningScript.AIM_SECONDS
+const FIRST_DRAFT_COUNTDOWN: float = TuningScript.FIRST_AIM_SECONDS
+const DRAFT_TIMEOUT: float = TuningScript.DRAFT_SECONDS
+const REVEAL_DURATION: float = TuningScript.REVEAL_SECONDS
 
 var fire_director = null
 var turrets: Dictionary = {}

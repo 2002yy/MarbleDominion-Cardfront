@@ -9,6 +9,16 @@ Cardfront is a controlled prototype branch for turning BallWar's marble territor
 Current version, active implementation slice, next step, and deferred scope are maintained only in [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
 当前版本与实施进度只在 [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) 维护。
 
+## Live v0.3 Loop / 当前主玩法
+
+The default Cardfront runtime is now the lean 1v1 loop: manual aim, paused three-choice upgrade, simultaneous automatic volleys, visible per-cell territory defense, and 40-health command chambers. The fixed four-card hand, Energy/Parts economy, morale, devices, and old click-target feedback stack remain only as an explicit compatibility assembly for focused regression tests.
+
+当前默认 Cardfront 只装配“瞄准 -> 暂停三选一 -> 双方自动齐射 -> 领土护甲 -> 摧毁控制舱”主循环。旧四卡手牌、能量/零件经济、士气、装置和点格出牌反馈仅保留为显式兼容测试装配，不再进入默认玩家路径。
+
+The current arena is still a transitional `Node2D` presentation. `ENERGY`, `FACTORY`, and `LAB` shapes remain visible but do not yet provide live bonuses; the committed next steps are an explicit tactical-stronghold contract followed by a real orthographic `Camera3D` 2.5D arena spike.
+
+当前战场仍是过渡期 `Node2D` 表现。能源/工厂/实验室形状仍可见，但尚未接入新主循环收益；下一步先完成战术据点规则，再用真正的正交 `Camera3D` 验证 2.5D 斜视战场。
+
 ## Existing v0.2.x Baseline / 现有 v0.2.x 基线
 
 Implemented in this repository:

@@ -3,6 +3,7 @@ class_name CardfrontThreeChoicePanel
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const ChoiceCardScene = preload("res://scenes/ui/cardfront/CardfrontUpgradeChoiceCard.tscn")
+const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
 
 @onready var draft_root: Control = get_node("DraftRoot")
 @onready var dimmer: ColorRect = get_node("DraftRoot/Dimmer")
@@ -17,17 +18,23 @@ const ChoiceCardScene = preload("res://scenes/ui/cardfront/CardfrontUpgradeChoic
 @onready var battle_status: Panel = get_node("BattleStatus")
 @onready var battle_phase_label: Label = get_node("BattleStatus/PhaseLabel")
 @onready var battle_stats_label: Label = get_node("BattleStatus/StatsLabel")
+@onready var upgrade_toast: Panel = get_node("UpgradeToast")
+@onready var upgrade_toast_label: Label = get_node("UpgradeToast/ToastLabel")
 
 var director = null
 var _choice_cards: Array = []
 var _timeout_seconds: float = 1.0
 var _last_round_number: int = 0
+var _pending_player_upgrade_name: String = ""
+var _pending_player_upgrade_times: int = 1
+var _upgrade_toast_remaining: float = 0.0
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	draft_root.visible = false
 	battle_status.visible = true
+	upgrade_toast.visible = false
 	dimmer.mouse_filter = Control.MOUSE_FILTER_STOP
 	choice_shell.mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -65,6 +72,22 @@ func choose_index_for_test(index: int) -> bool:
 		return false
 	var card = _choice_cards[index]
 	return _choose_upgrade(str(card.upgrade_id))
+
+
+func is_upgrade_toast_visible_for_test() -> bool:
+	return upgrade_toast.visible
+
+
+func get_upgrade_toast_text_for_test() -> String:
+	return str(upgrade_toast_label.text)
+
+
+func _process(delta: float) -> void:
+	if _upgrade_toast_remaining <= 0.0:
+		return
+	_upgrade_toast_remaining = maxf(0.0, _upgrade_toast_remaining - maxf(0.0, delta))
+	if _upgrade_toast_remaining <= 0.0:
+		upgrade_toast.visible = false
 
 
 func _connect_director() -> void:
@@ -152,6 +175,8 @@ func _on_choices_revealed(player_definition: Dictionary, ai_definition: Dictiona
 	title_label.text = "\u53cc\u65b9\u5f3a\u5316\u5df2\u786e\u5b9a"
 	var player_times: int = int((resolution_results.get(RulesScript.PLAYER_FACTION, {}) as Dictionary).get("times_applied", 1))
 	var player_suffix: String = " \u00d7%d" % player_times if player_times > 1 else ""
+	_pending_player_upgrade_name = str(player_definition.get("name", "?"))
+	_pending_player_upgrade_times = player_times
 	result_label.text = "\u4f60\uff1a%s%s    AI\uff1a%s\n\u5373\u5c06\u81ea\u52a8\u9f50\u5c04" % [
 		str(player_definition.get("name", "?")),
 		player_suffix,
@@ -169,11 +194,14 @@ func _on_volley_launched(plans: Dictionary, _issued_intents: Dictionary) -> void
 			_last_round_number,
 			int(player_plan.shot_count),
 		]
+	_show_upgrade_toast()
 
 
 func _on_director_stopped() -> void:
 	draft_root.visible = false
 	battle_status.visible = false
+	upgrade_toast.visible = false
+	_upgrade_toast_remaining = 0.0
 
 
 func _choose_upgrade(upgrade_id: String) -> bool:
@@ -192,3 +220,12 @@ func _clear_cards() -> void:
 
 func _format_seconds(value: float) -> String:
 	return "%02d:%02d" % [floori(maxf(0.0, value) / 60.0), floori(maxf(0.0, value)) % 60]
+
+
+func _show_upgrade_toast() -> void:
+	if _pending_player_upgrade_name == "":
+		return
+	var suffix: String = " \u00d7%d" % _pending_player_upgrade_times if _pending_player_upgrade_times > 1 else ""
+	upgrade_toast_label.text = "\u5f3a\u5316\u751f\u6548\uff1a%s%s" % [_pending_player_upgrade_name, suffix]
+	upgrade_toast.visible = true
+	_upgrade_toast_remaining = TuningScript.UPGRADE_FEEDBACK_SECONDS

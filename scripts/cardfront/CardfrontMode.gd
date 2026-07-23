@@ -254,12 +254,12 @@ static func create_target_preview_layer(game_layer: Node, battlefield, region_ma
 	return CardfrontRuntimeBuilderScript.create_target_preview_layer(game_layer, battlefield, region_map)
 
 
-static func create_region_info_panel(ui_layer: Node, region_map, battlefield) -> Dictionary:
+static func create_region_info_panel(ui_layer: Node, region_map, battlefield, territory_defense_system = null) -> Dictionary:
 	if ui_layer == null or not is_instance_valid(ui_layer):
 		return {"configured": false, "reason": "missing_ui_layer"}
 
 	var panel = CardfrontRegionInfoPanelScript.new()
-	panel.setup(region_map, battlefield, GameConfig.GAME_MODE_CARDFRONT)
+	panel.setup(region_map, battlefield, GameConfig.GAME_MODE_CARDFRONT, territory_defense_system)
 	ui_layer.add_child(panel)
 
 	return {

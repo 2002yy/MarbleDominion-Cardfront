@@ -39,6 +39,7 @@ func _test_cardfront_event_label_has_fire_status() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -58,6 +59,7 @@ func _test_cardfront_fps_label_hidden() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -76,6 +78,7 @@ func _test_ballwar_old_event_hud_still_works() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_BASIC
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -94,6 +97,7 @@ func _test_device_count_updates_status_text() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -113,6 +117,7 @@ func _test_status_text_updates_after_device_change() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)

@@ -33,8 +33,9 @@ func _test_player_choice_pauses_resolves_and_launches() -> void:
 	_assert.that(director != null and is_instance_valid(director), "runtime: Cardfront should create round director")
 	_assert.that(panel != null and is_instance_valid(panel), "runtime: Cardfront should create formal three-choice panel")
 	_assert.that(not main.runtime.fire_director.is_processing(), "runtime: legacy continuous fire director should be disabled")
-	_assert.that(not main.runtime.hand_panel.visible, "runtime: legacy four-card hand should be hidden")
-	_assert.that(not main.runtime.top_resource_bar.visible, "runtime: legacy resource minibar should be hidden")
+	_assert.eq(main.runtime.hand_panel, null, "runtime: legacy four-card hand should not be constructed")
+	_assert.eq(main.runtime.top_resource_bar, null, "runtime: legacy resource minibar should not be constructed")
+	_assert.that(main.runtime.territory_defense_system != null, "runtime: live territory defense should replace legacy card fortification")
 	_assert.eq(panel.get_visible_choice_count(), 0, "runtime: choice cards should stay hidden during battle countdown")
 
 	director.set_seed_for_tests(303)

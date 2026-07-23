@@ -220,7 +220,16 @@ The GitHub Actions workflow (`.github/workflows/headless-tests.yml`) runs parse/
 
 Total: 1093 expected checks across 10 runners.
 
-Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, performance budget, the v0.3 draft/run-state/volley contract, the arena/direction-control spike, and the live three-choice/automatic-volley/command-chamber slice.
+Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, performance budget, the v0.3 draft/run-state/volley contract, the arena/direction-control spike, the live three-choice/automatic-volley/command-chamber slice, and the vertical-slice defense/feedback/runtime-boundary closeout.
+
+The closeout batch runs:
+
+1. `CardfrontTerritoryDefenseTestRunner.gd`
+2. `CardfrontVerticalSliceFeedbackTestRunner.gd`
+3. `CardfrontLiveRuntimeBoundaryTestRunner.gd`
+4. `CardfrontPerformanceSmokeTestRunner.gd`
+
+Legacy v0.2 integration runners enable `cardfront_legacy_compatibility_enabled` explicitly. Default Cardfront runtime tests leave that flag false and assert that retired card, economy, morale, device, debug, and old feedback systems are not constructed.
 
 CI status: [`.github/workflows/headless-tests.yml`](/.github/workflows/headless-tests.yml) — `Headless Tests` workflow.
 

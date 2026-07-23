@@ -13,7 +13,7 @@ func _run() -> void:
 	await process_frame
 
 	_test_overlay_dirty_redraw_does_not_break()
-	_test_shotguide_no_debug_text()
+	_test_live_runtime_omits_legacy_shotguide()
 	_test_40x40_default_runs()
 	_test_50x50_stress_loads()
 
@@ -59,7 +59,7 @@ func _test_overlay_dirty_redraw_does_not_break() -> void:
 	TestFixtures.cleanup_node(main)
 
 
-func _test_shotguide_no_debug_text() -> void:
+func _test_live_runtime_omits_legacy_shotguide() -> void:
 	GameConfig.reset_runtime_defaults()
 	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
 
@@ -69,8 +69,8 @@ func _test_shotguide_no_debug_text() -> void:
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
 
-	var guide = main.runtime.shot_guide_layer
-	_assert.that(guide != null, "perf: shot guide layer should exist in Cardfront")
+	_assert.eq(main.runtime.shot_guide_layer, null, "perf: live Cardfront should omit the legacy shot guide")
+	_assert.that(main.runtime.aim_guide_layer != null, "perf: lightweight live aim guide should remain")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

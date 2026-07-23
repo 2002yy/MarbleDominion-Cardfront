@@ -77,6 +77,7 @@ func _make_main(mode_name: String):
 	GameConfig.set_game_mode_by_name(mode_name)
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
+	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = mode_name
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)

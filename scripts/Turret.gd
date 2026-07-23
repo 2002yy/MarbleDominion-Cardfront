@@ -61,6 +61,13 @@ func set_all_turrets(turret_map: Dictionary) -> void:
 	all_turrets = turret_map
 
 
+func configure_health_pool(new_max_health: int, refill: bool = true) -> void:
+	max_health = maxi(1, int(new_max_health))
+	health = max_health if refill else clampi(health, 0, max_health)
+	health_changed.emit(faction_id, health, max_health)
+	queue_redraw()
+
+
 func set_aim_profile(new_center_angle: float, new_sweep_amplitude: float) -> void:
 	aim_profile_overridden = true
 	center_angle = wrapf(float(new_center_angle), -PI, PI)

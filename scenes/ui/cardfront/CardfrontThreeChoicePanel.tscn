@@ -176,4 +176,45 @@ offset_bottom = 62.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.7, 0.86, 1, 1)
 theme_override_font_sizes/font_size = 13
-text = "齐射 10 · 破坏 1 · 防守 1 · 稀有 0"
+text = "齐射 12 · 破坏 1 · 防守 1 · 稀有 0"
+
+[node name="UpgradeToast" type="Panel" parent="."]
+visible = false
+offset_left = 24.0
+offset_top = 196.0
+offset_right = 304.0
+offset_bottom = 242.0
+mouse_filter = 2
+
+[node name="Bg" type="ColorRect" parent="UpgradeToast"]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 277.0
+offset_bottom = 43.0
+mouse_filter = 2
+color = Color(0.035, 0.055, 0.085, 0.96)
+
+[node name="Accent" type="ColorRect" parent="UpgradeToast"]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 8.0
+offset_bottom = 43.0
+mouse_filter = 2
+color = Color(1, 0.76, 0.18, 0.95)
+
+[node name="ToastLabel" type="Label" parent="UpgradeToast"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 7.0
+offset_right = 268.0
+offset_bottom = 39.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.94, 0.72, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 18
+text = "强化生效：增援齐射"
+horizontal_alignment = 1
+vertical_alignment = 1
