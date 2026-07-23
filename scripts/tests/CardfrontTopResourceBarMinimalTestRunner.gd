@@ -46,7 +46,7 @@ func _test_cardfront_minibar_only_shows_player_values() -> void:
 	var bar = main.runtime.top_resource_bar
 	_assert.that(bar != null, "top minibar: Cardfront should create top resource bar")
 	if bar != null:
-		_assert.that(bar.visible, "top minibar: top resource bar should be visible")
+		_assert.that(not bar.visible, "top minibar: legacy resources should be hidden in the three-choice loop")
 		var margin = bar.get_node_or_null("Margin")
 		_assert.that(margin is Control, "top minibar: Margin should exist")
 		if margin is Control:

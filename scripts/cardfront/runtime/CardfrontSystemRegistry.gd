@@ -39,6 +39,8 @@ const RUNTIME_FIELD_BY_RESULT_KEY: Dictionary = {
 	"command_chambers": "command_chambers",
 	"direction_controller": "direction_controller",
 	"aim_guide_layer": "aim_guide_layer",
+	"round_director": "round_director",
+	"faction_run_states": "faction_run_states",
 }
 
 var refs = RuntimeRefsScript.new()

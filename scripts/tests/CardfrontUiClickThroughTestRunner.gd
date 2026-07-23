@@ -66,25 +66,22 @@ func _assert_controls_ignore(node: Node, label: String) -> void:
 
 
 func _test_real_card_and_battlefield_click(main) -> void:
-	var state = main.runtime.resource_states.get(CardfrontRulesScript.PLAYER_FACTION, null)
-	state.add_energy(999)
-	state.add_parts(999)
-	main.runtime.hand_panel.refresh()
-	var view: Control = main.runtime.hand_panel._card_views[0]
+	_assert.that(not main.runtime.hand_panel.visible, "click-through: legacy hand should be retired from the live loop")
+	main.runtime.round_director.force_open_draft_for_test()
+	await _flush()
+	var cards: Array = main.runtime.three_choice_panel.get_choice_cards()
+	_assert.eq(cards.size(), 3, "click-through: draft should create three real choice cards")
+	if cards.is_empty():
+		paused = false
+		return
+	var view: Control = cards[0]
 	await _click_at(view.get_global_rect().get_center())
-	var selected_id: int = main.runtime.selection_controller.get_selected_card_id()
-	_assert.that(selected_id >= 0, "click-through: a real card click should establish selection")
-	if selected_id < 0:
-		return
-	var valid_cells: Array = main.runtime.target_preview_layer._valid_cells
-	_assert.that(not valid_cells.is_empty(), "click-through: selection should expose valid battlefield targets")
-	if valid_cells.is_empty():
-		return
-	var target: Vector2i = valid_cells[0]
-	var local_center := (Vector2(target) + Vector2(0.5, 0.5)) * float(main.runtime.battlefield.cell_size)
-	var target_position: Vector2 = main.runtime.battlefield.to_global(local_center)
-	await _click_at(target_position)
-	_assert.eq(main.runtime.selection_controller.get_selected_card_id(), -1, "click-through: a real valid battlefield click should play the card and clear selection")
+	_assert.eq(
+		main.runtime.round_director.phase_controller.get_selected_upgrade_id(CardfrontRulesScript.PLAYER_FACTION),
+		str(view.upgrade_id),
+		"click-through: a real choice click should establish the round upgrade"
+	)
+	main.runtime.round_director.complete_reveal_for_test()
 
 
 func _click_at(position: Vector2) -> void:

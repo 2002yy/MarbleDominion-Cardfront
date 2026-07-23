@@ -120,6 +120,7 @@ static func collect_bullet_states(bullet_container) -> Array:
 				"position": vec2_to_arr(node.global_position),
 				"direction": vec2_to_arr(node.direction),
 				"age": node.age,
+				"damage_power": int(node.get("damage_power")),
 				"last_cell": vec2i_to_arr(node.last_cell),
 				"trail_points": trail,
 			})

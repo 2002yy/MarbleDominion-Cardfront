@@ -14,10 +14,7 @@ func _run() -> void:
 
 	var main = _make_main()
 	await _flush()
-	_test_hand_panel_hitbox_config(main)
-	_test_card_views_intersect_screen(main)
-	await _test_collapsed_visible_area_clicks(main)
-	await _test_hover_expanded_card_clicks(main)
+	await _test_three_choice_real_hitbox(main)
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
 
@@ -45,6 +42,28 @@ func _make_main():
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
 	return main
+
+
+func _test_three_choice_real_hitbox(main) -> void:
+	_assert.that(not main.runtime.hand_panel.visible, "choice hitbox: legacy hand should stay hidden")
+	main.runtime.round_director.force_open_draft_for_test()
+	await _flush()
+	var cards: Array = main.runtime.three_choice_panel.get_choice_cards()
+	_assert.eq(cards.size(), 3, "choice hitbox: draft should expose three cards")
+	if cards.is_empty():
+		paused = false
+		return
+	var view: Control = cards[0]
+	var screen_rect := Rect2(Vector2.ZERO, get_root().get_visible_rect().size)
+	_assert.that(screen_rect.encloses(view.get_global_rect()), "choice hitbox: upgrade card should stay fully on screen")
+	_assert.eq(view.mouse_filter, Control.MOUSE_FILTER_STOP, "choice hitbox: upgrade card should receive mouse input")
+	await _click_at(view.get_global_rect().get_center())
+	_assert.eq(
+		main.runtime.round_director.phase_controller.get_selected_upgrade_id(GameConfig.Faction.BLUE),
+		str(view.upgrade_id),
+		"choice hitbox: real mouse click should lock the visible upgrade"
+	)
+	main.runtime.round_director.complete_reveal_for_test()
 
 
 func _test_hand_panel_hitbox_config(main) -> void:

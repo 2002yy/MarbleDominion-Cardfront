@@ -100,6 +100,11 @@ jobs:
               CardfrontArenaLayoutTestRunner.gd
               CardfrontDirectionControllerTestRunner.gd
               CardfrontArenaRuntimeTestRunner.gd
+          - batch: Cardfront v0.3 three-choice slice
+            scripts: |
+              CardfrontThreeChoiceRuntimeTestRunner.gd
+              CardfrontRoundCombatTestRunner.gd
+              CardfrontModeSmokeTestRunner.gd
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip

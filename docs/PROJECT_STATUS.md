@@ -29,53 +29,58 @@ Confirmed product decisions:
 - Stable baseline: `v0.2.5.7-ui-copy-readability-pass`
 - Baseline commit: `9eadf9b`
 - Core-loop foundation commit: `bef12ce`
-- Current completed slice: `v0.3.0b-2.5d-arena-spike`
-- Next slice: `v0.3.0c-three-choice-vertical-slice`
+- Current completed slice: `v0.3.0c-three-choice-vertical-slice`
+- Next slice: `v0.3.0d-vertical-slice-playtest-closeout`
 - Active branch: `main`
 
 ## Completed Slice / 已完成阶段
 
-`v0.3.0b-2.5d-arena-spike` establishes the new player-bottom versus AI-top battlefield while preserving the existing 2D simulation.
+`v0.3.0c-three-choice-vertical-slice` establishes the first playable version of the new direction, draft, and automatic-volley loop.
 
 Scope:
 
-- Cardfront-only arena layout with a smaller, readable central battlefield.
-- AI spawn and turret at the top; player spawn and turret at the bottom.
-- Orthographic 2.5D floor, depth edges, lane rails, and faction accents over the unchanged 2D collision grid.
-- Two command-chamber shells that display the real turret health instead of creating a second combat state.
-- Player direction controller with a formal slider UI, `A` / `D`, and arrow-key input.
-- A visible aim guide that does not cover the battlefield with UI.
-- Manual player firing angle wired into `CardfrontFireDirector`; AI targeting remains automatic.
-- Cardfront-only runtime references and BallWar isolation.
+- Four-second opening countdown followed by an eight-second upgrade interval.
+- Full simulation pause during an eight-second three-choice draft, while the draft timeout continues in real time.
+- Three formal text-first upgrade cards with hover and press feedback.
+- Timeout fallback that selects from the three visible offers.
+- AI upgrade selection, lock-in, and reveal.
+- Six manifest upgrades wired through the run-state resolver.
+- Next-volley `+5` and `x2`, plus permanent projectile power, defense-cap, rarity, and mirror state.
+- Player manual direction and AI automatic targeting resolved into simultaneous automatic volleys.
+- Command-chamber destruction as the immediate primary victory condition.
+- Legacy fixed-hand and resource-minibar UI hidden in the live Cardfront loop.
 - Native Godot tests and a dedicated GitHub Actions batch.
 
 Acceptance:
 
-- The battlefield and direction UI remain inside `1120 x 720` without overlapping each other.
-- The two active turrets share a center lane and face inward.
-- Player aim is clamped to a readable `-60` to `+60` degree arc.
-- The visible barrel, directed intent, and projectile angle use the same player-selected direction.
-- AI does not inherit the player's manual angle.
-- Cardfront creates two command-chamber views; legacy BallWar creates none of the new arena nodes.
+- Exactly three upgrade cards are visible during each draft.
+- A real card click and the timeout fallback both lock a valid visible offer.
+- AI choice locks before reveal and is shown alongside the player choice.
+- The simulation resumes before both directed bursts are issued.
+- Projectile-power upgrades propagate to real bullets and multiply turret damage.
+- Territory dominance alone no longer ends a Cardfront match.
+- Destroying the enemy command chamber ends the match immediately.
+- Legacy BallWar creates none of the new round-director or three-choice UI nodes.
 - Existing card, map, effect, performance, Smoke, and Integration gates remain green.
 
 Implementation result:
 
-- Added `scripts/cardfront/arena/` for layout, presentation, command-chamber views, direction control, aim guide, and assembly.
-- Added `CardfrontAimControl.tscn` as the formal direction UI.
-- Added optional Battlefield cell-size override without changing BallWar defaults.
-- Rotated the Cardfront ownership contract and default map spawn metadata from left-right to top-bottom.
-- Added `CardfrontArenaLayoutTestRunner`, `CardfrontDirectionControllerTestRunner`, and `CardfrontArenaRuntimeTestRunner`.
+- Added `CardfrontRoundDirector` and `CardfrontAiUpgradePolicy` for countdown, pause, draft, reveal, and volley orchestration.
+- Added `CardfrontThreeChoicePanel.tscn` and `CardfrontUpgradeChoiceCard.tscn` as formal runtime UI.
+- Added one-shot volley issuing to `CardfrontFireDirector` without restoring the legacy continuous Cardfront cadence.
+- Propagated projectile power through fire intent, turret burst state, bullets, and save snapshots.
+- Updated Cardfront victory evaluation and player-facing copy around command-chamber destruction.
+- Added `CardfrontThreeChoiceRuntimeTestRunner` and `CardfrontRoundCombatTestRunner`.
 
-The legacy fixed hand, resources, click-target cards, continuous firing cadence, and territory-percentage victory remain temporarily active. They are compatibility scaffolding for this spike, not the target product loop.
+Legacy fixed-card systems are still instantiated for compatibility coverage, but their hand UI, resource UI, click-target flow, and continuous firing cadence are disabled in the live Cardfront path. The permanent defense-cap value is stored correctly but is not yet bound to a visible battlefield defense rule.
 
 ## Planned Slices / 后续阶段
 
-1. `v0.3.0c-three-choice-vertical-slice`
-   - Runtime pause integration.
-   - Formal three-choice UI and timeout.
-   - AI choice policy and revealed AI selection.
-   - Automatic volley launch and command-chamber victory.
+1. `v0.3.0d-vertical-slice-playtest-closeout`
+   - Bind territory defense cap to a visible battlefield defense rule.
+   - Tune countdown, volley cadence, command-chamber health, and projectile pressure from playtests.
+   - Improve command-chamber hit and upgrade-application feedback.
+   - Remove remaining legacy fixed-card runtime construction from the default Cardfront path.
 2. `v0.3.1-map-and-summon`
    - Distinct map mechanics.
    - Chaos effects.

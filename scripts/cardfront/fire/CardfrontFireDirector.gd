@@ -133,6 +133,23 @@ func build_intent(owner_id: int, shot_count: int = -1):
 	return intent
 
 
+func issue_volley(owner_id: int, shot_count: int, projectile_power: int = 1):
+	var intent = build_intent(owner_id, 1)
+	if intent == null:
+		fire_skipped.emit(int(owner_id), "no_target")
+		return null
+	intent.shot_count = clampi(int(shot_count), 1, GameConfig.get_max_pending_count())
+	intent.projectile_power = clampi(int(projectile_power), 1, 999)
+	fire_tick.emit(int(owner_id), intent)
+	fire_requested.emit(int(owner_id), intent)
+	if not _request_fire(int(owner_id), intent):
+		fire_skipped.emit(int(owner_id), "turret_unavailable")
+		return null
+	_last_intents[int(owner_id)] = intent
+	fire_issued.emit(int(owner_id), intent)
+	return intent
+
+
 func get_last_intent(owner_id: int):
 	return _last_intents.get(int(owner_id), null)
 
@@ -161,7 +178,12 @@ func _request_fire(owner_id: int, intent) -> bool:
 	if turret.has_method("request_directed_burst"):
 		return bool(turret.request_directed_burst(intent))
 	if turret.has_method("fire_directed"):
-		return bool(turret.fire_directed(int(intent.shot_count), float(intent.angle), float(intent.spread)))
+		return bool(turret.fire_directed(
+			int(intent.shot_count),
+			float(intent.angle),
+			float(intent.spread),
+			int(intent.get("projectile_power"))
+		))
 	return false
 
 

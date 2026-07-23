@@ -207,7 +207,7 @@ The GitHub Actions workflow (`.github/workflows/headless-tests.yml`) runs parse/
 
 | Runner | Expected checks | CI status |
 |---|---|---|
-| `SmokeTestRunner.gd` | 218 | PASS |
+| `SmokeTestRunner.gd` | 215 | PASS |
 | `SaveFlowControllerTestRunner.gd` | 190 | PASS |
 | `IntegrationTestRunner.gd` | 133 | PASS |
 | `LayoutSanityTestRunner.gd` | 376 | PASS |
@@ -218,9 +218,9 @@ The GitHub Actions workflow (`.github/workflows/headless-tests.yml`) runs parse/
 | `RestorePlanTestRunner.gd` | 11 | PASS |
 | `SettingsPanelSceneTestRunner.gd` | 9 | PASS |
 
-Total: 1096 expected checks across 10 runners.
+Total: 1093 expected checks across 10 runners.
 
-Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, performance budget, the v0.3 draft/run-state/volley contract, and the v0.3 arena/direction-control spike.
+Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, performance budget, the v0.3 draft/run-state/volley contract, the arena/direction-control spike, and the live three-choice/automatic-volley/command-chamber slice.
 
 CI status: [`.github/workflows/headless-tests.yml`](/.github/workflows/headless-tests.yml) — `Headless Tests` workflow.
 

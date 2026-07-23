@@ -17,7 +17,7 @@ static func format_time_text(seconds: float) -> String:
 static func current_stage_name(game_elapsed_time: float) -> String:
 	var mode_name: String = GameConfig.get_game_mode_name()
 	if mode_name == GameConfig.GAME_MODE_CARDFRONT:
-		return "胜利目标 %d%%" % CardfrontRulesScript.CAPTURE_TARGET_PERCENT
+		return "\u6467\u6bc1\u63a7\u5236\u8231"
 	if mode_name == GameConfig.GAME_MODE_OCCUPATION:
 		return "占领目标 %d%%" % GameConfig.get_occupation_target_percent()
 	if mode_name == GameConfig.GAME_MODE_TIMED:

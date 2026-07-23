@@ -349,6 +349,22 @@ func _create_cardfront_aim_control() -> void:
 		runtime.aim_control = control_setup.get("aim_control", null)
 
 
+func _create_cardfront_three_choice_panel() -> void:
+	runtime.three_choice_panel = null
+	if not _is_cardfront_mode():
+		return
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var setup_result: Dictionary = CardfrontModeScript.create_three_choice_panel(
+		ui_canvas,
+		runtime.round_director,
+		Vector2(VIEW_W, VIEW_H)
+	)
+	if bool(setup_result.get("configured", false)):
+		runtime.three_choice_panel = setup_result.get("three_choice_panel", null)
+
+
 func _create_cardfront_region_info_panel() -> void:
 	runtime.region_info_panel = null
 	if not _is_cardfront_mode():
@@ -479,8 +495,24 @@ func _create_ui() -> void:
 		_create_cardfront_effect_visual_bridge()
 		_create_cardfront_region_info_panel()
 		_create_cardfront_tutorial_overlay()
+		_create_cardfront_three_choice_panel()
+		_configure_cardfront_three_choice_ui()
 
 	_on_scores_changed(runtime.battlefield.count_cells_by_team())
+
+
+func _configure_cardfront_three_choice_ui() -> void:
+	if runtime.three_choice_panel == null:
+		return
+	if runtime.hand_panel != null and is_instance_valid(runtime.hand_panel):
+		if runtime.selection_controller != null and runtime.selection_controller.has_method("clear_selection"):
+			runtime.selection_controller.clear_selection()
+		runtime.hand_panel.visible = false
+	if runtime.top_resource_bar != null and is_instance_valid(runtime.top_resource_bar):
+		runtime.top_resource_bar.visible = false
+	var event_label = _hud_ref("event_label")
+	if event_label != null and is_instance_valid(event_label):
+		event_label.visible = false
 
 func _create_event_roulette_system() -> void:
 	var ui_canvas = _hud_ref("ui_canvas")
@@ -648,6 +680,8 @@ func _exit_cardfront_result_to_menu() -> void:
 	_create_start_menu()
 
 func _stop_all_actions_for_game_over() -> void:
+	if runtime.round_director != null and is_instance_valid(runtime.round_director):
+		runtime.round_director.stop()
 	GameStateCoordinator.stop_actions_for_game_over(
 		runtime.turrets,
 		runtime.chambers,
@@ -694,6 +728,9 @@ func _sync_chamber_game_elapsed_time() -> void:
 func _toggle_pause() -> void:
 	if GameStateCoordinator.should_ignore_pause(is_game_over, game_layer):
 		return
+	if _is_cardfront_mode() and runtime.round_director != null and is_instance_valid(runtime.round_director):
+		if runtime.round_director.is_draft_active():
+			return
 	GameStateCoordinator.apply_pause_toggle(
 		get_tree(),
 		_hud_ref("pause_overlay"),

@@ -16,6 +16,7 @@ const CardfrontEffectVisualBridgeScript = preload("res://scripts/cardfront/ui/Ca
 const CardfrontCardAudioFeedbackScript = preload("res://scripts/cardfront/ui/CardfrontCardAudioFeedback.gd")
 const CardfrontTutorialOverlayScene = preload("res://scenes/ui/cardfront/CardfrontTutorialOverlay.tscn")
 const CardfrontAimControlScene = preload("res://scenes/ui/cardfront/CardfrontAimControl.tscn")
+const CardfrontThreeChoicePanelScene = preload("res://scenes/ui/cardfront/CardfrontThreeChoicePanel.tscn")
 const LEGACY_SIDE_BUTTON_TOP_AFTER_REGION: float = 300.0
 const LEGACY_SIDE_BUTTON_GAP: float = 8.0
 
@@ -185,6 +186,22 @@ static func create_aim_control(ui_layer: Node, direction_controller, layout: Dic
 		control.queue_free()
 		return {"configured": false, "reason": "aim_control_setup_failed"}
 	return {"configured": true, "aim_control": control}
+
+
+static func create_three_choice_panel(ui_layer: Node, round_director, view_size: Vector2) -> Dictionary:
+	if ui_layer == null or not is_instance_valid(ui_layer):
+		return {"configured": false, "reason": "missing_ui_layer"}
+	if round_director == null or not is_instance_valid(round_director):
+		return {"configured": false, "reason": "missing_round_director"}
+	var panel = CardfrontThreeChoicePanelScene.instantiate()
+	ui_layer.add_child(panel)
+	if not panel.setup(round_director, view_size):
+		panel.queue_free()
+		return {"configured": false, "reason": "three_choice_panel_setup_failed"}
+	return {
+		"configured": true,
+		"three_choice_panel": panel,
+	}
 
 
 static func create_effect_visual_bridge(game_layer: Node, feedback_bus, vfx_layer) -> Dictionary:

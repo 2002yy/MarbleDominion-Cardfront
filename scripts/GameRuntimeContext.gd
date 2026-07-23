@@ -44,6 +44,9 @@ var command_chambers: Dictionary = {}
 var direction_controller = null
 var aim_guide_layer = null
 var aim_control = null
+var round_director = null
+var three_choice_panel = null
+var faction_run_states: Dictionary = {}
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
@@ -93,6 +96,9 @@ func reset() -> void:
     direction_controller = null
     aim_guide_layer = null
     aim_control = null
+    round_director = null
+    three_choice_panel = null
+    faction_run_states.clear()
     resource_states.clear()
     last_yield_snapshot.clear()
     current_config.clear()

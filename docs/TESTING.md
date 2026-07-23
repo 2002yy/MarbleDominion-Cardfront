@@ -1,6 +1,6 @@
 # Testing / 测试
 
-Date: 2026-05-20  
+Date: 2026-07-23
 Role: test matrix and run guidance / 测试矩阵与运行建议
 
 ## Correctness Baseline / 正确性基线
@@ -10,7 +10,7 @@ Baseline BallWar runtime runners:
 | Runner | Expected checks | Category |
 |---|---:|---|
 | `LayoutSanityTestRunner.gd` | 376 | Layout boundary |
-| `SmokeTestRunner.gd` | 218 | Smoke / fast regression |
+| `SmokeTestRunner.gd` | 215 | Smoke / fast regression |
 | `SaveFlowControllerTestRunner.gd` | 190 | Save/load orchestration |
 | `IntegrationTestRunner.gd` | 133 | Cross-system correctness |
 | `StartMenuSceneTestRunner.gd` | 55 | Scene wiring |
@@ -20,7 +20,7 @@ Baseline BallWar runtime runners:
 | `RestorePlanTestRunner.gd` | 11 | Restore planning |
 | `SettingsPanelSceneTestRunner.gd` | 9 | Scene wiring |
 
-Baseline subtotal: **1096 expected checks** across 10 runners.
+Baseline subtotal: **1093 expected checks** across 10 runners.
 
 ## Cardfront CI Batches / 卡牌前线 CI 批次
 
@@ -35,6 +35,7 @@ Baseline subtotal: **1096 expected checks** across 10 runners.
 | Cardfront performance budget | `CardfrontPerformanceSmokeTestRunner` |
 | Cardfront v0.3 core loop | `CardfrontUpgradeContentTestRunner`, `CardfrontMatchPhaseControllerTestRunner`, `CardfrontUpgradeResolverTestRunner` |
 | Cardfront v0.3 arena spike | `CardfrontArenaLayoutTestRunner`, `CardfrontDirectionControllerTestRunner`, `CardfrontArenaRuntimeTestRunner` |
+| Cardfront v0.3 three-choice slice | `CardfrontThreeChoiceRuntimeTestRunner`, `CardfrontRoundCombatTestRunner`, `CardfrontModeSmokeTestRunner` |
 
 The v0.1.9 engineering closeout treats local-only Cardfront success as incomplete until the relevant runner is also present in `headless-tests.yml`.
 
@@ -75,6 +76,16 @@ Run the benchmark probes when tuning firing or pressure policies, collecting rel
 4. `CardfrontFireDirectorTurretIntegrationTestRunner.gd`.
 5. `CardfrontModeSmokeTestRunner.gd`.
 6. `LayoutSanityTestRunner.gd`, `SmokeTestRunner.gd`, and `IntegrationTestRunner.gd` when shared runtime surfaces change.
+
+### Editing the live three-choice loop, automatic volley, or command-chamber victory
+
+1. `CardfrontThreeChoiceRuntimeTestRunner.gd`.
+2. `CardfrontRoundCombatTestRunner.gd`.
+3. `CardfrontUpgradeResolverTestRunner.gd`.
+4. `CardfrontModeSmokeTestRunner.gd`.
+5. `CardfrontUiClickThroughTestRunner.gd`.
+6. `CardfrontMatchFlowClarityTestRunner.gd`.
+7. `LayoutSanityTestRunner.gd`, `SmokeTestRunner.gd`, and `IntegrationTestRunner.gd` when shared runtime surfaces change.
 
 ### Editing `.tscn` or UI wiring
 

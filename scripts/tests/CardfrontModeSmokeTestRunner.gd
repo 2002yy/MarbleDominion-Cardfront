@@ -88,8 +88,10 @@ func _test_cardfront_win_conditions() -> void:
 		CardfrontRulesScript.NEUTRAL_OWNER: 380,
 	}
 	var target_result: Dictionary = WinConditionEvaluator.evaluate_cardfront(target_counts, 1600, false)
-	_assert.that(bool(target_result.get("ended", false)), "win: 70% player capture should end before timer")
-	_assert.eq(int(target_result.get("winner", -1)), CardfrontRulesScript.PLAYER_FACTION, "win: player wins by capture target")
+	_assert.that(not bool(target_result.get("ended", true)), "win: territory dominance should not replace command-chamber victory")
+
+	var target_timed_result: Dictionary = WinConditionEvaluator.evaluate_cardfront(target_counts, 1600, true)
+	_assert.eq(int(target_timed_result.get("winner", -1)), CardfrontRulesScript.PLAYER_FACTION, "win: territory should remain the timeout tie-break without turret fixtures")
 
 	var ongoing_counts := {
 		CardfrontRulesScript.PLAYER_FACTION: 600,

@@ -8,6 +8,7 @@ var direction: Vector2 = Vector2.RIGHT
 var speed = GameConfig.BULLET_SPEED
 var battlefield
 var target_turrets = {}
+var damage_power: int = 1
 var last_cell = Vector2i(-999, -999)
 var age = 0.0
 var trail_points = []
@@ -25,7 +26,7 @@ var last_trail_position: Vector2 = Vector2.INF
 func get_trail_segment_count() -> int:
 	return maxi(0, trail_points.size() - 1)
 
-func setup(new_faction_id: int, new_position: Vector2, new_direction: Vector2, new_battlefield, new_target_turrets = {}) -> void:
+func setup(new_faction_id: int, new_position: Vector2, new_direction: Vector2, new_battlefield, new_target_turrets = {}, new_damage_power: int = 1) -> void:
 	var previous_segments: int = get_trail_segment_count()
 	faction_id = new_faction_id
 	global_position = new_position
@@ -36,6 +37,7 @@ func setup(new_faction_id: int, new_position: Vector2, new_direction: Vector2, n
 	if battlefield != null:
 		_cached_map_size = float(battlefield.grid_size) * float(battlefield.cell_size)
 	target_turrets = new_target_turrets
+	damage_power = clampi(int(new_damage_power), 1, 999)
 	speed = GameConfig.BULLET_SPEED
 	last_cell = Vector2i(-999, -999)
 	age = 0.0
@@ -116,7 +118,14 @@ func restore_from_state(state: Dictionary, new_battlefield, new_target_turrets =
 	if restored_direction.length() <= 0.001:
 		restored_direction = Vector2.RIGHT
 
-	setup(restored_faction_id, restored_position, restored_direction, new_battlefield, new_target_turrets)
+	setup(
+		restored_faction_id,
+		restored_position,
+		restored_direction,
+		new_battlefield,
+		new_target_turrets,
+		int(state.get("damage_power", 1))
+	)
 	age = clampf(float(state.get("age", 0.0)), 0.0, GameConfig.BULLET_MAX_LIFETIME)
 	last_cell = SaveGameCodec.arr_to_vec2i(state.get("last_cell", [-999, -999]))
 
@@ -298,7 +307,7 @@ func _try_hit_enemy_turret() -> bool:
 			continue
 		var hit_radius_sq: float = GameConfig.TURRET_HIT_RADIUS * GameConfig.TURRET_HIT_RADIUS
 		if global_position.distance_squared_to(turret.global_position) <= hit_radius_sq:
-			turret.take_damage(GameConfig.BULLET_DAMAGE)
+			turret.take_damage(GameConfig.BULLET_DAMAGE * damage_power)
 			return true
 	return false
 

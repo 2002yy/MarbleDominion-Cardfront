@@ -5,7 +5,7 @@ const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd"
 
 
 static func objective_text() -> String:
-	return "\u76ee\u6807 %d%%" % CardfrontRulesScript.CAPTURE_TARGET_PERCENT
+	return "\u76ee\u6807\uff1a\u6467\u6bc1\u654c\u65b9\u63a7\u5236\u8231"
 
 
 static func remaining_time_text(game_elapsed_time: float) -> String:
@@ -14,7 +14,7 @@ static func remaining_time_text(game_elapsed_time: float) -> String:
 
 
 static func opening_hint_text() -> String:
-	return "\u4e89\u593a\u4e94\u4e2a\u636e\u70b9 \u00b7 \u5168\u56fe\u5360\u9886\u8fbe\u5230 %d%% \u83b7\u80dc" % CardfrontRulesScript.CAPTURE_TARGET_PERCENT
+	return "\u8c03\u6574\u65b9\u5411 \u00b7 \u4e09\u9009\u4e00\u5f3a\u5316 \u00b7 \u81ea\u52a8\u9f50\u5c04 \u00b7 \u6467\u6bc1\u654c\u65b9\u63a7\u5236\u8231"
 
 
 static func score_percentages(owner_counts: Dictionary, total_cells: int) -> Dictionary:
@@ -43,5 +43,5 @@ static func score_summary(owner_counts: Dictionary, total_cells: int) -> String:
 
 static func result_reason(time_expired: bool) -> String:
 	if time_expired:
-		return "8 \u5206\u949f\u7ed3\u7b97\uff1a\u5360\u9886\u66f4\u591a\u7684\u4e00\u65b9\u83b7\u80dc"
-	return "\u5df2\u8fbe\u5230 %d%% \u5168\u56fe\u5360\u9886\u76ee\u6807" % CardfrontRulesScript.CAPTURE_TARGET_PERCENT
+		return "\u65f6\u95f4\u7ed3\u675f\uff1a\u5148\u6bd4\u63a7\u5236\u8231\u8010\u4e45\uff0c\u518d\u6bd4\u9886\u571f"
+	return "\u654c\u65b9\u63a7\u5236\u8231\u5df2\u88ab\u6467\u6bc1"

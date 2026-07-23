@@ -1,0 +1,93 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cardfront/ui/CardfrontUpgradeChoiceCard.gd" id="1_card"]
+
+[node name="UpgradeChoiceCard" type="Button"]
+custom_minimum_size = Vector2(214, 266)
+mouse_default_cursor_shape = 2
+focus_mode = 0
+text = ""
+script = ExtResource("1_card")
+
+[node name="RarityLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 12.0
+offset_right = 199.0
+offset_bottom = 35.0
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 14
+text = "普通"
+horizontal_alignment = 1
+
+[node name="SymbolLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 40.0
+offset_right = 202.0
+offset_bottom = 124.0
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 58
+text = "+5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Divider" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 128.0
+offset_right = 196.0
+offset_bottom = 131.0
+mouse_filter = 2
+color = Color(0.35, 0.7, 0.92, 0.5)
+
+[node name="NameLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 138.0
+offset_right = 202.0
+offset_bottom = 172.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "增援齐射"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 17.0
+offset_top = 177.0
+offset_right = 197.0
+offset_bottom = 241.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.82, 0.88, 0.94, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 16
+text = "下一次齐射增加 5 发"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="LockLabel" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 44.0
+offset_top = 226.0
+offset_right = 170.0
+offset_bottom = 257.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 17
+text = "已选择"
+horizontal_alignment = 1
+vertical_alignment = 1

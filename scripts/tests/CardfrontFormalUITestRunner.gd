@@ -48,7 +48,7 @@ func _test_top_resource_bar_visible() -> void:
 
 	_assert.that(main.runtime.top_resource_bar != null, "ui: top_resource_bar should exist")
 	if main.runtime.top_resource_bar != null:
-		_assert.that(main.runtime.top_resource_bar.visible, "ui: top_resource_bar should be visible")
+		_assert.that(not main.runtime.top_resource_bar.visible, "ui: legacy resource bar should be hidden by the three-choice loop")
 		var energy_box = main.runtime.top_resource_bar._energy_value
 		_assert.that(energy_box != null, "ui: energy value label should exist")
 		_assert.that(str(energy_box.text).is_valid_int(), "ui: energy text should be a number")
@@ -90,8 +90,9 @@ func _test_hand_panel_visible() -> void:
 
 	_assert.that(main.runtime.hand_panel != null, "ui: hand_panel should exist")
 	if main.runtime.hand_panel != null:
-		_assert.that(main.runtime.hand_panel.visible, "ui: hand_panel should be visible in Cardfront")
+		_assert.that(not main.runtime.hand_panel.visible, "ui: legacy four-card hand should be hidden by the three-choice loop")
 		_assert.that(main.runtime.hand_panel._card_views.size() == 4, "ui: hand_panel should have 4 card views")
+	_assert.that(main.runtime.three_choice_panel != null, "ui: formal three-choice panel should replace the visible legacy hand")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

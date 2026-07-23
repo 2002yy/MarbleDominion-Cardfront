@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="领土战争"
-config/version="0.3.0b-2.5d-arena-spike"
+config/version="0.3.0c-three-choice-vertical-slice"
 config/tags=PackedStringArray("正在开发中，持续迭代版", "球球领土战争")
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.6")

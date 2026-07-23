@@ -6,6 +6,7 @@ var target_region_id: int = -1
 var target_cell: Vector2i = Vector2i(-1, -1)
 var angle: float = 0.0
 var shot_count: int = 1
+var projectile_power: int = 1
 var spread: float = 0.0
 var reason: String = ""
 
@@ -17,6 +18,7 @@ func snapshot() -> Dictionary:
 		"target_cell": target_cell,
 		"angle": angle,
 		"shot_count": shot_count,
+		"projectile_power": projectile_power,
 		"spread": spread,
 		"reason": reason,
 	}
