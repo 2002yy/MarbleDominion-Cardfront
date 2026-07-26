@@ -117,6 +117,7 @@ jobs:
           - batch: Cardfront v0.3 tactical strongholds
             scripts: |
               CardfrontStrongholdSystemTestRunner.gd
+              CardfrontStrongholdTimeoutScoringTestRunner.gd
               CardfrontMapDefinitionTestRunner.gd
               CardfrontUpgradeContentTestRunner.gd
               CardfrontThreeChoiceRuntimeTestRunner.gd

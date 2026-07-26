@@ -92,11 +92,12 @@ func apply_to_volley_plan(owner_id: int, plan, snapshot: Dictionary = {}) -> voi
 	var source: Dictionary = snapshot if not snapshot.is_empty() else last_snapshot
 	var bonus: Dictionary = source.get(int(owner_id), _empty_owner_bonus()) as Dictionary
 	var shot_bonus: int = maxi(0, int(bonus.get("shot_count_bonus", 0)))
-	var power_bonus: int = maxi(0, int(bonus.get("projectile_power_bonus", 0)))
+	var attack_level_bonus: int = maxi(0, int(bonus.get("temporary_attack_level_bonus", 0)))
 	plan.shot_count = clampi(int(plan.shot_count) + shot_bonus, 1, VolleyResolverScript.MAX_VOLLEY_COUNT)
-	plan.projectile_power = maxi(1, int(plan.projectile_power) + power_bonus)
+	plan.attack_level = maxi(0, int(plan.attack_level) + attack_level_bonus)
+	plan.chamber_damage_quarters = 4 + int(plan.attack_level)
 	plan.stronghold_shot_bonus = shot_bonus
-	plan.stronghold_projectile_power_bonus = power_bonus
+	plan.stronghold_attack_level_bonus = attack_level_bonus
 	plan.active_stronghold_types = (bonus.get("active_types", []) as Array).duplicate()
 
 
@@ -117,9 +118,9 @@ func _apply_owner_best(owner_bonus: Dictionary, owner_best: Dictionary) -> void:
 			RegionTypeScript.FACTORY:
 				owner_bonus.shot_count_bonus = StrongholdRulesScript.FACTORY_SHOT_BONUS
 			RegionTypeScript.ENERGY:
-				owner_bonus.projectile_power_bonus = StrongholdRulesScript.ENERGY_POWER_BONUS
+				owner_bonus.temporary_attack_level_bonus = StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS
 			RegionTypeScript.LAB:
-				owner_bonus.guarantee_uncommon = true
+				owner_bonus.draft_choice_count = StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT
 
 
 func _empty_snapshot() -> Dictionary:
@@ -135,6 +136,6 @@ func _empty_owner_bonus() -> Dictionary:
 		"active_regions": {},
 		"control_percent": {},
 		"shot_count_bonus": 0,
-		"projectile_power_bonus": 0,
-		"guarantee_uncommon": false,
+		"temporary_attack_level_bonus": 0,
+		"draft_choice_count": 3,
 	}

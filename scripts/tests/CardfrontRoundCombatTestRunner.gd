@@ -9,6 +9,7 @@ class MockTurret:
 	extends Node
 	var is_destroyed: bool = false
 	var health: int = 30
+	var max_health: int = 30
 
 var _assert: TestAssert
 

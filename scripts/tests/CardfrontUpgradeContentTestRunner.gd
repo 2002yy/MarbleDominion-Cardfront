@@ -19,7 +19,7 @@ func _run() -> void:
 	_test_manifest_is_valid()
 	_test_cards_are_text_and_symbol_driven()
 	_test_seeded_offers_are_unique_and_deterministic()
-	_test_lab_guarantees_uncommon_or_better()
+	_test_lab_draws_four_unique_choices()
 	_test_rarity_growth_changes_weights()
 	_test_capped_or_armed_upgrades_are_not_offered()
 	_test_timeout_fallback_comes_from_offer()
@@ -78,21 +78,17 @@ func _test_rarity_growth_changes_weights() -> void:
 	_assert.that(draft.weight_for_definition(common_definition, state) < base_common_weight, "rarity: common weight should decrease")
 
 
-func _test_lab_guarantees_uncommon_or_better() -> void:
+func _test_lab_draws_four_unique_choices() -> void:
 	var state = RunStateScript.new()
 	state.setup(0)
 	var draft = DraftSystemScript.new()
 	draft.set_seed(3)
-	var offer: Array = draft.draw_three(state, true)
-	var qualifying_count: int = 0
+	var offer: Array = draft.draw_offer(state, DraftSystemScript.MAX_OFFER_SIZE)
+	var unique_ids: Dictionary = {}
 	for definition in offer:
-		if str((definition as Dictionary).get("rarity", "")) in [
-			UpgradeManifestScript.RARITY_UNCOMMON,
-			UpgradeManifestScript.RARITY_RARE,
-		]:
-			qualifying_count += 1
-	_assert.eq(offer.size(), 3, "lab: guaranteed offer should still contain three unique choices")
-	_assert.gte(qualifying_count, 1, "lab: guaranteed offer should contain uncommon or rare content")
+		unique_ids[str((definition as Dictionary).get("id", ""))] = true
+	_assert.eq(offer.size(), 4, "lab: active laboratory should expose four choices")
+	_assert.eq(unique_ids.size(), 4, "lab: four-choice offer should remain unique")
 
 
 func _test_timeout_fallback_comes_from_offer() -> void:

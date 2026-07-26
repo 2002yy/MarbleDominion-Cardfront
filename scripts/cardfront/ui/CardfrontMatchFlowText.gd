@@ -32,7 +32,28 @@ static func score_percentages(owner_counts: Dictionary, total_cells: int) -> Dic
 	}
 
 
-static func score_summary(owner_counts: Dictionary, total_cells: int) -> String:
+static func score_summary(
+	owner_counts: Dictionary,
+	total_cells: int,
+	score_breakdown: Dictionary = {}
+) -> String:
+	if not score_breakdown.is_empty():
+		var player: Dictionary = score_breakdown.get("player", {}) as Dictionary
+		var ai: Dictionary = score_breakdown.get("ai", {}) as Dictionary
+		return (
+			"综合评分  玩家 %.1f  ·  AI %.1f\n"
+			+ "玩家：舱 %.1f  领土 %.1f  据点 %.1f\n"
+			+ "AI：舱 %.1f  领土 %.1f  据点 %.1f"
+		) % [
+			float(player.get("total", 0.0)),
+			float(ai.get("total", 0.0)),
+			float(player.get("chamber", 0.0)),
+			float(player.get("territory", 0.0)),
+			float(player.get("strongholds", 0.0)),
+			float(ai.get("chamber", 0.0)),
+			float(ai.get("territory", 0.0)),
+			float(ai.get("strongholds", 0.0)),
+		]
 	var percentages: Dictionary = score_percentages(owner_counts, total_cells)
 	return "\u73a9\u5bb6 %d%%   AI %d%%   \u4e2d\u7acb %d%%" % [
 		int(percentages.get("player", 0)),
@@ -43,5 +64,5 @@ static func score_summary(owner_counts: Dictionary, total_cells: int) -> String:
 
 static func result_reason(time_expired: bool) -> String:
 	if time_expired:
-		return "\u65f6\u95f4\u7ed3\u675f\uff1a\u5148\u6bd4\u63a7\u5236\u8231\u8010\u4e45\uff0c\u518d\u6bd4\u9886\u571f"
+		return "时间结束：控制舱 50% · 领土 35% · 据点 15%"
 	return "\u654c\u65b9\u63a7\u5236\u8231\u5df2\u88ab\u6467\u6bc1"

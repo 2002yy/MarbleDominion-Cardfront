@@ -28,7 +28,7 @@ Confirmed product decisions:
 
 ## Approved Hero Numeric Route / 三英雄数值路线
 
-Status: approved product and balance direction. The `v0.3.2b` hero, defense, and first-generation card foundation is live; stronghold, timeout, and simulation changes remain planned.
+Status: approved product and balance direction. The `v0.3.2c` hero, card, stronghold, and timeout-scoring foundation is live; balance simulation remains planned.
 
 The first-generation hero baseline is:
 
@@ -99,38 +99,36 @@ The implementation must record average cells crossed per marble, chamber hits pe
 - Stable baseline: `v0.2.5.7-ui-copy-readability-pass`
 - Baseline commit: `9eadf9b`
 - Core-loop foundation commit: `bef12ce`
-- Current completed slice: `v0.3.2b-card-pool-rebalance`
-- Next slice: `v0.3.2c-stronghold-and-timeout-scoring`
+- Current completed slice: `v0.3.2c-stronghold-and-timeout-scoring`
+- Next slice: `v0.3.2d-hero-balance-simulation`
 - Active branch: `main`
 
 ## Completed Slice / 已完成阶段
 
-`v0.3.2b-card-pool-rebalance` replaces the six-card placeholder set with the approved eight-upgrade first generation and carries its rules through real volley, bullet, chamber-damage, and territory-defense paths.
+`v0.3.2c-stronghold-and-timeout-scoring` makes tactical strongholds and the eight-minute timeout use their approved first-generation rules and exposes those values to the player.
 
 Scope:
 
-- The card pool is exactly eight upgrades: `+5`, `x2`, defense cap, frontline repair, attack training, armor-piercing trajectory, rarity growth, and Echo.
-- Attack training has three permanent levels. Each level adds 25% chamber damage through quarter-health accumulation without changing legacy BallWar integer damage.
-- Frontline repair restores at most six current-defense points on owned territory and distributes one layer per cell per pass.
-- Armor piercing is a one-volley shared budget. The first six defended contacts ignore one defense layer; the seventh contact behaves normally.
-- Echo no longer duplicates a choice in the same round. It records the next selected upgrade and replays it once during the following resolution.
-- Same-round volley multipliers use the highest multiplier instead of multiplying together.
-- Card-driven volleys clamp at 24 shots. Explicit exceptional bonuses, including the transitional stronghold layer, clamp at 32.
-- Attack, defense-cap, rarity, and armed-Echo upgrades disappear from offers when they cannot produce a valid gain.
-- AI upgrade scoring now uses hero base volley, current attack level, and elapsed upgrade growth.
-- The formal battle status reports attack percentage rather than obsolete integer projectile power.
-- BallWar keeps its legacy bullet damage and firing entry points.
+- Factory strongholds grant `+3` shots to the next volley, with the exceptional 32-shot ceiling preserved.
+- Energy strongholds grant one temporary attack level to the next volley and never mutate permanent attack growth or legacy projectile power.
+- Laboratory strongholds replace rarity guarantee with a real four-choice draft for the controlling faction.
+- The formal choice scene widens only while retaining its centered tactical overlay; all four 214-pixel cards remain inside the shell.
+- Timeout scoring is now `50% command-chamber health + 35% territory + 15% active stronghold types`.
+- Chamber health is normalized against each hero's own maximum, so 36/40/42-health identities remain comparable.
+- Territory uses current authoritative cell ownership at timeout instead of a possibly delayed HUD score snapshot.
+- Strongholds are resampled at timeout and award up to five points per active type.
+- Exact composite ties draw; command-chamber destruction still ends immediately before timeout scoring.
+- The match-result panel shows both composite totals and chamber, territory, and stronghold components.
+- BallWar keeps its legacy win-condition and result paths.
 
 Acceptance:
 
-- All eight upgrade definitions validate and three-choice offers remain unique.
-- Four level-one chamber hits remove five health; level three caps at seven health per four hits.
-- Frontline repair restores exactly six points when capacity is available and never repairs neutral territory.
-- Six shared armor-piercing contacts bypass one layer each; the seventh defended contact blocks normally.
-- Echo applies the copied choice once now and once next round, and repeated `x2` cannot create `x4`.
-- Normal and exceptional volley ceilings are covered at 24 and 32.
-- Headless parse, upgrade/content, real combat, FireDirector, three-choice runtime, territory defense, hero foundation, Smoke, and Integration tests pass.
-- `CardfrontCardPoolRebalanceTestRunner.gd` is part of the GitHub Actions matrix.
+- Factory, Energy, and Laboratory activation, loss of control, and one-bonus-per-type behavior are covered.
+- A live laboratory draft creates four unique choices, renders four horizontally ordered cards, and keeps every card inside the choice shell.
+- Temporary Energy attack reaches the real chamber-damage field without modifying permanent run state.
+- Weighted timeout tests verify each `50 / 35 / 15` component, stronghold tie-breaking, exact draws, and immediate chamber victory.
+- The real result-panel scene renders player and AI component lines.
+- `CardfrontStrongholdTimeoutScoringTestRunner.gd` is part of the GitHub Actions tactical-stronghold batch.
 
 ## Previous Slice / 上一阶段
 
@@ -188,20 +186,16 @@ Known transition boundaries:
 
 ## Planned Slices / 后续阶段
 
-1. `v0.3.2c-stronghold-and-timeout-scoring`
-   - Change Factory to `+3`, Energy to a temporary attack level, and Laboratory to four-choice drafting.
-   - Resolve timeout through chamber-health, territory, and stronghold scoring.
-   - Add player-facing scoring and stronghold-value feedback.
-2. `v0.3.2d-hero-balance-simulation`
+1. `v0.3.2d-hero-balance-simulation`
    - Run `3 heroes x 3 enemy heroes x 3 maps x 2 sides x 1000 seeds = 54,000` automated matches.
    - Target 47% to 53% aggregate hero win rates, 43% to 57% matchup win rates, and 49% to 51% mirrored-match win rates.
    - Tune route effectiveness and immediate upgrade value before changing the approved 5/6/7 volley or 36/40/42 health baseline.
-3. `v0.3.3a-gate-connectivity-rules`
+2. `v0.3.3a-gate-connectivity-rules`
    - Define who controls each gate, when its state is sampled, and how closed/half-open/open states filter authoritative volleys.
    - Keep both gates open until the rule layer and native tests are complete.
-4. `v0.3.3b-map-identity-expansion`
+3. `v0.3.3b-map-identity-expansion`
    - Add distinct route structures, chamber approaches, and stronghold placements while retaining the dual-gate language.
-5. `v0.3.3c-orthographic-visual-polish`
+4. `v0.3.3c-orthographic-visual-polish`
    - Replace primitive chamber silhouettes with authored low-poly presenters and add readable projectile trails and hit pulses.
    - Establish a shared typography and material policy for in-world labels.
 

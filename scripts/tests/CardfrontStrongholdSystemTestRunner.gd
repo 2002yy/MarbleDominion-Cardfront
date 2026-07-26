@@ -43,9 +43,9 @@ func _test_threshold_and_one_bonus_per_type() -> void:
 	var snapshot: Dictionary = system.sample_bonuses()
 	var player: Dictionary = snapshot[CardfrontRulesScript.PLAYER_FACTION]
 
-	_assert.eq(int(player.shot_count_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "stronghold: two factories should still grant one +4 bonus")
-	_assert.eq(int(player.projectile_power_bonus), 0, "stronghold: 79 percent energy control should not activate")
-	_assert.that(bool(player.guarantee_uncommon), "stronghold: 80 percent lab control should enable rarity guarantee")
+	_assert.eq(int(player.shot_count_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "stronghold: two factories should still grant one +3 bonus")
+	_assert.eq(int(player.temporary_attack_level_bonus), 0, "stronghold: 79 percent energy control should not activate")
+	_assert.eq(int(player.draft_choice_count), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "stronghold: 80 percent lab control should enable four choices")
 	_assert.eq(int(player.active_regions[RegionTypeScript.FACTORY]), int(factory_ids[1]), "stronghold: same type should select the highest-control region")
 	_assert.eq((player.active_types as Array).count(RegionTypeScript.FACTORY), 1, "stronghold: same type should appear once")
 
@@ -63,11 +63,11 @@ func _test_lost_control_removes_bonus() -> void:
 
 	_paint_region_percent(battlefield, region_map, energy_id, CardfrontRulesScript.PLAYER_FACTION, 1.00)
 	var active: Dictionary = system.sample_bonuses()[CardfrontRulesScript.PLAYER_FACTION]
-	_assert.eq(int(active.projectile_power_bonus), StrongholdRulesScript.ENERGY_POWER_BONUS, "stronghold: controlled energy relay should grant power")
+	_assert.eq(int(active.temporary_attack_level_bonus), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "stronghold: controlled energy relay should grant one temporary attack level")
 
 	_paint_all_neutral(battlefield)
 	var lost: Dictionary = system.sample_bonuses()[CardfrontRulesScript.PLAYER_FACTION]
-	_assert.eq(int(lost.projectile_power_bonus), 0, "stronghold: lost control should remove the next sampled bonus")
+	_assert.eq(int(lost.temporary_attack_level_bonus), 0, "stronghold: lost control should remove the next sampled bonus")
 	_assert.that((lost.active_types as Array).is_empty(), "stronghold: lost control should clear active types")
 
 	TestFixtures.cleanup_node(battlefield)
@@ -80,19 +80,23 @@ func _test_bonus_application_is_explicit_and_bounded() -> void:
 	var plan = VolleyPlanScript.new()
 	plan.shot_count = 31
 	plan.projectile_power = 2
+	plan.attack_level = 2
+	plan.chamber_damage_quarters = 6
 	var snapshot: Dictionary = {
 		CardfrontRulesScript.PLAYER_FACTION: {
 			"active_types": [RegionTypeScript.FACTORY, RegionTypeScript.ENERGY],
 			"shot_count_bonus": StrongholdRulesScript.FACTORY_SHOT_BONUS,
-			"projectile_power_bonus": StrongholdRulesScript.ENERGY_POWER_BONUS,
+			"temporary_attack_level_bonus": StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS,
 		},
 	}
 	system.apply_to_volley_plan(CardfrontRulesScript.PLAYER_FACTION, plan, snapshot)
 
 	_assert.eq(plan.shot_count, 32, "stronghold: exceptional bonuses should respect the 32-shot safety cap")
-	_assert.eq(plan.projectile_power, 3, "stronghold: energy bonus should add one power")
+	_assert.eq(plan.projectile_power, 2, "stronghold: energy bonus must not mutate legacy projectile power")
+	_assert.eq(plan.attack_level, 3, "stronghold: energy bonus should add one temporary attack level")
+	_assert.eq(plan.chamber_damage_quarters, 7, "stronghold: temporary level should reach real chamber damage")
 	_assert.eq(plan.stronghold_shot_bonus, StrongholdRulesScript.FACTORY_SHOT_BONUS, "stronghold: plan should record factory contribution")
-	_assert.eq(plan.stronghold_projectile_power_bonus, StrongholdRulesScript.ENERGY_POWER_BONUS, "stronghold: plan should record energy contribution")
+	_assert.eq(plan.stronghold_attack_level_bonus, StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "stronghold: plan should record energy contribution")
 	system.free()
 
 

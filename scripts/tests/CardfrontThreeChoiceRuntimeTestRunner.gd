@@ -105,21 +105,30 @@ func _test_strongholds_modify_draft_and_volley() -> void:
 	_paint_all_strongholds(main, RulesScript.PLAYER_FACTION)
 	director.set_seed_for_tests(91)
 	director.force_open_draft_for_test()
+	await process_frame
 
 	var player_bonus: Dictionary = director.get_stronghold_bonus(RulesScript.PLAYER_FACTION)
-	_assert.eq(int(player_bonus.get("shot_count_bonus", 0)), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold: factory should grant +4 once")
-	_assert.eq(int(player_bonus.get("projectile_power_bonus", 0)), StrongholdRulesScript.ENERGY_POWER_BONUS, "runtime stronghold: energy should grant +1 power")
-	_assert.that(bool(player_bonus.get("guarantee_uncommon", false)), "runtime stronghold: lab should arm the draft guarantee")
-	_assert.that(_has_uncommon_or_better(director.get_player_offer()), "runtime stronghold: lab should affect the visible player offer")
+	_assert.eq(int(player_bonus.get("shot_count_bonus", 0)), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold: factory should grant +3 once")
+	_assert.eq(int(player_bonus.get("temporary_attack_level_bonus", 0)), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "runtime stronghold: energy should grant one temporary attack level")
+	_assert.eq(int(player_bonus.get("draft_choice_count", 0)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "runtime stronghold: lab should enable four choices")
+	_assert.eq(director.get_player_offer().size(), 4, "runtime stronghold: lab should expose four player choices")
+	_assert.eq(main.runtime.three_choice_panel.get_visible_choice_count(), 4, "runtime stronghold: formal panel should render all four choices")
+	var shell_rect: Rect2 = main.runtime.three_choice_panel.choice_shell.get_global_rect()
+	var previous_x: float = -INF
+	for card in main.runtime.three_choice_panel.get_choice_cards():
+		var card_rect: Rect2 = card.get_global_rect()
+		_assert.that(shell_rect.encloses(card_rect), "runtime stronghold: every laboratory choice should remain inside the choice shell")
+		_assert.gt(card_rect.position.x, previous_x, "runtime stronghold: four choices should remain horizontally ordered")
+		previous_x = card_rect.position.x
 	_assert.that(str(main.runtime.three_choice_panel.stronghold_label.text).contains("工厂"), "runtime stronghold: battle HUD should name active bonuses")
-	_assert.that(str(main.runtime.three_choice_panel.result_label.text).contains("实验室"), "runtime stronghold: draft should explain the lab guarantee")
+	_assert.that(str(main.runtime.three_choice_panel.result_label.text).contains("额外出现 1 张"), "runtime stronghold: draft should explain the fourth choice")
 
 	_assert.that(main.runtime.three_choice_panel.choose_index_for_test(0), "runtime stronghold: player should still choose normally")
 	var plan = director.current_plans.get(RulesScript.PLAYER_FACTION, null)
 	_assert.that(plan != null, "runtime stronghold: resolution should build a player plan")
 	if plan != null:
-		_assert.eq(int(plan.stronghold_shot_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold: plan should record +4 factory shots")
-		_assert.eq(int(plan.stronghold_projectile_power_bonus), StrongholdRulesScript.ENERGY_POWER_BONUS, "runtime stronghold: plan should record +1 energy power")
+		_assert.eq(int(plan.stronghold_shot_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold: plan should record +3 factory shots")
+		_assert.eq(int(plan.stronghold_attack_level_bonus), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "runtime stronghold: plan should record the temporary energy level")
 	director.complete_reveal_for_test()
 
 	main._cleanup_game_layer()
@@ -157,14 +166,6 @@ func _paint_all_strongholds(main, owner_id: int) -> void:
 			var cell: Vector2i = raw_cell
 			owners[cell.x][cell.y] = owner_id
 	main.runtime.battlefield.replace_owners(owners, false)
-
-
-func _has_uncommon_or_better(offer: Array) -> bool:
-	for raw_definition in offer:
-		var rarity: String = str((raw_definition as Dictionary).get("rarity", ""))
-		if rarity in [UpgradeManifestScript.RARITY_UNCOMMON, UpgradeManifestScript.RARITY_RARE]:
-			return true
-	return false
 
 
 func _flush() -> void:

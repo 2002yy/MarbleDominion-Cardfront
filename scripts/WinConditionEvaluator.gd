@@ -2,9 +2,31 @@ extends RefCounted
 class_name WinConditionEvaluator
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 
-static func _result(ended: bool, winner: int, draw: bool, sub_text: String, reason: String) -> Dictionary:
-	return {"ended": ended, "winner": winner, "draw": draw, "sub_text": sub_text, "reason": reason}
+const CARDFRONT_CHAMBER_WEIGHT: float = 50.0
+const CARDFRONT_TERRITORY_WEIGHT: float = 35.0
+const CARDFRONT_STRONGHOLD_WEIGHT: float = 15.0
+const SCORE_TIE_EPSILON: float = 0.01
+
+
+static func _result(
+	ended: bool,
+	winner: int,
+	draw: bool,
+	sub_text: String,
+	reason: String,
+	details: Dictionary = {}
+) -> Dictionary:
+	var result: Dictionary = {
+		"ended": ended,
+		"winner": winner,
+		"draw": draw,
+		"sub_text": sub_text,
+		"reason": reason,
+	}
+	result.merge(details, true)
+	return result
 
 static func evaluate_basic(turrets: Dictionary) -> Dictionary:
 	var alive_ids: Array = []
@@ -63,7 +85,13 @@ static func evaluate_timed(owner_counts: Dictionary, time_expired: bool) -> Dict
 		return _result(true, -1, true, "时间到", "timed")
 	return _result(true, best_id, false, "时间到", "timed")
 
-static func evaluate_cardfront(owner_counts: Dictionary, total_cells: int, time_expired: bool, turrets: Dictionary = {}) -> Dictionary:
+static func evaluate_cardfront(
+	owner_counts: Dictionary,
+	total_cells: int,
+	time_expired: bool,
+	turrets: Dictionary = {},
+	stronghold_snapshot: Dictionary = {}
+) -> Dictionary:
 	var player_count: int = int(owner_counts.get(CardfrontRulesScript.PLAYER_FACTION, 0))
 	var ai_count: int = int(owner_counts.get(CardfrontRulesScript.AI_FACTION, 0))
 	var neutral_count: int = int(owner_counts.get(CardfrontRulesScript.NEUTRAL_OWNER, 0))
@@ -87,17 +115,37 @@ static func evaluate_cardfront(owner_counts: Dictionary, total_cells: int, time_
 
 	if not time_expired:
 		return _result(false, -1, false, "", "cardfront")
-	if not turrets.is_empty():
-		var player_health: int = _turret_health(turrets.get(CardfrontRulesScript.PLAYER_FACTION, null))
-		var ai_health: int = _turret_health(turrets.get(CardfrontRulesScript.AI_FACTION, null))
-		if player_health != ai_health:
-			var health_winner: int = CardfrontRulesScript.PLAYER_FACTION if player_health > ai_health else CardfrontRulesScript.AI_FACTION
-			return _result(true, health_winner, false, "\u65f6\u95f4\u7ed3\u675f\uff1a\u63a7\u5236\u8231\u5269\u4f59\u8010\u4e45\u66f4\u9ad8", "cardfront_timeout")
-	if player_count == ai_count:
-		return _result(true, -1, true, "\u65f6\u95f4\u7ed3\u675f\uff1a\u63a7\u5236\u8231\u4e0e\u9886\u571f\u5747\u6301\u5e73", "cardfront_timeout")
-	if player_count > ai_count:
-		return _result(true, CardfrontRulesScript.PLAYER_FACTION, false, "\u65f6\u95f4\u7ed3\u675f\uff1a\u9886\u571f\u5360\u4f18", "cardfront_timeout")
-	return _result(true, CardfrontRulesScript.AI_FACTION, false, "\u65f6\u95f4\u7ed3\u675f\uff1a\u9886\u571f\u5360\u4f18", "cardfront_timeout")
+	var score_breakdown: Dictionary = _cardfront_timeout_scores(
+		owner_counts,
+		total_cells,
+		turrets,
+		stronghold_snapshot
+	)
+	var player_score: float = float((score_breakdown.player as Dictionary).total)
+	var ai_score: float = float((score_breakdown.ai as Dictionary).total)
+	var score_text: String = "时间结束：综合评分 玩家 %.1f / AI %.1f" % [player_score, ai_score]
+	if absf(player_score - ai_score) <= SCORE_TIE_EPSILON:
+		return _result(
+			true,
+			-1,
+			true,
+			score_text,
+			"cardfront_timeout",
+			{"score_breakdown": score_breakdown}
+		)
+	var winner: int = (
+		CardfrontRulesScript.PLAYER_FACTION
+		if player_score > ai_score
+		else CardfrontRulesScript.AI_FACTION
+	)
+	return _result(
+		true,
+		winner,
+		false,
+		score_text,
+		"cardfront_timeout",
+		{"score_breakdown": score_breakdown}
+	)
 
 
 static func _turret_health(turret) -> int:
@@ -105,7 +153,103 @@ static func _turret_health(turret) -> int:
 		return 0
 	return maxi(0, int(turret.get("health")))
 
-static func evaluate(mode_name: String, turrets: Dictionary, owner_counts: Dictionary, total_cells: int, time_expired: bool) -> Dictionary:
+
+static func _cardfront_timeout_scores(
+	owner_counts: Dictionary,
+	total_cells: int,
+	turrets: Dictionary,
+	stronghold_snapshot: Dictionary
+) -> Dictionary:
+	var player_count: int = maxi(0, int(owner_counts.get(CardfrontRulesScript.PLAYER_FACTION, 0)))
+	var ai_count: int = maxi(0, int(owner_counts.get(CardfrontRulesScript.AI_FACTION, 0)))
+	var neutral_count: int = maxi(0, int(owner_counts.get(CardfrontRulesScript.NEUTRAL_OWNER, 0)))
+	var safe_total: int = total_cells
+	if safe_total <= 0:
+		safe_total = player_count + ai_count + neutral_count
+	safe_total = maxi(1, safe_total)
+	return {
+		"weights": {
+			"chamber": CARDFRONT_CHAMBER_WEIGHT,
+			"territory": CARDFRONT_TERRITORY_WEIGHT,
+			"strongholds": CARDFRONT_STRONGHOLD_WEIGHT,
+		},
+		"player": _owner_timeout_score(
+			CardfrontRulesScript.PLAYER_FACTION,
+			player_count,
+			safe_total,
+			turrets,
+			stronghold_snapshot
+		),
+		"ai": _owner_timeout_score(
+			CardfrontRulesScript.AI_FACTION,
+			ai_count,
+			safe_total,
+			turrets,
+			stronghold_snapshot
+		),
+	}
+
+
+static func _owner_timeout_score(
+	owner_id: int,
+	owner_count: int,
+	total_cells: int,
+	turrets: Dictionary,
+	stronghold_snapshot: Dictionary
+) -> Dictionary:
+	var health_ratio: float = _turret_health_ratio(turrets.get(owner_id, null))
+	var territory_ratio: float = clampf(float(owner_count) / float(maxi(1, total_cells)), 0.0, 1.0)
+	var stronghold_count: int = _owner_stronghold_count(stronghold_snapshot, owner_id)
+	var stronghold_ratio: float = clampf(
+		float(stronghold_count) / float(StrongholdRulesScript.STRONGHOLD_TYPE_COUNT),
+		0.0,
+		1.0
+	)
+	var chamber_score: float = health_ratio * CARDFRONT_CHAMBER_WEIGHT
+	var territory_score: float = territory_ratio * CARDFRONT_TERRITORY_WEIGHT
+	var stronghold_score: float = stronghold_ratio * CARDFRONT_STRONGHOLD_WEIGHT
+	return {
+		"total": chamber_score + territory_score + stronghold_score,
+		"chamber": chamber_score,
+		"territory": territory_score,
+		"strongholds": stronghold_score,
+		"health_percent": health_ratio * 100.0,
+		"territory_percent": territory_ratio * 100.0,
+		"stronghold_count": stronghold_count,
+	}
+
+
+static func _turret_health_ratio(turret) -> float:
+	if turret == null or not is_instance_valid(turret):
+		return 0.0
+	var current_health: int = _turret_health(turret)
+	var raw_max_health = turret.get("max_health")
+	var max_health: int = (
+		maxi(1, int(raw_max_health))
+		if raw_max_health is int or raw_max_health is float
+		else maxi(1, current_health)
+	)
+	return clampf(float(current_health) / float(max_health), 0.0, 1.0)
+
+
+static func _owner_stronghold_count(snapshot: Dictionary, owner_id: int) -> int:
+	var owner_bonus: Dictionary = snapshot.get(owner_id, {}) as Dictionary
+	var active_types: Array = owner_bonus.get("active_types", []) as Array
+	var unique_types: Dictionary = {}
+	for region_type in active_types:
+		if StrongholdRulesScript.is_stronghold_type(str(region_type)):
+			unique_types[str(region_type)] = true
+	return mini(unique_types.size(), StrongholdRulesScript.STRONGHOLD_TYPE_COUNT)
+
+
+static func evaluate(
+	mode_name: String,
+	turrets: Dictionary,
+	owner_counts: Dictionary,
+	total_cells: int,
+	time_expired: bool,
+	stronghold_snapshot: Dictionary = {}
+) -> Dictionary:
 	match mode_name:
 		GameConfig.GAME_MODE_BASIC:
 			return evaluate_basic(turrets)
@@ -116,5 +260,5 @@ static func evaluate(mode_name: String, turrets: Dictionary, owner_counts: Dicti
 		GameConfig.GAME_MODE_WILD:
 			return evaluate_basic(turrets)
 		GameConfig.GAME_MODE_CARDFRONT:
-			return evaluate_cardfront(owner_counts, total_cells, time_expired, turrets)
+			return evaluate_cardfront(owner_counts, total_cells, time_expired, turrets, stronghold_snapshot)
 	return _result(false, -1, false, "", "")

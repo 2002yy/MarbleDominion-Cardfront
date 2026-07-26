@@ -650,28 +650,41 @@ func _check_winner() -> void:
 	var time_expired: bool = (mode_name == GameConfig.GAME_MODE_TIMED and game_elapsed_time >= GameConfig.get_time_limit_seconds()) \
 		or (mode_name == GameConfig.GAME_MODE_CARDFRONT and game_elapsed_time >= CardfrontModeScript.get_match_duration_seconds())
 	var total_cells: int = _runtime_grid_size() * _runtime_grid_size()
+	var stronghold_snapshot: Dictionary = {}
+	if mode_name == GameConfig.GAME_MODE_CARDFRONT and time_expired:
+		counts = runtime.battlefield.count_cells_by_team()
+		current_score_counts = counts.duplicate()
+		if runtime.stronghold_system != null and is_instance_valid(runtime.stronghold_system):
+			stronghold_snapshot = runtime.stronghold_system.sample_bonuses()
 
-	var result: Dictionary = WinConditionEvaluator.evaluate(mode_name, runtime.turrets, counts, total_cells, time_expired)
+	var result: Dictionary = WinConditionEvaluator.evaluate(
+		mode_name,
+		runtime.turrets,
+		counts,
+		total_cells,
+		time_expired,
+		stronghold_snapshot
+	)
 
 	if not result.ended:
 		return
 	if result.draw:
-		_finish_as_draw(result.sub_text)
+		_finish_as_draw(result.sub_text, result)
 	else:
-		_finish_with_winner(result.winner, result.sub_text)
+		_finish_with_winner(result.winner, result.sub_text, result)
 
-func _finish_with_winner(faction_id: int, sub_text: String) -> void:
+func _finish_with_winner(faction_id: int, sub_text: String, result: Dictionary = {}) -> void:
 	GameStateCoordinator.finish_with_winner(self, _hud_ref("winner_label"), faction_id, sub_text)
 	if _is_cardfront_mode():
-		_show_cardfront_match_result(faction_id, false)
+		_show_cardfront_match_result(faction_id, false, result)
 
-func _finish_as_draw(sub_text: String) -> void:
+func _finish_as_draw(sub_text: String, result: Dictionary = {}) -> void:
 	GameStateCoordinator.finish_as_draw(self, _hud_ref("winner_label"), sub_text)
 	if _is_cardfront_mode():
-		_show_cardfront_match_result(-1, true)
+		_show_cardfront_match_result(-1, true, result)
 
 
-func _show_cardfront_match_result(winner_id: int, draw: bool) -> void:
+func _show_cardfront_match_result(winner_id: int, draw: bool, result: Dictionary = {}) -> void:
 	var result_panel = _hud_ref("match_result_panel")
 	if result_panel == null or not is_instance_valid(result_panel) or not result_panel.has_method("show_result"):
 		return
@@ -680,10 +693,11 @@ func _show_cardfront_match_result(winner_id: int, draw: bool) -> void:
 	var accent: Color = Color(0.92, 0.94, 1.0) if draw else CardfrontRulesScript.owner_color(winner_id)
 	result_panel.show_result(
 		title_text,
-		CardfrontMatchFlowTextScript.result_reason(time_expired),
+		str(result.get("sub_text", CardfrontMatchFlowTextScript.result_reason(time_expired))),
 		current_score_counts,
 		_runtime_grid_size() * _runtime_grid_size(),
-		accent
+		accent,
+		result.get("score_breakdown", {}) as Dictionary
 	)
 
 

@@ -27,10 +27,17 @@ func setup(controller_ref, view_size: Vector2) -> void:
 	_connect_if_available(_menu_button, controller_ref, "_exit_cardfront_result_to_menu")
 
 
-func show_result(title_text: String, reason_text: String, owner_counts: Dictionary, total_cells: int, accent_color: Color) -> void:
+func show_result(
+	title_text: String,
+	reason_text: String,
+	owner_counts: Dictionary,
+	total_cells: int,
+	accent_color: Color,
+	score_breakdown: Dictionary = {}
+) -> void:
 	_title_label.text = title_text
 	_reason_label.text = reason_text
-	_score_label.text = CardfrontMatchFlowTextScript.score_summary(owner_counts, total_cells)
+	_score_label.text = CardfrontMatchFlowTextScript.score_summary(owner_counts, total_cells, score_breakdown)
 	_title_label.add_theme_color_override("font_color", accent_color.lightened(0.18))
 	_accent.color = accent_color
 	visible = true

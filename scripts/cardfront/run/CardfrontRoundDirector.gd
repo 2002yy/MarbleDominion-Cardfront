@@ -220,13 +220,13 @@ func _open_draft() -> void:
 	last_resolution_results.clear()
 	current_stronghold_bonuses = _sample_strongholds()
 	current_offers = {
-		RulesScript.PLAYER_FACTION: _draft_system.draw_three(
+		RulesScript.PLAYER_FACTION: _draft_system.draw_offer(
 			get_run_state(RulesScript.PLAYER_FACTION),
-			_guarantees_uncommon(RulesScript.PLAYER_FACTION)
+			_draft_choice_count(RulesScript.PLAYER_FACTION)
 		),
-		RulesScript.AI_FACTION: _draft_system.draw_three(
+		RulesScript.AI_FACTION: _draft_system.draw_offer(
 			get_run_state(RulesScript.AI_FACTION),
-			_guarantees_uncommon(RulesScript.AI_FACTION)
+			_draft_choice_count(RulesScript.AI_FACTION)
 		),
 	}
 	var ai_choice: Dictionary = _ai_policy.choose(get_ai_offer(), get_run_state(RulesScript.AI_FACTION))
@@ -327,9 +327,13 @@ func _sample_strongholds() -> Dictionary:
 	return sampled
 
 
-func _guarantees_uncommon(owner_id: int) -> bool:
+func _draft_choice_count(owner_id: int) -> int:
 	var bonus: Dictionary = current_stronghold_bonuses.get(int(owner_id), {}) as Dictionary
-	return bool(bonus.get("guarantee_uncommon", false))
+	return clampi(
+		int(bonus.get("draft_choice_count", DraftSystemScript.DEFAULT_OFFER_SIZE)),
+		DraftSystemScript.DEFAULT_OFFER_SIZE,
+		DraftSystemScript.MAX_OFFER_SIZE
+	)
 
 
 func _set_draft_pause(paused: bool) -> void:
