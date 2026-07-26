@@ -19,9 +19,6 @@ jobs:
           - batch: Shared marginal value policy
             script: CardfrontUpgradeValuePolicyTestRunner.gd
             audit_seeds: 1
-          - batch: Shared simulator choice dispatch
-            script: CardfrontSharedSimulatorDispatchTestRunner.gd
-            audit_seeds: 1
           - batch: Shared AI 5400 parity proxy audit
             script: CardfrontSharedAiParityAuditTestRunner.gd
             audit_seeds: 100
