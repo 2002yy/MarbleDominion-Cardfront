@@ -42,6 +42,20 @@ static func make(grid_size: int) -> Dictionary:
 		"stronghold_ruleset": StrongholdRulesScript.RULESET_ID,
 		"time_limit": CardfrontRulesScript.MATCH_DURATION_SECONDS,
 		"ai_profile": "baseline_duel",
+		"route_layout": {
+			"river_y_ratio": 0.5,
+			"lane_center_ratios": [0.265, 0.735],
+			"lane_half_width_ratio": 0.085,
+			"control_zone_half_width_ratio": 0.10,
+			"control_zone_half_height_ratio": 0.10,
+			"lane_names": ["left_bridge", "right_bridge"],
+		},
+		"strategy_profile": {
+			"identity": "balanced_split_or_commit",
+			"summary": "Two equal bridge routes and five separated strongholds.",
+			"opening_hint": "Concentrate fire to close one route or split the volley to preserve map control.",
+			"tags": ["baseline", "two_lane", "balanced", "five_strongholds"],
+		},
 		"simulation_profile": {
 			"chamber_hit_chance": 0.172,
 			"average_cells_crossed": 19.0,
