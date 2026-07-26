@@ -35,6 +35,7 @@ func _test_default_cardfront_uses_live_runtime_only() -> void:
 	_assert.that(runtime.direction_controller != null, "live: direction controller should exist")
 	_assert.that(runtime.aim_control != null, "live: aim control should exist")
 	_assert.that(runtime.three_choice_panel != null, "live: three-choice panel should exist")
+	_assert.that(runtime.gate_connectivity_system != null, "live: gate connectivity system should exist")
 
 	var retired_refs: Dictionary = {
 		"economy": runtime.economy_system,
@@ -80,6 +81,8 @@ func _test_ballwar_is_unchanged() -> void:
 	_assert.eq(main.runtime.stronghold_system, null, "BallWar: should not create Cardfront strongholds")
 	_assert.eq(main.runtime.territory_defense_system, null, "BallWar: should not create Cardfront territory defense")
 	_assert.eq(main.runtime.three_choice_panel, null, "BallWar: should not create Cardfront choice panel")
+	_assert.eq(main.runtime.gate_connectivity_system, null, "BallWar: should not create Cardfront gate connectivity")
+	_assert.eq(main.runtime.bullet_pool.route_filter, null, "BallWar: should not attach a Cardfront projectile route filter")
 
 	TestFixtures.cleanup_node(main)
 	await _flush()

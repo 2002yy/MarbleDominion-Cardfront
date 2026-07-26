@@ -45,6 +45,7 @@ var _bridge_tops: Array[MeshInstance3D] = []
 var _gate_bars: Array[MeshInstance3D] = []
 var _gate_labels: Array[Label3D] = []
 var _gate_openness: Array[float] = []
+var _gate_states: Array[Dictionary] = []
 var _bullet_proxies: Array[MeshInstance3D] = []
 var _bullet_mesh: SphereMesh
 var _faction_materials: Dictionary = {}
@@ -135,8 +136,25 @@ func set_gate_openness(lane_index: int, openness: float) -> bool:
 	if lane_index < 0 or lane_index >= _gate_bars.size():
 		return false
 	_gate_openness[lane_index] = clampf(openness, 0.0, 1.0)
+	if lane_index < _gate_states.size():
+		_gate_states[lane_index]["openness"] = _gate_openness[lane_index]
 	_refresh_gate_visual(lane_index)
 	return true
+
+
+func set_gate_state(lane_index: int, state: Dictionary) -> bool:
+	if lane_index < 0 or lane_index >= _gate_bars.size():
+		return false
+	_gate_states[lane_index] = state.duplicate(true)
+	_gate_openness[lane_index] = clampf(float(state.get("openness", 1.0)), 0.0, 1.0)
+	_refresh_gate_visual(lane_index)
+	return true
+
+
+func get_gate_state_for_test(lane_index: int) -> Dictionary:
+	if lane_index < 0 or lane_index >= _gate_states.size():
+		return {}
+	return _gate_states[lane_index].duplicate(true)
 
 
 func get_territory_boundary_count_for_test() -> int:
@@ -545,6 +563,12 @@ func _build_gate_visual(bridge_x: float) -> void:
 	world_root.add_child(bar)
 	_gate_bars.append(bar)
 	_gate_openness.append(1.0)
+	_gate_states.append({
+		"state": "open",
+		"owner_id": CardfrontRulesScript.NEUTRAL_OWNER,
+		"control_percent": 0,
+		"openness": 1.0,
+	})
 
 	var label := Label3D.new()
 	label.name = "GateLabel"
@@ -567,12 +591,23 @@ func _refresh_gate_visual(lane_index: int) -> void:
 	var bar: MeshInstance3D = _gate_bars[lane_index]
 	bar.position = Vector3(bridge_x, lerpf(1.12, 3.35, openness), 0.0)
 	var label: Label3D = _gate_labels[lane_index]
+	var gate_state: Dictionary = _gate_states[lane_index] if lane_index < _gate_states.size() else {}
 	var state_text: String = "\u5173\u95ed"
 	if openness >= 0.80:
 		state_text = "\u5f00\u542f"
 	elif openness > 0.20:
 		state_text = "\u534a\u5f00"
-	label.text = "\u95f8\u95e8 %s %d%%" % [state_text, roundi(openness * 100.0)]
+	var owner_id: int = int(gate_state.get("owner_id", CardfrontRulesScript.NEUTRAL_OWNER))
+	var owner_text: String = "\u4e2d\u7acb"
+	var bar_color := Color(0.95, 0.30, 0.26)
+	if owner_id == CardfrontRulesScript.PLAYER_FACTION:
+		owner_text = "\u84dd\u65b9"
+		bar_color = PLAYER_TINT.lightened(0.12)
+	elif owner_id == CardfrontRulesScript.AI_FACTION:
+		owner_text = "\u7ea2\u65b9"
+		bar_color = AI_TINT.lightened(0.12)
+	bar.material_override = _make_material(bar_color, 0.08)
+	label.text = "\u95f8\u95e8%d %s\u63a7 %s" % [lane_index + 1, owner_text, state_text]
 
 
 func _build_stronghold_platforms() -> void:

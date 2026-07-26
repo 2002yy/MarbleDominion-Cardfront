@@ -29,6 +29,7 @@ const CardfrontArenaBuilderScript = preload("res://scripts/cardfront/arena/Cardf
 const CardfrontRoundDirectorScript = preload("res://scripts/cardfront/run/CardfrontRoundDirector.gd")
 const CardfrontTerritoryDefenseSystemScript = preload("res://scripts/cardfront/defense/CardfrontTerritoryDefenseSystem.gd")
 const CardfrontHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
+const CardfrontGateConnectivitySystemScript = preload("res://scripts/cardfront/gates/CardfrontGateConnectivitySystem.gd")
 const SystemRegistryScript = preload("res://scripts/cardfront/runtime/CardfrontSystemRegistry.gd")
 
 var registry = SystemRegistryScript.new()
@@ -128,11 +129,13 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		return _build_result(false)
 	if not _record_or_fail("orthographic_arena", CardfrontArenaBuilderScript.create_orthographic_view(game_layer, runtime.battlefield, runtime.region_map, runtime.bullet_pool, runtime.turrets, runtime.current_layout), runtime):
 		return _build_result(false)
+	if not _record_or_fail("gate_connectivity", create_gate_connectivity_system(game_layer, runtime.battlefield, runtime.bullet_pool, runtime.orthographic_arena_view), runtime):
+		return _build_result(false)
 	if not _record_or_fail("fire_director", create_fire_director(game_layer, runtime.region_map, runtime.battlefield, runtime.turrets), runtime):
 		return _build_result(false)
 	if not _record_or_fail("direction_control", CardfrontArenaBuilderScript.create_direction_control(game_layer, runtime.battlefield, runtime.turrets, runtime.fire_director, runtime.current_layout), runtime):
 		return _build_result(false)
-	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller, runtime.stronghold_system, runtime.hero_assignments), runtime):
+	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller, runtime.stronghold_system, runtime.hero_assignments, runtime.gate_connectivity_system), runtime):
 		return _build_result(false)
 	if not _record_or_fail("territory_defense", create_territory_defense_system(game_layer, runtime.battlefield, runtime.region_map, runtime.fortify_layer, runtime.round_director), runtime):
 		return _build_result(false)
@@ -210,6 +213,10 @@ func _clear_world_layer_refs(runtime) -> void:
 	runtime.engineer_bot_effect_system = null
 	runtime.durable_pioneer_beacon_effect_system = null
 	runtime.arena_presentation_layer = null
+	runtime.orthographic_arena_view = null
+	if runtime.gate_connectivity_system != null and is_instance_valid(runtime.gate_connectivity_system):
+		runtime.gate_connectivity_system.detach()
+	runtime.gate_connectivity_system = null
 	runtime.command_chambers.clear()
 	runtime.direction_controller = null
 	runtime.aim_guide_layer = null
@@ -392,19 +399,41 @@ static func create_round_director(
 	turrets: Dictionary,
 	direction_controller = null,
 	stronghold_system = null,
-	hero_assignments: Dictionary = {}
+	hero_assignments: Dictionary = {},
+	gate_connectivity_system = null
 ) -> Dictionary:
 	if game_layer == null or not is_instance_valid(game_layer):
 		return {"configured": false, "reason": "missing_game_layer"}
 	var director = CardfrontRoundDirectorScript.new()
 	game_layer.add_child(director)
-	if not director.setup(fire_director, turrets, direction_controller, stronghold_system, hero_assignments):
+	if not director.setup(
+		fire_director,
+		turrets,
+		direction_controller,
+		stronghold_system,
+		hero_assignments,
+		gate_connectivity_system
+	):
 		director.queue_free()
 		return {"configured": false, "reason": "round_director_setup_failed"}
 	return {
 		"configured": true,
 		"round_director": director,
 		"faction_run_states": director.run_states,
+	}
+
+
+static func create_gate_connectivity_system(game_layer: Node, battlefield, bullet_pool, arena_view = null) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	var system = CardfrontGateConnectivitySystemScript.new()
+	game_layer.add_child(system)
+	if not system.setup(battlefield, bullet_pool, arena_view):
+		system.queue_free()
+		return {"configured": false, "reason": "gate_connectivity_setup_failed"}
+	return {
+		"configured": true,
+		"gate_connectivity_system": system,
 	}
 
 

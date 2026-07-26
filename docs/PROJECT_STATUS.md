@@ -99,39 +99,46 @@ The implementation must record average cells crossed per marble, chamber hits pe
 - Stable baseline: `v0.2.5.7-ui-copy-readability-pass`
 - Baseline commit: `9eadf9b`
 - Core-loop foundation commit: `bef12ce`
-- Current completed slice: `v0.3.2d-hero-balance-simulation`
-- Next slice: `v0.3.3a-gate-connectivity-rules`
+- Current completed slice: `v0.3.3a-gate-connectivity-rules`
+- Next slice: `v0.3.3b-map-identity-expansion`
 - Active branch: `main`
 
 ## Completed Slice / 已完成阶段
 
-`v0.3.2d-hero-balance-simulation` adds a deterministic, headless balance proxy and makes the complete hero matrix a dedicated GitHub Actions gate.
+`v0.3.3a-gate-connectivity-rules` turns the two visible bridge gates into authoritative projectile routes while keeping the 2D simulation as the sole gameplay authority.
 
 Scope:
 
-- The matrix is `3 heroes x 3 enemy heroes x 3 maps x 2 sides x 1000 seeds = 54,000` recorded matches.
-- Side variants use paired common random numbers. Swapping blue and red changes position only, so mirror bias is not hidden by unrelated random samples.
-- The simulator reads the authoritative hero, map, and upgrade manifests and preserves current eligibility caps, Echo timing, finite repair, armor piercing, stronghold bonuses, AI selection, and volley ceilings.
-- Map-owned proxy parameters describe route length, chamber-hit likelihood, defense contact, territory pressure, and stronghold tempo.
-- Score rate means `(wins + 0.5 x draws) / games x 100%`; it is a balance outcome rate, not territory score.
-- Aggregate hero targets are `47%..53%`, ordered matchup targets are `43%..57%`, and mirrored blue-side targets are `49%..51%`.
-- The audit records cells crossed per marble, chamber hits and defense absorbed per volley, first stronghold activation, rounds, timeout rate, and invalid offers.
-- `CARDFRONT_BALANCE_SEEDS` can reduce local sample size; CI deliberately omits it and always runs all 1,000 seeds per case.
-- The audit is a physics-informed balance proxy, not proof of live projectile balance or human win rate.
+- Each gate samples a compact territory-control zone around its bridge when the three-choice draft opens.
+- Gate state is locked for the following volley, matching the existing round-based stronghold cadence.
+- Projectiles copy that locked snapshot when spawned, so an in-flight marble cannot change permission halfway through a crossing.
+- Below 55% control, a gate is open to both factions.
+- At 55% to 79% control, the owner passes every marble while enemy marbles alternate between pass and reflection.
+- At 80% or more control, the owner passes every marble and enemy marbles reflect from the river bank.
+- Marbles attempting to cross the center river outside either bridge also reflect from the river bank.
+- Before the first draft snapshot, both gates remain open to both factions.
+- `CardfrontOrthographicArenaView` receives the locked state only for presentation and labels each gate as open, half-open, or closed with faction color.
+- The shared `Bullet` and `BulletPool` expose a nullable route-filter boundary; BallWar leaves it null and retains its old behavior.
 
 Acceptance:
 
-- Full audit result: Balanced Commander `51.46%`, Fortification Engineer `49.09%`, Rapid Gunner `49.45%`.
-- Ordered matchup range: `47.62%..53.70%`; every matchup remains inside the approved `43%..57%` window.
-- Mirrored position rates remain inside `49%..51%`.
-- Median match length is 22 rounds; P90 is 34 rounds; timeout rate is `12.25%`.
-- Average first stronghold activation is round `6.03`; invalid or capped offers are zero.
-- Average cells crossed per marble is `19.25`; chamber hits per volley are `1.231`; defense absorbed per volley is `2.271`.
-- AI immediate-value tuning removes the old 6-versus-7-shot `x2` selection cliff and values finite repair more strongly when defense capacity can use it.
-- The approved hero baselines remain unchanged at 5/6/7 shots and 42/40/36 chamber health.
-- `CardfrontHeroBalanceSimulationTestRunner.gd` is a dedicated GitHub Actions batch and asserts the full 54,000-match count plus all thresholds.
+- Native rule tests cover default-open behavior, 55% and 80% thresholds, owner passage, alternating enemy passage, snapshot locking, and off-bridge river rejection.
+- Live runtime tests verify the route filter is attached in Cardfront, a draft updates the gate snapshot and 3D display, and a blocked marble reflects.
+- Runtime-boundary tests explicitly verify BallWar creates neither the gate system nor a route filter.
+- Existing orthographic arena, round combat, runtime builder, Cardfront smoke, BallWar Smoke, and Integration tests remain green.
+- The gate test set is a dedicated GitHub Actions batch.
 
 ## Previous Slice / 上一阶段
+
+`v0.3.2d-hero-balance-simulation` added the deterministic 54,000-match headless balance proxy and made the complete hero matrix a dedicated GitHub Actions gate.
+
+- Full audit result: Balanced Commander `51.46%`, Fortification Engineer `49.09%`, Rapid Gunner `49.45%`.
+- Ordered matchup range: `47.62%..53.70%`; mirrored position rates remain inside `49%..51%`.
+- Median match length is 22 rounds, P90 is 34 rounds, and timeout rate is `12.25%`.
+- The audit is a physics-informed balance proxy, not proof of live projectile balance or human win rate.
+- `CardfrontHeroBalanceSimulationTestRunner.gd` asserts the full match count and all approved thresholds in CI.
+
+## Earlier Visual Slice / 更早视觉阶段
 
 `v0.3.1c.1-tall-arena-ownership-readability` refines the open dual-gate arena into a taller, finer-grained field while preserving the tested 2D simulation as the sole gameplay authority.
 
@@ -180,19 +187,17 @@ Known transition boundaries:
 
 - The old `Node2D` arena framing remains underneath as a fallback and decorative surround; the playable board itself is now rendered by the orthographic 3D viewport.
 - Primitive meshes and lighting remain graybox-quality, not final environment art.
-- Gate openness is currently a presentation-state API only. Both gates default open and do not yet block, filter, or redirect authoritative 2D bullets.
+- Gate geometry currently uses shared normalized positions. Map-specific bridge count, route width, and gate-control-zone placement remain part of the next map-identity slice.
+- AI target valuation does not yet score gate ownership or route pressure; it still uses the current direction and target heuristics.
 - 3D bullet proxies currently show the marble body and aim ray, but not a dedicated 3D trail/VFX library.
 - Stronghold sampling is intentionally round-based, so control changes during a volley take effect when the next draft opens.
 - The three registered map definitions share one stronghold ruleset; their route geometry and visual identity remain a later slice.
 
 ## Planned Slices / 后续阶段
 
-1. `v0.3.3a-gate-connectivity-rules`
-   - Define who controls each gate, when its state is sampled, and how closed/half-open/open states filter authoritative volleys.
-   - Keep both gates open until the rule layer and native tests are complete.
-2. `v0.3.3b-map-identity-expansion`
+1. `v0.3.3b-map-identity-expansion`
    - Add distinct route structures, chamber approaches, and stronghold placements while retaining the dual-gate language.
-3. `v0.3.3c-orthographic-visual-polish`
+2. `v0.3.3c-orthographic-visual-polish`
    - Replace primitive chamber silhouettes with authored low-poly presenters and add readable projectile trails and hit pulses.
    - Establish a shared typography and material policy for in-world labels.
 

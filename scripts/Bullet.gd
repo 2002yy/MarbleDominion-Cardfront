@@ -17,6 +17,8 @@ var trail_points = []
 var trail_max_points = 8
 var pool
 var trail_layer
+var route_filter = null
+var route_context: Dictionary = {}
 var _cached_map_size: float = 0.0
 var is_active: bool = false
 var simple_draw: bool = false
@@ -67,6 +69,10 @@ func setup(
 func set_trail_layer(new_trail_layer) -> void:
 	trail_layer = new_trail_layer
 
+func set_route_filter(new_route_filter, new_route_context: Dictionary = {}) -> void:
+	route_filter = new_route_filter
+	route_context = new_route_context.duplicate(true)
+
 func get_visual_radius() -> float:
 	return _visual_radius()
 
@@ -94,6 +100,8 @@ func deactivate() -> void:
 	target_turrets = {}
 	chamber_damage_quarters = 0
 	capture_context = {}
+	route_filter = null
+	route_context = {}
 	trail_points.clear()
 	_notify_trail_segments_if_needed(previous_segments)
 	_request_trail_redraw()
@@ -178,6 +186,7 @@ func _physics_process(delta: float) -> void:
 	if map_size <= 0.0 and battlefield != null:
 		map_size = float(battlefield.grid_size) * float(battlefield.cell_size)
 	var next_position = global_position + direction * speed * delta
+	var previous_local_position: Vector2 = battlefield.to_local(global_position)
 	var local_position = battlefield.to_local(next_position)
 	var bounced = false
 
@@ -201,6 +210,19 @@ func _physics_process(delta: float) -> void:
 
 	if bounced:
 		direction = _stabilize_bounce_direction(direction).normalized()
+
+	if route_filter != null and is_instance_valid(route_filter) and route_filter.has_method("filter_step"):
+		var route_result: Dictionary = route_filter.filter_step(
+			faction_id,
+			previous_local_position,
+			local_position,
+			direction,
+			route_context
+		)
+		if bool(route_result.get("crossed", false)) and not bool(route_result.get("allowed", true)):
+			local_position = route_result.get("position", previous_local_position)
+			var reflected_direction: Vector2 = route_result.get("direction", -direction)
+			direction = reflected_direction.normalized()
 
 	global_position = battlefield.to_global(local_position)
 	_update_visual_trace(delta)

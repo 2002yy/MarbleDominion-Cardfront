@@ -43,6 +43,7 @@ var card_audio_feedback = null
 var tutorial_overlay = null
 var arena_presentation_layer = null
 var orthographic_arena_view = null
+var gate_connectivity_system = null
 var command_chambers: Dictionary = {}
 var direction_controller = null
 var aim_guide_layer = null
@@ -99,6 +100,7 @@ func reset() -> void:
     tutorial_overlay = null
     arena_presentation_layer = null
     orthographic_arena_view = null
+    gate_connectivity_system = null
     command_chambers.clear()
     direction_controller = null
     aim_guide_layer = null

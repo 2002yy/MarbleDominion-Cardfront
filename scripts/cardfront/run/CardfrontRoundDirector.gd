@@ -6,6 +6,7 @@ signal countdown_updated(time_remaining, round_number, player_state)
 signal draft_opened(player_offer, ai_offer, timeout_seconds, round_number)
 signal draft_time_updated(time_remaining, timeout_seconds)
 signal strongholds_sampled(bonuses)
+signal gates_sampled(snapshot)
 signal choice_locked(owner_id, upgrade_id, automatic)
 signal choices_revealed(player_definition, ai_definition, resolution_results)
 signal volley_launched(plans, issued_intents)
@@ -32,6 +33,7 @@ var turrets: Dictionary = {}
 var direction_controller = null
 var stronghold_system = null
 var territory_defense_system = null
+var gate_connectivity_system = null
 var hero_assignments: Dictionary = {}
 var phase_controller = MatchPhaseControllerScript.new()
 var run_states: Dictionary = {}
@@ -39,6 +41,7 @@ var current_offers: Dictionary = {}
 var current_plans: Dictionary = {}
 var last_resolution_results: Dictionary = {}
 var current_stronghold_bonuses: Dictionary = {}
+var current_gate_snapshot: Dictionary = {}
 var round_number: int = 0
 var active: bool = false
 
@@ -61,12 +64,14 @@ func setup(
 	new_turrets: Dictionary,
 	new_direction_controller = null,
 	new_stronghold_system = null,
-	new_hero_assignments: Dictionary = {}
+	new_hero_assignments: Dictionary = {},
+	new_gate_connectivity_system = null
 ) -> bool:
 	fire_director = new_fire_director
 	turrets = new_turrets.duplicate(false)
 	direction_controller = new_direction_controller
 	stronghold_system = new_stronghold_system
+	gate_connectivity_system = new_gate_connectivity_system
 	if fire_director == null or not is_instance_valid(fire_director):
 		return false
 	for owner_id in RulesScript.get_duel_factions():
@@ -219,6 +224,7 @@ func _open_draft() -> void:
 	current_plans.clear()
 	last_resolution_results.clear()
 	current_stronghold_bonuses = _sample_strongholds()
+	current_gate_snapshot = _sample_gates()
 	current_offers = {
 		RulesScript.PLAYER_FACTION: _draft_system.draw_offer(
 			get_run_state(RulesScript.PLAYER_FACTION),
@@ -324,6 +330,15 @@ func _sample_strongholds() -> Dictionary:
 		return empty
 	var sampled: Dictionary = stronghold_system.sample_bonuses()
 	strongholds_sampled.emit(sampled.duplicate(true))
+	return sampled
+
+
+func _sample_gates() -> Dictionary:
+	if gate_connectivity_system == null or not is_instance_valid(gate_connectivity_system):
+		gates_sampled.emit({})
+		return {}
+	var sampled: Dictionary = gate_connectivity_system.sample_and_lock(round_number)
+	gates_sampled.emit(sampled.duplicate(true))
 	return sampled
 
 

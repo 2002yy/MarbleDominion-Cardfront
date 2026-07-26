@@ -10,6 +10,7 @@ var peak_active_count: int = 0
 var visual_pressure_update_timer: float = 0.0
 var _visual_pressure_fps_override_for_tests: int = -1
 var trail_layer
+var route_filter = null
 var tracked_turrets: Dictionary = {}
 var tracked_queue_by_faction: Dictionary = {}
 var tracked_queue_total: int = 0
@@ -63,6 +64,9 @@ func set_trail_layer(new_trail_layer) -> void:
 	if trail_layer != null and is_instance_valid(trail_layer) and trail_layer.has_method("setup"):
 		trail_layer.setup(self )
 
+func set_route_filter(new_route_filter) -> void:
+	route_filter = new_route_filter
+
 func set_visual_pressure_fps_override_for_tests(value: int) -> void:
 	_visual_pressure_fps_override_for_tests = value
 
@@ -112,6 +116,10 @@ func spawn_bullet(
 		chamber_damage_quarters,
 		capture_context
 	)
+	var route_context: Dictionary = {}
+	if route_filter != null and is_instance_valid(route_filter) and route_filter.has_method("make_projectile_context"):
+		route_context = route_filter.make_projectile_context(int(faction_id))
+	bullet.set_route_filter(route_filter, route_context)
 	bullet.activate()
 	return _finalize_spawned_bullet(bullet)
 
@@ -128,6 +136,10 @@ func spawn_bullet_from_state(state: Dictionary, battlefield, target_turrets: Dic
 
 	var bullet = _obtain_bullet_with_visual_profile()
 	bullet.restore_from_state(state, battlefield, target_turrets)
+	var route_context: Dictionary = {}
+	if route_filter != null and is_instance_valid(route_filter) and route_filter.has_method("make_projectile_context"):
+		route_context = route_filter.make_projectile_context(int(state.get("faction_id", -1)))
+	bullet.set_route_filter(route_filter, route_context)
 	bullet.activate()
 	return _finalize_spawned_bullet(bullet)
 
