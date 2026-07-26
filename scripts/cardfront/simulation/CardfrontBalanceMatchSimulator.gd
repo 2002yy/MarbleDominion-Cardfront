@@ -26,10 +26,18 @@ func _init() -> void:
 		_upgrade_definitions[str(upgrade_id)] = UpgradeManifestScript.get_definition(str(upgrade_id))
 
 
-func simulate(hero_a: String, hero_b: String, map_id: String, side_variant: int, seed_value: int) -> Dictionary:
+func simulate(
+	hero_a: String,
+	hero_b: String,
+	map_id: String,
+	side_variant: int,
+	seed_value: int,
+	simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
+) -> Dictionary:
+	var safe_simulation_mode: String = ConfigScript.sanitize_simulation_mode(simulation_mode)
 	var map_definition: Dictionary = MapRegistryScript.get_map_definition(map_id, ConfigScript.GRID_SIZE)
 	if map_definition.is_empty():
-		return {"success": false, "reason": "unknown_map"}
+		return {"success": false, "reason": "unknown_map", "simulation_mode": safe_simulation_mode}
 
 	var profile: Dictionary = ConfigScript.sanitize_map_profile(
 		map_definition.get("simulation_profile", {}) as Dictionary
@@ -100,9 +108,8 @@ func simulate(hero_a: String, hero_b: String, map_id: String, side_variant: int,
 			var choice_id: String = _choose_upgrade_id_fast(offer_ids, state)
 			if choice_id == "":
 				metrics["invalid_offers"] = int(metrics["invalid_offers"]) + 1
-			else:
-				if not _resolve_upgrade_fast(state, choice_id):
-					metrics["invalid_offers"] = int(metrics["invalid_offers"]) + 1
+			elif not _resolve_upgrade_fast(state, choice_id):
+				metrics["invalid_offers"] = int(metrics["invalid_offers"]) + 1
 
 			defense_pool[slot] = int(defense_pool[slot]) + int(state["pending_repair_points"])
 			state["pending_repair_points"] = 0
@@ -116,9 +123,10 @@ func simulate(hero_a: String, hero_b: String, map_id: String, side_variant: int,
 			)
 			plans[slot] = {
 				"plan": plan,
-				"attack_level": mini(
-					RunStateScript.MAX_ATTACK_LEVEL,
-					int(plan["attack_level"]) + temporary_attack_level
+				"attack_level": resolve_attack_level_for_mode(
+					int(plan["attack_level"]),
+					temporary_attack_level,
+					safe_simulation_mode
 				),
 			}
 
@@ -132,7 +140,8 @@ func simulate(hero_a: String, hero_b: String, map_id: String, side_variant: int,
 			defense_pool,
 			profile,
 			seed_value,
-			round_number
+			round_number,
+			safe_simulation_mode
 		)
 		round_results[SLOT_B] = _resolve_volley(
 			SLOT_B,
@@ -143,7 +152,8 @@ func simulate(hero_a: String, hero_b: String, map_id: String, side_variant: int,
 			defense_pool,
 			profile,
 			seed_value,
-			round_number
+			round_number,
+			safe_simulation_mode
 		)
 		for slot in [SLOT_A, SLOT_B]:
 			var volley_result: Dictionary = round_results[slot] as Dictionary
@@ -191,6 +201,9 @@ func simulate(hero_a: String, hero_b: String, map_id: String, side_variant: int,
 		winner_side = "blue" if winner_slot == blue_slot else "red"
 	return {
 		"success": true,
+		"simulation_mode": safe_simulation_mode,
+		"hidden_hit_compensation": ConfigScript.uses_hidden_hit_compensation(safe_simulation_mode),
+		"resolved_attack_level_cap": ConfigScript.resolved_attack_level_cap(safe_simulation_mode),
 		"hero_a": str(hero_a),
 		"hero_b": str(hero_b),
 		"map_id": str(map_id),
@@ -206,6 +219,33 @@ func simulate(hero_a: String, hero_b: String, map_id: String, side_variant: int,
 		"first_stronghold_round": first_stronghold_round,
 		"metrics": metrics,
 	}
+
+
+func resolve_attack_level_for_mode(
+	permanent_attack_level: int,
+	temporary_attack_level: int,
+	simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
+) -> int:
+	return clampi(
+		maxi(0, int(permanent_attack_level)) + maxi(0, int(temporary_attack_level)),
+		0,
+		ConfigScript.resolved_attack_level_cap(simulation_mode)
+	)
+
+
+func adjust_hit_chance_for_mode(
+	hit_chance: float,
+	base_volley_count: int,
+	simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
+) -> float:
+	var adjusted: float = float(hit_chance)
+	if not ConfigScript.uses_hidden_hit_compensation(simulation_mode):
+		return adjusted
+	if int(base_volley_count) < 6:
+		adjusted *= 1.22
+	elif int(base_volley_count) > 6:
+		adjusted *= 0.93
+	return adjusted
 
 
 func _make_state(hero_id: String, owner_id: int) -> Dictionary:
@@ -238,7 +278,8 @@ func _resolve_volley(
 	defense_pool: Dictionary,
 	profile: Dictionary,
 	seed_value: int,
-	round_number: int
+	round_number: int,
+	simulation_mode: String
 ) -> Dictionary:
 	var plan = plan_data["plan"]
 	var rng: RandomNumberGenerator = _rng_a if attacker_slot == SLOT_A else _rng_b
@@ -261,10 +302,7 @@ func _resolve_volley(
 	)
 	hit_chance *= pow(6.0 / float(maxi(1, shot_count)), 0.18)
 	var base_volley: int = int((states[attacker_slot] as Dictionary)["base_volley_count"])
-	if base_volley < 6:
-		hit_chance *= 1.22
-	elif base_volley > 6:
-		hit_chance *= 0.93
+	hit_chance = adjust_hit_chance_for_mode(hit_chance, base_volley, simulation_mode)
 	var expected_contacts: float = float(shot_count) * defense_chance
 	var contact_sigma: float = sqrt(maxf(0.01, expected_contacts * (1.0 - defense_chance)))
 	var defense_contacts: int = clampi(
