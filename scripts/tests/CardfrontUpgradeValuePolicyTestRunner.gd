@@ -163,28 +163,31 @@ func _test_shared_simulator_switches_valuation_modes() -> void:
 		UpgradeManifestScript.UPGRADE_VOLLEY_X2,
 		UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5,
 	]
-	var historical_choice: String = simulator.choose_upgrade_id_for_test(
+	var historical_choice: String = str(simulator.call(
+		"choose_upgrade_id_for_test",
 		offer,
 		state,
 		_base_context(),
 		SimulationConfigScript.SIMULATION_MODE_HISTORICAL_COMPENSATED
-	)
-	var marginal_choice: String = simulator.choose_upgrade_id_for_test(
+	))
+	var marginal_choice: String = str(simulator.call(
+		"choose_upgrade_id_for_test",
 		offer,
 		state,
 		_base_context(),
 		SimulationConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
-	)
+	))
 	_assert.eq(historical_choice, UpgradeManifestScript.UPGRADE_VOLLEY_X2, "shared simulator: historical mode should preserve fixed x2 priority")
 	_assert.eq(marginal_choice, UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, "shared simulator: parity mode should use the same Engineer marginal choice as live AI")
-	var result: Dictionary = simulator.simulate(
+	var result: Dictionary = simulator.call(
+		"simulate",
 		HeroRegistryScript.HERO_BALANCED_COMMANDER,
 		HeroRegistryScript.HERO_RAPID_GUNNER,
 		"default_duel",
 		0,
 		19,
 		SimulationConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
-	)
+	) as Dictionary
 	_assert.eq(str(result.get("upgrade_valuation_mode", "")), ValuePolicyScript.MODE_MARGINAL, "shared simulator: parity match output should disclose marginal valuation")
 
 
