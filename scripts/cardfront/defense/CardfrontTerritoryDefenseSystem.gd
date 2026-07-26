@@ -67,20 +67,15 @@ func repair_owner(owner_id: int, amount: int, zone: String = "frontline") -> int
 		return 0
 	var candidates: Array = _repair_candidates(owner_id, zone, cap)
 	var restored: int = 0
-	while restored < amount and not candidates.is_empty():
-		var changed_this_pass: bool = false
-		for raw_cell in candidates:
-			if restored >= amount:
-				break
-			var cell: Vector2i = raw_cell
-			var current: int = get_cell_defense(cell)
-			if current >= cap:
-				continue
-			fortify_layer.add_fortify_stack(cell, 1)
-			restored += 1
-			changed_this_pass = true
-		if not changed_this_pass:
+	for raw_cell in candidates:
+		if restored >= amount:
 			break
+		var cell: Vector2i = raw_cell
+		var current: int = get_cell_defense(cell)
+		if current >= cap:
+			continue
+		fortify_layer.add_fortify_stack(cell, 1)
+		restored += 1
 	last_defended_cell_count = _count_current_defended_cells()
 	return restored
 
