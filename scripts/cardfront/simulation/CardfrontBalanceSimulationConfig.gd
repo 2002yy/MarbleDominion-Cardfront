@@ -5,6 +5,12 @@ const GRID_SIZE: int = 40
 const MAX_ROUNDS: int = 34
 const FULL_SEEDS_PER_CASE: int = 1000
 
+const SIMULATION_MODE_HISTORICAL_COMPENSATED: String = "historical_compensated"
+const SIMULATION_MODE_PARITY_UNCOMPENSATED: String = "parity_uncompensated"
+const DEFAULT_SIMULATION_MODE: String = SIMULATION_MODE_HISTORICAL_COMPENSATED
+const HISTORICAL_RESOLVED_ATTACK_LEVEL_CAP: int = 3
+const PARITY_RESOLVED_ATTACK_LEVEL_CAP: int = 4
+
 const AGGREGATE_WIN_RATE_MIN: float = 47.0
 const AGGREGATE_WIN_RATE_MAX: float = 53.0
 const MATCHUP_WIN_RATE_MIN: float = 43.0
@@ -27,6 +33,23 @@ const DEFAULT_MAP_PROFILE: Dictionary = {
 	"territory_pressure": 1.0,
 	"stronghold_tempo": 0,
 }
+
+
+static func sanitize_simulation_mode(raw_mode: String) -> String:
+	var mode: String = str(raw_mode)
+	if mode == SIMULATION_MODE_PARITY_UNCOMPENSATED:
+		return SIMULATION_MODE_PARITY_UNCOMPENSATED
+	return SIMULATION_MODE_HISTORICAL_COMPENSATED
+
+
+static func uses_hidden_hit_compensation(raw_mode: String) -> bool:
+	return sanitize_simulation_mode(raw_mode) == SIMULATION_MODE_HISTORICAL_COMPENSATED
+
+
+static func resolved_attack_level_cap(raw_mode: String) -> int:
+	if sanitize_simulation_mode(raw_mode) == SIMULATION_MODE_PARITY_UNCOMPENSATED:
+		return PARITY_RESOLVED_ATTACK_LEVEL_CAP
+	return HISTORICAL_RESOLVED_ATTACK_LEVEL_CAP
 
 
 static func sanitize_map_profile(raw_profile: Dictionary) -> Dictionary:
