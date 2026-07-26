@@ -19,6 +19,7 @@ var hero_name: String = ""
 var base_volley_count: int = DEFAULT_BASE_VOLLEY_COUNT
 var command_chamber_health: int = TuningScript.COMMAND_CHAMBER_HEALTH
 var starting_territory_defense: int = 1
+var starting_contact_front_defense: int = 1
 var projectile_power: int = DEFAULT_PROJECTILE_POWER
 var attack_level: int = 0
 var territory_defense_cap: int = DEFAULT_TERRITORY_DEFENSE_CAP
@@ -40,6 +41,7 @@ func setup(new_owner_id: int, new_base_volley_count: int = DEFAULT_BASE_VOLLEY_C
 	base_volley_count = maxi(1, int(new_base_volley_count))
 	command_chamber_health = TuningScript.COMMAND_CHAMBER_HEALTH
 	starting_territory_defense = 1
+	starting_contact_front_defense = 1
 	projectile_power = DEFAULT_PROJECTILE_POWER
 	attack_level = 0
 	territory_defense_cap = DEFAULT_TERRITORY_DEFENSE_CAP
@@ -72,6 +74,11 @@ func setup_from_hero(new_owner_id: int, new_hero_id: String) -> void:
 		TuningScript.MAX_TERRITORY_DEFENSE_CAP
 	)
 	starting_territory_defense = mini(starting_territory_defense, territory_defense_cap)
+	starting_contact_front_defense = clampi(
+		int(definition.get("starting_contact_front_defense", starting_territory_defense)),
+		starting_territory_defense,
+		territory_defense_cap
+	)
 
 
 func add_next_volley_bonus(amount: int) -> void:
@@ -173,6 +180,7 @@ func snapshot() -> Dictionary:
 		"base_volley_count": base_volley_count,
 		"command_chamber_health": command_chamber_health,
 		"starting_territory_defense": starting_territory_defense,
+		"starting_contact_front_defense": starting_contact_front_defense,
 		"projectile_power": projectile_power,
 		"attack_level": attack_level,
 		"territory_defense_cap": territory_defense_cap,
