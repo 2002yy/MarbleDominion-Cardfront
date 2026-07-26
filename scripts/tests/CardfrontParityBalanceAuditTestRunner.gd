@@ -1,5 +1,7 @@
 extends SceneTree
 
+# Dedicated cloud evidence runner for the provisional B0 parity model.
+# This file intentionally lives outside the historical merge-blocking audit.
 const AuditScript = preload("res://scripts/cardfront/simulation/CardfrontHeroBalanceAudit.gd")
 const ConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
 
