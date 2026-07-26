@@ -10,8 +10,8 @@ script = ExtResource("1_aim")
 [node name="Panel" type="Panel" parent="."]
 offset_left = 26.0
 offset_top = 420.0
-offset_right = 318.0
-offset_bottom = 504.0
+offset_right = 238.0
+offset_bottom = 490.0
 
 [node name="Bg" type="ColorRect" parent="Panel"]
 mouse_filter = 2

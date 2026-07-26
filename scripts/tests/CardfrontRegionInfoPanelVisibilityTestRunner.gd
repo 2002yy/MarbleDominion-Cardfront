@@ -52,14 +52,21 @@ func _test_panel_is_bright_large_and_off_map() -> void:
 		var region_panel = main.runtime.region_info_panel._panel
 		_assert.that(region_panel != null, "region panel node should exist")
 		if region_panel != null:
+			_assert.that(not region_panel.visible, "region panel should collapse outside a stronghold")
+			var region_ids: Array = main.runtime.region_map.get_controllable_region_ids()
+			if not region_ids.is_empty():
+				var region_cells: Array = main.runtime.region_map.get_region_cells(int(region_ids[0]))
+				if not region_cells.is_empty():
+					main.runtime.region_info_panel.update_for_cell(region_cells[0])
+					_assert.that(region_panel.visible, "region panel should appear contextually over a stronghold")
 			var viewport_size: Vector2 = main.runtime.current_layout.get("viewport_size", Vector2(1120.0, 720.0))
 			var battlefield_rect: Rect2 = main.runtime.current_layout.get("battlefield_rect", Rect2())
 			var panel_rect := Rect2(region_panel.global_position, region_panel.size)
 			var bg = region_panel.get_node_or_null("Bg")
 			var title_label = main.runtime.region_info_panel._title_label
 
-			_assert.gte(region_panel.size.x, 240.0, "region panel should be wider and readable")
-			_assert.gte(region_panel.size.y, 180.0, "region panel should be taller and readable")
+			_assert.that(region_panel.size.x <= 224.0 and region_panel.size.x >= 210.0, "region panel should be compact but readable")
+			_assert.that(region_panel.size.y <= 184.0 and region_panel.size.y >= 170.0, "region panel should be vertically compact")
 			_assert.gte(region_panel.self_modulate.a, 0.95, "region panel should be visually solid")
 			_assert.gte(region_panel.self_modulate.r + region_panel.self_modulate.g + region_panel.self_modulate.b, 0.60, "region panel should be brighter")
 			_assert.that(bg is ColorRect, "region panel should keep background node")
@@ -67,7 +74,7 @@ func _test_panel_is_bright_large_and_off_map() -> void:
 				_assert.gte(bg.color.a, 0.84, "region panel background should be clear")
 			_assert.that(title_label is Label, "region panel should keep title label")
 			if title_label is Label:
-				_assert.gte(title_label.get_theme_font_size("font_size"), 16, "region title font should be larger")
+				_assert.gte(title_label.get_theme_font_size("font_size"), 15, "region title font should remain readable")
 
 			_assert.gte(panel_rect.position.x, battlefield_rect.position.x + battlefield_rect.size.x + 8.0, "region panel should not overlap the battlefield map")
 			_assert.that(not panel_rect.intersects(battlefield_rect), "region panel rect should stay outside battlefield rect")

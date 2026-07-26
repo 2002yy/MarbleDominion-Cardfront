@@ -1,12 +1,12 @@
 extends Node2D
 class_name CardfrontArenaPresentationLayer
 
-const FLOOR_COLOR: Color = Color(0.055, 0.105, 0.12, 1.0)
-const FLOOR_INNER: Color = Color(0.075, 0.145, 0.16, 1.0)
-const FLOOR_OUTLINE: Color = Color(0.01, 0.025, 0.04, 0.98)
-const CENTER_ACCENT: Color = Color(0.96, 0.74, 0.20, 0.46)
-const PLAYER_ACCENT: Color = Color(0.24, 0.70, 1.0, 0.52)
-const AI_ACCENT: Color = Color(1.0, 0.31, 0.44, 0.48)
+const FLOOR_COLOR: Color = Color(0.56, 0.72, 0.52, 1.0)
+const FLOOR_INNER: Color = Color(0.67, 0.79, 0.59, 1.0)
+const FLOOR_OUTLINE: Color = Color(0.18, 0.31, 0.25, 0.96)
+const CENTER_ACCENT: Color = Color(0.32, 0.78, 0.92, 0.72)
+const PLAYER_ACCENT: Color = Color(0.18, 0.66, 0.96, 0.72)
+const AI_ACCENT: Color = Color(0.94, 0.31, 0.42, 0.68)
 
 var battlefield = null
 var battlefield_rect: Rect2 = Rect2()
@@ -50,7 +50,7 @@ func _draw() -> void:
 	var shadow := PackedVector2Array()
 	for point in floor_polygon:
 		shadow.append(point + Vector2(0.0, 12.0))
-	draw_colored_polygon(shadow, Color(0.0, 0.0, 0.0, 0.38))
+	draw_colored_polygon(shadow, Color(0.08, 0.18, 0.16, 0.24))
 	draw_colored_polygon(floor_polygon, FLOOR_COLOR)
 	var outline := floor_polygon.duplicate()
 	outline.append(floor_polygon[0])

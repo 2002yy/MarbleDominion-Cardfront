@@ -22,11 +22,11 @@ var _yield_label: Label
 var _status_label: Label
 var _no_region_label: Label
 
-const PANEL_W: float = 248.0
-const PANEL_H: float = 220.0
-const MARGIN_RIGHT: float = 14.0
-const MARGIN_TOP: float = 96.0
-const CONTENT_X: float = 14.0
+const PANEL_W: float = 218.0
+const PANEL_H: float = 178.0
+const MARGIN_RIGHT: float = 12.0
+const MARGIN_TOP: float = 104.0
+const CONTENT_X: float = 11.0
 const CONTENT_W: float = PANEL_W - CONTENT_X * 2.0
 
 
@@ -43,6 +43,7 @@ func setup(new_region_map, new_battlefield, mode_name: String, new_territory_def
 	visible = CardfrontRulesScript.is_cardfront_mode(mode_name)
 	if visible:
 		_ensure_ui()
+		_show_empty()
 		_no_region_label.text = "鼠标移至区域上方"
 
 
@@ -63,27 +64,27 @@ func _ensure_ui() -> void:
 	bg.color = Color(0.05, 0.10, 0.18, 0.86 if CardfrontUiAssetRegistryScript.has_asset("region_info_panel") else 0.98)
 	_panel.add_child(bg)
 
-	_title_label = _make_label(_panel, Vector2(CONTENT_X, 8), Vector2(CONTENT_W, 24), "", 16, Color(1.0, 0.97, 0.76))
+	_title_label = _make_label(_panel, Vector2(CONTENT_X, 7), Vector2(CONTENT_W, 21), "", 15, Color(1.0, 0.97, 0.76))
 
-	var y: float = 38.0
+	var y: float = 31.0
 	for owner_id in [CardfrontRulesScript.PLAYER_FACTION, CardfrontRulesScript.AI_FACTION, CardfrontRulesScript.NEUTRAL_OWNER]:
 		var c := CardfrontRulesScript.owner_color(owner_id)
-		var label := _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 20), "", 14, c)
+		var label := _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 17), "", 12, c)
 		_control_labels[owner_id] = label
-		y += 21.0
+		y += 17.0
 
-	y += 4.0
-	_threshold_50 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 12, Color(0.68, 0.78, 0.92))
-	y += 19.0
-	_threshold_80 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 12, Color(0.68, 0.78, 0.92))
-	y += 19.0
-	_stronghold_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 12, Color(1.0, 0.82, 0.32))
-	y += 19.0
-	_yield_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 12, Color(0.72, 0.94, 1.0))
-	y += 19.0
-	_status_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 12, Color(0.94, 0.97, 1.0))
+	y += 2.0
+	_threshold_50 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 15), "", 11, Color(0.68, 0.78, 0.92))
+	y += 16.0
+	_threshold_80 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 15), "", 11, Color(0.68, 0.78, 0.92))
+	y += 16.0
+	_stronghold_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 15), "", 11, Color(1.0, 0.82, 0.32))
+	y += 16.0
+	_yield_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 15), "", 11, Color(0.72, 0.94, 1.0))
+	y += 16.0
+	_status_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 15), "", 11, Color(0.94, 0.97, 1.0))
 
-	_no_region_label = _make_label(_panel, Vector2(CONTENT_X, 66), Vector2(CONTENT_W, 34), "", 12, Color(0.74, 0.82, 0.92))
+	_no_region_label = _make_label(_panel, Vector2(CONTENT_X, 55), Vector2(CONTENT_W, 28), "", 11, Color(0.74, 0.82, 0.92))
 
 
 func update_for_cell(cell: Vector2i) -> void:
@@ -96,10 +97,16 @@ func update_for_cell(cell: Vector2i) -> void:
 	if region_id < 0:
 		_show_empty()
 		return
+	if region_map.has_method("get_controllable_region_ids"):
+		var controllable_ids: Array = region_map.get_controllable_region_ids()
+		if not controllable_ids.has(region_id):
+			_show_empty()
+			return
 	_update_panel(region_id)
 
 
 func _update_panel(region_id: int) -> void:
+	_panel.visible = true
 	var region_type: String = region_map.get_region_type_by_id(region_id)
 	var control: Dictionary = RegionControlCalculatorScript.calculate(region_map, battlefield, region_id)
 	var player_pct: int = RegionControlCalculatorScript.get_owner_percent(control, CardfrontRulesScript.PLAYER_FACTION)
@@ -166,6 +173,8 @@ func _update_panel(region_id: int) -> void:
 
 
 func _show_empty() -> void:
+	if _panel != null:
+		_panel.visible = false
 	_title_label.text = ""
 	for label in _control_labels.values():
 		label.text = ""

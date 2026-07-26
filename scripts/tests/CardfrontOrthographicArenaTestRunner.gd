@@ -37,7 +37,22 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.eq(camera.projection, Camera3D.PROJECTION_ORTHOGONAL, "orthographic arena: camera must be orthographic")
 	_assert.eq(view.get_tile_instance_count_for_test(), 1600, "orthographic arena: every 40x40 simulation cell should have one 3D tile")
 	_assert.eq(view.get_region_label_count_for_test(), 5, "orthographic arena: default map should expose five in-world stronghold labels")
+	_assert.eq(view.get_stronghold_platform_count_for_test(), 5, "orthographic arena: strongholds should read as five large platforms")
+	_assert.eq(view.get_bridge_count_for_test(), 2, "orthographic arena: open arena should expose two clear bridge crossings")
+	_assert.eq(view.get_gate_count_for_test(), 2, "orthographic arena: both bridge lanes should expose a gate")
+	_assert.eq(view.get_gate_openness_for_test(0), 1.0, "orthographic arena: gates should default open without changing gameplay")
+	_assert.that(view.set_gate_openness(0, 0.5), "orthographic arena: presentation gate should accept a normalized openness")
+	_assert.eq(view.get_gate_openness_for_test(0), 0.5, "orthographic arena: presentation gate should retain its openness")
+	_assert.gte(view.get_territory_boundary_count_for_test(), 160, "orthographic arena: outer edge and ownership fronts should receive bold boundaries")
 	_assert.eq(view.get_turret_proxy_count_for_test(), 2, "orthographic arena: player and AI should each have one visual proxy")
+	var background: Color = view.get_background_color_for_test()
+	_assert.gte((background.r + background.g + background.b) / 3.0, 0.70, "orthographic arena: daylight background should stay bright")
+	var player_color: Color = view.get_territory_color_for_test(CardfrontRulesScript.PLAYER_FACTION)
+	var ai_color: Color = view.get_territory_color_for_test(CardfrontRulesScript.AI_FACTION)
+	var neutral_color: Color = view.get_territory_color_for_test(CardfrontRulesScript.NEUTRAL_OWNER)
+	_assert.gte(_color_distance(player_color, ai_color), 0.20, "orthographic arena: player and AI ownership tints should be visibly distinct")
+	_assert.gte(_color_distance(player_color, neutral_color), 0.10, "orthographic arena: player ownership should remain distinct from grass")
+	_assert.gte(_color_distance(ai_color, neutral_color), 0.10, "orthographic arena: AI ownership should remain distinct from grass")
 	_assert.that(main.runtime.battlefield is Node2D, "orthographic arena: 2D Battlefield remains the authority")
 	_assert.that(main.runtime.bullet_pool is Node2D, "orthographic arena: 2D BulletPool remains the authority")
 
@@ -82,3 +97,7 @@ func _start_main(mode_name: String, grid_size: int):
 func _flush() -> void:
 	await process_frame
 	await process_frame
+
+
+func _color_distance(a: Color, b: Color) -> float:
+	return Vector3(a.r, a.g, a.b).distance_to(Vector3(b.r, b.g, b.b))

@@ -1,6 +1,6 @@
 # Project Status / 项目状态
 
-Last updated: 2026-07-23
+Last updated: 2026-07-26
 
 This is the only document that tracks the current version, active implementation slice, next step, and deferred scope.
 本文件是项目当前版本、正在实施内容、下一步和暂缓范围的唯一状态入口。
@@ -31,27 +31,37 @@ Confirmed product decisions:
 - Stable baseline: `v0.2.5.7-ui-copy-readability-pass`
 - Baseline commit: `9eadf9b`
 - Core-loop foundation commit: `bef12ce`
-- Current completed slice: `v0.3.1b-orthographic-2_5d-arena-spike`
-- Next slice: `v0.3.1c-map-identity-expansion`
+- Current completed slice: `v0.3.1c-open-dual-gate-arena`
+- Next slice: `v0.3.1d-gate-connectivity-rules`
 - Active branch: `main`
 
 ## Completed Slice / 已完成阶段
 
-`v0.3.1b-orthographic-2_5d-arena-spike` establishes a real orthographic 3D presentation layer while preserving the tested 2D simulation as the sole gameplay authority.
+`v0.3.1c-open-dual-gate-arena` replaces the compressed engineering board composition with a bright, full-width orthographic arena while preserving the tested 2D simulation as the sole gameplay authority.
 
 Scope:
 
 - A dedicated `SubViewport` now renders a true `Camera3D` in orthographic projection over an XZ battlefield.
+- The 3D presentation uses a separate full-width `arena_view_rect`; the square logical battlefield remains unchanged for input and physics.
 - A `MultiMeshInstance3D` mirrors every authoritative 2D territory cell without introducing 3D collision or duplicate game state.
+- Fine cell gaps are visually suppressed. A second `MultiMeshInstance3D` draws only the map perimeter and live ownership fronts as bold cartoon boundaries.
+- The terrain now uses a coarse olive checker, two narrow earth lanes, a slim river, wood-toned crossings, and simple green perimeter foliage instead of saturated cyan/pink/green slabs.
+- Player and AI ownership remain readable through cool-blue and warm-red terrain tints plus the dynamic dark frontier outline.
 - The player and AI turrets, command chambers, barrel direction, health, active marbles, and aim ray are mirrored into reusable 3D visual proxies.
-- Energy, factory, and lab strongholds are visibly raised and carry in-world type and control-percentage labels.
+- Energy, factory, and lab strongholds are large raised platforms with in-world type and control-percentage labels.
+- The center is now a bright river corridor with two bridge gates. Each gate has a visible open/half-open/closed state and defaults to 100% open.
+- The region information panel is contextual and collapses outside a stronghold, so it no longer occupies the right side continuously.
+- The contextual region panel and the lower-left direction control were reduced and pushed to the screen edges to protect the arena.
 - The 3D viewport ignores mouse input, so existing 2D battlefield targeting remains the input authority.
 - The formal HUD remains in its existing higher `CanvasLayer` stack.
 - BallWar does not create the orthographic arena view.
 
 Acceptance:
 
-- Cardfront creates one active orthographic `Camera3D`, 1,600 mirrored tiles on the 40-grid default map, five stronghold labels, and two combatant proxies.
+- Cardfront creates one active orthographic `Camera3D`, 1,600 mirrored tiles, dynamic ownership-front outlines, five stronghold platforms, two bridges, two gate views, and two combatant proxies.
+- At 1120 x 720, the arena presentation spans at least 95% of the viewport width and 78% of its height.
+- The arena uses a daylight background and bright territory palette rather than the previous dark navy board.
+- Player, AI, and neutral territory colors have tested minimum RGB separation while sharing one coherent grass material language.
 - A bottom-edge player position maps to the positive-Z half of the 3D world.
 - Active 2D bullets receive capped, reusable 3D sphere proxies.
 - The original `Battlefield`, `BulletPool`, `Bullet`, and `Turret` nodes remain 2D gameplay authorities.
@@ -63,25 +73,28 @@ Implementation result:
 - Added `CardfrontOrthographicArenaView` as a presentation-only runtime boundary.
 - Registered the view through `CardfrontArenaBuilder`, `CardfrontRuntimeBuilder`, `CardfrontSystemRegistry`, and `GameRuntimeContext`.
 - Added `CardfrontOrthographicArenaTestRunner` to the arena CI batch.
-- Verified a real OpenGL window render on the local NVIDIA compatibility renderer; the board is nonblank and the formal HUD remains unobstructed.
+- Verified a real 1120 x 720 OpenGL window render on the local NVIDIA compatibility renderer; the arena is nonblank, bright, full-width, and the empty region panel no longer covers its right side.
 
 Known transition boundaries:
 
 - The old `Node2D` arena framing remains underneath as a fallback and decorative surround; the playable board itself is now rendered by the orthographic 3D viewport.
-- Primitive meshes and lighting are intentionally an engineering spike, not final environment art.
+- Primitive meshes and lighting remain graybox-quality, not final environment art.
+- Gate openness is currently a presentation-state API only. Both gates default open and do not yet block, filter, or redirect authoritative 2D bullets.
 - 3D bullet proxies currently show the marble body and aim ray, but not a dedicated 3D trail/VFX library.
 - Stronghold sampling is intentionally round-based, so control changes during a volley take effect when the next draft opens.
 - The three registered map definitions share one stronghold ruleset; their route geometry and visual identity remain a later slice.
 
 ## Planned Slices / 后续阶段
 
-1. `v0.3.1c-map-identity-expansion`
-   - Add visibly distinct route structures, chamber approaches, and stronghold placements.
-   - Keep chamber destruction, the six-upgrade pool, and stronghold bonus rules stable while comparing layouts.
-2. `v0.3.1d-orthographic-visual-polish`
+1. `v0.3.1d-gate-connectivity-rules`
+   - Define who controls each gate, when its state is sampled, and how closed/half-open/open states filter authoritative 2D volleys.
+   - Keep both gates open until the rule layer and native tests are complete, so this visual pass does not silently change combat.
+2. `v0.3.1e-map-identity-expansion`
+   - Add visibly distinct route structures, chamber approaches, and stronghold placements while retaining the dual-gate language.
+3. `v0.3.1f-orthographic-visual-polish`
    - Replace primitive turret/chamber silhouettes with authored low-poly presenters and add readable 3D projectile trails and hit pulses.
    - Establish a shared typography/material policy for in-world labels without changing the formal HUD interaction contract.
-3. `v0.3.2a-summon-rule-foundation`
+4. `v0.3.2a-summon-rule-foundation`
    - Define allied and neutral summon ownership, movement, collision, targeting, and despawn rules.
    - Add chaos/summon content only after the rule layer is covered by native tests.
 
