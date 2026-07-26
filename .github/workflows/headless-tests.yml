@@ -106,13 +106,23 @@ jobs:
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontModeSmokeTestRunner.gd
-          - batch: Cardfront v0.3 vertical-slice closeout
+          - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
+          - batch: Cardfront card pool rebalance
+            scripts: |
               CardfrontCardPoolRebalanceTestRunner.gd
+          - batch: Cardfront territory defense
+            scripts: |
               CardfrontTerritoryDefenseTestRunner.gd
+          - batch: Cardfront vertical slice feedback
+            scripts: |
               CardfrontVerticalSliceFeedbackTestRunner.gd
+          - batch: Cardfront live runtime boundary
+            scripts: |
               CardfrontLiveRuntimeBoundaryTestRunner.gd
+          - batch: Cardfront vertical performance smoke
+            scripts: |
               CardfrontPerformanceSmokeTestRunner.gd
           - batch: Cardfront v0.3 tactical strongholds
             scripts: |
@@ -125,6 +135,9 @@ jobs:
           - batch: Cardfront v0.3 hero balance
             scripts: |
               CardfrontHeroBalanceSimulationTestRunner.gd
+          - batch: Cardfront v0.3 parity balance audit
+            scripts: |
+              CardfrontParityBalanceAuditTestRunner.gd
           - batch: Cardfront v0.3 gate connectivity
             scripts: |
               CardfrontGateConnectivityTestRunner.gd
@@ -191,3 +204,11 @@ jobs:
               exit $LASTEXITCODE
             }
           }
+
+      - name: Upload parity balance audit
+        if: always() && matrix.batch == 'Cardfront v0.3 parity balance audit'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardfront-parity-audit-${{ github.run_id }}
+          path: artifacts/cardfront-parity-audit.*
+          if-no-files-found: error
