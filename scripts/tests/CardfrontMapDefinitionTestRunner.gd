@@ -18,6 +18,8 @@ func _run() -> void:
 	await process_frame
 
 	_test_registered_maps_validate()
+	_test_strategic_route_profiles_are_distinct()
+	_test_invalid_route_and_strategy_data_is_rejected()
 	_test_region_map_public_paint_api()
 	_test_default_map_builds_region_instances()
 	_test_generate_default_layout_uses_default_definition()
@@ -44,6 +46,55 @@ func _test_registered_maps_validate() -> void:
 		_assert.that(str(definition.get("stronghold_ruleset", "")) != "", "map registry: tactical stronghold ruleset should be explicit")
 		for retired_key in ["win_rule", "resource_multiplier", "allowed_card_pool"]:
 			_assert.that(not definition.has(retired_key), "map registry: retired metadata should be absent: %s" % retired_key)
+
+
+func _test_strategic_route_profiles_are_distinct() -> void:
+	var route_snapshots: Dictionary = {}
+	var identities: Dictionary = {}
+	var lane_spacings: Dictionary = {}
+	for map_id in CardfrontMapRegistryScript.get_registered_map_ids():
+		var definition: Dictionary = CardfrontMapRegistryScript.get_map_definition(str(map_id), 40)
+		var route_layout: Dictionary = CardfrontMapDefinitionScript.route_layout_snapshot(definition)
+		var strategy_profile: Dictionary = CardfrontMapDefinitionScript.strategy_profile_snapshot(definition)
+		var centers: Array = route_layout.get("lane_center_ratios", []) as Array
+		_assert.eq(centers.size(), 2, "map strategy: first-stage maps should expose exactly two bridge lanes: %s" % str(map_id))
+		if centers.size() == 2:
+			_assert.eq(float(centers[0]) + float(centers[1]), 1.0, "map strategy: competitive bridge lanes should remain rotationally symmetric: %s" % str(map_id))
+			lane_spacings[str(map_id)] = float(centers[1]) - float(centers[0])
+		_assert.eq(float(route_layout.get("river_y_ratio", 0.0)), 0.5, "map strategy: first-stage river should stay on the center line: %s" % str(map_id))
+		_assert.that(str(strategy_profile.get("identity", "")) != "", "map strategy: identity should be player-readable: %s" % str(map_id))
+		_assert.that(str(strategy_profile.get("summary", "")) != "", "map strategy: summary should explain the route question: %s" % str(map_id))
+		_assert.that(str(strategy_profile.get("opening_hint", "")) != "", "map strategy: opening hint should be actionable: %s" % str(map_id))
+		route_snapshots[str(map_id)] = JSON.stringify(route_layout, "", true, true)
+		identities[str(strategy_profile.get("identity", ""))] = true
+
+	_assert.eq(identities.size(), 3, "map strategy: all three registered maps should have different strategic identities")
+	_assert.eq(route_snapshots.values().duplicate().size(), 3, "map strategy: route snapshots should be recorded for all maps")
+	_assert.lt(float(lane_spacings[CardfrontMapRegistryScript.CROSS_RESOURCE_MAP_ID]), float(lane_spacings[CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID]), "map strategy: Cross Strongholds should pull its bridges inward")
+	_assert.gt(float(lane_spacings[CardfrontMapRegistryScript.CENTRAL_LAB_MAP_ID]), float(lane_spacings[CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID]), "map strategy: Central Lab should push its bridges outward")
+	_assert.neq(route_snapshots[CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID], route_snapshots[CardfrontMapRegistryScript.CROSS_RESOURCE_MAP_ID], "map strategy: default and cross route layouts should differ")
+	_assert.neq(route_snapshots[CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID], route_snapshots[CardfrontMapRegistryScript.CENTRAL_LAB_MAP_ID], "map strategy: default and central-lab route layouts should differ")
+
+
+func _test_invalid_route_and_strategy_data_is_rejected() -> void:
+	var definition: Dictionary = CardfrontMapRegistryScript.get_map_definition(CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID, 40)
+	var overlapping: Dictionary = definition.duplicate(true)
+	overlapping["route_layout"]["lane_center_ratios"] = [0.45, 0.50]
+	overlapping["route_layout"]["lane_half_width_ratio"] = 0.05
+	var overlap_errors: Array = CardfrontMapDefinitionScript.validate(overlapping)
+	_assert.that("overlapping_route_lanes" in overlap_errors, "map validation: overlapping bridge lanes should be rejected")
+
+	var out_of_bounds: Dictionary = definition.duplicate(true)
+	out_of_bounds["route_layout"]["lane_center_ratios"] = [0.10, 0.90]
+	out_of_bounds["route_layout"]["control_zone_half_width_ratio"] = 0.15
+	var bounds_errors: Array = CardfrontMapDefinitionScript.validate(out_of_bounds)
+	_assert.that("route_control_zone_out_of_bounds:0" in bounds_errors, "map validation: left control zone should stay inside the board")
+	_assert.that("route_control_zone_out_of_bounds:1" in bounds_errors, "map validation: right control zone should stay inside the board")
+
+	var missing_hint: Dictionary = definition.duplicate(true)
+	missing_hint["strategy_profile"]["opening_hint"] = ""
+	var hint_errors: Array = CardfrontMapDefinitionScript.validate(missing_hint)
+	_assert.that("missing_strategy_profile:opening_hint" in hint_errors, "map validation: every strategic map should explain an opening decision")
 
 
 func _test_region_map_public_paint_api() -> void:
