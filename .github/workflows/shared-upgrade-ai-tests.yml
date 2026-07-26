@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: shared-upgrade-ai-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   shared-upgrade-ai:
     name: ${{ matrix.batch }}
