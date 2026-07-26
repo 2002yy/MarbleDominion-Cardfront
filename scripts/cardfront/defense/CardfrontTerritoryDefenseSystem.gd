@@ -173,7 +173,8 @@ func initialize_starting_defense() -> int:
 		if contact_front_value <= int(starting_values[int(owner_id)]):
 			continue
 		for raw_cell in contact_cells:
-			fortify_layer.set_fortify_stack(raw_cell as Vector2i, contact_front_value)
+			var contact_cell: Vector2i = raw_cell
+			fortify_layer.set_fortify_stack(contact_cell, contact_front_value)
 
 	last_defended_cell_count = _count_current_defended_cells()
 	defense_refreshed.emit(owner_caps.duplicate(), last_defended_cell_count)
