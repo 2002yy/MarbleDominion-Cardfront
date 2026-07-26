@@ -19,12 +19,27 @@ static func make(grid_size: int) -> Dictionary:
 	]
 	return CardfrontMapDefinitionScript.make("cross_resource", size, regions, {
 		"display_name": "Cross Strongholds",
+		"layout_style": "inward_crossfire",
 		"spawn_zones": [],
 		"neutral_zones": [],
 		"objective_rule": CardfrontMapDefinitionScript.OBJECTIVE_DESTROY_COMMAND_CHAMBER,
 		"stronghold_ruleset": StrongholdRulesScript.RULESET_ID,
 		"time_limit": CardfrontRulesScript.MATCH_DURATION_SECONDS,
 		"ai_profile": "baseline_duel",
+		"route_layout": {
+			"river_y_ratio": 0.5,
+			"lane_center_ratios": [0.38, 0.62],
+			"lane_half_width_ratio": 0.095,
+			"control_zone_half_width_ratio": 0.13,
+			"control_zone_half_height_ratio": 0.11,
+			"lane_names": ["inner_left_bridge", "inner_right_bridge"],
+		},
+		"strategy_profile": {
+			"identity": "central_crossfire",
+			"summary": "Two close bridges turn the central cross into one shared collision zone.",
+			"opening_hint": "Central control pressures both bridges, but concentrated shots also collide and stall there.",
+			"tags": ["two_lane", "close_lanes", "central_conflict", "fast_tempo"],
+		},
 		"simulation_profile": {
 			"chamber_hit_chance": 0.188,
 			"average_cells_crossed": 17.5,
