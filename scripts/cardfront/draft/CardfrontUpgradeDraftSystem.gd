@@ -74,8 +74,12 @@ func is_upgrade_eligible(definition: Dictionary, run_state = null) -> bool:
 	var upgrade_id: String = str(definition.get("id", ""))
 	if upgrade_id == UpgradeManifestScript.UPGRADE_RARITY_PLUS_1:
 		return int(run_state.get("rarity_level")) < RunStateScript.MAX_RARITY_LEVEL
-	if upgrade_id == UpgradeManifestScript.UPGRADE_MIRROR_NEXT_CHOICE:
-		return not bool(run_state.get("duplicate_next_choice"))
+	if upgrade_id == UpgradeManifestScript.UPGRADE_ATTACK_LEVEL_PLUS_1:
+		return int(run_state.get("attack_level")) < RunStateScript.MAX_ATTACK_LEVEL
+	if upgrade_id == UpgradeManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1:
+		return int(run_state.get("territory_defense_cap")) < RunStateScript.MAX_TERRITORY_DEFENSE_CAP
+	if upgrade_id == UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE:
+		return not bool(run_state.get("echo_next_choice_armed"))
 	return true
 
 

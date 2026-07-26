@@ -133,13 +133,21 @@ func build_intent(owner_id: int, shot_count: int = -1):
 	return intent
 
 
-func issue_volley(owner_id: int, shot_count: int, projectile_power: int = 1):
+func issue_volley(
+	owner_id: int,
+	shot_count: int,
+	projectile_power: int = 1,
+	chamber_damage_quarters: int = 4,
+	armor_pierce_contacts: int = 0
+):
 	var intent = build_intent(owner_id, 1)
 	if intent == null:
 		fire_skipped.emit(int(owner_id), "no_target")
 		return null
 	intent.shot_count = clampi(int(shot_count), 1, GameConfig.get_max_pending_count())
 	intent.projectile_power = clampi(int(projectile_power), 1, 999)
+	intent.chamber_damage_quarters = clampi(int(chamber_damage_quarters), 1, 9999)
+	intent.armor_pierce_contacts = maxi(0, int(armor_pierce_contacts))
 	fire_tick.emit(int(owner_id), intent)
 	fire_requested.emit(int(owner_id), intent)
 	if not _request_fire(int(owner_id), intent):

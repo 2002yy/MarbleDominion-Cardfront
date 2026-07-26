@@ -2,6 +2,7 @@ extends Node
 class_name CardfrontTerritoryDefenseSystem
 
 signal defense_refreshed(owner_caps, defended_cell_count)
+signal territory_repaired(owner_id, requested_points, restored_points, zone)
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
@@ -30,12 +31,58 @@ func setup(new_battlefield, new_region_map, new_fortify_layer, new_round_directo
 		return false
 	if round_director == null or not is_instance_valid(round_director):
 		return false
+	if round_director.has_method("set_territory_defense_system"):
+		round_director.set_territory_defense_system(self)
 	var launch_callable := Callable(self, "_on_volley_launched")
 	if not round_director.volley_launched.is_connected(launch_callable):
 		round_director.volley_launched.connect(launch_callable)
 	_sync_caps_from_run_states()
 	initialize_starting_defense()
 	return true
+
+
+func apply_pending_repair(owner_id: int, run_state) -> int:
+	if run_state == null:
+		return 0
+	var request: Dictionary = run_state.consume_pending_repair()
+	var requested_points: int = maxi(0, int(request.get("points", 0)))
+	var zone: String = str(request.get("zone", "frontline"))
+	if requested_points <= 0:
+		return 0
+	owner_caps[int(owner_id)] = clampi(
+		int(run_state.territory_defense_cap),
+		1,
+		TuningScript.MAX_TERRITORY_DEFENSE_CAP
+	)
+	var restored_points: int = repair_owner(owner_id, requested_points, zone)
+	territory_repaired.emit(owner_id, requested_points, restored_points, zone)
+	return restored_points
+
+
+func repair_owner(owner_id: int, amount: int, zone: String = "frontline") -> int:
+	if battlefield == null or fortify_layer == null or amount <= 0:
+		return 0
+	var cap: int = get_owner_cap(owner_id)
+	if cap <= 0:
+		return 0
+	var candidates: Array = _repair_candidates(owner_id, zone, cap)
+	var restored: int = 0
+	while restored < amount and not candidates.is_empty():
+		var changed_this_pass: bool = false
+		for raw_cell in candidates:
+			if restored >= amount:
+				break
+			var cell: Vector2i = raw_cell
+			var current: int = get_cell_defense(cell)
+			if current >= cap:
+				continue
+			fortify_layer.add_fortify_stack(cell, 1)
+			restored += 1
+			changed_this_pass = true
+		if not changed_this_pass:
+			break
+	last_defended_cell_count = _count_current_defended_cells()
+	return restored
 
 
 func get_owner_cap(owner_id: int) -> int:
@@ -134,3 +181,40 @@ func _count_current_defended_cells() -> int:
 			if get_cell_defense(Vector2i(x, y)) > 0:
 				defended += 1
 	return defended
+
+
+func _repair_candidates(owner_id: int, zone: String, cap: int) -> Array:
+	var preferred: Array = []
+	var fallback: Array = []
+	for x in range(int(battlefield.grid_size)):
+		for y in range(int(battlefield.grid_size)):
+			var cell := Vector2i(x, y)
+			if int(battlefield.owners[x][y]) != int(owner_id):
+				continue
+			if get_cell_defense(cell) >= cap:
+				continue
+			if zone == "frontline" and _is_frontline_cell(cell, owner_id):
+				preferred.append(cell)
+			else:
+				fallback.append(cell)
+	preferred.sort_custom(_sort_cells)
+	fallback.sort_custom(_sort_cells)
+	if zone == "frontline":
+		return preferred
+	return fallback
+
+
+func _is_frontline_cell(cell: Vector2i, owner_id: int) -> bool:
+	for offset in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+		var neighbor: Vector2i = cell + offset
+		if not battlefield.is_inside(neighbor):
+			continue
+		if int(battlefield.owners[neighbor.x][neighbor.y]) != int(owner_id):
+			return true
+	return false
+
+
+func _sort_cells(a: Vector2i, b: Vector2i) -> bool:
+	if a.y == b.y:
+		return a.x < b.x
+	return a.y < b.y

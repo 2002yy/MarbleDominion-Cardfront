@@ -30,7 +30,7 @@ func _run() -> void:
 
 func _test_manifest_is_valid() -> void:
 	_assert.eq(UpgradeManifestScript.validate_all(), [], "upgrade manifest: all definitions should validate")
-	_assert.eq(UpgradeManifestScript.get_upgrade_ids().size(), 6, "upgrade manifest: first slice should contain six upgrades")
+	_assert.eq(UpgradeManifestScript.get_upgrade_ids().size(), 8, "upgrade manifest: first generation should contain eight upgrades")
 
 
 func _test_cards_are_text_and_symbol_driven() -> void:
@@ -67,7 +67,7 @@ func _test_rarity_growth_changes_weights() -> void:
 	var state = RunStateScript.new()
 	state.setup(0)
 	var draft = DraftSystemScript.new()
-	var rare_definition: Dictionary = UpgradeManifestScript.get_definition(UpgradeManifestScript.UPGRADE_MIRROR_NEXT_CHOICE)
+	var rare_definition: Dictionary = UpgradeManifestScript.get_definition(UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE)
 	var common_definition: Dictionary = UpgradeManifestScript.get_definition(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5)
 	var base_rare_weight: float = draft.weight_for_definition(rare_definition, state)
 	var base_common_weight: float = draft.weight_for_definition(common_definition, state)
@@ -112,13 +112,17 @@ func _test_capped_or_armed_upgrades_are_not_offered() -> void:
 	var state = RunStateScript.new()
 	state.setup(0)
 	state.increase_rarity_level(RunStateScript.MAX_RARITY_LEVEL)
-	state.arm_duplicate_next_choice()
+	state.increase_attack_level(RunStateScript.MAX_ATTACK_LEVEL)
+	state.increase_territory_defense_cap(RunStateScript.MAX_TERRITORY_DEFENSE_CAP)
+	state.arm_echo_next_choice()
 	var draft = DraftSystemScript.new()
 	draft.set_seed(119)
 	var offer_ids: Array = _offer_ids(draft.draw_three(state))
 
 	_assert.that(not offer_ids.has(UpgradeManifestScript.UPGRADE_RARITY_PLUS_1), "draft: capped rarity upgrade should not be offered")
-	_assert.that(not offer_ids.has(UpgradeManifestScript.UPGRADE_MIRROR_NEXT_CHOICE), "draft: armed mirror should not be offered")
+	_assert.that(not offer_ids.has(UpgradeManifestScript.UPGRADE_ATTACK_LEVEL_PLUS_1), "draft: capped attack upgrade should not be offered")
+	_assert.that(not offer_ids.has(UpgradeManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1), "draft: capped defense upgrade should not be offered")
+	_assert.that(not offer_ids.has(UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE), "draft: armed echo should not be offered")
 	_assert.eq(offer_ids.size(), 3, "draft: eligibility filters should still leave three choices")
 
 

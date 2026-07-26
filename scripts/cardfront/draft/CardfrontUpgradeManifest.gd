@@ -7,10 +7,12 @@ const RARITY_RARE: String = "rare"
 
 const UPGRADE_VOLLEY_PLUS_5: String = "volley_plus_5"
 const UPGRADE_VOLLEY_X2: String = "volley_x2"
-const UPGRADE_PROJECTILE_POWER_PLUS_1: String = "projectile_power_plus_1"
+const UPGRADE_ATTACK_LEVEL_PLUS_1: String = "attack_level_plus_1"
 const UPGRADE_DEFENSE_CAP_PLUS_1: String = "defense_cap_plus_1"
+const UPGRADE_FRONTLINE_REPAIR: String = "frontline_repair"
+const UPGRADE_ARMOR_PIERCING: String = "armor_piercing"
 const UPGRADE_RARITY_PLUS_1: String = "rarity_plus_1"
-const UPGRADE_MIRROR_NEXT_CHOICE: String = "mirror_next_choice"
+const UPGRADE_ECHO_NEXT_CHOICE: String = "echo_next_choice"
 
 const DEFINITIONS := {
 	UPGRADE_VOLLEY_PLUS_5: {
@@ -33,15 +35,15 @@ const DEFINITIONS := {
 		"params": {"multiplier": 2},
 		"description": "下一次齐射数量翻倍",
 	},
-	UPGRADE_PROJECTILE_POWER_PLUS_1: {
-		"id": UPGRADE_PROJECTILE_POWER_PLUS_1,
-		"name": "强化弹头",
-		"symbol": "+1",
-		"rarity": RARITY_COMMON,
+	UPGRADE_ATTACK_LEVEL_PLUS_1: {
+		"id": UPGRADE_ATTACK_LEVEL_PLUS_1,
+		"name": "攻击训练",
+		"symbol": "+25%",
+		"rarity": RARITY_UNCOMMON,
 		"category": "run_growth",
-		"effect_id": "increase_projectile_power",
+		"effect_id": "increase_attack_level",
 		"params": {"amount": 1},
-		"description": "本局子弹破坏力永久增加 1",
+		"description": "本局控制舱伤害永久提高 25%，最多 3 级",
 	},
 	UPGRADE_DEFENSE_CAP_PLUS_1: {
 		"id": UPGRADE_DEFENSE_CAP_PLUS_1,
@@ -53,6 +55,26 @@ const DEFINITIONS := {
 		"params": {"amount": 1},
 		"description": "本局地图防守值上限永久增加 1",
 	},
+	UPGRADE_FRONTLINE_REPAIR: {
+		"id": UPGRADE_FRONTLINE_REPAIR,
+		"name": "前线修复",
+		"symbol": "+6",
+		"rarity": RARITY_COMMON,
+		"category": "territory",
+		"effect_id": "repair_territory",
+		"params": {"amount": 6, "zone": "frontline"},
+		"description": "为前线领土恢复共 6 层防守，每轮每格最多恢复 1 层",
+	},
+	UPGRADE_ARMOR_PIERCING: {
+		"id": UPGRADE_ARMOR_PIERCING,
+		"name": "穿甲轨迹",
+		"symbol": "AP6",
+		"rarity": RARITY_UNCOMMON,
+		"category": "next_volley",
+		"effect_id": "add_armor_pierce",
+		"params": {"contacts": 6},
+		"description": "下一次齐射前 6 次防守接触忽略 1 层防守",
+	},
 	UPGRADE_RARITY_PLUS_1: {
 		"id": UPGRADE_RARITY_PLUS_1,
 		"name": "稀有预感",
@@ -63,25 +85,27 @@ const DEFINITIONS := {
 		"params": {"amount": 1},
 		"description": "本局后续抽取的高稀有强化概率提高",
 	},
-	UPGRADE_MIRROR_NEXT_CHOICE: {
-		"id": UPGRADE_MIRROR_NEXT_CHOICE,
-		"name": "镜像回声",
-		"symbol": "x2",
+	UPGRADE_ECHO_NEXT_CHOICE: {
+		"id": UPGRADE_ECHO_NEXT_CHOICE,
+		"name": "延迟回响",
+		"symbol": "ECHO",
 		"rarity": RARITY_RARE,
 		"category": "draft_growth",
-		"effect_id": "duplicate_next_choice",
+		"effect_id": "echo_next_choice",
 		"params": {},
-		"description": "下一次选择的强化完整结算两次",
+		"description": "下一次选择结算一次，并在再下一轮额外重放一次",
 	},
 }
 
 const REQUIRED_PARAMS := {
 	"add_next_volley": ["amount"],
 	"multiply_next_volley": ["multiplier"],
-	"increase_projectile_power": ["amount"],
+	"increase_attack_level": ["amount"],
 	"increase_defense_cap": ["amount"],
+	"repair_territory": ["amount", "zone"],
+	"add_armor_pierce": ["contacts"],
 	"increase_rarity": ["amount"],
-	"duplicate_next_choice": [],
+	"echo_next_choice": [],
 }
 
 

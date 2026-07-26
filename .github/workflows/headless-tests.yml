@@ -109,6 +109,7 @@ jobs:
           - batch: Cardfront v0.3 vertical-slice closeout
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
+              CardfrontCardPoolRebalanceTestRunner.gd
               CardfrontTerritoryDefenseTestRunner.gd
               CardfrontVerticalSliceFeedbackTestRunner.gd
               CardfrontLiveRuntimeBoundaryTestRunner.gd

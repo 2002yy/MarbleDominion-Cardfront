@@ -31,6 +31,7 @@ var fire_director = null
 var turrets: Dictionary = {}
 var direction_controller = null
 var stronghold_system = null
+var territory_defense_system = null
 var hero_assignments: Dictionary = {}
 var phase_controller = MatchPhaseControllerScript.new()
 var run_states: Dictionary = {}
@@ -178,6 +179,10 @@ func set_seed_for_tests(seed_value: int) -> void:
 	_draft_system.set_seed(seed_value)
 
 
+func set_territory_defense_system(system) -> void:
+	territory_defense_system = system
+
+
 func force_open_draft_for_test() -> void:
 	if phase_controller.phase != MatchPhaseScript.BATTLE_COUNTDOWN:
 		return
@@ -253,8 +258,12 @@ func _begin_resolution() -> void:
 	_resolution_started = true
 	for owner_id in RulesScript.get_duel_factions():
 		var upgrade_id: String = phase_controller.get_selected_upgrade_id(int(owner_id))
-		last_resolution_results[int(owner_id)] = _upgrade_resolver.resolve(get_run_state(int(owner_id)), upgrade_id)
-		var plan = _volley_resolver.build_and_consume(get_run_state(int(owner_id)))
+		var run_state = get_run_state(int(owner_id))
+		last_resolution_results[int(owner_id)] = _upgrade_resolver.resolve(run_state, upgrade_id)
+		if territory_defense_system != null and is_instance_valid(territory_defense_system):
+			var repaired_points: int = territory_defense_system.apply_pending_repair(int(owner_id), run_state)
+			last_resolution_results[int(owner_id)]["repaired_points"] = repaired_points
+		var plan = _volley_resolver.build_and_consume(run_state)
 		if stronghold_system != null and is_instance_valid(stronghold_system):
 			stronghold_system.apply_to_volley_plan(int(owner_id), plan, current_stronghold_bonuses)
 		current_plans[int(owner_id)] = plan
@@ -278,7 +287,13 @@ func _launch_resolved_volleys() -> void:
 			continue
 		var intent = null
 		if fire_director.has_method("issue_volley"):
-			intent = fire_director.issue_volley(int(owner_id), int(plan.shot_count), int(plan.projectile_power))
+			intent = fire_director.issue_volley(
+				int(owner_id),
+				int(plan.shot_count),
+				int(plan.projectile_power),
+				int(plan.chamber_damage_quarters),
+				int(plan.armor_pierce_contacts)
+			)
 		issued_intents[int(owner_id)] = intent
 	volley_launched.emit(current_plans.duplicate(false), issued_intents)
 	phase_controller.complete_launch()

@@ -81,7 +81,16 @@ func set_tracked_turrets(turret_map: Dictionary) -> void:
 		if not turret.burst_progress.is_connected(progress_callable):
 			turret.burst_progress.connect(progress_callable)
 
-func spawn_bullet(faction_id: int, pos: Vector2, dir: Vector2, battlefield, target_turrets: Dictionary = {}):
+func spawn_bullet(
+	faction_id: int,
+	pos: Vector2,
+	dir: Vector2,
+	battlefield,
+	target_turrets: Dictionary = {},
+	damage_power: int = 1,
+	chamber_damage_quarters: int = 0,
+	capture_context: Dictionary = {}
+):
 	var max_active: int = GameConfig.get_max_active_bullets()
 	while active_bullets.size() >= max_active and active_bullets.size() > 0:
 		var oldest_bullet = _get_oldest_active_bullet()
@@ -93,7 +102,16 @@ func spawn_bullet(faction_id: int, pos: Vector2, dir: Vector2, battlefield, targ
 		recycle_bullet(oldest_bullet)
 
 	var bullet = _obtain_bullet_with_visual_profile()
-	bullet.setup(faction_id, pos, dir, battlefield, target_turrets)
+	bullet.setup(
+		faction_id,
+		pos,
+		dir,
+		battlefield,
+		target_turrets,
+		damage_power,
+		chamber_damage_quarters,
+		capture_context
+	)
 	bullet.activate()
 	return _finalize_spawned_bullet(bullet)
 

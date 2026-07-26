@@ -9,6 +9,8 @@ var speed = GameConfig.BULLET_SPEED
 var battlefield
 var target_turrets = {}
 var damage_power: int = 1
+var chamber_damage_quarters: int = 0
+var capture_context: Dictionary = {}
 var last_cell = Vector2i(-999, -999)
 var age = 0.0
 var trail_points = []
@@ -26,7 +28,16 @@ var last_trail_position: Vector2 = Vector2.INF
 func get_trail_segment_count() -> int:
 	return maxi(0, trail_points.size() - 1)
 
-func setup(new_faction_id: int, new_position: Vector2, new_direction: Vector2, new_battlefield, new_target_turrets = {}, new_damage_power: int = 1) -> void:
+func setup(
+	new_faction_id: int,
+	new_position: Vector2,
+	new_direction: Vector2,
+	new_battlefield,
+	new_target_turrets = {},
+	new_damage_power: int = 1,
+	new_chamber_damage_quarters: int = 0,
+	new_capture_context: Dictionary = {}
+) -> void:
 	var previous_segments: int = get_trail_segment_count()
 	faction_id = new_faction_id
 	global_position = new_position
@@ -38,6 +49,8 @@ func setup(new_faction_id: int, new_position: Vector2, new_direction: Vector2, n
 		_cached_map_size = float(battlefield.grid_size) * float(battlefield.cell_size)
 	target_turrets = new_target_turrets
 	damage_power = clampi(int(new_damage_power), 1, 999)
+	chamber_damage_quarters = maxi(0, int(new_chamber_damage_quarters))
+	capture_context = new_capture_context
 	speed = GameConfig.BULLET_SPEED
 	last_cell = Vector2i(-999, -999)
 	age = 0.0
@@ -79,6 +92,8 @@ func deactivate() -> void:
 	set_physics_process(false)
 	battlefield = null
 	target_turrets = {}
+	chamber_damage_quarters = 0
+	capture_context = {}
 	trail_points.clear()
 	_notify_trail_segments_if_needed(previous_segments)
 	_request_trail_redraw()
@@ -205,7 +220,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	last_cell = cell
-	var result = battlefield.apply_bullet(cell, faction_id)
+	var result = battlefield.apply_bullet(cell, faction_id, capture_context)
 	if result == "HIT_ENEMY_CELL":
 		_despawn()
 
@@ -307,7 +322,10 @@ func _try_hit_enemy_turret() -> bool:
 			continue
 		var hit_radius_sq: float = GameConfig.TURRET_HIT_RADIUS * GameConfig.TURRET_HIT_RADIUS
 		if global_position.distance_squared_to(turret.global_position) <= hit_radius_sq:
-			turret.take_damage(GameConfig.BULLET_DAMAGE * damage_power)
+			if chamber_damage_quarters > 0 and turret.has_method("take_damage_quarters"):
+				turret.take_damage_quarters(chamber_damage_quarters * damage_power)
+			else:
+				turret.take_damage(GameConfig.BULLET_DAMAGE * damage_power)
 			return true
 	return false
 

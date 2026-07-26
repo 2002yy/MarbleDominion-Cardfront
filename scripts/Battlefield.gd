@@ -163,14 +163,14 @@ func world_to_cell(world_position: Vector2) -> Vector2i:
 func is_inside(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.y >= 0 and cell.x < grid_size and cell.y < grid_size
 
-func apply_bullet(cell: Vector2i, faction_id: int) -> String:
+func apply_bullet(cell: Vector2i, faction_id: int, capture_context: Dictionary = {}) -> String:
 	if not is_inside(cell):
 		return "OUTSIDE"
 	var old: int = owners[cell.x][cell.y]
 	if old == faction_id:
 		return "SAME_CELL"
 	if capture_interceptor != null and is_instance_valid(capture_interceptor) and capture_interceptor.has_method("should_block_capture"):
-		if capture_interceptor.should_block_capture(cell, faction_id, old):
+		if capture_interceptor.should_block_capture(cell, faction_id, old, capture_context):
 			return "BLOCKED_BY_FORTIFY"
 	owners[cell.x][cell.y] = faction_id
 	_add_owner_count(old, -1)

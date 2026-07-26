@@ -36,6 +36,9 @@ var burst_directed: bool = false
 var burst_directed_angle: float = 0.0
 var burst_directed_spread: float = 0.0
 var burst_projectile_power: int = 1
+var burst_chamber_damage_quarters: int = 0
+var burst_capture_context: Dictionary = {}
+var health_damage_remainder_quarters: int = 0
 var directed_visual_hold_remaining: float = 0.0
 var burst_progress_emit_timer: float = 0.0
 var burst_last_reported_remaining: int = -1
@@ -64,6 +67,8 @@ func set_all_turrets(turret_map: Dictionary) -> void:
 func configure_health_pool(new_max_health: int, refill: bool = true) -> void:
 	max_health = maxi(1, int(new_max_health))
 	health = max_health if refill else clampi(health, 0, max_health)
+	if refill:
+		health_damage_remainder_quarters = 0
 	health_changed.emit(faction_id, health, max_health)
 	queue_redraw()
 
@@ -179,12 +184,18 @@ func fire_burst(count: int) -> void:
 func request_directed_burst(intent) -> bool:
 	if intent == null:
 		return false
-	return fire_directed(
+	var started: bool = fire_directed(
 		int(intent.shot_count),
 		float(intent.angle),
 		float(intent.spread),
 		int(intent.get("projectile_power"))
 	)
+	if started:
+		burst_chamber_damage_quarters = maxi(0, int(intent.get("chamber_damage_quarters")))
+		burst_capture_context = {
+			"armor_pierce_contacts_remaining": maxi(0, int(intent.get("armor_pierce_contacts"))),
+		}
+	return started
 
 func fire_directed(count: int, angle: float, spread: float = 0.0, projectile_power: int = 1) -> bool:
 	if is_destroyed:
@@ -203,6 +214,8 @@ func fire_directed(count: int, angle: float, spread: float = 0.0, projectile_pow
 	burst_directed_angle = float(angle)
 	burst_directed_spread = maxf(0.0, float(spread))
 	burst_projectile_power = clampi(int(projectile_power), 1, 999)
+	burst_chamber_damage_quarters = 0
+	burst_capture_context = {}
 	directed_visual_hold_remaining = DIRECTED_VISUAL_HOLD_SECONDS
 	burst_progress_emit_timer = 0.0
 	burst_last_reported_remaining = burst_remaining
@@ -220,6 +233,8 @@ func cancel_burst() -> int:
 	burst_directed = false
 	burst_directed_spread = 0.0
 	burst_projectile_power = 1
+	burst_chamber_damage_quarters = 0
+	burst_capture_context = {}
 	directed_visual_hold_remaining = 0.0
 	burst_progress_emit_timer = 0.0
 	burst_last_reported_remaining = 0
@@ -240,6 +255,9 @@ func restore_from_state(state: Dictionary) -> void:
 	burst_directed_angle = rotation
 	burst_directed_spread = 0.0
 	burst_projectile_power = clampi(int(state.get("turret_burst_projectile_power", 1)), 1, 999)
+	burst_chamber_damage_quarters = 0
+	burst_capture_context = {}
+	health_damage_remainder_quarters = 0
 	directed_visual_hold_remaining = 0.0
 	burst_remaining = clampi(int(state.get("turret_burst_remaining", 0)), 0, GameConfig.get_max_pending_count())
 	burst_total = clampi(int(state.get("turret_burst_total", burst_remaining)), burst_remaining, GameConfig.get_max_pending_count())
@@ -259,6 +277,8 @@ func restore_from_state(state: Dictionary) -> void:
 		burst_directed = false
 		burst_directed_spread = 0.0
 		burst_projectile_power = 1
+		burst_chamber_damage_quarters = 0
+		burst_capture_context = {}
 		directed_visual_hold_remaining = 0.0
 		burst_last_reported_remaining = 0
 		_set_burst_locked(false)
@@ -386,12 +406,28 @@ func _spawn_bullet() -> void:
 	var spawn_position: Vector2 = global_position + shot_direction * muzzle_distance
 
 	if _bullet_container_can_spawn:
-		var bullet = bullet_container.spawn_bullet(faction_id, spawn_position, shot_direction, battlefield, all_turrets)
-		if bullet != null and is_instance_valid(bullet):
-			bullet.set("damage_power", burst_projectile_power)
+		bullet_container.spawn_bullet(
+			faction_id,
+			spawn_position,
+			shot_direction,
+			battlefield,
+			all_turrets,
+			burst_projectile_power,
+			burst_chamber_damage_quarters,
+			burst_capture_context
+		)
 	else:
 		var bullet = Bullet.new()
-		bullet.setup(faction_id, spawn_position, shot_direction, battlefield, all_turrets, burst_projectile_power)
+		bullet.setup(
+			faction_id,
+			spawn_position,
+			shot_direction,
+			battlefield,
+			all_turrets,
+			burst_projectile_power,
+			burst_chamber_damage_quarters,
+			burst_capture_context
+		)
 		bullet_container.add_child(bullet)
 
 func _current_burst_shot_angle() -> float:
@@ -428,6 +464,16 @@ func take_damage(amount: int) -> void:
 	if health <= 0:
 		_destroy()
 
+
+func take_damage_quarters(amount_quarters: int) -> void:
+	if is_destroyed or amount_quarters <= 0:
+		return
+	var accumulated: int = health_damage_remainder_quarters + int(amount_quarters)
+	var whole_damage: int = accumulated / 4
+	health_damage_remainder_quarters = accumulated % 4
+	if whole_damage > 0:
+		take_damage(whole_damage)
+
 func _destroy() -> void:
 	if is_destroyed:
 		return
@@ -436,6 +482,8 @@ func _destroy() -> void:
 	burst_remaining = 0
 	burst_total = 0
 	burst_projectile_power = 1
+	burst_chamber_damage_quarters = 0
+	burst_capture_context = {}
 	burst_last_reported_remaining = 0
 	burst_progress_emit_timer = 0.0
 	burst_progress.emit(faction_id, 0)

@@ -20,8 +20,8 @@ func _run() -> void:
 	_test_plus_five_is_one_volley_only()
 	_test_x2_is_one_volley_only()
 	_test_permanent_growth_survives_volley()
-	_test_mirror_doubles_next_choice_once()
-	_test_mirror_can_create_x4_volley()
+	_test_echo_repeats_on_the_following_round()
+	_test_multiplier_does_not_stack_and_volley_is_capped()
 	_test_unknown_upgrade_fails_without_mutation()
 
 	_assert.report("[CardfrontUpgradeResolverTest]")
@@ -51,41 +51,44 @@ func _test_x2_is_one_volley_only() -> void:
 
 func _test_permanent_growth_survives_volley() -> void:
 	var fixture: Dictionary = _make_fixture()
-	fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_PROJECTILE_POWER_PLUS_1)
+	fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_ATTACK_LEVEL_PLUS_1)
 	fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1)
 	fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_RARITY_PLUS_1)
 	var plan = fixture.volleys.build_and_consume(fixture.state)
 	fixture.volleys.build_and_consume(fixture.state)
 
-	_assert.eq(plan.projectile_power, 2, "growth: projectile power should enter the volley plan")
+	_assert.eq(plan.attack_level, 1, "growth: attack level should enter the volley plan")
+	_assert.eq(plan.chamber_damage_quarters, 5, "growth: attack level one should deal 125 percent chamber damage")
 	_assert.eq(plan.territory_defense_cap, 2, "growth: defense cap should enter the volley plan")
-	_assert.eq(fixture.state.projectile_power, 2, "growth: projectile power should persist")
+	_assert.eq(fixture.state.attack_level, 1, "growth: attack level should persist")
 	_assert.eq(fixture.state.territory_defense_cap, 2, "growth: defense cap should persist")
 	_assert.eq(fixture.state.rarity_level, 1, "growth: rarity level should persist")
 
 
-func _test_mirror_doubles_next_choice_once() -> void:
+func _test_echo_repeats_on_the_following_round() -> void:
 	var fixture: Dictionary = _make_fixture()
-	fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_MIRROR_NEXT_CHOICE)
-	var copied_result: Dictionary = fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5)
-	var copied_plan = fixture.volleys.build_and_consume(fixture.state)
-	var normal_result: Dictionary = fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_PROJECTILE_POWER_PLUS_1)
+	fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE)
+	var queued_result: Dictionary = fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5)
+	var current_plan = fixture.volleys.build_and_consume(fixture.state)
+	var repeated_result: Dictionary = fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_ATTACK_LEVEL_PLUS_1)
+	var next_plan = fixture.volleys.build_and_consume(fixture.state)
 
-	_assert.eq(int(copied_result.get("times_applied", 0)), 2, "mirror: next choice should resolve twice")
-	_assert.eq(copied_plan.shot_count, 20, "mirror: duplicated +5 should add ten shots")
-	_assert.that(not fixture.state.duplicate_next_choice, "mirror: token should be consumed")
-	_assert.eq(int(normal_result.get("times_applied", 0)), 1, "mirror: following choice should return to one application")
-	_assert.eq(fixture.state.projectile_power, 2, "mirror: following permanent upgrade should apply once")
+	_assert.eq(current_plan.shot_count, 15, "echo: copied choice should apply only once in its current round")
+	_assert.eq(str(queued_result.get("echo_queued_upgrade_id", "")), UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, "echo: next choice should be queued")
+	_assert.eq(str(repeated_result.get("echo_repeated_upgrade_id", "")), UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, "echo: queued choice should replay next round")
+	_assert.eq(next_plan.shot_count, 15, "echo: replayed +5 should affect the following volley")
+	_assert.eq(fixture.state.attack_level, 1, "echo: current round choice should still apply exactly once")
 
 
-func _test_mirror_can_create_x4_volley() -> void:
+func _test_multiplier_does_not_stack_and_volley_is_capped() -> void:
 	var fixture: Dictionary = _make_fixture()
-	fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_MIRROR_NEXT_CHOICE)
-	fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_VOLLEY_X2)
+	fixture.state.base_volley_count = 20
+	fixture.state.multiply_next_volley(2)
+	fixture.state.multiply_next_volley(2)
 	var plan = fixture.volleys.build_and_consume(fixture.state)
 
-	_assert.eq(plan.applied_multiplier, 4, "mirror: duplicated x2 should resolve as x4")
-	_assert.eq(plan.shot_count, 40, "mirror: x4 should apply to the base volley")
+	_assert.eq(plan.applied_multiplier, 2, "volley: same-round multipliers should not stack")
+	_assert.eq(plan.shot_count, VolleyResolverScript.NORMAL_MAX_VOLLEY_COUNT, "volley: normal card output should stop at 24")
 
 
 func _test_unknown_upgrade_fails_without_mutation() -> void:

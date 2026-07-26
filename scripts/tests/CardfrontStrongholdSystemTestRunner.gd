@@ -78,7 +78,7 @@ func _test_lost_control_removes_bonus() -> void:
 func _test_bonus_application_is_explicit_and_bounded() -> void:
 	var system = StrongholdSystemScript.new()
 	var plan = VolleyPlanScript.new()
-	plan.shot_count = 510
+	plan.shot_count = 31
 	plan.projectile_power = 2
 	var snapshot: Dictionary = {
 		CardfrontRulesScript.PLAYER_FACTION: {
@@ -89,7 +89,7 @@ func _test_bonus_application_is_explicit_and_bounded() -> void:
 	}
 	system.apply_to_volley_plan(CardfrontRulesScript.PLAYER_FACTION, plan, snapshot)
 
-	_assert.eq(plan.shot_count, 512, "stronghold: factory bonus should respect volley safety cap")
+	_assert.eq(plan.shot_count, 32, "stronghold: exceptional bonuses should respect the 32-shot safety cap")
 	_assert.eq(plan.projectile_power, 3, "stronghold: energy bonus should add one power")
 	_assert.eq(plan.stronghold_shot_bonus, StrongholdRulesScript.FACTORY_SHOT_BONUS, "stronghold: plan should record factory contribution")
 	_assert.eq(plan.stronghold_projectile_power_bonus, StrongholdRulesScript.ENERGY_POWER_BONUS, "stronghold: plan should record energy contribution")

@@ -23,7 +23,7 @@ func _run() -> void:
 	await process_frame
 
 	_test_ai_policy_prefers_immediate_power()
-	_test_projectile_power_changes_real_turret_damage()
+	_test_attack_level_changes_real_turret_damage()
 	_test_command_chamber_is_primary_victory()
 	_test_timeout_uses_health_then_territory()
 
@@ -36,14 +36,14 @@ func _test_ai_policy_prefers_immediate_power() -> void:
 	state.setup(RulesScript.AI_FACTION)
 	var offer: Array = [
 		UpgradeManifestScript.get_definition(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5),
-		UpgradeManifestScript.get_definition(UpgradeManifestScript.UPGRADE_PROJECTILE_POWER_PLUS_1),
+		UpgradeManifestScript.get_definition(UpgradeManifestScript.UPGRADE_ATTACK_LEVEL_PLUS_1),
 		UpgradeManifestScript.get_definition(UpgradeManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1),
 	]
 	var choice: Dictionary = AiPolicyScript.new().choose(offer, state)
-	_assert.eq(str(choice.get("id", "")), UpgradeManifestScript.UPGRADE_PROJECTILE_POWER_PLUS_1, "AI: should prioritize permanent projectile power in this offer")
+	_assert.eq(str(choice.get("id", "")), UpgradeManifestScript.UPGRADE_ATTACK_LEVEL_PLUS_1, "AI: should prioritize permanent attack growth in this offer")
 
 
-func _test_projectile_power_changes_real_turret_damage() -> void:
+func _test_attack_level_changes_real_turret_damage() -> void:
 	var target = Turret.new()
 	target.faction_id = RulesScript.AI_FACTION
 	target.health = 30
@@ -59,10 +59,12 @@ func _test_projectile_power_changes_real_turret_damage() -> void:
 		Vector2.UP,
 		null,
 		{RulesScript.AI_FACTION: target},
-		3
+		1,
+		5
 	)
-	_assert.that(bullet._try_hit_enemy_turret(), "damage: powered bullet should hit enemy turret")
-	_assert.eq(target.health, 27, "damage: projectile power 3 should deal three turret damage")
+	for _index in range(4):
+		_assert.that(bullet._try_hit_enemy_turret(), "damage: attack-level bullet should hit enemy turret")
+	_assert.eq(target.health, 25, "damage: four level-one hits should deal five chamber health")
 	TestFixtures.cleanup_node(bullet)
 	TestFixtures.cleanup_node(target)
 
