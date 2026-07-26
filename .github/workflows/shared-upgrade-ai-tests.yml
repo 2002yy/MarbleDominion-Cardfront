@@ -2,10 +2,12 @@ name: Shared Upgrade AI Tests
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 concurrency:
-  group: shared-upgrade-ai-${{ github.ref }}
+  group: shared-upgrade-ai-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
