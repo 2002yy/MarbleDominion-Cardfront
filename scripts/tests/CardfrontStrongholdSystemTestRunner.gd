@@ -3,6 +3,7 @@ extends SceneTree
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
+const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 const StrongholdSystemScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdSystem.gd")
 const VolleyPlanScript = preload("res://scripts/cardfront/volley/CardfrontVolleyPlan.gd")
@@ -80,8 +81,8 @@ func _test_bonus_application_is_explicit_and_bounded() -> void:
 	var plan = VolleyPlanScript.new()
 	plan.shot_count = 31
 	plan.projectile_power = 2
-	plan.attack_level = 2
-	plan.chamber_damage_quarters = 6
+	plan.attack_level = RunStateScript.MAX_ATTACK_LEVEL
+	plan.chamber_damage_quarters = 4 + RunStateScript.MAX_ATTACK_LEVEL
 	var snapshot: Dictionary = {
 		CardfrontRulesScript.PLAYER_FACTION: {
 			"active_types": [RegionTypeScript.FACTORY, RegionTypeScript.ENERGY],
@@ -93,8 +94,8 @@ func _test_bonus_application_is_explicit_and_bounded() -> void:
 
 	_assert.eq(plan.shot_count, 32, "stronghold: exceptional bonuses should respect the 32-shot safety cap")
 	_assert.eq(plan.projectile_power, 2, "stronghold: energy bonus must not mutate legacy projectile power")
-	_assert.eq(plan.attack_level, 3, "stronghold: energy bonus should add one temporary attack level")
-	_assert.eq(plan.chamber_damage_quarters, 7, "stronghold: temporary level should reach real chamber damage")
+	_assert.eq(plan.attack_level, RunStateScript.MAX_RESOLVED_ATTACK_LEVEL, "stronghold: energy should temporarily raise a permanent level-three build to level four")
+	_assert.eq(plan.chamber_damage_quarters, 8, "stronghold: temporary level four should deal 200 percent chamber damage")
 	_assert.eq(plan.stronghold_shot_bonus, StrongholdRulesScript.FACTORY_SHOT_BONUS, "stronghold: plan should record factory contribution")
 	_assert.eq(plan.stronghold_attack_level_bonus, StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "stronghold: plan should record energy contribution")
 	system.free()

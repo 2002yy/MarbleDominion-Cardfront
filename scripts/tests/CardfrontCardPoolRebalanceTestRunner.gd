@@ -21,7 +21,8 @@ func _run() -> void:
 	print("[CardfrontCardPoolRebalanceTest] Starting v0.3.2b card-pool tests")
 	await process_frame
 
-	await _test_frontline_repair_is_finite_and_round_robin()
+	await _test_frontline_repair_uses_six_different_cells()
+	await _test_frontline_repair_does_not_revisit_short_frontline()
 	_test_armor_pierce_budget_is_shared_and_limited()
 	_test_upgrade_wires_repair_and_pierce_into_state()
 	_test_attack_levels_are_capped_and_fractional()
@@ -30,7 +31,49 @@ func _run() -> void:
 	quit(0 if _assert.failures.is_empty() else 1)
 
 
-func _test_frontline_repair_is_finite_and_round_robin() -> void:
+func _test_frontline_repair_uses_six_different_cells() -> void:
+	var battlefield := Battlefield.new()
+	battlefield.configure(8, 16)
+	get_root().add_child(battlefield)
+	await process_frame
+	var owners: Array = battlefield.owners.duplicate(true)
+	for x in range(8):
+		for y in range(8):
+			owners[x][y] = RulesScript.NEUTRAL_OWNER
+	var frontline_cells: Array[Vector2i] = []
+	for x in range(7):
+		var cell := Vector2i(x, 3)
+		frontline_cells.append(cell)
+		owners[cell.x][cell.y] = RulesScript.PLAYER_FACTION
+	battlefield.replace_owners(owners, false)
+
+	var fortify = FortifyLayerScript.new()
+	fortify.configure(8)
+	var system = TerritoryDefenseSystemScript.new()
+	system.battlefield = battlefield
+	system.fortify_layer = fortify
+	system.owner_caps = {RulesScript.PLAYER_FACTION: 2}
+	var restored: int = system.repair_owner(RulesScript.PLAYER_FACTION, 6, "frontline")
+	var total_defense: int = 0
+	var repaired_cells: int = 0
+	for cell in frontline_cells:
+		var defense: int = fortify.get_fortify_stack(cell)
+		total_defense += defense
+		if defense > 0:
+			repaired_cells += 1
+		_assert.that(defense <= 1, "repair: one card must add at most one layer to each cell")
+
+	_assert.eq(restored, 6, "repair: six available points should restore six different cells")
+	_assert.eq(total_defense, 6, "repair: total restored defense should equal the six-point budget")
+	_assert.eq(repaired_cells, 6, "repair: exactly six different frontline cells should be selected")
+	_assert.eq(fortify.get_fortify_stack(Vector2i(7, 7)), 0, "repair: neutral map cells must not be repaired")
+	system.free()
+	TestFixtures.cleanup_node(battlefield)
+	await process_frame
+	await process_frame
+
+
+func _test_frontline_repair_does_not_revisit_short_frontline() -> void:
 	var battlefield := Battlefield.new()
 	battlefield.configure(5, 16)
 	get_root().add_child(battlefield)
@@ -39,7 +82,8 @@ func _test_frontline_repair_is_finite_and_round_robin() -> void:
 	for x in range(5):
 		for y in range(5):
 			owners[x][y] = RulesScript.NEUTRAL_OWNER
-	for cell in [Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2)]:
+	var frontline_cells: Array[Vector2i] = [Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2)]
+	for cell in frontline_cells:
 		owners[cell.x][cell.y] = RulesScript.PLAYER_FACTION
 	battlefield.replace_owners(owners, false)
 
@@ -51,10 +95,9 @@ func _test_frontline_repair_is_finite_and_round_robin() -> void:
 	system.owner_caps = {RulesScript.PLAYER_FACTION: 2}
 	var restored: int = system.repair_owner(RulesScript.PLAYER_FACTION, 6, "frontline")
 
-	_assert.eq(restored, 6, "repair: card should restore exactly six defense points")
-	for cell in [Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2)]:
-		_assert.eq(fortify.get_fortify_stack(cell), 2, "repair: one-layer passes should distribute repair evenly")
-	_assert.eq(fortify.get_fortify_stack(Vector2i(0, 0)), 0, "repair: neutral map cells must not be repaired")
+	_assert.eq(restored, 3, "repair: a six-point card should restore only three points when only three cells are eligible")
+	for cell in frontline_cells:
+		_assert.eq(fortify.get_fortify_stack(cell), 1, "repair: the card must not revisit a cell during the same resolution")
 	system.free()
 	TestFixtures.cleanup_node(battlefield)
 	await process_frame
