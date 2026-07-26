@@ -194,3 +194,11 @@ jobs:
               exit $LASTEXITCODE
             }
           }
+
+      - name: Upload parity balance audit
+        if: always() && matrix.batch == 'Cardfront v0.3 parity balance audit'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardfront-parity-audit-${{ github.run_id }}
+          path: artifacts/cardfront-parity-audit.*
+          if-no-files-found: error
