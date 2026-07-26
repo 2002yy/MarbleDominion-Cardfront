@@ -43,9 +43,9 @@ func _test_registry_baseline() -> void:
 
 func _test_hero_run_state_and_volley_injection() -> void:
 	var expected: Dictionary = {
-		HeroRegistryScript.HERO_BALANCED_COMMANDER: [6, 40, 1, 1],
-		HeroRegistryScript.HERO_RAPID_GUNNER: [7, 36, 1, 1],
-		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: [5, 42, 1, 2],
+		HeroRegistryScript.HERO_BALANCED_COMMANDER: [6, 40, 1, 1, 1],
+		HeroRegistryScript.HERO_RAPID_GUNNER: [7, 36, 1, 1, 1],
+		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: [5, 42, 1, 2, 2],
 	}
 	var resolver = VolleyResolverScript.new()
 	for hero_id in expected.keys():
@@ -57,6 +57,8 @@ func _test_hero_run_state_and_volley_injection() -> void:
 		_assert.eq(state.command_chamber_health, int(values[1]), "heroes: %s health should match" % str(hero_id))
 		_assert.eq(state.starting_territory_defense, int(values[2]), "heroes: %s starting defense should match" % str(hero_id))
 		_assert.eq(state.territory_defense_cap, int(values[3]), "heroes: %s defense cap should match" % str(hero_id))
+		_assert.eq(state.starting_contact_front_defense, int(values[4]), "heroes: %s contact-front defense should match" % str(hero_id))
+		_assert.eq(int(state.snapshot().get("starting_contact_front_defense", -1)), int(values[4]), "heroes: snapshot should retain contact-front defense")
 		var plan = resolver.build_and_consume(state)
 		_assert.eq(plan.shot_count, int(values[0]), "heroes: %s first volley should use its hero baseline" % str(hero_id))
 
@@ -70,8 +72,16 @@ func _test_runtime_assignments_drive_health_and_defense() -> void:
 	var ai_state = main.runtime.round_director.get_run_state(RulesScript.AI_FACTION)
 	var player_turret = main.runtime.turrets[RulesScript.PLAYER_FACTION]
 	var ai_turret = main.runtime.turrets[RulesScript.AI_FACTION]
-	var player_cell: Vector2i = _find_owned_cell(main.runtime.battlefield, RulesScript.PLAYER_FACTION)
-	var ai_cell: Vector2i = _find_owned_cell(main.runtime.battlefield, RulesScript.AI_FACTION)
+	var defense = main.runtime.territory_defense_system
+	var player_front_cells: Array = defense.get_starting_contact_front_cells(RulesScript.PLAYER_FACTION)
+	var ai_front_cells: Array = defense.get_starting_contact_front_cells(RulesScript.AI_FACTION)
+	var player_front_cell: Vector2i = player_front_cells[0] if not player_front_cells.is_empty() else Vector2i(-1, -1)
+	var ai_front_cell: Vector2i = ai_front_cells[0] if not ai_front_cells.is_empty() else Vector2i(-1, -1)
+	var player_interior_cell: Vector2i = _find_owned_cell_excluding(
+		main.runtime.battlefield,
+		RulesScript.PLAYER_FACTION,
+		player_front_cells
+	)
 
 	_assert.eq(str(main.runtime.hero_assignments[RulesScript.PLAYER_FACTION]), HeroRegistryScript.HERO_FORTIFICATION_ENGINEER, "runtime heroes: player assignment should be explicit")
 	_assert.eq(str(main.runtime.hero_assignments[RulesScript.AI_FACTION]), HeroRegistryScript.HERO_RAPID_GUNNER, "runtime heroes: AI assignment should be explicit")
@@ -79,10 +89,12 @@ func _test_runtime_assignments_drive_health_and_defense() -> void:
 	_assert.eq(ai_state.base_volley_count, 7, "runtime heroes: gunner should launch seven base shots")
 	_assert.eq(int(player_turret.max_health), 42, "runtime heroes: engineer chamber should have 42 health")
 	_assert.eq(int(ai_turret.max_health), 36, "runtime heroes: gunner chamber should have 36 health")
-	_assert.eq(main.runtime.territory_defense_system.get_owner_cap(RulesScript.PLAYER_FACTION), 2, "runtime heroes: engineer should begin with defense capacity two")
-	_assert.eq(main.runtime.territory_defense_system.get_owner_cap(RulesScript.AI_FACTION), 1, "runtime heroes: gunner should begin with defense capacity one")
-	_assert.eq(main.runtime.territory_defense_system.get_cell_defense(player_cell), 1, "runtime heroes: engineer starting cells should begin at one of two defense")
-	_assert.eq(main.runtime.territory_defense_system.get_cell_defense(ai_cell), 1, "runtime heroes: gunner starting cells should begin at one of one defense")
+	_assert.eq(defense.get_owner_cap(RulesScript.PLAYER_FACTION), 2, "runtime heroes: engineer should begin with defense capacity two")
+	_assert.eq(defense.get_owner_cap(RulesScript.AI_FACTION), 1, "runtime heroes: gunner should begin with defense capacity one")
+	_assert.that(player_front_cell.x >= 0 and player_interior_cell.x >= 0 and ai_front_cell.x >= 0, "runtime heroes: test cells should exist")
+	_assert.eq(defense.get_cell_defense(player_front_cell), 2, "runtime heroes: engineer contact front should begin at two of two defense")
+	_assert.eq(defense.get_cell_defense(player_interior_cell), 1, "runtime heroes: engineer interior territory should remain one of two defense")
+	_assert.eq(defense.get_cell_defense(ai_front_cell), 1, "runtime heroes: gunner contact front should remain one of one defense")
 	_assert.that(str(main.runtime.three_choice_panel.battle_phase_label.text).contains("筑垒工程师"), "runtime heroes: formal battle HUD should name the selected player hero")
 
 	main._cleanup_game_layer()
@@ -107,11 +119,12 @@ func _test_ballwar_does_not_create_hero_runtime() -> void:
 	await _flush()
 
 
-func _find_owned_cell(battlefield, owner_id: int) -> Vector2i:
+func _find_owned_cell_excluding(battlefield, owner_id: int, excluded: Array) -> Vector2i:
 	for x in range(int(battlefield.grid_size)):
 		for y in range(int(battlefield.grid_size)):
-			if int(battlefield.owners[x][y]) == int(owner_id):
-				return Vector2i(x, y)
+			var cell := Vector2i(x, y)
+			if int(battlefield.owners[x][y]) == int(owner_id) and not excluded.has(cell):
+				return cell
 	return Vector2i(-1, -1)
 
 
