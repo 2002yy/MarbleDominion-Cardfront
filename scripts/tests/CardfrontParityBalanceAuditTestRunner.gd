@@ -26,8 +26,10 @@ func _run() -> void:
 		seeds_per_case,
 		ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
 	)
-	print(audit.format_summary(report))
+	var summary: String = audit.format_summary(report)
+	print(summary)
 	print("PARITY_AUDIT_JSON=" + JSON.stringify(report))
+	_write_artifacts(report, summary)
 
 	_assert.eq(
 		str(report.get("simulation_mode", "")),
@@ -72,3 +74,21 @@ func _run() -> void:
 
 	_assert.report("[CardfrontParityBalanceAudit]")
 	quit(0 if _assert.failures.is_empty() else 1)
+
+
+func _write_artifacts(report: Dictionary, summary: String) -> void:
+	var artifact_dir: String = ProjectSettings.globalize_path("res://artifacts")
+	var make_error: Error = DirAccess.make_dir_recursive_absolute(artifact_dir)
+	_assert.that(make_error == OK or make_error == ERR_ALREADY_EXISTS, "parity audit: artifact directory should be writable")
+
+	var json_file := FileAccess.open(artifact_dir.path_join("cardfront-parity-audit.json"), FileAccess.WRITE)
+	_assert.that(json_file != null, "parity audit: JSON artifact should open for writing")
+	if json_file != null:
+		json_file.store_string(JSON.stringify(report, "\t"))
+		json_file.close()
+
+	var summary_file := FileAccess.open(artifact_dir.path_join("cardfront-parity-audit.txt"), FileAccess.WRITE)
+	_assert.that(summary_file != null, "parity audit: summary artifact should open for writing")
+	if summary_file != null:
+		summary_file.store_string(summary + "\n")
+		summary_file.close()
