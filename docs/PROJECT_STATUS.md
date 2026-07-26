@@ -26,13 +26,79 @@ Confirmed product decisions:
 - The battlefield presentation target is a true orthographic `Camera3D` 2.5D angled board.
 - The current `Node2D` battlefield is a transitional simulation/presentation layer, not the final camera solution.
 
+## Approved Hero Numeric Route / 三英雄数值路线
+
+Status: approved product and balance direction; not yet implemented in the live runtime.
+
+The first-generation hero baseline is:
+
+| Hero | Base volley | Chamber health | Starting defense | Defense cap | Strategic identity |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Balanced Commander / 均衡指挥官 | 6 | 40 | 1 | 1 | Broad card compatibility |
+| Rapid Gunner / 连射炮手 | 7 | 36 | 1 | 1 | Multiplier and burst value |
+| Fortification Engineer / 筑垒工程师 | 5 | 42 | 1 | 2 | Defense capacity and position repair |
+
+This baseline constrains cards, strongholds, AI valuation, timeout scoring, and target match length. Hero identity must remain visible for the whole match, so permanent base-volley growth is excluded from the first generation.
+
+Old assumptions that must be removed together:
+
+- The live runtime still gives every faction a 12-shot base volley.
+- Command chambers currently use one shared 40-health value.
+- Territory defense currently refills every owned cell to its cap before each volley.
+- Territory defense can currently grow to 6.
+- Permanent projectile power currently changes integer damage from 1 to 2 and therefore doubles chamber damage.
+- Mirror currently resolves the next upgrade twice in one round and can create explosive same-round multipliers.
+- AI currently uses one static upgrade ranking for every build.
+
+Approved defense semantics:
+
+- Global territory-defense cap belongs to hero identity and run growth.
+- Hard cap is 4.
+- Starting owned territory begins at `1 / hero cap`.
+- Newly captured or recaptured cells begin at `0 / current cap`.
+- Increasing the cap never refills current defense.
+- An effective hostile hit removes one current-defense point; a later hit captures the cell after defense reaches zero.
+- Automatic full-map refill is removed.
+- Repair must be finite. The first repair card restores at most 6 total defense points inside one strategic area and distributes points instead of filling the whole map.
+
+Approved first-generation upgrade direction:
+
+- Common `+5` affects the next volley.
+- Uncommon `x2` affects the next volley.
+- Attack growth becomes attack level `0..3`; each level adds 25% chamber damage.
+- Defense-cap growth stops being offered at cap 4.
+- Rarity growth stops at the first-generation cap and disappears from offers when capped.
+- Limited armor penetration counters high-defense routes.
+- Mirror is replaced by Echo: the next selected upgrade applies once this round and once again next round.
+- Normal volleys should remain at or below 24 shots; exceptional content may reach 32, but same-round multiplier stacking is disallowed.
+
+Approved stronghold and timeout direction:
+
+- Factory: next volley `+3` shots instead of `+4`.
+- Energy: next volley gains one temporary attack level instead of integer `+1` projectile damage.
+- Laboratory: draft four upgrades and choose one, replacing the late-game rarity guarantee.
+- Destroying the enemy chamber remains an immediate win.
+- Timeout score becomes `50% chamber health + 35% territory + 15% strongholds`.
+
+Approved pacing targets:
+
+- Hard match limit remains 8 minutes.
+- Median match length: 16 to 22 rounds.
+- Target play time: 4 to 5.5 minutes.
+- P90 match length: no more than 8 minutes.
+- Timeout rate target: 10% to 25%.
+- First stronghold activation target: rounds 4 to 8.
+- Invalid or capped upgrade offers: zero.
+
+The implementation must record average cells crossed per marble, chamber hits per volley, defense absorbed, first stronghold activation, and round count before hero health or base-volley values are tuned away from this baseline.
+
 ## Version / 版本
 
 - Stable baseline: `v0.2.5.7-ui-copy-readability-pass`
 - Baseline commit: `9eadf9b`
 - Core-loop foundation commit: `bef12ce`
 - Current completed slice: `v0.3.1c.1-tall-arena-ownership-readability`
-- Next slice: `v0.3.1d-gate-connectivity-rules`
+- Next slice: `v0.3.2a-hero-numeric-foundation`
 - Active branch: `main`
 
 ## Completed Slice / 已完成阶段
@@ -91,17 +157,34 @@ Known transition boundaries:
 
 ## Planned Slices / 后续阶段
 
-1. `v0.3.1d-gate-connectivity-rules`
-   - Define who controls each gate, when its state is sampled, and how closed/half-open/open states filter authoritative 2D volleys.
-   - Keep both gates open until the rule layer and native tests are complete, so this visual pass does not silently change combat.
-2. `v0.3.1e-map-identity-expansion`
-   - Add visibly distinct route structures, chamber approaches, and stronghold placements while retaining the dual-gate language.
-3. `v0.3.1f-orthographic-visual-polish`
-   - Replace primitive turret/chamber silhouettes with authored low-poly presenters and add readable 3D projectile trails and hit pulses.
-   - Establish a shared typography/material policy for in-world labels without changing the formal HUD interaction contract.
-4. `v0.3.2a-summon-rule-foundation`
-   - Define allied and neutral summon ownership, movement, collision, targeting, and despawn rules.
-   - Add chaos/summon content only after the rule layer is covered by native tests.
+1. `v0.3.2a-hero-numeric-foundation`
+   - Add validated definitions for the three approved heroes.
+   - Inject base volley, chamber health, starting defense, and defense cap into each faction run state.
+   - Reduce the defense hard cap from 6 to 4.
+   - Remove per-volley full-map defense refill and keep new captures at zero current defense.
+   - Expose explicit player and AI hero assignments without adding complex hero passives.
+2. `v0.3.2b-card-pool-rebalance`
+   - Retain common `+5` and uncommon `x2`.
+   - Replace integer projectile-power growth with capped 25% attack levels.
+   - Add finite repair and limited armor penetration.
+   - Replace same-round Mirror duplication with cross-round Echo.
+   - Filter capped upgrades and constrain volley ceilings to 24 normal / 32 exceptional.
+3. `v0.3.2c-stronghold-and-timeout-scoring`
+   - Change Factory to `+3`, Energy to a temporary attack level, and Laboratory to four-choice drafting.
+   - Resolve timeout through chamber-health, territory, and stronghold scoring.
+   - Add player-facing scoring and stronghold-value feedback.
+4. `v0.3.2d-hero-balance-simulation`
+   - Run `3 heroes x 3 enemy heroes x 3 maps x 2 sides x 1000 seeds = 54,000` automated matches.
+   - Target 47% to 53% aggregate hero win rates, 43% to 57% matchup win rates, and 49% to 51% mirrored-match win rates.
+   - Tune route effectiveness and immediate upgrade value before changing the approved 5/6/7 volley or 36/40/42 health baseline.
+5. `v0.3.3a-gate-connectivity-rules`
+   - Define who controls each gate, when its state is sampled, and how closed/half-open/open states filter authoritative volleys.
+   - Keep both gates open until the rule layer and native tests are complete.
+6. `v0.3.3b-map-identity-expansion`
+   - Add distinct route structures, chamber approaches, and stronghold placements while retaining the dual-gate language.
+7. `v0.3.3c-orthographic-visual-polish`
+   - Replace primitive chamber silhouettes with authored low-poly presenters and add readable projectile trails and hit pulses.
+   - Establish a shared typography and material policy for in-world labels.
 
 ## Reuse And Replacement / 复用与替换
 
