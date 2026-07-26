@@ -1,0 +1,75 @@
+name: Shared Upgrade AI Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  shared-upgrade-ai:
+    name: ${{ matrix.batch }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - batch: Shared marginal value policy
+            script: CardfrontUpgradeValuePolicyTestRunner.gd
+          - batch: Shared AI 54000 parity proxy audit
+            script: CardfrontSharedAiParityAuditTestRunner.gd
+    env:
+      GODOT_VERSION: 4.6.2-stable
+      GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot archive
+        uses: actions/cache@v4
+        with:
+          path: .godot-cache
+          key: godot-${{ runner.os }}-${{ env.GODOT_VERSION }}-${{ env.GODOT_ARCHIVE }}
+
+      - name: Download Godot
+        id: godot
+        shell: pwsh
+        run: |
+          $cacheDir = Join-Path "${{ github.workspace }}" ".godot-cache"
+          New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+          $archiveUrl = "https://github.com/godotengine/godot/releases/download/$env:GODOT_VERSION/$env:GODOT_ARCHIVE"
+          $archivePath = Join-Path $cacheDir $env:GODOT_ARCHIVE
+          $extractPath = Join-Path $env:RUNNER_TEMP "godot"
+          if (-not (Test-Path $archivePath)) {
+            Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath
+          }
+          Expand-Archive -Path $archivePath -DestinationPath $extractPath -Force
+          $godotExe = Get-ChildItem -Path $extractPath -Recurse -Filter "*console.exe" | Select-Object -First 1
+          if (-not $godotExe) {
+            $godotExe = Get-ChildItem -Path $extractPath -Recurse -Filter "*.exe" | Select-Object -First 1
+          }
+          if (-not $godotExe) {
+            throw "Godot executable not found after extraction."
+          }
+          "path=$($godotExe.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Headless Parse Check
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --quit
+
+      - name: Import Project
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
+
+      - name: Run ${{ matrix.batch }}
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/${{ matrix.script }}"
+          exit $LASTEXITCODE
+
+      - name: Upload shared AI audit
+        if: always() && matrix.script == 'CardfrontSharedAiParityAuditTestRunner.gd'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardfront-shared-ai-parity-audit-${{ github.run_id }}
+          path: artifacts/cardfront-shared-ai-parity-audit.*
+          if-no-files-found: error
