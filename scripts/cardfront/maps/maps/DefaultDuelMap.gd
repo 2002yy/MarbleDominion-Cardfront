@@ -42,6 +42,13 @@ static func make(grid_size: int) -> Dictionary:
 		"stronghold_ruleset": StrongholdRulesScript.RULESET_ID,
 		"time_limit": CardfrontRulesScript.MATCH_DURATION_SECONDS,
 		"ai_profile": "baseline_duel",
+		"simulation_profile": {
+			"chamber_hit_chance": 0.172,
+			"average_cells_crossed": 19.0,
+			"defense_contact_chance": 0.13,
+			"territory_pressure": 1.0,
+			"stronghold_tempo": 0,
+		},
 	})
 
 

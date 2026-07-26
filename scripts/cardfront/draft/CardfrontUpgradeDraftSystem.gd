@@ -26,6 +26,13 @@ func draw_three(run_state = null) -> Array:
 
 
 func draw_offer(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE) -> Array:
+	var result: Array = []
+	for upgrade_id in draw_offer_ids(run_state, offer_size):
+		result.append(UpgradeManifestScript.get_definition(str(upgrade_id)))
+	return result
+
+
+func draw_offer_ids(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE) -> Array:
 	var resolved_offer_size: int = clampi(int(offer_size), 1, MAX_OFFER_SIZE)
 	var candidate_ids: Array = []
 	for raw_upgrade_id in UpgradeManifestScript.get_upgrade_ids():
@@ -38,7 +45,7 @@ func draw_offer(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE) -> Array
 		if selected_index < 0:
 			break
 		var upgrade_id: String = str(candidate_ids[selected_index])
-		result.append(UpgradeManifestScript.get_definition(upgrade_id))
+		result.append(upgrade_id)
 		candidate_ids.remove_at(selected_index)
 	return result
 

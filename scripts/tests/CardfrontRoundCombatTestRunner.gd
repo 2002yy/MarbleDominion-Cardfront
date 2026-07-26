@@ -24,6 +24,8 @@ func _run() -> void:
 	await process_frame
 
 	_test_ai_policy_prefers_immediate_power()
+	_test_ai_policy_has_no_seven_shot_multiplier_cliff()
+	_test_engineer_values_finite_repair_capacity()
 	_test_attack_level_changes_real_turret_damage()
 	_test_command_chamber_is_primary_victory()
 	_test_timeout_uses_health_then_territory()
@@ -42,6 +44,37 @@ func _test_ai_policy_prefers_immediate_power() -> void:
 	]
 	var choice: Dictionary = AiPolicyScript.new().choose(offer, state)
 	_assert.eq(str(choice.get("id", "")), UpgradeManifestScript.UPGRADE_ATTACK_LEVEL_PLUS_1, "AI: should prioritize permanent attack growth in this offer")
+
+
+func _test_ai_policy_has_no_seven_shot_multiplier_cliff() -> void:
+	var policy = AiPolicyScript.new()
+	var offer_ids: Array = [
+		UpgradeManifestScript.UPGRADE_VOLLEY_X2,
+		UpgradeManifestScript.UPGRADE_ARMOR_PIERCING,
+	]
+	for hero_id in ["balanced_commander", "rapid_gunner"]:
+		var state = RunStateScript.new()
+		state.setup_from_hero(RulesScript.AI_FACTION, hero_id)
+		_assert.eq(
+			policy.choose_id(offer_ids, state),
+			UpgradeManifestScript.UPGRADE_VOLLEY_X2,
+			"AI: immediate multiplier choice should not flip only because base volley changes from six to seven"
+		)
+
+
+func _test_engineer_values_finite_repair_capacity() -> void:
+	var state = RunStateScript.new()
+	state.setup_from_hero(RulesScript.AI_FACTION, "fortification_engineer")
+	var choice_id: String = AiPolicyScript.new().choose_id([
+		UpgradeManifestScript.UPGRADE_FRONTLINE_REPAIR,
+		UpgradeManifestScript.UPGRADE_ARMOR_PIERCING,
+		UpgradeManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1,
+	], state)
+	_assert.eq(
+		choice_id,
+		UpgradeManifestScript.UPGRADE_FRONTLINE_REPAIR,
+		"AI: the engineer should convert its higher defense capacity into finite route repair value"
+	)
 
 
 func _test_attack_level_changes_real_turret_damage() -> void:

@@ -28,7 +28,7 @@ Confirmed product decisions:
 
 ## Approved Hero Numeric Route / 三英雄数值路线
 
-Status: approved product and balance direction. The `v0.3.2c` hero, card, stronghold, and timeout-scoring foundation is live; balance simulation remains planned.
+Status: approved product and balance direction. The `v0.3.2d` hero-balance simulation gate is live and the approved numeric baseline passes its first 54,000-match proxy audit.
 
 The first-generation hero baseline is:
 
@@ -99,36 +99,37 @@ The implementation must record average cells crossed per marble, chamber hits pe
 - Stable baseline: `v0.2.5.7-ui-copy-readability-pass`
 - Baseline commit: `9eadf9b`
 - Core-loop foundation commit: `bef12ce`
-- Current completed slice: `v0.3.2c-stronghold-and-timeout-scoring`
-- Next slice: `v0.3.2d-hero-balance-simulation`
+- Current completed slice: `v0.3.2d-hero-balance-simulation`
+- Next slice: `v0.3.3a-gate-connectivity-rules`
 - Active branch: `main`
 
 ## Completed Slice / 已完成阶段
 
-`v0.3.2c-stronghold-and-timeout-scoring` makes tactical strongholds and the eight-minute timeout use their approved first-generation rules and exposes those values to the player.
+`v0.3.2d-hero-balance-simulation` adds a deterministic, headless balance proxy and makes the complete hero matrix a dedicated GitHub Actions gate.
 
 Scope:
 
-- Factory strongholds grant `+3` shots to the next volley, with the exceptional 32-shot ceiling preserved.
-- Energy strongholds grant one temporary attack level to the next volley and never mutate permanent attack growth or legacy projectile power.
-- Laboratory strongholds replace rarity guarantee with a real four-choice draft for the controlling faction.
-- The formal choice scene widens only while retaining its centered tactical overlay; all four 214-pixel cards remain inside the shell.
-- Timeout scoring is now `50% command-chamber health + 35% territory + 15% active stronghold types`.
-- Chamber health is normalized against each hero's own maximum, so 36/40/42-health identities remain comparable.
-- Territory uses current authoritative cell ownership at timeout instead of a possibly delayed HUD score snapshot.
-- Strongholds are resampled at timeout and award up to five points per active type.
-- Exact composite ties draw; command-chamber destruction still ends immediately before timeout scoring.
-- The match-result panel shows both composite totals and chamber, territory, and stronghold components.
-- BallWar keeps its legacy win-condition and result paths.
+- The matrix is `3 heroes x 3 enemy heroes x 3 maps x 2 sides x 1000 seeds = 54,000` recorded matches.
+- Side variants use paired common random numbers. Swapping blue and red changes position only, so mirror bias is not hidden by unrelated random samples.
+- The simulator reads the authoritative hero, map, and upgrade manifests and preserves current eligibility caps, Echo timing, finite repair, armor piercing, stronghold bonuses, AI selection, and volley ceilings.
+- Map-owned proxy parameters describe route length, chamber-hit likelihood, defense contact, territory pressure, and stronghold tempo.
+- Score rate means `(wins + 0.5 x draws) / games x 100%`; it is a balance outcome rate, not territory score.
+- Aggregate hero targets are `47%..53%`, ordered matchup targets are `43%..57%`, and mirrored blue-side targets are `49%..51%`.
+- The audit records cells crossed per marble, chamber hits and defense absorbed per volley, first stronghold activation, rounds, timeout rate, and invalid offers.
+- `CARDFRONT_BALANCE_SEEDS` can reduce local sample size; CI deliberately omits it and always runs all 1,000 seeds per case.
+- The audit is a physics-informed balance proxy, not proof of live projectile balance or human win rate.
 
 Acceptance:
 
-- Factory, Energy, and Laboratory activation, loss of control, and one-bonus-per-type behavior are covered.
-- A live laboratory draft creates four unique choices, renders four horizontally ordered cards, and keeps every card inside the choice shell.
-- Temporary Energy attack reaches the real chamber-damage field without modifying permanent run state.
-- Weighted timeout tests verify each `50 / 35 / 15` component, stronghold tie-breaking, exact draws, and immediate chamber victory.
-- The real result-panel scene renders player and AI component lines.
-- `CardfrontStrongholdTimeoutScoringTestRunner.gd` is part of the GitHub Actions tactical-stronghold batch.
+- Full audit result: Balanced Commander `51.46%`, Fortification Engineer `49.09%`, Rapid Gunner `49.45%`.
+- Ordered matchup range: `47.62%..53.70%`; every matchup remains inside the approved `43%..57%` window.
+- Mirrored position rates remain inside `49%..51%`.
+- Median match length is 22 rounds; P90 is 34 rounds; timeout rate is `12.25%`.
+- Average first stronghold activation is round `6.03`; invalid or capped offers are zero.
+- Average cells crossed per marble is `19.25`; chamber hits per volley are `1.231`; defense absorbed per volley is `2.271`.
+- AI immediate-value tuning removes the old 6-versus-7-shot `x2` selection cliff and values finite repair more strongly when defense capacity can use it.
+- The approved hero baselines remain unchanged at 5/6/7 shots and 42/40/36 chamber health.
+- `CardfrontHeroBalanceSimulationTestRunner.gd` is a dedicated GitHub Actions batch and asserts the full 54,000-match count plus all thresholds.
 
 ## Previous Slice / 上一阶段
 
@@ -186,16 +187,12 @@ Known transition boundaries:
 
 ## Planned Slices / 后续阶段
 
-1. `v0.3.2d-hero-balance-simulation`
-   - Run `3 heroes x 3 enemy heroes x 3 maps x 2 sides x 1000 seeds = 54,000` automated matches.
-   - Target 47% to 53% aggregate hero win rates, 43% to 57% matchup win rates, and 49% to 51% mirrored-match win rates.
-   - Tune route effectiveness and immediate upgrade value before changing the approved 5/6/7 volley or 36/40/42 health baseline.
-2. `v0.3.3a-gate-connectivity-rules`
+1. `v0.3.3a-gate-connectivity-rules`
    - Define who controls each gate, when its state is sampled, and how closed/half-open/open states filter authoritative volleys.
    - Keep both gates open until the rule layer and native tests are complete.
-3. `v0.3.3b-map-identity-expansion`
+2. `v0.3.3b-map-identity-expansion`
    - Add distinct route structures, chamber approaches, and stronghold placements while retaining the dual-gate language.
-4. `v0.3.3c-orthographic-visual-polish`
+3. `v0.3.3c-orthographic-visual-polish`
    - Replace primitive chamber silhouettes with authored low-poly presenters and add readable projectile trails and hit pulses.
    - Establish a shared typography and material policy for in-world labels.
 

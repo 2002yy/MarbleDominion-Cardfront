@@ -36,4 +36,14 @@ static func validate(definition: Dictionary) -> Array:
 		errors.append("missing_stronghold_ruleset")
 	if str(definition.get("ai_profile", "")) == "":
 		errors.append("missing_ai_profile")
+	var simulation_profile: Dictionary = definition.get("simulation_profile", {}) as Dictionary
+	for required_key in [
+		"chamber_hit_chance",
+		"average_cells_crossed",
+		"defense_contact_chance",
+		"territory_pressure",
+		"stronghold_tempo",
+	]:
+		if not simulation_profile.has(required_key):
+			errors.append("missing_simulation_profile:%s" % str(required_key))
 	return errors
