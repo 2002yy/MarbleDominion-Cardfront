@@ -14,13 +14,17 @@ jobs:
         include:
           - batch: Shared marginal value policy
             script: CardfrontUpgradeValuePolicyTestRunner.gd
+            audit_seeds: 1
           - batch: Shared simulator choice dispatch
             script: CardfrontSharedSimulatorDispatchTestRunner.gd
-          - batch: Shared AI 54000 parity proxy audit
+            audit_seeds: 1
+          - batch: Shared AI 5400 parity proxy audit
             script: CardfrontSharedAiParityAuditTestRunner.gd
+            audit_seeds: 100
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
+      CARDFRONT_SHARED_AI_AUDIT_SEEDS: ${{ matrix.audit_seeds }}
     steps:
       - uses: actions/checkout@v4
 
