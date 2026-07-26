@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: headless-tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   godot-headless:
     name: ${{ matrix.batch }}
