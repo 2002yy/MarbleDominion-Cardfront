@@ -11,6 +11,8 @@ const MAX_BULLET_PROXIES: int = 256
 const TILE_GAP: float = 0.012
 const TILE_HEIGHT: float = 0.16
 const ARENA_X_SCALE: float = 1.18
+const ARENA_Z_SCALE: float = 1.28
+const CHECKER_CELL_SPAN: int = 1
 const BRIDGE_COUNT: int = 2
 const GRASS_LIGHT: Color = Color(0.50, 0.61, 0.27)
 const GRASS_DARK: Color = Color(0.44, 0.55, 0.23)
@@ -32,6 +34,7 @@ var camera: Camera3D
 var arena_environment: Environment
 var tile_multimesh: MultiMeshInstance3D
 var territory_boundary_multimesh: MultiMeshInstance3D
+var sparse_claim_multimesh: MultiMeshInstance3D
 var aim_mesh_instance: MeshInstance3D
 
 var _turret_proxies: Dictionary = {}
@@ -74,6 +77,7 @@ func setup(new_battlefield, new_region_map, new_bullet_pool, new_turrets: Dictio
 	_build_world()
 	_build_tiles()
 	_build_territory_boundaries()
+	_build_sparse_claim_markers()
 	_build_stronghold_platforms()
 	_build_region_labels()
 	_build_combatant_proxies()
@@ -139,6 +143,20 @@ func get_territory_boundary_count_for_test() -> int:
 	if territory_boundary_multimesh == null or territory_boundary_multimesh.multimesh == null:
 		return 0
 	return territory_boundary_multimesh.multimesh.visible_instance_count
+
+
+func get_sparse_claim_marker_count_for_test() -> int:
+	if sparse_claim_multimesh == null or sparse_claim_multimesh.multimesh == null:
+		return 0
+	return sparse_claim_multimesh.multimesh.visible_instance_count
+
+
+func get_arena_depth_ratio_for_test() -> float:
+	return ARENA_Z_SCALE / ARENA_X_SCALE
+
+
+func get_checker_cell_span_for_test() -> int:
+	return CHECKER_CELL_SPAN
 
 
 func get_bullet_proxy_count_for_test() -> int:
@@ -213,10 +231,11 @@ func _build_world() -> void:
 
 	var grid: float = float(battlefield.grid_size)
 	var arena_width: float = grid * ARENA_X_SCALE
+	var arena_depth: float = grid * ARENA_Z_SCALE
 	var outer_floor := MeshInstance3D.new()
 	outer_floor.name = "ArenaGroundBase"
 	var outer_box := BoxMesh.new()
-	outer_box.size = Vector3(arena_width + 18.0, 0.64, grid + 18.0)
+	outer_box.size = Vector3(arena_width + 18.0, 0.64, arena_depth + 18.0)
 	outer_floor.mesh = outer_box
 	outer_floor.position.y = -0.48
 	outer_floor.material_override = _make_material(Color(0.25, 0.39, 0.23), 0.0)
@@ -225,7 +244,7 @@ func _build_world() -> void:
 	var floor_mesh := MeshInstance3D.new()
 	floor_mesh.name = "ArenaFloor"
 	var floor_box := BoxMesh.new()
-	floor_box.size = Vector3(arena_width + 10.0, 0.42, grid + 10.0)
+	floor_box.size = Vector3(arena_width + 10.0, 0.42, arena_depth + 10.0)
 	floor_mesh.mesh = floor_box
 	floor_mesh.position.y = -0.24
 	floor_mesh.material_override = _make_material(Color(0.42, 0.55, 0.27), 0.0)
@@ -237,11 +256,11 @@ func _build_world() -> void:
 	camera = Camera3D.new()
 	camera.name = "OrthographicCamera"
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	camera.size = grid * 1.16
+	camera.size = grid * 1.40
 	camera.near = 0.1
 	camera.far = grid * 5.0
 	camera.look_at_from_position(
-		Vector3(0.0, grid * 1.18, grid * 0.92),
+		Vector3(0.0, grid * 1.30, arena_depth * 0.76),
 		Vector3(0.0, 0.0, -0.5),
 		Vector3.UP
 	)
@@ -253,7 +272,7 @@ func _build_tiles() -> void:
 	tile_multimesh = MultiMeshInstance3D.new()
 	tile_multimesh.name = "TerritoryTiles"
 	var tile_mesh := BoxMesh.new()
-	tile_mesh.size = Vector3(ARENA_X_SCALE - TILE_GAP, TILE_HEIGHT, 1.0 - TILE_GAP)
+	tile_mesh.size = Vector3(ARENA_X_SCALE - TILE_GAP, TILE_HEIGHT, ARENA_Z_SCALE - TILE_GAP)
 	var tile_material := StandardMaterial3D.new()
 	tile_material.vertex_color_use_as_albedo = true
 	tile_material.roughness = 0.72
@@ -275,7 +294,7 @@ func _build_tiles() -> void:
 			var transform := Transform3D(Basis.IDENTITY, Vector3(
 				(float(x) + 0.5 - float(grid) * 0.5) * ARENA_X_SCALE,
 				TILE_HEIGHT * 0.5,
-				float(y) + 0.5 - float(grid) * 0.5
+				(float(y) + 0.5 - float(grid) * 0.5) * ARENA_Z_SCALE
 			))
 			multimesh.set_instance_transform(index, transform)
 
@@ -310,24 +329,24 @@ func _refresh_territory_boundaries() -> void:
 	for x in range(grid):
 		index = _set_boundary_instance(
 			index,
-			Vector3((float(x) + 0.5 - float(grid) * 0.5) * ARENA_X_SCALE, boundary_y, -float(grid) * 0.5),
+			Vector3((float(x) + 0.5 - float(grid) * 0.5) * ARENA_X_SCALE, boundary_y, -float(grid) * 0.5 * ARENA_Z_SCALE),
 			Vector3(ARENA_X_SCALE + x_thickness, boundary_height, z_thickness)
 		)
 		index = _set_boundary_instance(
 			index,
-			Vector3((float(x) + 0.5 - float(grid) * 0.5) * ARENA_X_SCALE, boundary_y, float(grid) * 0.5),
+			Vector3((float(x) + 0.5 - float(grid) * 0.5) * ARENA_X_SCALE, boundary_y, float(grid) * 0.5 * ARENA_Z_SCALE),
 			Vector3(ARENA_X_SCALE + x_thickness, boundary_height, z_thickness)
 		)
 	for y in range(grid):
 		index = _set_boundary_instance(
 			index,
-			Vector3(-float(grid) * 0.5 * ARENA_X_SCALE, boundary_y, float(y) + 0.5 - float(grid) * 0.5),
-			Vector3(x_thickness, boundary_height, 1.0 + z_thickness)
+			Vector3(-float(grid) * 0.5 * ARENA_X_SCALE, boundary_y, (float(y) + 0.5 - float(grid) * 0.5) * ARENA_Z_SCALE),
+			Vector3(x_thickness, boundary_height, ARENA_Z_SCALE + z_thickness)
 		)
 		index = _set_boundary_instance(
 			index,
-			Vector3(float(grid) * 0.5 * ARENA_X_SCALE, boundary_y, float(y) + 0.5 - float(grid) * 0.5),
-			Vector3(x_thickness, boundary_height, 1.0 + z_thickness)
+			Vector3(float(grid) * 0.5 * ARENA_X_SCALE, boundary_y, (float(y) + 0.5 - float(grid) * 0.5) * ARENA_Z_SCALE),
+			Vector3(x_thickness, boundary_height, ARENA_Z_SCALE + z_thickness)
 		)
 
 	for x in range(grid):
@@ -336,16 +355,78 @@ func _refresh_territory_boundaries() -> void:
 			if x + 1 < grid and int(battlefield.owners[x + 1][y]) != owner_id:
 				index = _set_boundary_instance(
 					index,
-					Vector3((float(x) + 1.0 - float(grid) * 0.5) * ARENA_X_SCALE, boundary_y, float(y) + 0.5 - float(grid) * 0.5),
-					Vector3(x_thickness, boundary_height, 1.0 + z_thickness)
+					Vector3((float(x) + 1.0 - float(grid) * 0.5) * ARENA_X_SCALE, boundary_y, (float(y) + 0.5 - float(grid) * 0.5) * ARENA_Z_SCALE),
+					Vector3(x_thickness, boundary_height, ARENA_Z_SCALE + z_thickness)
 				)
 			if y + 1 < grid and int(battlefield.owners[x][y + 1]) != owner_id:
 				index = _set_boundary_instance(
 					index,
-					Vector3((float(x) + 0.5 - float(grid) * 0.5) * ARENA_X_SCALE, boundary_y, float(y) + 1.0 - float(grid) * 0.5),
+					Vector3((float(x) + 0.5 - float(grid) * 0.5) * ARENA_X_SCALE, boundary_y, (float(y) + 1.0 - float(grid) * 0.5) * ARENA_Z_SCALE),
 					Vector3(ARENA_X_SCALE + x_thickness, boundary_height, z_thickness)
 				)
 	territory_boundary_multimesh.multimesh.visible_instance_count = index
+
+
+func _build_sparse_claim_markers() -> void:
+	sparse_claim_multimesh = MultiMeshInstance3D.new()
+	sparse_claim_multimesh.name = "SparseClaimMarkers"
+	var marker_mesh := BoxMesh.new()
+	marker_mesh.size = Vector3.ONE
+	var marker_material := StandardMaterial3D.new()
+	marker_material.vertex_color_use_as_albedo = true
+	marker_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	marker_material.roughness = 0.54
+	marker_material.metallic = 0.08
+	marker_mesh.material = marker_material
+
+	var grid: int = int(battlefield.grid_size)
+	var multimesh := MultiMesh.new()
+	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.use_colors = true
+	multimesh.mesh = marker_mesh
+	multimesh.instance_count = grid * grid
+	multimesh.visible_instance_count = 0
+	sparse_claim_multimesh.multimesh = multimesh
+	world_root.add_child(sparse_claim_multimesh)
+
+
+func _refresh_sparse_claim_markers() -> void:
+	if sparse_claim_multimesh == null or sparse_claim_multimesh.multimesh == null:
+		return
+	var grid: int = int(battlefield.grid_size)
+	var marker_index: int = 0
+	for x in range(grid):
+		for y in range(grid):
+			var owner_id: int = int(battlefield.owners[x][y])
+			if owner_id == CardfrontRulesScript.NEUTRAL_OWNER:
+				continue
+			var cell := Vector2i(x, y)
+			if _same_owner_neighbor_count(cell, owner_id, grid) > 1:
+				continue
+			var center := Vector3(
+				(float(x) + 0.5 - float(grid) * 0.5) * ARENA_X_SCALE,
+				TILE_HEIGHT + 0.25,
+				(float(y) + 0.5 - float(grid) * 0.5) * ARENA_Z_SCALE
+			)
+			var basis := Basis(Vector3.UP, PI * 0.25).scaled(Vector3(0.62, 0.18, 0.62))
+			sparse_claim_multimesh.multimesh.set_instance_transform(marker_index, Transform3D(basis, center))
+			sparse_claim_multimesh.multimesh.set_instance_color(
+				marker_index,
+				_arena_faction_color(owner_id).lightened(0.24)
+			)
+			marker_index += 1
+	sparse_claim_multimesh.multimesh.visible_instance_count = marker_index
+
+
+func _same_owner_neighbor_count(cell: Vector2i, owner_id: int, grid: int) -> int:
+	var count: int = 0
+	for direction in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+		var neighbor: Vector2i = cell + direction
+		if neighbor.x < 0 or neighbor.y < 0 or neighbor.x >= grid or neighbor.y >= grid:
+			continue
+		if int(battlefield.owners[neighbor.x][neighbor.y]) == owner_id:
+			count += 1
+	return count
 
 
 func _set_boundary_instance(index: int, center: Vector3, size: Vector3) -> int:
@@ -360,7 +441,7 @@ func _build_lane_paths(grid: float) -> void:
 		var lane := MeshInstance3D.new()
 		lane.name = "ArenaLane"
 		var lane_mesh := BoxMesh.new()
-		lane_mesh.size = Vector3(3.0, 0.10, grid - 3.0)
+		lane_mesh.size = Vector3(3.0, 0.10, (grid - 3.0) * ARENA_Z_SCALE)
 		lane.mesh = lane_mesh
 		lane.position = Vector3(lane_x, TILE_HEIGHT + 0.035, 0.0)
 		lane.material_override = _make_material(PATH_COLOR, 0.0)
@@ -382,7 +463,7 @@ func _build_edge_landscape(grid: float, arena_width: float) -> void:
 			bush.position = Vector3(
 				side * (arena_width * 0.5 + 4.0 + float(index % 2) * 0.5),
 				1.12,
-				grid * z_positions[index]
+				grid * z_positions[index] * ARENA_Z_SCALE
 			)
 			bush.scale = Vector3(1.20, 0.92 + float(index % 3) * 0.08, 1.0)
 			var bush_color := Color(0.27, 0.48, 0.22) if index % 2 == 0 else Color(0.34, 0.55, 0.24)
@@ -394,17 +475,17 @@ func _build_river_and_bridges(grid: float, arena_width: float) -> void:
 	var river := MeshInstance3D.new()
 	river.name = "CentralRiver"
 	var river_mesh := BoxMesh.new()
-	river_mesh.size = Vector3(arena_width + 10.0, 0.13, 2.9)
+	river_mesh.size = Vector3(arena_width + 10.0, 0.13, 2.9 * ARENA_Z_SCALE)
 	river.mesh = river_mesh
 	river.position.y = 0.13
 	river.material_override = _make_material(Color(0.20, 0.58, 0.68), 0.10)
 	world_root.add_child(river)
 
-	for bank_z in [-1.72, 1.72]:
+	for bank_z in [-1.72 * ARENA_Z_SCALE, 1.72 * ARENA_Z_SCALE]:
 		var bank := MeshInstance3D.new()
 		bank.name = "RiverBank"
 		var bank_mesh := BoxMesh.new()
-		bank_mesh.size = Vector3(arena_width + 10.0, 0.24, 0.55)
+		bank_mesh.size = Vector3(arena_width + 10.0, 0.24, 0.55 * ARENA_Z_SCALE)
 		bank.mesh = bank_mesh
 		bank.position = Vector3(0.0, 0.18, bank_z)
 		bank.material_override = _make_material(Color(0.30, 0.40, 0.23), 0.0)
@@ -417,7 +498,7 @@ func _build_river_and_bridges(grid: float, arena_width: float) -> void:
 		var bridge_base := MeshInstance3D.new()
 		bridge_base.name = "BridgeBase"
 		var bridge_base_mesh := BoxMesh.new()
-		bridge_base_mesh.size = Vector3(6.8, 0.48, 5.2)
+		bridge_base_mesh.size = Vector3(6.8, 0.48, 5.2 * ARENA_Z_SCALE)
 		bridge_base.mesh = bridge_base_mesh
 		bridge_base.position = Vector3(bridge_x, 0.31, 0.0)
 		bridge_base.material_override = _make_material(Color(0.27, 0.25, 0.20), 0.0)
@@ -426,7 +507,7 @@ func _build_river_and_bridges(grid: float, arena_width: float) -> void:
 		var bridge_top := MeshInstance3D.new()
 		bridge_top.name = "BridgeTop"
 		var bridge_top_mesh := BoxMesh.new()
-		bridge_top_mesh.size = Vector3(6.2, 0.30, 4.7)
+		bridge_top_mesh.size = Vector3(6.2, 0.30, 4.7 * ARENA_Z_SCALE)
 		bridge_top.mesh = bridge_top_mesh
 		bridge_top.position = Vector3(bridge_x, 0.62, 0.0)
 		bridge_top.material_override = _make_material(Color(0.62, 0.43, 0.24), 0.0)
@@ -440,7 +521,7 @@ func _build_gate_visual(bridge_x: float) -> void:
 		var post := MeshInstance3D.new()
 		post.name = "GatePost"
 		var post_mesh := BoxMesh.new()
-		post_mesh.size = Vector3(0.62, 2.5, 0.86)
+		post_mesh.size = Vector3(0.62, 2.5, 0.86 * ARENA_Z_SCALE)
 		post.mesh = post_mesh
 		post.position = Vector3(bridge_x + post_offset, 1.70, 0.0)
 		post.material_override = _make_material(Color(0.24, 0.32, 0.31), 0.0)
@@ -449,7 +530,7 @@ func _build_gate_visual(bridge_x: float) -> void:
 		var cap := MeshInstance3D.new()
 		cap.name = "GatePostCap"
 		var cap_mesh := BoxMesh.new()
-		cap_mesh.size = Vector3(0.86, 0.36, 1.10)
+		cap_mesh.size = Vector3(0.86, 0.36, 1.10 * ARENA_Z_SCALE)
 		cap.mesh = cap_mesh
 		cap.position = Vector3(bridge_x + post_offset, 3.10, 0.0)
 		cap.material_override = _make_material(Color(1.0, 0.72, 0.20), 0.08)
@@ -458,7 +539,7 @@ func _build_gate_visual(bridge_x: float) -> void:
 	var bar := MeshInstance3D.new()
 	bar.name = "GateBar"
 	var bar_mesh := BoxMesh.new()
-	bar_mesh.size = Vector3(6.15, 0.46, 0.52)
+	bar_mesh.size = Vector3(6.15, 0.46, 0.52 * ARENA_Z_SCALE)
 	bar.mesh = bar_mesh
 	bar.material_override = _make_material(Color(0.95, 0.30, 0.26), 0.08)
 	world_root.add_child(bar)
@@ -505,13 +586,13 @@ func _build_stronghold_platforms() -> void:
 		var center_world := Vector3(
 			(center_cell.x - float(battlefield.grid_size) * 0.5) * ARENA_X_SCALE,
 			0.0,
-			center_cell.y - float(battlefield.grid_size) * 0.5
+			(center_cell.y - float(battlefield.grid_size) * 0.5) * ARENA_Z_SCALE
 		)
 
 		var platform_shadow := MeshInstance3D.new()
 		platform_shadow.name = "StrongholdShadow_%s" % region_id
 		var shadow_mesh := BoxMesh.new()
-		shadow_mesh.size = Vector3(bounds.size.x * ARENA_X_SCALE + 0.72, 0.46, bounds.size.y + 0.72)
+		shadow_mesh.size = Vector3(bounds.size.x * ARENA_X_SCALE + 0.72, 0.46, bounds.size.y * ARENA_Z_SCALE + 0.72)
 		platform_shadow.mesh = shadow_mesh
 		platform_shadow.position = center_world + Vector3(0.0, 0.28, 0.0)
 		platform_shadow.material_override = _make_material(Color(0.16, 0.25, 0.24), 0.0)
@@ -520,7 +601,7 @@ func _build_stronghold_platforms() -> void:
 		var platform := MeshInstance3D.new()
 		platform.name = "StrongholdPlatform_%s" % region_id
 		var platform_mesh := BoxMesh.new()
-		platform_mesh.size = Vector3(bounds.size.x * ARENA_X_SCALE + 0.18, 0.44, bounds.size.y + 0.18)
+		platform_mesh.size = Vector3(bounds.size.x * ARENA_X_SCALE + 0.18, 0.44, bounds.size.y * ARENA_Z_SCALE + 0.18)
 		platform.mesh = platform_mesh
 		platform.position = center_world + Vector3(0.0, 0.56, 0.0)
 		platform.material_override = _make_material(_region_accent(str(region_map.get_region_type_by_id(region_id))).lightened(0.08), 0.06)
@@ -554,6 +635,7 @@ func _refresh_tile_colors() -> void:
 			var region_type: String = str(region_map.get_region_type(Vector2i(x, y)))
 			tile_multimesh.multimesh.set_instance_color(x * grid + y, _tile_color(owner_id, region_type, Vector2i(x, y)))
 	_refresh_territory_boundaries()
+	_refresh_sparse_claim_markers()
 	_refresh_stronghold_platforms()
 	_refresh_region_labels()
 
@@ -594,7 +676,7 @@ func _build_region_labels() -> void:
 		label.position = Vector3(
 			(center.x - float(battlefield.grid_size) * 0.5) * ARENA_X_SCALE,
 			1.18,
-			center.y - float(battlefield.grid_size) * 0.5
+			(center.y - float(battlefield.grid_size) * 0.5) * ARENA_Z_SCALE
 		)
 		world_root.add_child(label)
 		_region_labels[region_id] = label
@@ -758,7 +840,7 @@ func _sync_aim_guide() -> void:
 		return
 	var origin: Vector3 = _simulation_to_world(turret.global_position, 0.72)
 	var direction_2d := Vector2.RIGHT.rotated(float(turret.rotation)).normalized()
-	var direction_3d := Vector3(direction_2d.x * ARENA_X_SCALE, 0.0, direction_2d.y).normalized()
+	var direction_3d := Vector3(direction_2d.x * ARENA_X_SCALE, 0.0, direction_2d.y * ARENA_Z_SCALE).normalized()
 	var length: float = float(battlefield.grid_size) * 0.42
 	_aim_mesh.surface_begin(Mesh.PRIMITIVE_LINES, _aim_material)
 	_aim_mesh.surface_add_vertex(origin + direction_3d * 1.4)
@@ -770,11 +852,15 @@ func _simulation_to_world(simulation_position: Vector2, height: float) -> Vector
 	var local: Vector2 = simulation_position - battlefield.global_position
 	var cell_size: float = maxf(1.0, float(battlefield.cell_size))
 	var grid: float = float(battlefield.grid_size)
-	return Vector3((local.x / cell_size - grid * 0.5) * ARENA_X_SCALE, height, local.y / cell_size - grid * 0.5)
+	return Vector3(
+		(local.x / cell_size - grid * 0.5) * ARENA_X_SCALE,
+		height,
+		(local.y / cell_size - grid * 0.5) * ARENA_Z_SCALE
+	)
 
 
 func _tile_color(owner_id: int, region_type: String, cell: Vector2i) -> Color:
-	var checker_index: int = floori(float(cell.x) / 3.0) + floori(float(cell.y) / 3.0)
+	var checker_index: int = floori(float(cell.x) / float(CHECKER_CELL_SPAN)) + floori(float(cell.y) / float(CHECKER_CELL_SPAN))
 	var owner_color: Color = GRASS_LIGHT if checker_index % 2 == 0 else GRASS_DARK
 	if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
 		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.38)

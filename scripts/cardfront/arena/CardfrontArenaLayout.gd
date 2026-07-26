@@ -8,7 +8,7 @@ const MAP_TOP: float = 98.0
 const ARENA_VIEW_TOP: float = 88.0
 const ARENA_VIEW_BOTTOM_MARGIN: float = 42.0
 const SIDE_GUTTER: float = 12.0
-const TURRET_INSET_MIN: float = 18.0
+const TURRET_OVERHANG_MIN: float = 8.0
 const AIM_PANEL_SIZE: Vector2 = Vector2(212.0, 70.0)
 
 
@@ -29,10 +29,10 @@ static func apply_to(base_layout: Dictionary, grid_size: int, viewport_size: Vec
 		Vector2(0.0, arena_view_top),
 		Vector2(viewport_size.x, maxf(320.0, viewport_size.y - arena_view_top - ARENA_VIEW_BOTTOM_MARGIN))
 	)
-	var turret_inset: float = maxf(TURRET_INSET_MIN, float(cell_size) * 1.55)
+	var turret_overhang: float = maxf(TURRET_OVERHANG_MIN, float(cell_size) * 0.72)
 	var center_x: float = battlefield_rect.get_center().x
-	var player_turret := Vector2(center_x, battlefield_rect.end.y - turret_inset)
-	var ai_turret := Vector2(center_x, battlefield_rect.position.y + turret_inset)
+	var player_turret := Vector2(center_x, battlefield_rect.end.y + turret_overhang)
+	var ai_turret := Vector2(center_x, battlefield_rect.position.y - turret_overhang)
 	var left_gutter_width: float = maxf(220.0, battlefield_rect.position.x - SIDE_GUTTER * 2.0)
 	var aim_panel_position := Vector2(
 		SIDE_GUTTER,
@@ -41,6 +41,8 @@ static func apply_to(base_layout: Dictionary, grid_size: int, viewport_size: Vec
 
 	layout["cardfront_arena"] = true
 	layout["arena_composition"] = "open_dual_bridge"
+	layout["arena_vertical_scale"] = 1.28
+	layout["turrets_outside_battlefield"] = true
 	layout["battlefield_cell_size"] = cell_size
 	layout["battlefield_rect"] = battlefield_rect
 	layout["arena_view_rect"] = arena_view_rect

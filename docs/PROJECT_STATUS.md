@@ -31,13 +31,13 @@ Confirmed product decisions:
 - Stable baseline: `v0.2.5.7-ui-copy-readability-pass`
 - Baseline commit: `9eadf9b`
 - Core-loop foundation commit: `bef12ce`
-- Current completed slice: `v0.3.1c-open-dual-gate-arena`
+- Current completed slice: `v0.3.1c.1-tall-arena-ownership-readability`
 - Next slice: `v0.3.1d-gate-connectivity-rules`
 - Active branch: `main`
 
 ## Completed Slice / 已完成阶段
 
-`v0.3.1c-open-dual-gate-arena` replaces the compressed engineering board composition with a bright, full-width orthographic arena while preserving the tested 2D simulation as the sole gameplay authority.
+`v0.3.1c.1-tall-arena-ownership-readability` refines the open dual-gate arena into a taller, finer-grained field while preserving the tested 2D simulation as the sole gameplay authority.
 
 Scope:
 
@@ -46,8 +46,12 @@ Scope:
 - A `MultiMeshInstance3D` mirrors every authoritative 2D territory cell without introducing 3D collision or duplicate game state.
 - Fine cell gaps are visually suppressed. A second `MultiMeshInstance3D` draws only the map perimeter and live ownership fronts as bold cartoon boundaries.
 - The terrain now uses a coarse olive checker, two narrow earth lanes, a slim river, wood-toned crossings, and simple green perimeter foliage instead of saturated cyan/pink/green slabs.
+- The visual field is stretched along its battle axis while the authoritative 40 x 40 coordinates remain unchanged, creating more top-to-bottom breathing room without invalidating rules or saves.
+- The terrain checker now resolves every simulation cell instead of grouping cells into enlarged 3 x 3 patches.
 - Player and AI ownership remain readable through cool-blue and warm-red terrain tints plus the dynamic dark frontier outline.
+- Isolated claims and one-neighbor chain ends receive a raised, unlit faction-color diamond; connected territory relies on tint and frontier outlines so the field stays clean.
 - The player and AI turrets, command chambers, barrel direction, health, active marbles, and aim ray are mirrored into reusable 3D visual proxies.
+- Both command turrets now sit beyond the top and bottom battlefield borders, with only their arena-facing chamber edge intruding into play space.
 - Energy, factory, and lab strongholds are large raised platforms with in-world type and control-percentage labels.
 - The center is now a bright river corridor with two bridge gates. Each gate has a visible open/half-open/closed state and defaults to 100% open.
 - The region information panel is contextual and collapses outside a stronghold, so it no longer occupies the right side continuously.
@@ -62,6 +66,7 @@ Acceptance:
 - At 1120 x 720, the arena presentation spans at least 95% of the viewport width and 78% of its height.
 - The arena uses a daylight background and bright territory palette rather than the previous dark navy board.
 - Player, AI, and neutral territory colors have tested minimum RGB separation while sharing one coherent grass material language.
+- Connected starting territory produces no sparse markers; introducing one isolated claim produces exactly one faction marker.
 - A bottom-edge player position maps to the positive-Z half of the 3D world.
 - Active 2D bullets receive capped, reusable 3D sphere proxies.
 - The original `Battlefield`, `BulletPool`, `Bullet`, and `Turret` nodes remain 2D gameplay authorities.
