@@ -84,7 +84,8 @@ func _test_live_defense_persists_without_refill() -> void:
 	var defense = main.runtime.territory_defense_system
 	var player_state = director.get_run_state(RulesScript.PLAYER_FACTION)
 	var ai_state = director.get_run_state(RulesScript.AI_FACTION)
-	var player_cells: Array = _find_owned_cells(main.runtime.battlefield, RulesScript.PLAYER_FACTION, 2)
+	var contact_front: Array = defense.get_starting_contact_front_cells(RulesScript.PLAYER_FACTION)
+	var player_cells: Array = _find_owned_cells_excluding(main.runtime.battlefield, RulesScript.PLAYER_FACTION, contact_front, 2)
 	var ai_cell: Vector2i = _find_owned_cell(main.runtime.battlefield, RulesScript.AI_FACTION)
 	var neutral_cell: Vector2i = _find_owned_cell(main.runtime.battlefield, RulesScript.NEUTRAL_OWNER)
 	var drained_cell: Vector2i = player_cells[0] if not player_cells.is_empty() else Vector2i(-1, -1)
@@ -92,8 +93,8 @@ func _test_live_defense_persists_without_refill() -> void:
 
 	_assert.eq(player_state.territory_defense_cap, 2, "runtime: engineer should start with defense capacity two")
 	_assert.eq(ai_state.territory_defense_cap, 1, "runtime: gunner should start with defense capacity one")
-	_assert.eq(defense.get_cell_defense(drained_cell), 1, "runtime: starting territory should begin with one defense")
-	_assert.that(main.runtime.battlefield.apply_bullet(drained_cell, RulesScript.AI_FACTION) == "BLOCKED_BY_FORTIFY", "runtime: first hostile hit should consume starting defense")
+	_assert.eq(defense.get_cell_defense(drained_cell), 1, "runtime: ordinary starting territory should begin with one defense")
+	_assert.that(main.runtime.battlefield.apply_bullet(drained_cell, RulesScript.AI_FACTION) == "BLOCKED_BY_FORTIFY", "runtime: first hostile hit should consume ordinary starting defense")
 	_assert.eq(defense.get_cell_defense(drained_cell), 0, "runtime: consumed defense should stay depleted")
 
 	player_state.territory_defense_cap = 3
@@ -137,12 +138,13 @@ func _find_owned_cell(battlefield, owner_id: int) -> Vector2i:
 	return Vector2i(-1, -1)
 
 
-func _find_owned_cells(battlefield, owner_id: int, count: int) -> Array:
+func _find_owned_cells_excluding(battlefield, owner_id: int, excluded: Array, count: int) -> Array:
 	var cells: Array = []
 	for x in range(int(battlefield.grid_size)):
 		for y in range(int(battlefield.grid_size)):
-			if int(battlefield.owners[x][y]) == int(owner_id):
-				cells.append(Vector2i(x, y))
+			var cell := Vector2i(x, y)
+			if int(battlefield.owners[x][y]) == int(owner_id) and not excluded.has(cell):
+				cells.append(cell)
 				if cells.size() >= count:
 					return cells
 	return cells

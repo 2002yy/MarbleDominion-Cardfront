@@ -115,6 +115,9 @@ jobs:
           - batch: Cardfront territory defense
             scripts: |
               CardfrontTerritoryDefenseTestRunner.gd
+          - batch: Cardfront engineer contact front
+            scripts: |
+              CardfrontEngineerContactFrontTestRunner.gd
           - batch: Cardfront vertical slice feedback
             scripts: |
               CardfrontVerticalSliceFeedbackTestRunner.gd
