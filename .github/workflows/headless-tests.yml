@@ -106,17 +106,23 @@ jobs:
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontModeSmokeTestRunner.gd
-          - batch: Cardfront v0.3 hero and card closeout
+          - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
+          - batch: Cardfront card pool rebalance
+            scripts: |
               CardfrontCardPoolRebalanceTestRunner.gd
-          - batch: Cardfront v0.3 defense and feedback closeout
+          - batch: Cardfront territory defense
             scripts: |
               CardfrontTerritoryDefenseTestRunner.gd
+          - batch: Cardfront vertical slice feedback
+            scripts: |
               CardfrontVerticalSliceFeedbackTestRunner.gd
-          - batch: Cardfront v0.3 runtime and performance closeout
+          - batch: Cardfront live runtime boundary
             scripts: |
               CardfrontLiveRuntimeBoundaryTestRunner.gd
+          - batch: Cardfront vertical performance smoke
+            scripts: |
               CardfrontPerformanceSmokeTestRunner.gd
           - batch: Cardfront v0.3 tactical strongholds
             scripts: |
