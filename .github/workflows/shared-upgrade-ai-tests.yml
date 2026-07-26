@@ -63,11 +63,20 @@ jobs:
       - name: Run ${{ matrix.batch }}
         shell: pwsh
         run: |
-          $logPath = Join-Path $env:RUNNER_TEMP "${{ matrix.script }}.log"
+          New-Item -ItemType Directory -Path "${{ github.workspace }}/artifacts/test-logs" -Force | Out-Null
+          $logPath = "${{ github.workspace }}/artifacts/test-logs/${{ matrix.script }}.log"
           & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/${{ matrix.script }}" *>&1 | Tee-Object -FilePath $logPath | Out-Null
           $exitCode = $LASTEXITCODE
           Get-Content -Path $logPath -Tail 200
           exit $exitCode
+
+      - name: Upload shared AI test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-ai-log-${{ matrix.script }}-${{ github.run_id }}
+          path: artifacts/test-logs/${{ matrix.script }}.log
+          if-no-files-found: error
 
       - name: Upload shared AI audit
         if: always() && matrix.script == 'CardfrontSharedAiParityAuditTestRunner.gd'
