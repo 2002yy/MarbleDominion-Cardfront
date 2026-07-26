@@ -27,6 +27,7 @@ const BATTLE_INTERVAL: float = TuningScript.AIM_SECONDS
 const FIRST_DRAFT_COUNTDOWN: float = TuningScript.FIRST_AIM_SECONDS
 const DRAFT_TIMEOUT: float = TuningScript.DRAFT_SECONDS
 const REVEAL_DURATION: float = TuningScript.REVEAL_SECONDS
+const VALUE_PLANNING_MAX_ROUNDS: int = 34
 
 var fire_director = null
 var turrets: Dictionary = {}
@@ -180,6 +181,51 @@ func get_stronghold_bonus(owner_id: int) -> Dictionary:
 	return (current_stronghold_bonuses.get(int(owner_id), {}) as Dictionary).duplicate(true)
 
 
+func get_upgrade_value_context(owner_id: int) -> Dictionary:
+	var safe_owner_id: int = int(owner_id)
+	var opponent_id: int = _opponent_id(safe_owner_id)
+	var bonus: Dictionary = current_stronghold_bonuses.get(safe_owner_id, {}) as Dictionary
+	var own_defense: Dictionary = {}
+	var enemy_defense: Dictionary = {}
+	if territory_defense_system != null and is_instance_valid(territory_defense_system):
+		if territory_defense_system.has_method("get_owner_defense_snapshot"):
+			own_defense = territory_defense_system.get_owner_defense_snapshot(safe_owner_id, "frontline")
+			enemy_defense = territory_defense_system.get_owner_defense_snapshot(opponent_id, "frontline")
+	var enemy_owned_cells: int = maxi(1, int(enemy_defense.get("owned_cell_count", 1)))
+	var enemy_defended_ratio: float = clampf(
+		float(enemy_defense.get("defended_cell_count", 0)) / float(enemy_owned_cells),
+		0.0,
+		1.0
+	)
+	var enemy_cap: int = maxi(1, int(enemy_defense.get("cap", 1)))
+	return {
+		"source": "live",
+		"round_number": maxi(1, round_number),
+		"rounds_remaining": maxi(1, VALUE_PLANNING_MAX_ROUNDS - maxi(1, round_number) + 1),
+		"pre_multiplier_shot_bonus": 0,
+		"post_multiplier_shot_bonus": maxi(0, int(bonus.get("shot_count_bonus", 0))),
+		"temporary_attack_level_bonus": maxi(0, int(bonus.get("temporary_attack_level_bonus", 0))),
+		"estimated_chamber_hit_chance": 0.17,
+		"enemy_defense_contact_chance": clampf(
+			0.06 + enemy_defended_ratio * 0.28 + float(enemy_cap) * 0.025,
+			0.05,
+			0.55
+		),
+		"enemy_defense_points": maxi(0, int(enemy_defense.get("total_defense_points", 0))),
+		"repairable_frontline_cells": mini(6, maxi(0, int(own_defense.get("repairable_frontline_cells", 0)))),
+		"owned_cell_count": maxi(0, int(own_defense.get("owned_cell_count", 18))),
+		"defended_cell_count": maxi(0, int(own_defense.get("defended_cell_count", 0))),
+		"own_health_ratio": _turret_health_ratio(safe_owner_id),
+		"enemy_health_ratio": _turret_health_ratio(opponent_id),
+		"route_pressure": clampf(0.85 + enemy_defended_ratio * 0.50, 0.5, 1.5),
+		"future_offer_size": _draft_choice_count(safe_owner_id),
+	}
+
+
+func get_last_ai_value_report() -> Array:
+	return _ai_policy.get_last_ranked_evaluations()
+
+
 func set_seed_for_tests(seed_value: int) -> void:
 	_draft_system.set_seed(seed_value)
 
@@ -235,7 +281,11 @@ func _open_draft() -> void:
 			_draft_choice_count(RulesScript.AI_FACTION)
 		),
 	}
-	var ai_choice: Dictionary = _ai_policy.choose(get_ai_offer(), get_run_state(RulesScript.AI_FACTION))
+	var ai_choice: Dictionary = _ai_policy.choose(
+		get_ai_offer(),
+		get_run_state(RulesScript.AI_FACTION),
+		get_upgrade_value_context(RulesScript.AI_FACTION)
+	)
 	var ai_choice_id: String = str(ai_choice.get("id", ""))
 	if ai_choice_id != "" and phase_controller.select_upgrade(RulesScript.AI_FACTION, ai_choice_id):
 		choice_locked.emit(RulesScript.AI_FACTION, ai_choice_id, true)
@@ -349,6 +399,17 @@ func _draft_choice_count(owner_id: int) -> int:
 		DraftSystemScript.DEFAULT_OFFER_SIZE,
 		DraftSystemScript.MAX_OFFER_SIZE
 	)
+
+
+func _opponent_id(owner_id: int) -> int:
+	return RulesScript.AI_FACTION if int(owner_id) == RulesScript.PLAYER_FACTION else RulesScript.PLAYER_FACTION
+
+
+func _turret_health_ratio(owner_id: int) -> float:
+	var turret = turrets.get(int(owner_id), null)
+	if turret == null or not is_instance_valid(turret):
+		return 1.0
+	return clampf(float(turret.health) / float(maxi(1, int(turret.max_health))), 0.0, 1.0)
 
 
 func _set_draft_pause(paused: bool) -> void:
