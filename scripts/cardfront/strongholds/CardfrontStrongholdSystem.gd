@@ -6,6 +6,7 @@ signal bonuses_sampled(snapshot)
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
+const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
 
@@ -94,7 +95,11 @@ func apply_to_volley_plan(owner_id: int, plan, snapshot: Dictionary = {}) -> voi
 	var shot_bonus: int = maxi(0, int(bonus.get("shot_count_bonus", 0)))
 	var attack_level_bonus: int = maxi(0, int(bonus.get("temporary_attack_level_bonus", 0)))
 	plan.shot_count = clampi(int(plan.shot_count) + shot_bonus, 1, VolleyResolverScript.MAX_VOLLEY_COUNT)
-	plan.attack_level = maxi(0, int(plan.attack_level) + attack_level_bonus)
+	plan.attack_level = clampi(
+		int(plan.attack_level) + attack_level_bonus,
+		0,
+		RunStateScript.MAX_RESOLVED_ATTACK_LEVEL
+	)
 	plan.chamber_damage_quarters = 4 + int(plan.attack_level)
 	plan.stronghold_shot_bonus = shot_bonus
 	plan.stronghold_attack_level_bonus = attack_level_bonus
