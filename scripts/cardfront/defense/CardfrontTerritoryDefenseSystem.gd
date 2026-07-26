@@ -12,7 +12,9 @@ var region_map = null
 var fortify_layer = null
 var round_director = null
 var owner_caps: Dictionary = {}
+var starting_contact_front_cells: Dictionary = {}
 var last_defended_cell_count: int = 0
+var _starting_defense_initialized: bool = false
 
 
 func _init() -> void:
@@ -25,6 +27,8 @@ func setup(new_battlefield, new_region_map, new_fortify_layer, new_round_directo
 	region_map = new_region_map
 	fortify_layer = new_fortify_layer
 	round_director = new_round_director
+	starting_contact_front_cells.clear()
+	_starting_defense_initialized = false
 	if battlefield == null or not is_instance_valid(battlefield):
 		return false
 	if fortify_layer == null:
@@ -94,6 +98,10 @@ func get_cell_defense(cell: Vector2i) -> int:
 	return int(fortify_layer.get_fortify_stack(cell))
 
 
+func get_starting_contact_front_cells(owner_id: int) -> Array:
+	return (starting_contact_front_cells.get(int(owner_id), []) as Array).duplicate()
+
+
 func get_region_defense_summary(region_id: int, owner_id: int) -> Dictionary:
 	var cap: int = get_owner_cap(owner_id)
 	if region_map == null or not region_map.has_method("get_region_cells"):
@@ -138,6 +146,11 @@ func refresh_territory_defense(plans: Dictionary = {}) -> int:
 
 
 func initialize_starting_defense() -> int:
+	if _starting_defense_initialized:
+		return last_defended_cell_count
+	_starting_defense_initialized = true
+	starting_contact_front_cells.clear()
+
 	var starting_values: Dictionary = {}
 	for owner_id in RulesScript.get_duel_factions():
 		var state = round_director.get_run_state(int(owner_id)) if round_director != null else null
@@ -146,10 +159,23 @@ func initialize_starting_defense() -> int:
 			0,
 			get_owner_cap(int(owner_id))
 		)
-	last_defended_cell_count = int(fortify_layer.refill_from_owner_caps(
-		battlefield.owners,
-		starting_values
-	))
+
+	fortify_layer.refill_from_owner_caps(battlefield.owners, starting_values)
+	for owner_id in RulesScript.get_duel_factions():
+		var state = round_director.get_run_state(int(owner_id)) if round_director != null else null
+		var contact_front_value: int = clampi(
+			int(state.starting_contact_front_defense) if state != null else int(starting_values[int(owner_id)]),
+			int(starting_values[int(owner_id)]),
+			get_owner_cap(int(owner_id))
+		)
+		var contact_cells: Array = _find_contact_front_cells(int(owner_id))
+		starting_contact_front_cells[int(owner_id)] = contact_cells.duplicate()
+		if contact_front_value <= int(starting_values[int(owner_id)]):
+			continue
+		for raw_cell in contact_cells:
+			fortify_layer.set_fortify_stack(raw_cell as Vector2i, contact_front_value)
+
+	last_defended_cell_count = _count_current_defended_cells()
 	defense_refreshed.emit(owner_caps.duplicate(), last_defended_cell_count)
 	return last_defended_cell_count
 
@@ -176,6 +202,19 @@ func _count_current_defended_cells() -> int:
 			if get_cell_defense(Vector2i(x, y)) > 0:
 				defended += 1
 	return defended
+
+
+func _find_contact_front_cells(owner_id: int) -> Array:
+	var cells: Array = []
+	for x in range(int(battlefield.grid_size)):
+		for y in range(int(battlefield.grid_size)):
+			var cell := Vector2i(x, y)
+			if int(battlefield.owners[x][y]) != int(owner_id):
+				continue
+			if _is_frontline_cell(cell, owner_id):
+				cells.append(cell)
+	cells.sort_custom(_sort_cells)
+	return cells
 
 
 func _repair_candidates(owner_id: int, zone: String, cap: int) -> Array:
