@@ -19,12 +19,27 @@ static func make(grid_size: int) -> Dictionary:
 	]
 	return CardfrontMapDefinitionScript.make("central_lab", size, regions, {
 		"display_name": "Central Lab",
+		"layout_style": "outer_flank_lab_tradeoff",
 		"spawn_zones": [],
 		"neutral_zones": [],
 		"objective_rule": CardfrontMapDefinitionScript.OBJECTIVE_DESTROY_COMMAND_CHAMBER,
 		"stronghold_ruleset": StrongholdRulesScript.RULESET_ID,
 		"time_limit": CardfrontRulesScript.MATCH_DURATION_SECONDS,
 		"ai_profile": "baseline_duel",
+		"route_layout": {
+			"river_y_ratio": 0.5,
+			"lane_center_ratios": [0.17, 0.83],
+			"lane_half_width_ratio": 0.065,
+			"control_zone_half_width_ratio": 0.075,
+			"control_zone_half_height_ratio": 0.09,
+			"lane_names": ["left_outer_bridge", "right_outer_bridge"],
+		},
+		"strategy_profile": {
+			"identity": "central_power_outer_routes",
+			"summary": "A central draft objective is separated from two narrow outer bridge routes.",
+			"opening_hint": "Fight for the Laboratory to improve the build, or secure an outer bridge to keep chamber access.",
+			"tags": ["two_lane", "wide_split", "outer_flanks", "objective_tradeoff"],
+		},
 		"simulation_profile": {
 			"chamber_hit_chance": 0.157,
 			"average_cells_crossed": 21.0,
