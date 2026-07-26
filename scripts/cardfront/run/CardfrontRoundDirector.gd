@@ -20,6 +20,7 @@ const UpgradeResolverScript = preload("res://scripts/cardfront/draft/CardfrontUp
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
 const AiUpgradePolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
 const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
+const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 
 const BATTLE_INTERVAL: float = TuningScript.AIM_SECONDS
 const FIRST_DRAFT_COUNTDOWN: float = TuningScript.FIRST_AIM_SECONDS
@@ -30,6 +31,7 @@ var fire_director = null
 var turrets: Dictionary = {}
 var direction_controller = null
 var stronghold_system = null
+var hero_assignments: Dictionary = {}
 var phase_controller = MatchPhaseControllerScript.new()
 var run_states: Dictionary = {}
 var current_offers: Dictionary = {}
@@ -53,7 +55,13 @@ func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func setup(new_fire_director, new_turrets: Dictionary, new_direction_controller = null, new_stronghold_system = null) -> bool:
+func setup(
+	new_fire_director,
+	new_turrets: Dictionary,
+	new_direction_controller = null,
+	new_stronghold_system = null,
+	new_hero_assignments: Dictionary = {}
+) -> bool:
 	fire_director = new_fire_director
 	turrets = new_turrets.duplicate(false)
 	direction_controller = new_direction_controller
@@ -64,11 +72,26 @@ func setup(new_fire_director, new_turrets: Dictionary, new_direction_controller 
 		if not turrets.has(owner_id) or turrets[owner_id] == null or not is_instance_valid(turrets[owner_id]):
 			return false
 
+	hero_assignments.clear()
+	for owner_id in RulesScript.get_duel_factions():
+		var fallback_hero_id: String = (
+			HeroRegistryScript.DEFAULT_PLAYER_HERO_ID
+			if int(owner_id) == RulesScript.PLAYER_FACTION
+			else HeroRegistryScript.DEFAULT_AI_HERO_ID
+		)
+		hero_assignments[int(owner_id)] = HeroRegistryScript.sanitize_hero_id(
+			str(new_hero_assignments.get(int(owner_id), fallback_hero_id)),
+			fallback_hero_id
+		)
+
 	run_states.clear()
 	for owner_id in RulesScript.get_duel_factions():
 		var state = RunStateScript.new()
-		state.setup(int(owner_id))
+		state.setup_from_hero(int(owner_id), str(hero_assignments[int(owner_id)]))
 		run_states[int(owner_id)] = state
+		var turret = turrets.get(int(owner_id), null)
+		if turret != null and is_instance_valid(turret) and turret.has_method("configure_health_pool"):
+			turret.configure_health_pool(int(state.command_chamber_health), true)
 
 	var phase_callable := Callable(self, "_on_phase_changed")
 	if not phase_controller.phase_changed.is_connected(phase_callable):

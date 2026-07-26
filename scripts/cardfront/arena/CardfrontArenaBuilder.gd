@@ -7,7 +7,7 @@ const CardfrontOrthographicArenaViewScript = preload("res://scripts/cardfront/ar
 const CardfrontCommandChamberViewScript = preload("res://scripts/cardfront/arena/CardfrontCommandChamberView.gd")
 const CardfrontDirectionControllerScript = preload("res://scripts/cardfront/arena/CardfrontDirectionController.gd")
 const CardfrontAimGuideLayerScript = preload("res://scripts/cardfront/arena/CardfrontAimGuideLayer.gd")
-const CardfrontRunTuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
+const CardfrontHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 
 
 static func create_presentation(game_layer: Node, battlefield, layout: Dictionary) -> Dictionary:
@@ -32,14 +32,27 @@ static func create_orthographic_view(game_layer: Node, battlefield, region_map, 
 	return {"configured": true, "orthographic_arena_view": view}
 
 
-static func create_command_chambers(game_layer: Node, turrets: Dictionary) -> Dictionary:
+static func create_command_chambers(game_layer: Node, turrets: Dictionary, hero_assignments: Dictionary = {}) -> Dictionary:
 	if game_layer == null or not is_instance_valid(game_layer):
 		return {"configured": false, "reason": "missing_game_layer"}
 	var command_chambers: Dictionary = {}
 	for owner_id in CardfrontRulesScript.get_duel_factions():
 		var turret = turrets.get(owner_id, null)
+		var fallback_hero_id: String = (
+			CardfrontHeroRegistryScript.DEFAULT_PLAYER_HERO_ID
+			if int(owner_id) == CardfrontRulesScript.PLAYER_FACTION
+			else CardfrontHeroRegistryScript.DEFAULT_AI_HERO_ID
+		)
+		var hero_id: String = CardfrontHeroRegistryScript.sanitize_hero_id(
+			str(hero_assignments.get(int(owner_id), fallback_hero_id)),
+			fallback_hero_id
+		)
+		var hero_definition: Dictionary = CardfrontHeroRegistryScript.get_definition(hero_id)
 		if turret != null and is_instance_valid(turret) and turret.has_method("configure_health_pool"):
-			turret.configure_health_pool(CardfrontRunTuningScript.COMMAND_CHAMBER_HEALTH, true)
+			turret.configure_health_pool(
+				int(hero_definition.get("command_chamber_health", 40)),
+				true
+			)
 		var view = CardfrontCommandChamberViewScript.new()
 		if not view.setup(int(owner_id), turret, int(owner_id) == CardfrontRulesScript.PLAYER_FACTION):
 			view.free()

@@ -59,12 +59,14 @@ func _test_player_choice_pauses_resolves_and_launches() -> void:
 
 	var player_plan = director.current_plans.get(RulesScript.PLAYER_FACTION, null)
 	var ai_plan = director.current_plans.get(RulesScript.AI_FACTION, null)
+	var player_base: int = int(director.get_run_state(RulesScript.PLAYER_FACTION).base_volley_count)
+	var ai_base: int = int(director.get_run_state(RulesScript.AI_FACTION).base_volley_count)
 	director.complete_reveal_for_test()
 	_assert.that(not paused, "volley: world should resume before launch")
 	_assert.eq(director.get_phase(), MatchPhaseScript.BATTLE_COUNTDOWN, "volley: launch should begin the next countdown")
 	_assert.that(main.runtime.direction_controller.is_processing_unhandled_input(), "volley: direction hotkeys should return")
-	_assert.that(player_plan != null and int(player_plan.shot_count) >= 10, "volley: player plan should contain a real volley")
-	_assert.that(ai_plan != null and int(ai_plan.shot_count) >= 10, "volley: AI plan should contain a real volley")
+	_assert.that(player_plan != null and int(player_plan.shot_count) >= player_base, "volley: player plan should preserve its hero base volley")
+	_assert.that(ai_plan != null and int(ai_plan.shot_count) >= ai_base, "volley: AI plan should preserve its hero base volley")
 	_assert.that(int(main.runtime.turrets[RulesScript.PLAYER_FACTION].burst_remaining) > 0, "volley: player turret should receive the planned burst")
 	_assert.that(int(main.runtime.turrets[RulesScript.AI_FACTION].burst_remaining) > 0, "volley: AI turret should receive the planned burst")
 

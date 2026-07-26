@@ -28,6 +28,7 @@ const CardfrontTargetPreviewLayerScript = preload("res://scripts/cardfront/ui/Ca
 const CardfrontArenaBuilderScript = preload("res://scripts/cardfront/arena/CardfrontArenaBuilder.gd")
 const CardfrontRoundDirectorScript = preload("res://scripts/cardfront/run/CardfrontRoundDirector.gd")
 const CardfrontTerritoryDefenseSystemScript = preload("res://scripts/cardfront/defense/CardfrontTerritoryDefenseSystem.gd")
+const CardfrontHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 const SystemRegistryScript = preload("res://scripts/cardfront/runtime/CardfrontSystemRegistry.gd")
 
 var registry = SystemRegistryScript.new()
@@ -83,16 +84,17 @@ func build_world_layers(game_layer: Node, runtime) -> Dictionary:
 	if runtime == null:
 		return _failure("world_layers", "missing_runtime")
 	_clear_world_layer_refs(runtime)
+	runtime.hero_assignments = CardfrontHeroRegistryScript.assignments_from_config(runtime.current_config)
 
 	if not _record_or_fail("arena_presentation", CardfrontArenaBuilderScript.create_presentation(game_layer, runtime.battlefield, runtime.current_layout), runtime):
 		return _build_result(false)
-	if not _record_or_fail("command_chambers", CardfrontArenaBuilderScript.create_command_chambers(game_layer, runtime.turrets), runtime):
+	if not _record_or_fail("command_chambers", CardfrontArenaBuilderScript.create_command_chambers(game_layer, runtime.turrets, runtime.hero_assignments), runtime):
 		return _build_result(false)
 	if not _record_or_fail("fire_director", create_fire_director(game_layer, runtime.region_map, runtime.battlefield, runtime.turrets, runtime.target_bias_system), runtime):
 		return _build_result(false)
 	if not _record_or_fail("direction_control", CardfrontArenaBuilderScript.create_direction_control(game_layer, runtime.battlefield, runtime.turrets, runtime.fire_director, runtime.current_layout), runtime):
 		return _build_result(false)
-	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller, runtime.stronghold_system), runtime):
+	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller, runtime.stronghold_system, runtime.hero_assignments), runtime):
 		return _build_result(false)
 	if not _record_or_fail("shot_guide", create_shot_guide(game_layer, runtime.battlefield, runtime.target_bias_system, runtime.turrets, runtime.region_map), runtime):
 		return _build_result(false)
@@ -118,10 +120,11 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 	if runtime == null:
 		return _failure("live_world_layers", "missing_runtime")
 	_clear_world_layer_refs(runtime)
+	runtime.hero_assignments = CardfrontHeroRegistryScript.assignments_from_config(runtime.current_config)
 
 	if not _record_or_fail("arena_presentation", CardfrontArenaBuilderScript.create_presentation(game_layer, runtime.battlefield, runtime.current_layout), runtime):
 		return _build_result(false)
-	if not _record_or_fail("command_chambers", CardfrontArenaBuilderScript.create_command_chambers(game_layer, runtime.turrets), runtime):
+	if not _record_or_fail("command_chambers", CardfrontArenaBuilderScript.create_command_chambers(game_layer, runtime.turrets, runtime.hero_assignments), runtime):
 		return _build_result(false)
 	if not _record_or_fail("orthographic_arena", CardfrontArenaBuilderScript.create_orthographic_view(game_layer, runtime.battlefield, runtime.region_map, runtime.bullet_pool, runtime.turrets, runtime.current_layout), runtime):
 		return _build_result(false)
@@ -129,7 +132,7 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		return _build_result(false)
 	if not _record_or_fail("direction_control", CardfrontArenaBuilderScript.create_direction_control(game_layer, runtime.battlefield, runtime.turrets, runtime.fire_director, runtime.current_layout), runtime):
 		return _build_result(false)
-	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller, runtime.stronghold_system), runtime):
+	if not _record_or_fail("round_director", create_round_director(game_layer, runtime.fire_director, runtime.turrets, runtime.direction_controller, runtime.stronghold_system, runtime.hero_assignments), runtime):
 		return _build_result(false)
 	if not _record_or_fail("territory_defense", create_territory_defense_system(game_layer, runtime.battlefield, runtime.region_map, runtime.fortify_layer, runtime.round_director), runtime):
 		return _build_result(false)
@@ -211,6 +214,7 @@ func _clear_world_layer_refs(runtime) -> void:
 	runtime.direction_controller = null
 	runtime.aim_guide_layer = null
 	runtime.round_director = null
+	runtime.hero_assignments.clear()
 	runtime.faction_run_states.clear()
 	runtime.territory_defense_system = null
 
@@ -382,12 +386,19 @@ static func create_fire_director(game_layer: Node, region_map, battlefield, turr
 	}
 
 
-static func create_round_director(game_layer: Node, fire_director, turrets: Dictionary, direction_controller = null, stronghold_system = null) -> Dictionary:
+static func create_round_director(
+	game_layer: Node,
+	fire_director,
+	turrets: Dictionary,
+	direction_controller = null,
+	stronghold_system = null,
+	hero_assignments: Dictionary = {}
+) -> Dictionary:
 	if game_layer == null or not is_instance_valid(game_layer):
 		return {"configured": false, "reason": "missing_game_layer"}
 	var director = CardfrontRoundDirectorScript.new()
 	game_layer.add_child(director)
-	if not director.setup(fire_director, turrets, direction_controller, stronghold_system):
+	if not director.setup(fire_director, turrets, direction_controller, stronghold_system, hero_assignments):
 		director.queue_free()
 		return {"configured": false, "reason": "round_director_setup_failed"}
 	return {

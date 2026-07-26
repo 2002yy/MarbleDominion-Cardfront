@@ -34,6 +34,7 @@ func setup(new_battlefield, new_region_map, new_fortify_layer, new_round_directo
 	if not round_director.volley_launched.is_connected(launch_callable):
 		round_director.volley_launched.connect(launch_callable)
 	_sync_caps_from_run_states()
+	initialize_starting_defense()
 	return true
 
 
@@ -89,9 +90,23 @@ func refresh_territory_defense(plans: Dictionary = {}) -> int:
 				)
 	else:
 		_sync_caps_from_run_states()
+	last_defended_cell_count = _count_current_defended_cells()
+	defense_refreshed.emit(owner_caps.duplicate(), last_defended_cell_count)
+	return last_defended_cell_count
+
+
+func initialize_starting_defense() -> int:
+	var starting_values: Dictionary = {}
+	for owner_id in RulesScript.get_duel_factions():
+		var state = round_director.get_run_state(int(owner_id)) if round_director != null else null
+		starting_values[int(owner_id)] = clampi(
+			int(state.starting_territory_defense) if state != null else 1,
+			0,
+			get_owner_cap(int(owner_id))
+		)
 	last_defended_cell_count = int(fortify_layer.refill_from_owner_caps(
 		battlefield.owners,
-		owner_caps
+		starting_values
 	))
 	defense_refreshed.emit(owner_caps.duplicate(), last_defended_cell_count)
 	return last_defended_cell_count
@@ -110,3 +125,12 @@ func _sync_caps_from_run_states() -> void:
 
 func _on_volley_launched(plans: Dictionary, _issued_intents: Dictionary) -> void:
 	refresh_territory_defense(plans)
+
+
+func _count_current_defended_cells() -> int:
+	var defended: int = 0
+	for x in range(int(battlefield.grid_size)):
+		for y in range(int(battlefield.grid_size)):
+			if get_cell_defense(Vector2i(x, y)) > 0:
+				defended += 1
+	return defended

@@ -132,6 +132,9 @@ func _on_countdown_updated(time_remaining: float, round_number: int, player_stat
 		_format_seconds(time_remaining),
 	]
 	if player_state != null:
+		var hero_name: String = str(player_state.hero_name)
+		if hero_name != "":
+			battle_phase_label.text = "%s  ·  %s" % [hero_name, battle_phase_label.text]
 		battle_stats_label.text = "\u9f50\u5c04 %d  \u00b7  \u7834\u574f %d  \u00b7  \u9632\u5b88 %d  \u00b7  \u7a00\u6709 %d" % [
 			int(player_state.base_volley_count),
 			int(player_state.projectile_power),

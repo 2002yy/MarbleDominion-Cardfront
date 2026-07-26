@@ -26,6 +26,7 @@ const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd"
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
 const CardfrontStatusFormatterScript = preload("res://scripts/cardfront/ui/CardfrontStatusFormatter.gd")
 const CardfrontMatchFlowTextScript = preload("res://scripts/cardfront/ui/CardfrontMatchFlowText.gd")
+const CardfrontHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 const CardfrontHUDScene = preload("res://scenes/ui/cardfront/CardfrontHUD.tscn")
 const GameHUDScene = preload("res://scenes/ui/GameHUD.tscn")
 
@@ -41,6 +42,8 @@ var selected_grid_size: int = 40
 var selected_palette_name: String = "默认随机"
 var selected_quality_name: String = GameConfig.QUALITY_MEDIUM
 var selected_game_mode_name: String = GameConfig.GAME_MODE_BASIC
+var selected_cardfront_player_hero_id: String = CardfrontHeroRegistryScript.DEFAULT_PLAYER_HERO_ID
+var selected_cardfront_ai_hero_id: String = CardfrontHeroRegistryScript.DEFAULT_AI_HERO_ID
 var selected_time_limit_minutes: int = GameConfig.DEFAULT_TIMED_MODE_MINUTES
 var selected_save_slot: int = 1
 var game_elapsed_time: float = 0.0
@@ -94,6 +97,8 @@ func _sync_runtime_context(grid_size: int) -> void:
 		"palette_name": selected_palette_name,
 		"quality_name": selected_quality_name,
 		"game_mode_name": selected_game_mode_name,
+		"player_hero_id": selected_cardfront_player_hero_id,
+		"ai_hero_id": selected_cardfront_ai_hero_id,
 		"time_limit_minutes": selected_time_limit_minutes,
 		"save_slot": selected_save_slot,
 	})

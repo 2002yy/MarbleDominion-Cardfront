@@ -49,6 +49,7 @@ var aim_guide_layer = null
 var aim_control = null
 var round_director = null
 var three_choice_panel = null
+var hero_assignments: Dictionary = {}
 var faction_run_states: Dictionary = {}
 var resource_states: Dictionary = {}
 var last_yield_snapshot: Dictionary = {}
@@ -104,6 +105,7 @@ func reset() -> void:
     aim_control = null
     round_director = null
     three_choice_panel = null
+    hero_assignments.clear()
     faction_run_states.clear()
     resource_states.clear()
     last_yield_snapshot.clear()
