@@ -17,6 +17,7 @@ const DEFINITIONS: Dictionary = {
 		"base_volley_count": 6,
 		"command_chamber_health": 40,
 		"starting_territory_defense": 1,
+		"starting_contact_front_defense": 1,
 		"territory_defense_cap": 1,
 		"strategic_identity": "卡牌兼容性",
 	},
@@ -26,6 +27,7 @@ const DEFINITIONS: Dictionary = {
 		"base_volley_count": 7,
 		"command_chamber_health": 36,
 		"starting_territory_defense": 1,
+		"starting_contact_front_defense": 1,
 		"territory_defense_cap": 1,
 		"strategic_identity": "齐射倍率收益",
 	},
@@ -35,8 +37,9 @@ const DEFINITIONS: Dictionary = {
 		"base_volley_count": 5,
 		"command_chamber_health": 42,
 		"starting_territory_defense": 1,
+		"starting_contact_front_defense": 2,
 		"territory_defense_cap": 2,
-		"strategic_identity": "防御容量与阵地经营",
+		"strategic_identity": "接敌边界预筑垒与阵地经营",
 	},
 }
 
