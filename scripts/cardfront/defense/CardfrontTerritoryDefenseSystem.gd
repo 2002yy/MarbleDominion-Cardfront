@@ -102,6 +102,45 @@ func get_starting_contact_front_cells(owner_id: int) -> Array:
 	return (starting_contact_front_cells.get(int(owner_id), []) as Array).duplicate()
 
 
+func get_owner_defense_snapshot(owner_id: int, zone: String = "frontline") -> Dictionary:
+	var cap: int = get_owner_cap(owner_id)
+	var snapshot: Dictionary = {
+		"owner_id": int(owner_id),
+		"cap": cap,
+		"owned_cell_count": 0,
+		"defended_cell_count": 0,
+		"cells_at_cap": 0,
+		"total_defense_points": 0,
+		"repairable_frontline_cells": 0,
+	}
+	if battlefield == null or not is_instance_valid(battlefield) or fortify_layer == null:
+		return snapshot
+	for x in range(int(battlefield.grid_size)):
+		for y in range(int(battlefield.grid_size)):
+			if int(battlefield.owners[x][y]) != int(owner_id):
+				continue
+			var cell := Vector2i(x, y)
+			var defense: int = get_cell_defense(cell)
+			snapshot["owned_cell_count"] = int(snapshot["owned_cell_count"]) + 1
+			snapshot["total_defense_points"] = int(snapshot["total_defense_points"]) + defense
+			if defense > 0:
+				snapshot["defended_cell_count"] = int(snapshot["defended_cell_count"]) + 1
+			if cap > 0 and defense >= cap:
+				snapshot["cells_at_cap"] = int(snapshot["cells_at_cap"]) + 1
+	if cap > 0:
+		snapshot["repairable_frontline_cells"] = _repair_candidates(owner_id, zone, cap).size()
+	return snapshot
+
+
+func get_repairable_cell_count(owner_id: int, zone: String = "frontline", limit: int = 6) -> int:
+	if limit <= 0:
+		return 0
+	var cap: int = get_owner_cap(owner_id)
+	if cap <= 0:
+		return 0
+	return mini(limit, _repair_candidates(owner_id, zone, cap).size())
+
+
 func get_region_defense_summary(region_id: int, owner_id: int) -> Dictionary:
 	var cap: int = get_owner_cap(owner_id)
 	if region_map == null or not region_map.has_method("get_region_cells"):
