@@ -7,8 +7,12 @@ const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegi
 const MatchSimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceMatchSimulator.gd")
 
 
-func run(seeds_per_case: int = ConfigScript.FULL_SEEDS_PER_CASE) -> Dictionary:
+func run(
+	seeds_per_case: int = ConfigScript.FULL_SEEDS_PER_CASE,
+	simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
+) -> Dictionary:
 	var safe_seed_count: int = maxi(1, int(seeds_per_case))
+	var safe_simulation_mode: String = ConfigScript.sanitize_simulation_mode(simulation_mode)
 	var hero_ids: Array = HeroRegistryScript.get_hero_ids()
 	var map_ids: Array = MapRegistryScript.get_registered_map_ids()
 	var hero_stats: Dictionary = {}
@@ -44,7 +48,8 @@ func run(seeds_per_case: int = ConfigScript.FULL_SEEDS_PER_CASE) -> Dictionary:
 						str(hero_b),
 						str(map_id),
 						0,
-						seed_index + 1
+						seed_index + 1,
+						safe_simulation_mode
 					)
 					_accumulate_match(
 						result,
@@ -71,6 +76,9 @@ func run(seeds_per_case: int = ConfigScript.FULL_SEEDS_PER_CASE) -> Dictionary:
 					)
 
 	var report: Dictionary = {
+		"simulation_mode": safe_simulation_mode,
+		"hidden_hit_compensation": ConfigScript.uses_hidden_hit_compensation(safe_simulation_mode),
+		"resolved_attack_level_cap": ConfigScript.resolved_attack_level_cap(safe_simulation_mode),
 		"seeds_per_case": safe_seed_count,
 		"expected_matches": hero_ids.size() * hero_ids.size() * map_ids.size() * 2 * safe_seed_count,
 		"matches": int(totals["matches"]),
@@ -88,7 +96,10 @@ func run(seeds_per_case: int = ConfigScript.FULL_SEEDS_PER_CASE) -> Dictionary:
 func format_summary(report: Dictionary) -> String:
 	var lines: Array[String] = []
 	lines.append(
-		"matches=%d passed=%s median_round=%.1f p90_round=%.1f timeout=%.2f%%" % [
+		"mode=%s hidden_compensation=%s resolved_attack_cap=%d matches=%d passed=%s median_round=%.1f p90_round=%.1f timeout=%.2f%%" % [
+			str(report.get("simulation_mode", ConfigScript.DEFAULT_SIMULATION_MODE)),
+			str(report.get("hidden_hit_compensation", true)),
+			int(report.get("resolved_attack_level_cap", ConfigScript.HISTORICAL_RESOLVED_ATTACK_LEVEL_CAP)),
 			int(report.get("matches", 0)),
 			str(report.get("passed", false)),
 			float((report.get("pacing", {}) as Dictionary).get("median_round", 0.0)),
