@@ -8,6 +8,7 @@ const UpgradeValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontU
 var _shared_ai_policy = AiUpgradePolicyScript.new()
 var _active_simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
 var _last_choice_report: Array = []
+var _shared_choice_count: int = 0
 
 
 func simulate(
@@ -20,6 +21,7 @@ func simulate(
 ) -> Dictionary:
 	_active_simulation_mode = ConfigScript.sanitize_simulation_mode(simulation_mode)
 	_last_choice_report.clear()
+	_shared_choice_count = 0
 	var result: Dictionary = super.simulate(
 		hero_a,
 		hero_b,
@@ -29,6 +31,7 @@ func simulate(
 		_active_simulation_mode
 	)
 	result["upgrade_valuation_mode"] = _valuation_mode_for_simulation(_active_simulation_mode)
+	result["shared_upgrade_choice_count"] = _shared_choice_count
 	return result
 
 
@@ -56,6 +59,7 @@ func get_last_choice_report() -> Array:
 
 
 func _choose_upgrade_id_fast(offer_ids: Array, state: Dictionary) -> String:
+	_shared_choice_count += 1
 	var chosen_id: String = _shared_ai_policy.choose_id(
 		offer_ids,
 		state,
