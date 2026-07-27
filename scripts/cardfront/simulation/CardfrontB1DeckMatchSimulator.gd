@@ -1,4 +1,4 @@
-extends CardfrontB1ParityMatchSimulator
+extends CardfrontB1ArchetypeMatchSimulator
 class_name CardfrontB1DeckMatchSimulator
 
 const DeckRegistryScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDeckRegistry.gd")
