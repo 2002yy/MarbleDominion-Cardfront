@@ -12,9 +12,6 @@ on:
       - "scripts/tests/CardfrontProjectileTypeCombatTestRunner.gd"
       - "docs/BATTLEFIELD_ENTITIES_AND_DEFENSE_TOWERS_PLAN.md"
       - ".github/workflows/battlefield-entity-foundation-tests.yml"
-  push:
-    branches:
-      - agent/battlefield-entity-foundation
 
 concurrency:
   group: battlefield-entity-foundation-${{ github.event.pull_request.head.ref || github.ref_name }}
