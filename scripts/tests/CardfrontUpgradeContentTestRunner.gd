@@ -1,6 +1,7 @@
 extends SceneTree
 
 const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDraftSystem.gd")
+const DeckRegistryScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDeckRegistry.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
 
@@ -29,12 +30,14 @@ func _run() -> void:
 
 
 func _test_manifest_is_valid() -> void:
-	_assert.eq(UpgradeManifestScript.validate_all(), [], "upgrade manifest: all definitions should validate")
-	_assert.eq(UpgradeManifestScript.get_upgrade_ids().size(), 8, "upgrade manifest: first generation should contain eight upgrades")
+	_assert.eq(UpgradeManifestScript.validate_all(), [], "upgrade manifest: all core and candidate definitions should validate")
+	_assert.eq(UpgradeManifestScript.get_upgrade_ids().size(), 8, "upgrade manifest: historical/default pool should stay at eight upgrades")
+	_assert.eq(UpgradeManifestScript.get_all_upgrade_ids().size(), 11, "upgrade manifest: B1 candidate catalog should contain eleven upgrades")
+	_assert.eq(DeckRegistryScript.validate_all(), [], "upgrade decks: all selectable candidate decks should validate")
 
 
 func _test_cards_are_text_and_symbol_driven() -> void:
-	for upgrade_id in UpgradeManifestScript.get_upgrade_ids():
+	for upgrade_id in UpgradeManifestScript.get_all_upgrade_ids():
 		var definition: Dictionary = UpgradeManifestScript.get_definition(str(upgrade_id))
 		_assert.that(str(definition.get("name", "")) != "", "upgrade content: card should have a name")
 		_assert.that(str(definition.get("symbol", "")) != "", "upgrade content: card should have a bold symbol")
@@ -61,6 +64,8 @@ func _test_seeded_offers_are_unique_and_deterministic() -> void:
 	for upgrade_id in first_ids:
 		unique_ids[str(upgrade_id)] = true
 	_assert.eq(unique_ids.size(), 3, "draft: offer upgrades should be unique")
+	for upgrade_id in first_ids:
+		_assert.that(upgrade_id in UpgradeManifestScript.get_upgrade_ids(), "draft: default state should only draw the frozen core pool")
 
 
 func _test_rarity_growth_changes_weights() -> void:
