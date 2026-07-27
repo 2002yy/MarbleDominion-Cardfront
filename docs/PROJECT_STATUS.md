@@ -70,9 +70,8 @@ Completed migration:
 
 Remaining hero work:
 
-- Replace fixed upgrade scores with a shared marginal-value AI policy.
 - Formal player hero selection and AI hero reveal UI.
-- AI repair, armor-piercing, and route-card valuation based on live route pressure.
+- Route-card valuation based on authoritative route and gate pressure.
 - Read-only combat snapshot shared by UI, AI, and simulation.
 
 ## 3. Attack And Defense Semantics / 攻防语义
@@ -190,6 +189,17 @@ Status: completed in PR #6; full repository CI passed before merge.
 - Added initialization, consumption, capture, recapture, repair, no-refill, and overlay-visual tests.
 - Historical A and provisional B0 audits remain unchanged because this live per-cell rule is intentionally deferred from the proxy simulator until B1.
 
+### v0.3.3a5 — Shared Marginal Upgrade Value Policy
+
+Status: completed in PR #7; the 5,400-match shared-AI proxy audit and full repository Headless suite passed before merge.
+
+- Replaced the live AI fixed score table with `CardfrontUpgradeValuePolicy`.
+- Live runtime values real added shots, cap waste, expected chamber hits, real repairable cells, defended contacts, fillable defense capacity, remaining drafts, and delayed Echo replay.
+- Fast simulation accepts equivalent dictionary state and calls the same value policy.
+- Historical audit replay remains available through the explicit `historical_fixed` mode; its old constants are not used by current live AI.
+- Per-offer reports expose score, immediate value, persistent value, delayed value, actual consumption, and waste.
+- Dedicated tests cover hero-specific volley margins, repeated multiplier waste, near-cap waste, repairable-cell count, armor-piercing demand, rarity timing, Echo, live/simulator state equivalence, and live draft integration.
+
 ## 7. Balance Audit Status / 平衡模拟状态
 
 ### Historical A Baseline
@@ -257,6 +267,52 @@ Interpretation:
 - The next valid hero decision point is B1 after the new AI policy, real gates, real route geometry, true side reruns, and per-cell defense are represented.
 - If the Engineer remains below 47% in valid B1 evidence, the next candidate is chamber health `42 -> 44`.
 
+### Shared Marginal-AI Proxy Audit
+
+Status: completed in GitHub Actions on 2026-07-27. Artifact run: `30236044493`.
+
+Matrix: `3 heroes x 3 enemy heroes x 3 maps x 2 reported sides x 100 seeds = 5,400`.
+
+Rules:
+
+- Simulation mode: `parity_uncompensated`.
+- Upgrade valuation mode: `marginal`.
+- Hidden hit compensation: disabled.
+- Temporary resolved attack cap: 4.
+- Shared value policy was invoked for `178,632` simulated upgrade choices.
+- Invalid offers: zero.
+
+Results:
+
+- Balanced Commander: `51.31%`.
+- Fortification Engineer: `41.44%`.
+- Rapid Gunner: `57.25%`.
+- Balanced vs Balanced: `46.83%`.
+- Balanced vs Engineer: `58.83%`.
+- Balanced vs Gunner: `42.00%`.
+- Engineer vs Balanced: `39.17%`.
+- Engineer vs Engineer: `49.50%`.
+- Engineer vs Gunner: `34.00%`.
+- Gunner vs Balanced: `53.83%`.
+- Gunner vs Engineer: `65.67%`.
+- Gunner vs Gunner: `46.50%`.
+- Reported mirror blue-side rates: exactly `50.00%` for all three heroes because the proxy still flips one result instead of rerunning geometry.
+- Median: 16 rounds.
+- P90: 22 rounds.
+- Timeout: `0.15%`.
+- First stronghold: round `5.99`.
+- Cells crossed per marble: `19.20`.
+- Chamber hits per volley: `1.514`.
+- Defense absorbed per volley: `1.141`.
+
+Interpretation and boundary:
+
+- Sharing marginal valuation materially improves the old uncompensated proxy result for Engineer (`29.64% -> 41.44%`) and reduces Gunner from `63.41% -> 57.25%`, but Engineer remains below the future valid-B1 decision threshold.
+- This is directional evidence about the AI-policy change only and must not be treated as B1.
+- It still lacks authoritative per-map route geometry, gate passage/reflection, true second-side reruns, and per-cell defense including the Engineer opening contact front.
+- Do not change hero base values from this 5,400-match proxy result.
+- The next complete 54,000-match balance audit remains reserved for B1 after those systems are represented.
+
 B1 risk monitoring for the full Engineer contact line:
 
 - Timeout should remain within `10%..25%`.
@@ -323,9 +379,9 @@ Before the catalog grows beyond eight upgrades, replace the expanding `match eff
 - `DraftEffect`
 - `DelayedEffect`
 
-The next AI slice must replace fixed scores such as `x2 = 92` with a shared marginal-value policy used by both live AI and simulation.
+Live AI and the current fast-simulation adapter now use the shared `CardfrontUpgradeValuePolicy`. Fixed values such as `x2 = 92` remain only inside the explicitly labeled `historical_fixed` replay mode.
 
-Required value components:
+Implemented value components:
 
 - Actual additional shots after caps for `+5` and `x2`.
 - Actual number and route value of distinct repairable cells.
@@ -334,21 +390,14 @@ Required value components:
 - Expected chamber hits and remaining health for attack growth.
 - Delay discount for Echo.
 - Remaining draft count and probability improvement for rarity.
-- Score explanation containing immediate value, long-term value, route value, and expected waste.
+- Score explanation containing immediate value, persistent value, delayed value, actual consumption, and expected waste.
+- A repeated `x2` has zero immediate marginal value when the next-volley multiplier is already `x2`, because same-round stacking and refresh are disallowed. Echo may still add delayed value when the replay lands in the following round.
 
 A new effect or AI score is incomplete until live runtime, simulation, player-facing explanation, validation, and tests all exist.
 
 ## 11. Active And Planned Slices / 当前与后续阶段
 
-### Active Next: v0.3.3a5 — Shared Marginal Upgrade Value Policy
-
-- Create a shared `CardfrontUpgradeValuePolicy`.
-- Replace fixed `+5`, `x2`, attack, repair, defense-cap, armor-piercing, Echo, and rarity scores.
-- Use actual added shots and actual consumable effects.
-- Make live AI and the fast simulator call the same policy.
-- Emit per-offer score breakdowns for later B1 auditing.
-
-### v0.3.3a6 — Strategic Map Schema And Preview
+### Active Next: v0.3.3a6 — Strategic Map Schema And Preview
 
 - Add `route_layout` and `strategy_profile` to all three map definitions.
 - Validate sorted, non-overlapping bridge lanes and bounded control zones.
