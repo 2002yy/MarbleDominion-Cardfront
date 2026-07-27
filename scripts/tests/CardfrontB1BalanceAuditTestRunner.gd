@@ -5,6 +5,8 @@ const ConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanc
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 const MapTargetEvaluatorScript = preload("res://scripts/cardfront/simulation/CardfrontMapBalanceTargetEvaluator.gd")
+const NumericDiagnosisScript = preload("res://scripts/cardfront/simulation/CardfrontB1NumericDiagnosis.gd")
+const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
 
 const ARTIFACT_DIRECTORY: String = "res://artifacts"
 const JSON_ARTIFACT_PATH: String = "res://artifacts/cardfront-b1-balance-audit.json"
@@ -26,10 +28,13 @@ func _run() -> void:
 	var audit = AuditScript.new()
 	var report: Dictionary = audit.run(seeds_per_case, ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED)
 	var target_evaluation: Dictionary = MapTargetEvaluatorScript.evaluate(report.get("map_reports", {}) as Dictionary)
+	var numeric_diagnosis: Dictionary = NumericDiagnosisScript.analyze(report)
 	report["map_target_evaluation"] = target_evaluation
-	var summary: String = "%s\n%s" % [
+	report["numeric_diagnosis"] = numeric_diagnosis
+	var summary: String = "%s\n%s\n%s" % [
 		audit.format_b1_summary(report),
 		MapTargetEvaluatorScript.format_summary(target_evaluation),
+		NumericDiagnosisScript.format_summary(numeric_diagnosis),
 	]
 	print(summary)
 	_write_artifacts(report, summary)
@@ -58,6 +63,15 @@ func _run() -> void:
 		var route_metrics: Dictionary = map_report.get("route_metrics", {}) as Dictionary
 		_assert.gt(float(route_metrics.get("gate_pass_rate", 0.0)), 0.0, "B1 map report should record gate passage for %s" % safe_map_id)
 		_assert.eq((route_metrics.get("lane_share", {}) as Dictionary).size(), 2, "B1 map report should record two lane shares for %s" % safe_map_id)
+	var hero_diagnosis: Dictionary = numeric_diagnosis.get("hero_balance", {}) as Dictionary
+	var card_diagnosis: Dictionary = numeric_diagnosis.get("card_health", {}) as Dictionary
+	_assert.eq(hero_diagnosis.size(), HeroRegistryScript.get_hero_ids().size(), "B1 diagnosis should cover every hero")
+	_assert.eq(card_diagnosis.size(), HeroRegistryScript.get_hero_ids().size(), "B1 card diagnosis should cover every hero")
+	for hero_id in HeroRegistryScript.get_hero_ids():
+		var safe_id: String = str(hero_id)
+		var hero_cards: Dictionary = card_diagnosis.get(safe_id, {}) as Dictionary
+		_assert.eq((hero_cards.get("per_card", {}) as Dictionary).size(), UpgradeManifestScript.get_upgrade_ids().size(), "B1 diagnosis should cover every card for %s" % safe_id)
+		_assert.eq((hero_cards.get("map_builds", {}) as Dictionary).size(), MapRegistryScript.get_registered_map_ids().size(), "B1 diagnosis should split builds by map for %s" % safe_id)
 	if seeds_per_case >= MAP_TARGET_GATE_SEEDS:
 		_assert.that(bool(target_evaluation.get("passed", false)), "B1 5,400+ audit should satisfy every map balance target")
 	if seeds_per_case == ConfigScript.FULL_SEEDS_PER_CASE:
