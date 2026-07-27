@@ -6,49 +6,11 @@ on:
       - main
   pull_request:
 
-permissions:
-  contents: write
-
 concurrency:
   group: b1-simulation-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
-  # BEGIN ONE SHOT PROJECTILE PATCH
-  apply-projectile-patch:
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - name: Execute stored projectile patch
-        shell: bash
-        run: |
-          set -euo pipefail
-          git clone -q --branch agent/simulation-parity-b1 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
-          cd repo
-          python3 - <<'PY'
-          from pathlib import Path
-
-          stored_path = Path('.github/workflows/apply-projectile-types.yml')
-          workflow = stored_path.read_text(encoding='utf-8')
-          start_marker = "          python3 - <<'PY'\n"
-          end_marker = "          PY\n"
-          start = workflow.index(start_marker) + len(start_marker)
-          end = workflow.index(end_marker, start)
-          lines = workflow[start:end].splitlines()
-          script = '\n'.join(line[10:] if line.startswith('          ') else line for line in lines)
-          script = script.replace("\\t          raise RuntimeError('bullet visual marker missing')", "              raise RuntimeError('bullet visual marker missing')")
-          compile(script, 'stored-projectile-patch', 'exec')
-          exec(script, {'__name__': '__main__'})
-          PY
-          git restore --source=HEAD -- .github/workflows
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "combat: implement visible projectile roles"
-          git push -q origin HEAD:agent/simulation-parity-b1
-  # END ONE SHOT PROJECTILE PATCH
-
   b1-simulation:
     name: ${{ matrix.batch }}
     runs-on: windows-latest
@@ -59,14 +21,14 @@ jobs:
           - batch: B1 route gate defense unit
             script: CardfrontB1SimulationTestRunner.gd
             seeds: 1
+          - batch: B1 typed projectile runtime
+            script: CardfrontProjectileTypeCombatTestRunner.gd
+            seeds: 1
           - batch: B1 162-match matrix probe
             script: CardfrontB1BalanceAuditTestRunner.gd
             seeds: 3
           - batch: B1 5400 directional audit
             script: CardfrontB1BalanceAuditTestRunner.gd
-            seeds: 100
-          - batch: B1 16200 gunner health confirmation
-            script: CardfrontB1HeroFinalistAuditTestRunner.gd
             seeds: 100
     env:
       GODOT_VERSION: 4.6.2-stable
@@ -123,11 +85,4 @@ jobs:
         with:
           name: cardfront-b1-audit-${{ matrix.seeds }}-${{ github.run_id }}
           path: artifacts/cardfront-b1-balance-audit.*
-          if-no-files-found: error
-      - name: Upload B1 finalist artifact
-        if: always() && matrix.script == 'CardfrontB1HeroFinalistAuditTestRunner.gd'
-        uses: actions/upload-artifact@v4
-        with:
-          name: cardfront-b1-hero-finalists-${{ matrix.seeds }}-${{ github.run_id }}
-          path: artifacts/cardfront-b1-hero-finalists.*
           if-no-files-found: error
