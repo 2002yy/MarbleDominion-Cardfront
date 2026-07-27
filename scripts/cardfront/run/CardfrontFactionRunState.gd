@@ -3,6 +3,7 @@ class_name CardfrontFactionRunState
 
 const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
+const DeckRegistryScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDeckRegistry.gd")
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 const DEFAULT_BASE_VOLLEY_COUNT: int = TuningScript.BASE_VOLLEY_COUNT
@@ -17,6 +18,7 @@ const MAX_NEXT_VOLLEY_MULTIPLIER: int = 2
 var owner_id: int = -1
 var hero_id: String = HeroRegistryScript.DEFAULT_PLAYER_HERO_ID
 var hero_name: String = ""
+var deck_id: String = DeckRegistryScript.DEFAULT_DECK_ID
 var base_volley_count: int = DEFAULT_BASE_VOLLEY_COUNT
 var base_projectile_mix: Dictionary = {}
 var command_chamber_health: int = TuningScript.COMMAND_CHAMBER_HEALTH
@@ -33,8 +35,11 @@ var queued_echo_upgrade_id: String = ""
 var next_volley_bonus: int = 0
 var next_volley_multiplier: int = 1
 var next_volley_armor_pierce_contacts: int = 0
+var next_volley_conversions: Dictionary = {}
 var pending_repair_points: int = 0
 var pending_repair_zone: String = "frontline"
+var bridgehead_prefab_charges: int = 0
+var bridgehead_prefab_defense_bonus: int = 0
 var applied_upgrade_counts: Dictionary = {}
 
 
@@ -42,6 +47,7 @@ func setup(new_owner_id: int, new_base_volley_count: int = DEFAULT_BASE_VOLLEY_C
 	owner_id = int(new_owner_id)
 	hero_id = "custom"
 	hero_name = ""
+	deck_id = DeckRegistryScript.DEFAULT_DECK_ID
 	base_volley_count = maxi(1, int(new_base_volley_count))
 	base_projectile_mix = {
 		ProjectileTypeScript.STANDARD: base_volley_count,
@@ -62,8 +68,11 @@ func setup(new_owner_id: int, new_base_volley_count: int = DEFAULT_BASE_VOLLEY_C
 	next_volley_bonus = 0
 	next_volley_multiplier = 1
 	next_volley_armor_pierce_contacts = 0
+	next_volley_conversions = {}
 	pending_repair_points = 0
 	pending_repair_zone = "frontline"
+	bridgehead_prefab_charges = 0
+	bridgehead_prefab_defense_bonus = 0
 	applied_upgrade_counts.clear()
 
 
@@ -99,6 +108,10 @@ func setup_from_hero(new_owner_id: int, new_hero_id: String) -> void:
 	frontline_repair_bonus = maxi(0, int(definition.get("frontline_repair_bonus", 0)))
 
 
+func set_deck_id(new_deck_id: String) -> void:
+	deck_id = DeckRegistryScript.sanitize_deck_id(new_deck_id)
+
+
 func add_next_volley_bonus(amount: int) -> void:
 	next_volley_bonus = maxi(0, next_volley_bonus + maxi(0, int(amount)))
 
@@ -111,6 +124,13 @@ func multiply_next_volley(multiplier: int) -> void:
 		1,
 		MAX_NEXT_VOLLEY_MULTIPLIER
 	)
+
+
+func add_next_volley_conversion(projectile_type: String, amount: int) -> void:
+	var safe_type: String = ProjectileTypeScript.sanitize(projectile_type)
+	if safe_type == ProjectileTypeScript.STANDARD or amount <= 0:
+		return
+	next_volley_conversions[safe_type] = maxi(0, int(next_volley_conversions.get(safe_type, 0)) + int(amount))
 
 
 func increase_attack_level(amount: int) -> void:
@@ -175,15 +195,32 @@ func consume_pending_repair() -> Dictionary:
 	return request
 
 
+func arm_bridgehead_prefabs(charges: int, defense_bonus: int) -> void:
+	bridgehead_prefab_charges += maxi(0, int(charges))
+	bridgehead_prefab_defense_bonus = maxi(bridgehead_prefab_defense_bonus, maxi(0, int(defense_bonus)))
+
+
+func consume_bridgehead_prefab_bonus() -> int:
+	if bridgehead_prefab_charges <= 0 or bridgehead_prefab_defense_bonus <= 0:
+		return 0
+	bridgehead_prefab_charges -= 1
+	var result: int = bridgehead_prefab_defense_bonus
+	if bridgehead_prefab_charges <= 0:
+		bridgehead_prefab_defense_bonus = 0
+	return result
+
+
 func consume_next_volley_modifiers() -> Dictionary:
 	var modifiers: Dictionary = {
 		"bonus": next_volley_bonus,
 		"multiplier": next_volley_multiplier,
 		"armor_pierce_contacts": next_volley_armor_pierce_contacts,
+		"projectile_conversions": next_volley_conversions.duplicate(true),
 	}
 	next_volley_bonus = 0
 	next_volley_multiplier = 1
 	next_volley_armor_pierce_contacts = 0
+	next_volley_conversions.clear()
 	return modifiers
 
 
@@ -199,6 +236,7 @@ func snapshot() -> Dictionary:
 		"owner_id": owner_id,
 		"hero_id": hero_id,
 		"hero_name": hero_name,
+		"deck_id": deck_id,
 		"base_volley_count": base_volley_count,
 		"base_projectile_mix": base_projectile_mix.duplicate(true),
 		"command_chamber_health": command_chamber_health,
@@ -215,7 +253,10 @@ func snapshot() -> Dictionary:
 		"next_volley_bonus": next_volley_bonus,
 		"next_volley_multiplier": next_volley_multiplier,
 		"next_volley_armor_pierce_contacts": next_volley_armor_pierce_contacts,
+		"next_volley_conversions": next_volley_conversions.duplicate(true),
 		"pending_repair_points": pending_repair_points,
 		"pending_repair_zone": pending_repair_zone,
+		"bridgehead_prefab_charges": bridgehead_prefab_charges,
+		"bridgehead_prefab_defense_bonus": bridgehead_prefab_defense_bonus,
 		"applied_upgrade_counts": applied_upgrade_counts.duplicate(),
 	}
