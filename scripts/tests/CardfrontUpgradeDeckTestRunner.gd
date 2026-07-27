@@ -23,7 +23,6 @@ func _run() -> void:
 	_assert = TestAssert.new()
 	print("[CardfrontUpgradeDeckTest] Starting selectable deck and tactical card tests")
 	await process_frame
-
 	_test_deck_contracts()
 	_test_default_pool_remains_core()
 	_test_candidate_decks_filter_offers()
@@ -31,7 +30,6 @@ func _run() -> void:
 	_test_bridgehead_state()
 	_test_deck_aware_ai_values()
 	_test_candidate_simulator_uses_decks()
-
 	_assert.report("[CardfrontUpgradeDeckTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
 
@@ -125,13 +123,19 @@ func _test_deck_aware_ai_values() -> void:
 	var siege: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended)
 	var bridgehead: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, engineer, defended)
 	var plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, defended)
-	var defense_cap: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1, engineer, defended)
 	var armor: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_ARMOR_PIERCING, engineer, defended)
 	_assert.gt(float(siege.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: siege should beat flat shots against a defended route")
 	_assert.gt(float(siege.get("expected_pierced_contacts", 0.0)), 0.0, "decks AI: siege conversion should expose expected pierced contacts")
 	_assert.gt(float(bridgehead.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: bridgehead should beat flat shots during a three-capture window")
-	_assert.gt(float(defense_cap.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: defense cap should become rational with fillable frontline capacity")
 	_assert.gt(float(armor.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: armor piercing should become rational against dense defense")
+
+	var saturated: Dictionary = defended.duplicate(true)
+	saturated["repairable_frontline_cells"] = 0
+	saturated["owned_cell_count"] = 18
+	saturated["defended_cell_count"] = 18
+	var defense_cap: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1, engineer, saturated)
+	var saturated_plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, saturated)
+	_assert.gt(float(defense_cap.get("score", 0.0)), float(saturated_plus_five.get("score", 0.0)), "decks AI: defense cap should become rational when a complete line is already saturated")
 
 	var no_capture: Dictionary = defended.duplicate(true)
 	no_capture["expected_frontline_captures"] = 0.0
