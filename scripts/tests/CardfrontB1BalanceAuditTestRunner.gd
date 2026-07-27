@@ -3,6 +3,7 @@ extends SceneTree
 const AuditScript = preload("res://scripts/cardfront/simulation/CardfrontB1HeroBalanceAudit.gd")
 const ConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
+const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 
 const ARTIFACT_DIRECTORY: String = "res://artifacts"
 const JSON_ARTIFACT_PATH: String = "res://artifacts/cardfront-b1-balance-audit.json"
@@ -10,8 +11,10 @@ const TEXT_ARTIFACT_PATH: String = "res://artifacts/cardfront-b1-balance-audit.t
 
 var _assert: TestAssert
 
+
 func _initialize() -> void:
 	call_deferred("_run")
+
 
 func _run() -> void:
 	_assert = TestAssert.new()
@@ -36,6 +39,18 @@ func _run() -> void:
 		_assert.that(card_by_hero.has(safe_id), "B1 should aggregate card metrics for %s" % safe_id)
 		var hero_cards: Dictionary = card_by_hero.get(safe_id, {}) as Dictionary
 		_assert.gt(_sum_numeric(hero_cards.get("selections", {}) as Dictionary), 0.0, "B1 should record selections for %s" % safe_id)
+	var map_reports: Dictionary = report.get("map_reports", {}) as Dictionary
+	var expected_per_map: int = 18 * seeds_per_case
+	_assert.eq(map_reports.size(), MapRegistryScript.get_registered_map_ids().size(), "B1 should emit one report per registered map")
+	for map_id in MapRegistryScript.get_registered_map_ids():
+		var safe_map_id: String = str(map_id)
+		_assert.that(map_reports.has(safe_map_id), "B1 should emit map report for %s" % safe_map_id)
+		var map_report: Dictionary = map_reports.get(safe_map_id, {}) as Dictionary
+		_assert.eq(int(map_report.get("matches", 0)), expected_per_map, "B1 map report should contain complete matrix for %s" % safe_map_id)
+		_assert.eq((map_report.get("hero_rates", {}) as Dictionary).size(), HeroRegistryScript.get_hero_ids().size(), "B1 map report should contain every hero for %s" % safe_map_id)
+		var route_metrics: Dictionary = map_report.get("route_metrics", {}) as Dictionary
+		_assert.gt(float(route_metrics.get("gate_pass_rate", 0.0)), 0.0, "B1 map report should record gate passage for %s" % safe_map_id)
+		_assert.eq((route_metrics.get("lane_share", {}) as Dictionary).size(), 2, "B1 map report should record two lane shares for %s" % safe_map_id)
 	if seeds_per_case == ConfigScript.FULL_SEEDS_PER_CASE:
 		_assert.eq(int(report.get("matches", 0)), 54000, "B1 full cloud audit should execute 54,000 matches")
 	_assert.that(FileAccess.file_exists(JSON_ARTIFACT_PATH), "B1 JSON artifact should exist")
@@ -43,11 +58,13 @@ func _run() -> void:
 	_assert.report("[CardfrontB1BalanceAudit]")
 	quit(0 if _assert.failures.is_empty() else 1)
 
+
 func _sum_numeric(values: Dictionary) -> float:
 	var total: float = 0.0
 	for value in values.values():
 		total += float(value)
 	return total
+
 
 func _write_artifacts(report: Dictionary, summary: String) -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ARTIFACT_DIRECTORY))
