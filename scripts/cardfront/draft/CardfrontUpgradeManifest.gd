@@ -17,6 +17,19 @@ const UPGRADE_SIEGE_CALIBRATION: String = "siege_calibration"
 const UPGRADE_BRIDGEHEAD_PREFABS: String = "bridgehead_prefabs"
 const UPGRADE_SUPPRESSION_SCREEN: String = "suppression_screen"
 
+# Historical A/B0 and the default live pool must remain the original eight cards.
+# Candidate cards are exposed through get_all_upgrade_ids() and deck definitions.
+const CORE_UPGRADE_IDS: Array[String] = [
+	UPGRADE_VOLLEY_PLUS_5,
+	UPGRADE_VOLLEY_X2,
+	UPGRADE_ATTACK_LEVEL_PLUS_1,
+	UPGRADE_DEFENSE_CAP_PLUS_1,
+	UPGRADE_FRONTLINE_REPAIR,
+	UPGRADE_ARMOR_PIERCING,
+	UPGRADE_RARITY_PLUS_1,
+	UPGRADE_ECHO_NEXT_CHOICE,
+]
+
 const DEFINITIONS := {
 	UPGRADE_VOLLEY_PLUS_5: {
 		"id": UPGRADE_VOLLEY_PLUS_5,
@@ -156,6 +169,10 @@ const REQUIRED_PARAMS := {
 
 
 static func get_upgrade_ids() -> Array:
+	return CORE_UPGRADE_IDS.duplicate()
+
+
+static func get_all_upgrade_ids() -> Array:
 	var ids: Array = DEFINITIONS.keys()
 	ids.sort()
 	return ids
@@ -175,7 +192,7 @@ static func is_rarity_valid(rarity: String) -> bool:
 
 static func validate_all() -> Array:
 	var errors: Array = []
-	for upgrade_id in get_upgrade_ids():
+	for upgrade_id in get_all_upgrade_ids():
 		var definition: Dictionary = DEFINITIONS[str(upgrade_id)]
 		if str(definition.get("id", "")) != str(upgrade_id):
 			errors.append("id_mismatch:%s" % str(upgrade_id))
