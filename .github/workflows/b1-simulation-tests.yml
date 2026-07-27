@@ -17,14 +17,15 @@ jobs:
   # BEGIN ONE SHOT PROJECTILE PATCH
   apply-projectile-patch:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: agent/simulation-parity-b1
-          fetch-depth: 0
       - name: Execute stored projectile patch
         shell: bash
         run: |
+          set -euo pipefail
+          git clone -q --branch agent/simulation-parity-b1 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
+          cd repo
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -44,12 +45,7 @@ jobs:
 
           b1_path = Path('.github/workflows/b1-simulation-tests.yml')
           b1_text = b1_path.read_text(encoding='utf-8')
-          b1_text = re.sub(
-              r'(?ms)^  # BEGIN ONE SHOT PROJECTILE PATCH\n.*?^  # END ONE SHOT PROJECTILE PATCH\n',
-              '',
-              b1_text,
-              count=1,
-          )
+          b1_text = re.sub(r'(?ms)^  # BEGIN ONE SHOT PROJECTILE PATCH\n.*?^  # END ONE SHOT PROJECTILE PATCH\n', '', b1_text, count=1)
           b1_text = b1_text.replace('permissions:\n  contents: write\n\n', '')
           b1_path.write_text(b1_text, encoding='utf-8')
           PY
@@ -57,7 +53,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "combat: implement visible projectile roles"
-          git push origin HEAD:agent/simulation-parity-b1
+          git push -q origin HEAD:agent/simulation-parity-b1
   # END ONE SHOT PROJECTILE PATCH
 
   b1-simulation:
