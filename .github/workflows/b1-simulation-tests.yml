@@ -38,7 +38,7 @@ jobs:
           end = workflow.index(end_marker, start)
           lines = workflow[start:end].splitlines()
           script = '\n'.join(line[10:] if line.startswith('          ') else line for line in lines)
-          script = script.replace('\\t', '    ').replace('\t', '    ')
+          script = script.replace("\\t          raise RuntimeError('bullet visual marker missing')", "              raise RuntimeError('bullet visual marker missing')")
           compile(script, 'stored-projectile-patch', 'exec')
           exec(script, {'__name__': '__main__'})
           Path('.github/workflows/run-projectile-patch.yml').unlink(missing_ok=True)
