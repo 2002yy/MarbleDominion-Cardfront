@@ -38,20 +38,22 @@ func run(
 		"defense_absorbed": 0,
 		"first_stronghold_sum": 0,
 		"first_stronghold_samples": 0,
+		"shared_upgrade_choices": 0,
 	}
 	var simulator = MatchSimulatorScript.new()
 	for hero_a in hero_ids:
 		for hero_b in hero_ids:
 			for map_id in map_ids:
 				for seed_index in range(safe_seed_count):
-					var result: Dictionary = simulator.simulate(
+					var result: Dictionary = simulator.call(
+						"simulate",
 						str(hero_a),
 						str(hero_b),
 						str(map_id),
 						0,
 						seed_index + 1,
 						safe_simulation_mode
-					)
+					) as Dictionary
 					_accumulate_match(result, hero_stats, matchup_stats, mirror_stats, rounds, totals)
 					result["side_variant"] = 1
 					if str(result.get("winner_slot", "")) != "":
@@ -84,6 +86,7 @@ func run(
 	report["passed"] = (
 		int(report["matches"]) == expected_matches
 		and int((report["metrics"] as Dictionary)["invalid_offers"]) == 0
+		and int((report["metrics"] as Dictionary)["shared_upgrade_choice_count"]) > 0
 	)
 	return report
 
@@ -111,12 +114,13 @@ func format_summary(report: Dictionary) -> String:
 		var stats: Dictionary = (report["matchup_rates"] as Dictionary)[matchup_key] as Dictionary
 		lines.append("matchup %s %.2f%%" % [str(matchup_key), float(stats["rate"])])
 	lines.append(
-		"cells_per_marble=%.2f chamber_hits_per_volley=%.3f defense_absorbed_per_volley=%.3f first_stronghold=%.2f invalid_offers=%d" % [
+		"cells_per_marble=%.2f chamber_hits_per_volley=%.3f defense_absorbed_per_volley=%.3f first_stronghold=%.2f invalid_offers=%d shared_upgrade_choices=%d" % [
 			float(metrics.get("average_cells_crossed_per_marble", 0.0)),
 			float(metrics.get("chamber_hits_per_volley", 0.0)),
 			float(metrics.get("defense_absorbed_per_volley", 0.0)),
 			float(metrics.get("average_first_stronghold_round", 0.0)),
 			int(metrics.get("invalid_offers", 0)),
+			int(metrics.get("shared_upgrade_choice_count", 0)),
 		]
 	)
 	return "\n".join(lines)
@@ -153,6 +157,7 @@ func _accumulate_match(
 	for key in ["invalid_offers", "shot_count", "chamber_hits", "volleys", "defense_absorbed"]:
 		totals[key] = int(totals[key]) + int(metrics.get(key, 0))
 	totals["cells_crossed"] = float(totals["cells_crossed"]) + float(metrics.get("cells_crossed", 0.0))
+	totals["shared_upgrade_choices"] = int(totals["shared_upgrade_choices"]) + int(result.get("shared_upgrade_choice_count", 0))
 	for first_round in (result.get("first_stronghold_round", {}) as Dictionary).values():
 		if int(first_round) > 0:
 			totals["first_stronghold_sum"] = int(totals["first_stronghold_sum"]) + int(first_round)
@@ -216,4 +221,5 @@ func _metrics_report(totals: Dictionary) -> Dictionary:
 		"defense_absorbed_per_volley": float(totals["defense_absorbed"]) / float(maxi(1, int(totals["volleys"]))),
 		"average_first_stronghold_round": float(totals["first_stronghold_sum"]) / float(maxi(1, int(totals["first_stronghold_samples"]))),
 		"invalid_offers": int(totals["invalid_offers"]),
+		"shared_upgrade_choice_count": int(totals["shared_upgrade_choices"]),
 	}
