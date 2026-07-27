@@ -4,7 +4,7 @@ class_name CardfrontB1HeroBalanceAudit
 const B1AuditConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
 const B1AuditHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 const B1AuditMapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
-const B1AuditSimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontB1BalanceMatchSimulator.gd")
+const B1AuditSimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontB1ParityMatchSimulator.gd")
 const B1AuditValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontUpgradeValuePolicy.gd")
 
 
