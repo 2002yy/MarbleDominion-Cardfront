@@ -23,10 +23,12 @@ func _run() -> void:
 		var definition: Dictionary = MapRegistryScript.get_map_definition(safe_map_id, ConfigScript.GRID_SIZE)
 		_assert.eq(MapDefinitionScript.validate(definition), [], "B1 map schema should validate: %s" % safe_map_id)
 		var profile: Dictionary = definition.get("simulation_profile", {}) as Dictionary
-		_assert.gt(float(profile.get("b1_tail_stall_chance", 0.0)), 0.0, "B1 map should expose a positive tail-stall chance: %s" % safe_map_id)
-		_assert.lt(float(profile.get("b1_tail_stall_chance", 1.0)), 0.25, "B1 tail-stall chance should remain bounded: %s" % safe_map_id)
-		_assert.gt(float(profile.get("b1_tail_hit_multiplier", 0.0)), 0.0, "B1 tail multiplier should stay positive: %s" % safe_map_id)
-		_assert.lt(float(profile.get("b1_tail_hit_multiplier", 1.0)), 1.0, "B1 tail multiplier should reduce only stalled matches: %s" % safe_map_id)
+		var stall_chance: float = float(profile.get("b1_tail_stall_chance", 0.0))
+		var stall_multiplier: float = float(profile.get("b1_tail_hit_multiplier", 0.0))
+		_assert.gt(stall_chance, 0.0, "B1 map should expose a positive tail-stall chance: %s" % safe_map_id)
+		_assert.that(stall_chance < 0.25, "B1 tail-stall chance should remain bounded: %s" % safe_map_id)
+		_assert.gt(stall_multiplier, 0.0, "B1 tail multiplier should stay positive: %s" % safe_map_id)
+		_assert.that(stall_multiplier < 1.0, "B1 tail multiplier should reduce only stalled matches: %s" % safe_map_id)
 
 	var engineer: Dictionary = simulator.make_virtual_state_for_test(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
 	var defense: Array = engineer["virtual_defense_cells"] as Array
