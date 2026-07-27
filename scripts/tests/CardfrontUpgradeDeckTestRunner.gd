@@ -103,11 +103,10 @@ func _test_bridgehead_state() -> void:
 	var state = _hero_state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
 	var resolver = ResolverScript.new()
 	_assert.that(bool(resolver.resolve(state, ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS).get("success", false)), "decks: bridgehead construction should resolve")
-	_assert.eq(state.bridgehead_prefab_charges, 3, "decks: bridgehead card should arm three charges")
-	_assert.eq(state.consume_bridgehead_prefab_bonus(), 1, "decks: first bridgehead should add one defense layer")
-	_assert.eq(state.consume_bridgehead_prefab_bonus(), 1, "decks: second bridgehead should add one defense layer")
-	_assert.eq(state.consume_bridgehead_prefab_bonus(), 1, "decks: third bridgehead should add one defense layer")
-	_assert.eq(state.consume_bridgehead_prefab_bonus(), 0, "decks: bridgehead charges should not persist after three captures")
+	_assert.eq(state.bridgehead_prefab_charges, 6, "decks: bridgehead card should arm six charges")
+	for charge_index in range(6):
+		_assert.eq(state.consume_bridgehead_prefab_bonus(), 1, "decks: bridgehead charge %d should add one defense layer" % (charge_index + 1))
+	_assert.eq(state.consume_bridgehead_prefab_bonus(), 0, "decks: bridgehead charges should not persist after six captures")
 
 
 func _test_deck_aware_ai_values() -> void:
