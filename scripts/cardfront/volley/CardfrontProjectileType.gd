@@ -5,12 +5,23 @@ const STANDARD: String = "standard"
 const SIEGE: String = "siege"
 const SUPPRESSION: String = "suppression"
 
+const SEGMENT_SPECIAL: String = "special"
+const SEGMENT_STANDARD: String = "standard"
+
 const ALL_TYPES: Array[String] = [STANDARD, SIEGE, SUPPRESSION]
 
 
 static func sanitize(projectile_type: String) -> String:
 	var safe_type: String = str(projectile_type)
 	return safe_type if safe_type in ALL_TYPES else STANDARD
+
+
+static func is_special(projectile_type: String) -> bool:
+	return sanitize(projectile_type) != STANDARD
+
+
+static func segment_id(projectile_type: String) -> String:
+	return SEGMENT_SPECIAL if is_special(projectile_type) else SEGMENT_STANDARD
 
 
 static func validate_mix(mix: Dictionary, expected_count: int) -> Array:
@@ -35,19 +46,54 @@ static func build_sequence(
 	multiplier: int,
 	max_count: int
 ) -> Array:
-	var group: Array = []
-	append_type(group, SIEGE, maxi(0, int(base_mix.get(SIEGE, 0))))
-	append_type(group, STANDARD, maxi(0, int(base_mix.get(STANDARD, 0))))
-	append_type(group, SUPPRESSION, maxi(0, int(base_mix.get(SUPPRESSION, 0))))
-	append_type(group, STANDARD, maxi(0, int(bonus_standard_shots)))
-	if group.is_empty():
-		group.append(STANDARD)
+	# x2 copies only the hero's base typed projectile group. Reinforcement shots are
+	# appended afterwards, so +5 can never create or duplicate special projectiles.
+	var base_group: Array = []
+	append_type(base_group, SUPPRESSION, maxi(0, int(base_mix.get(SUPPRESSION, 0))))
+	append_type(base_group, SIEGE, maxi(0, int(base_mix.get(SIEGE, 0))))
+	append_type(base_group, STANDARD, maxi(0, int(base_mix.get(STANDARD, 0))))
+	if base_group.is_empty():
+		base_group.append(STANDARD)
+
 	var result: Array = []
 	for _repeat in range(maxi(1, int(multiplier))):
-		result.append_array(group)
+		result.append_array(base_group)
+	append_standard(result, maxi(0, int(bonus_standard_shots)))
 	if max_count > 0 and result.size() > max_count:
 		result.resize(max_count)
+	return segment_sequence(result)
+
+
+static func segment_sequence(sequence: Array) -> Array:
+	# A volley is planned as two visible sub-intents: special projectiles establish
+	# the route first, then standard projectiles exploit the opening.
+	var special: Array = []
+	var standard: Array = []
+	for raw_type in sequence:
+		var projectile_type: String = sanitize(str(raw_type))
+		if is_special(projectile_type):
+			special.append(projectile_type)
+		else:
+			standard.append(projectile_type)
+	var result: Array = []
+	result.append_array(special)
+	result.append_array(standard)
 	return result
+
+
+static func split_segments(sequence: Array) -> Dictionary:
+	var segmented: Array = segment_sequence(sequence)
+	var special: Array = []
+	var standard: Array = []
+	for projectile_type in segmented:
+		if is_special(str(projectile_type)):
+			special.append(sanitize(str(projectile_type)))
+		else:
+			standard.append(STANDARD)
+	return {
+		SEGMENT_SPECIAL: special,
+		SEGMENT_STANDARD: standard,
+	}
 
 
 static func append_standard(sequence: Array, amount: int, max_count: int = -1) -> void:
