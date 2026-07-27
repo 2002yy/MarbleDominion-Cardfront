@@ -10,6 +10,15 @@ const SEGMENT_STANDARD: String = "standard"
 
 const ALL_TYPES: Array[String] = [STANDARD, SIEGE, SUPPRESSION]
 
+# Composition control is a visible tradeoff, not hidden hero compensation.
+# Pure-standard volleys hold one route especially well. A suppression opener
+# disrupts the frontline, but its rapid standard follow-through is less precise
+# until a dedicated gunner archetype restores that control.
+const PURE_STANDARD_FOLLOWTHROUGH_MULTIPLIER: float = 1.08
+const SUPPRESSION_FOLLOWTHROUGH_MULTIPLIER: float = 0.80
+const PURE_STANDARD_SPREAD_MULTIPLIER: float = 0.90
+const SUPPRESSION_STANDARD_SPREAD_MULTIPLIER: float = 1.25
+
 
 static func sanitize(projectile_type: String) -> String:
 	var safe_type: String = str(projectile_type)
@@ -143,6 +152,24 @@ static func count_types(sequence: Array) -> Dictionary:
 	return counts
 
 
+static func standard_followthrough_multiplier(sequence: Array) -> float:
+	var counts: Dictionary = count_types(sequence)
+	if int(counts.get(SUPPRESSION, 0)) > 0:
+		return SUPPRESSION_FOLLOWTHROUGH_MULTIPLIER
+	if int(counts.get(SIEGE, 0)) <= 0:
+		return PURE_STANDARD_FOLLOWTHROUGH_MULTIPLIER
+	return 1.0
+
+
+static func volley_spread_multiplier(sequence: Array) -> float:
+	var counts: Dictionary = count_types(sequence)
+	if int(counts.get(SUPPRESSION, 0)) > 0:
+		return SUPPRESSION_STANDARD_SPREAD_MULTIPLIER
+	if int(counts.get(SIEGE, 0)) <= 0:
+		return PURE_STANDARD_SPREAD_MULTIPLIER
+	return 1.0
+
+
 static func direct_damage_units(projectile_type: String) -> float:
 	match sanitize(projectile_type):
 		SIEGE:
@@ -171,6 +198,18 @@ static func territory_pressure_units(projectile_type: String) -> float:
 			return 0.90
 		_:
 			return 1.0
+
+
+static func territory_pressure_for_sequence(sequence: Array) -> float:
+	var followthrough: float = standard_followthrough_multiplier(sequence)
+	var total: float = 0.0
+	for raw_type in sequence:
+		var projectile_type: String = sanitize(str(raw_type))
+		var units: float = territory_pressure_units(projectile_type)
+		if projectile_type == STANDARD:
+			units *= followthrough
+		total += units
+	return total
 
 
 static func defense_pierce_layers(projectile_type: String) -> int:
