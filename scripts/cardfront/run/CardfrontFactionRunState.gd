@@ -40,6 +40,7 @@ var pending_repair_points: int = 0
 var pending_repair_zone: String = "frontline"
 var bridgehead_prefab_charges: int = 0
 var bridgehead_prefab_defense_bonus: int = 0
+var first_capture_fortified_cells: Dictionary = {}
 var applied_upgrade_counts: Dictionary = {}
 
 
@@ -73,6 +74,7 @@ func setup(new_owner_id: int, new_base_volley_count: int = DEFAULT_BASE_VOLLEY_C
 	pending_repair_zone = "frontline"
 	bridgehead_prefab_charges = 0
 	bridgehead_prefab_defense_bonus = 0
+	first_capture_fortified_cells.clear()
 	applied_upgrade_counts.clear()
 
 
@@ -210,6 +212,22 @@ func consume_bridgehead_prefab_bonus() -> int:
 	return result
 
 
+func has_first_capture_fortified(cell: Vector2i) -> bool:
+	return first_capture_fortified_cells.has(_cell_history_key(cell))
+
+
+func mark_first_capture_fortified(cell: Vector2i) -> bool:
+	var key: String = _cell_history_key(cell)
+	if first_capture_fortified_cells.has(key):
+		return false
+	first_capture_fortified_cells[key] = true
+	return true
+
+
+func clear_first_capture_fortified_history() -> void:
+	first_capture_fortified_cells.clear()
+
+
 func consume_next_volley_modifiers() -> Dictionary:
 	var modifiers: Dictionary = {
 		"bonus": next_volley_bonus,
@@ -258,5 +276,10 @@ func snapshot() -> Dictionary:
 		"pending_repair_zone": pending_repair_zone,
 		"bridgehead_prefab_charges": bridgehead_prefab_charges,
 		"bridgehead_prefab_defense_bonus": bridgehead_prefab_defense_bonus,
+		"first_capture_fortified_cells": first_capture_fortified_cells.duplicate(true),
 		"applied_upgrade_counts": applied_upgrade_counts.duplicate(),
 	}
+
+
+func _cell_history_key(cell: Vector2i) -> String:
+	return "%d:%d" % [cell.x, cell.y]
