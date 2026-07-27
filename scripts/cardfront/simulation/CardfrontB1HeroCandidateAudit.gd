@@ -8,38 +8,47 @@ const SimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontB1H
 
 const CANDIDATES: Dictionary = {
 	"baseline": {},
-	"gunner_health_32": {
-		HeroRegistryScript.HERO_RAPID_GUNNER: {"command_chamber_health": 32},
-	},
-	"gunner_health_30": {
-		HeroRegistryScript.HERO_RAPID_GUNNER: {"command_chamber_health": 30},
-	},
-	"gunner_volley_6": {
-		HeroRegistryScript.HERO_RAPID_GUNNER: {"base_volley_count": 6},
-	},
-	"engineer_health_46": {
-		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {"command_chamber_health": 46},
-	},
-	"engineer_health_50": {
-		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {"command_chamber_health": 50},
-	},
-	"engineer_front_3": {
-		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {
-			"territory_defense_cap": 3,
-			"starting_contact_front_defense": 3,
-		},
-	},
-	"engineer_volley_6": {
-		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {"base_volley_count": 6},
-	},
 	"normalize_volley_6": {
 		HeroRegistryScript.HERO_RAPID_GUNNER: {"base_volley_count": 6},
 		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {"base_volley_count": 6},
 	},
+	"normalize_eng40_gun38": {
+		HeroRegistryScript.HERO_RAPID_GUNNER: {"base_volley_count": 6, "command_chamber_health": 38},
+		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {"base_volley_count": 6, "command_chamber_health": 40},
+	},
+	"normalize_eng40_gun40": {
+		HeroRegistryScript.HERO_RAPID_GUNNER: {"base_volley_count": 6, "command_chamber_health": 40},
+		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {"base_volley_count": 6, "command_chamber_health": 40},
+	},
+	"normalize_eng38_gun38": {
+		HeroRegistryScript.HERO_RAPID_GUNNER: {"base_volley_count": 6, "command_chamber_health": 38},
+		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {"base_volley_count": 6, "command_chamber_health": 38},
+	},
+	"normalize_eng42_gun38": {
+		HeroRegistryScript.HERO_RAPID_GUNNER: {"base_volley_count": 6, "command_chamber_health": 38},
+		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {"base_volley_count": 6, "command_chamber_health": 42},
+	},
+	"normalize_eng40_gun36": {
+		HeroRegistryScript.HERO_RAPID_GUNNER: {"base_volley_count": 6, "command_chamber_health": 36},
+		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {"base_volley_count": 6, "command_chamber_health": 40},
+	},
+	"normalize_eng40_gun38_opening_1": {
+		HeroRegistryScript.HERO_RAPID_GUNNER: {"base_volley_count": 6, "command_chamber_health": 38, "next_volley_bonus": 1},
+		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {"base_volley_count": 6, "command_chamber_health": 40},
+	},
+	"normalize_eng40_gun38_front_3": {
+		HeroRegistryScript.HERO_RAPID_GUNNER: {"base_volley_count": 6, "command_chamber_health": 38},
+		HeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {
+			"base_volley_count": 6,
+			"command_chamber_health": 40,
+			"territory_defense_cap": 3,
+			"starting_contact_front_defense": 3,
+		},
+	},
 }
 
 
-func run(seeds_per_case: int = 10) -> Dictionary:
+func run(seeds_per_case: int = 20) -> Dictionary:
 	var safe_seeds: int = maxi(1, int(seeds_per_case))
 	var reports: Dictionary = {}
 	var candidate_ids: Array = CANDIDATES.keys()
