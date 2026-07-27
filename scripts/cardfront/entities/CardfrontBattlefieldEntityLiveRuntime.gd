@@ -14,7 +14,7 @@ func configure_dependencies(new_round_director, new_territory_defense_system) ->
 	var volley_callable := Callable(self, "_on_volley_launched")
 	if round_director.has_signal("volley_launched") and not round_director.volley_launched.is_connected(volley_callable):
 		round_director.volley_launched.connect(volley_callable)
-	var draft_callable := Callable(self, "_on_draft_opened")
+	var draft_callable := Callable(self, "_on_live_draft_opened")
 	if round_director.has_signal("draft_opened") and not round_director.draft_opened.is_connected(draft_callable):
 		round_director.draft_opened.connect(draft_callable)
 
@@ -60,7 +60,7 @@ func _physics_process(_delta: float) -> void:
 		context["projectile_direction"] = bullet.direction
 
 
-func _on_draft_opened(
+func _on_live_draft_opened(
 	_player_offer: Array,
 	_ai_offer: Array,
 	_timeout_seconds: float,
