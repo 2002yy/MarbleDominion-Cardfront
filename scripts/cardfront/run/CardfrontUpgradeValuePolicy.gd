@@ -144,7 +144,10 @@ static func _score_once(upgrade_id: String, model: Dictionary, context: Dictiona
 
 		"repair_territory":
 			var amount: int = maxi(0, int(params.get("amount", 0))) + maxi(0, int(model.get("frontline_repair_bonus", 0)))
-			var repairable_cells: int = maxi(0, int(context.get("repairable_frontline_cells", 0)))
+			var repairable_cells: int = (
+				maxi(0, int(context.get("repairable_frontline_cells", 0)))
+				+ maxi(0, int(model.get("frontline_repair_bonus", 0)))
+			)
 			var pending_before: int = maxi(0, int(model.get("pending_repair_points", 0)))
 			var restored_before: int = mini(repairable_cells, pending_before)
 			var restored_after: int = mini(repairable_cells, pending_before + amount)

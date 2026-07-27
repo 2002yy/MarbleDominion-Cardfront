@@ -89,9 +89,9 @@ static func direct_damage_units_for_sequence(sequence: Array) -> float:
 static func territory_pressure_units(projectile_type: String) -> float:
 	match sanitize(projectile_type):
 		SUPPRESSION:
-			return 1.20
+			return 1.0
 		SIEGE:
-			return 0.90
+			return 1.0
 		_:
 			return 1.0
 

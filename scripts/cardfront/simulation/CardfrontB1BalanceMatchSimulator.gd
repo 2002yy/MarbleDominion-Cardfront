@@ -248,7 +248,13 @@ func _resolve_volley(attacker_slot: String, target_slot: String, plan_data: Dict
 			defense_absorbed += 1
 		else:
 			survivors.append(projectile_type)
-	var hit_chance: float = clampf(float(profile.get("chamber_hit_chance", 0.17)) + float(territory[attacker_slot] - territory[target_slot]) * 0.10, 0.08, 0.65)
+	var territory_to_chamber_hit: float = float(profile.get("territory_to_chamber_hit", 0.0))
+	var hit_chance: float = clampf(
+		float(profile.get("chamber_hit_chance", 0.17))
+		+ float(territory[attacker_slot] - territory[target_slot]) * territory_to_chamber_hit,
+		0.08,
+		0.65
+	)
 	hit_chance *= pow(6.0 / float(maxi(1, shot_count)), 0.18)
 	hit_chance *= float(route_result.get("average_route_quality", 1.0))
 	hit_chance = adjust_hit_chance_for_mode(hit_chance, int((states[attacker_slot] as Dictionary).get("base_volley_count", 6)), simulation_mode)

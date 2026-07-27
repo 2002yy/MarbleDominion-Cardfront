@@ -105,6 +105,12 @@ func format_b1_summary(report: Dictionary) -> String:
 		JSON.stringify(b1.get("gate_state_crossings", {})),
 		JSON.stringify(b1.get("lane_traffic", {})),
 	])
+	lines.append("projectiles fired=%s chamber_contacts=%s damage_units=%s defense_pierce=%s" % [
+		JSON.stringify(b1.get("projectile_fired", {})),
+		JSON.stringify(b1.get("projectile_chamber_contacts", {})),
+		JSON.stringify(b1.get("projectile_damage_units", {})),
+		JSON.stringify(b1.get("projectile_defense_pierce", {})),
+	])
 	var map_reports: Dictionary = report.get("map_reports", {}) as Dictionary
 	var map_ids: Array = map_reports.keys()
 	map_ids.sort()
@@ -163,6 +169,10 @@ func _empty_b1_totals() -> Dictionary:
 		"card_applications": {},
 		"card_waste": {},
 		"card_by_hero": {},
+		"projectile_fired": {},
+		"projectile_chamber_contacts": {},
+		"projectile_damage_units": {},
+		"projectile_defense_pierce": {},
 		"position_signatures": {},
 	}
 
@@ -333,6 +343,8 @@ func _accumulate_b1(result: Dictionary, totals: Dictionary) -> void:
 		totals[key] = int(totals[key]) + int(metrics.get(key, 0))
 	_merge_numeric(totals["gate_state_crossings"] as Dictionary, metrics.get("gate_state_crossings", {}) as Dictionary)
 	_merge_numeric(totals["lane_traffic"] as Dictionary, metrics.get("lane_traffic", {}) as Dictionary)
+	for projectile_key in ["projectile_fired", "projectile_chamber_contacts", "projectile_damage_units", "projectile_defense_pierce"]:
+		_merge_numeric(totals[projectile_key] as Dictionary, metrics.get(projectile_key, {}) as Dictionary)
 	var cards: Dictionary = result.get("card_metrics", {}) as Dictionary
 	_merge_numeric(totals["card_appearances"] as Dictionary, cards.get("appearances", {}) as Dictionary)
 	_merge_numeric(totals["card_selections"] as Dictionary, cards.get("selections", {}) as Dictionary)
