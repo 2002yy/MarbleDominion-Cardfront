@@ -105,14 +105,13 @@ func _proxy_value_context(state: Dictionary) -> Dictionary:
 		0.0,
 		3.0
 	)
-	# Siege conversions explicitly seek defended bottlenecks in the B1 targeting
-	# model. Their valuation must therefore use the targeted contact opportunity,
-	# not the old random-contact proxy used by generic standard volleys.
+	# Siege conversions explicitly seek defended bottlenecks. Keep this targeted
+	# opportunity separate from the generic random-contact probability so Armor
+	# Piercing cannot inherit a siege-only targeting guarantee.
+	var generic_contact: float = clampf(float(context.get("enemy_defense_contact_chance", 0.13)), 0.0, 0.75)
+	context["siege_defense_contact_chance"] = generic_contact
 	if float(context.get("enemy_defense_points", 0.0)) > 0.0:
-		context["enemy_defense_contact_chance"] = maxf(
-			float(context.get("enemy_defense_contact_chance", 0.0)),
-			0.65
-		)
+		context["siege_defense_contact_chance"] = maxf(generic_contact, 0.65)
 	return context
 
 
