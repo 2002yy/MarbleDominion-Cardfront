@@ -6,6 +6,8 @@ const FortifyLayerScript = preload("res://scripts/cardfront/fortify/FortifyLayer
 const RuntimeScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntityLiveRuntime.gd")
 const CreatureStateScript = preload("res://scripts/cardfront/entities/CardfrontCreatureState.gd")
 
+const WATCHDOG_SECONDS: float = 12.0
+
 class MockDefenseSystem:
 	extends Node
 	var battlefield = null
@@ -25,21 +27,38 @@ class MockBullet:
 	var is_active: bool = true
 
 var _assert: TestAssert
+var _finished: bool = false
 
 
 func _initialize() -> void:
 	call_deferred("_run")
+	call_deferred("_watchdog")
+
+
+func _watchdog() -> void:
+	await create_timer(WATCHDOG_SECONDS).timeout
+	if _finished:
+		return
+	push_error("[CardfrontBattlefieldEntityRuntimeTest] WATCHDOG: test did not finish")
+	quit(2)
 
 
 func _run() -> void:
 	_assert = TestAssert.new()
 	await process_frame
+	print("[CardfrontBattlefieldEntityRuntimeTest] fixture")
 	var fixture: Dictionary = _make_fixture()
+	print("[CardfrontBattlefieldEntityRuntimeTest] prototypes")
 	_test_debug_prototypes(fixture)
+	print("[CardfrontBattlefieldEntityRuntimeTest] contacts")
 	_test_projectile_contacts(fixture)
+	print("[CardfrontBattlefieldEntityRuntimeTest] repair")
 	_test_repair_action(fixture)
+	print("[CardfrontBattlefieldEntityRuntimeTest] tower")
 	_test_tower_power_and_guidance(fixture)
+	print("[CardfrontBattlefieldEntityRuntimeTest] report")
 	_assert.report("[CardfrontBattlefieldEntityRuntimeTest]")
+	_finished = true
 	var battlefield = fixture["battlefield"]
 	TestFixtures.cleanup_node(battlefield)
 	quit(0 if _assert.failures.is_empty() else 1)
