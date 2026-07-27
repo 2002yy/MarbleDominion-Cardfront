@@ -74,8 +74,8 @@ func _test_candidate_decks_filter_offers() -> void:
 		for upgrade_id in _offer_ids(draft.draw_three(state)):
 			barrage_seen[upgrade_id] = true
 			_assert.that(upgrade_id in DeckRegistryScript.get_upgrade_ids(state.deck_id), "decks: barrage offer must stay inside its deck")
-	_assert.that(barrage_seen.has(ManifestScript.UPGRADE_FRONTLINE_REPAIR), "decks: provisional barrage deck should retain an approved defensive option")
-	_assert.that(not barrage_seen.has(ManifestScript.UPGRADE_SUPPRESSION_SCREEN), "decks: unapproved suppression-screen card must stay out of the recommended pool")
+	_assert.that(barrage_seen.has(ManifestScript.UPGRADE_SUPPRESSION_SCREEN), "decks: barrage deck should expose the approved suppression route card")
+	_assert.that(not barrage_seen.has(ManifestScript.UPGRADE_SIEGE_CALIBRATION), "decks: gunner deck should not borrow the Engineer siege conversion")
 
 
 func _test_typed_conversion_effects() -> void:
@@ -93,13 +93,12 @@ func _test_typed_conversion_effects() -> void:
 	_assert.eq(int(reinforced_plan.projectile_counts.get(ProjectileTypeScript.STANDARD, 0)), 9, "decks: +5 should add only standard shots")
 	_assert.eq(int(reinforced_plan.projectile_counts.get(ProjectileTypeScript.SIEGE, 0)), 1, "decks: +5 should not duplicate the Engineer siege shot")
 
-	# The unapproved suppression conversion remains an isolated catalog prototype;
-	# it is tested for mechanical safety but is not exposed by a recommended deck.
 	var gunner = _hero_state(HeroRegistryScript.HERO_RAPID_GUNNER)
 	resolver.resolve(gunner, ManifestScript.UPGRADE_SUPPRESSION_SCREEN)
 	var gunner_plan = volley_resolver.build_and_consume(gunner)
-	_assert.eq(int(gunner_plan.projectile_counts.get(ProjectileTypeScript.SUPPRESSION, 0)), 3, "decks: dormant suppression prototype should convert two standard shots")
-	_assert.eq(int(gunner_plan.projectile_counts.get(ProjectileTypeScript.STANDARD, 0)), 4, "decks: dormant suppression prototype should preserve total projectile count")
+	_assert.eq(int(gunner_plan.projectile_counts.get(ProjectileTypeScript.SUPPRESSION, 0)), 3, "decks: suppression formation should convert two standard shots")
+	_assert.eq(int(gunner_plan.projectile_counts.get(ProjectileTypeScript.STANDARD, 0)), 4, "decks: suppression formation should preserve total projectile count")
+	_assert.gt(ProjectileTypeScript.territory_pressure_for_sequence(gunner_plan.projectile_sequence), 7.0, "decks: suppression formation should create visible route pressure")
 
 
 func _test_bridgehead_state() -> void:
@@ -121,11 +120,18 @@ func _test_deck_aware_ai_values() -> void:
 	defended["enemy_defense_points"] = 24
 	defended["enemy_defense_contact_chance"] = 0.65
 	defended["expected_frontline_captures"] = 3.0
+	defended["repairable_frontline_cells"] = 6
+	defended["route_pressure"] = 1.8
 	var siege: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended)
 	var bridgehead: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, engineer, defended)
-	_assert.gt(float(siege.get("score", 0.0)), 0.0, "decks AI: siege conversion should have positive value against defended routes")
+	var plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, defended)
+	var defense_cap: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1, engineer, defended)
+	var armor: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_ARMOR_PIERCING, engineer, defended)
+	_assert.gt(float(siege.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: siege should beat flat shots against a defended route")
 	_assert.gt(float(siege.get("expected_pierced_contacts", 0.0)), 0.0, "decks AI: siege conversion should expose expected pierced contacts")
-	_assert.gt(float(bridgehead.get("score", 0.0)), 0.0, "decks AI: bridgehead should have value when three captures are expected")
+	_assert.gt(float(bridgehead.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: bridgehead should beat flat shots during a three-capture window")
+	_assert.gt(float(defense_cap.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: defense cap should become rational with fillable frontline capacity")
+	_assert.gt(float(armor.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: armor piercing should become rational against dense defense")
 
 	var no_capture: Dictionary = defended.duplicate(true)
 	no_capture["expected_frontline_captures"] = 0.0
@@ -133,13 +139,23 @@ func _test_deck_aware_ai_values() -> void:
 	_assert.eq(float(empty_bridgehead.get("score", -1.0)), 0.0, "decks AI: bridgehead should have zero value without expected captures")
 
 	var gunner = _hero_state(HeroRegistryScript.HERO_RAPID_GUNNER)
+	gunner.set_deck_id(DeckRegistryScript.DECK_BARRAGE_CONTROL)
 	var calm: Dictionary = _base_context()
 	calm["route_pressure"] = 0.6
 	var pressured: Dictionary = _base_context()
 	pressured["route_pressure"] = 2.0
 	var suppression_calm: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SUPPRESSION_SCREEN, gunner, calm)
 	var suppression_pressured: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SUPPRESSION_SCREEN, gunner, pressured)
-	_assert.gt(float(suppression_pressured.get("score", 0.0)), float(suppression_calm.get("score", 0.0)), "decks AI: dormant suppression prototype should remain route-context sensitive")
+	var gunner_plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, gunner, pressured)
+	_assert.gt(float(suppression_pressured.get("score", 0.0)), float(suppression_calm.get("score", 0.0)), "decks AI: suppression should remain route-context sensitive")
+	_assert.gt(float(suppression_pressured.get("score", 0.0)), float(gunner_plus_five.get("score", 0.0)), "decks AI: suppression should beat flat shots under high route pressure")
+
+	var balanced = _hero_state(HeroRegistryScript.HERO_BALANCED_COMMANDER)
+	var early: Dictionary = _base_context()
+	early["rounds_remaining"] = 18
+	var rarity: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_RARITY_PLUS_1, balanced, early)
+	var balanced_plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, balanced, early)
+	_assert.gt(float(rarity.get("score", 0.0)), float(balanced_plus_five.get("score", 0.0)), "decks AI: rarity growth should beat flat shots in a long early-game horizon")
 
 	engineer.record_upgrade(ManifestScript.UPGRADE_SIEGE_CALIBRATION, 2)
 	var repeated: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended)
