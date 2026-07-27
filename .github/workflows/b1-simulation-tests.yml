@@ -12,10 +12,22 @@ concurrency:
 
 jobs:
   b1-simulation:
+    name: ${{ matrix.batch }}
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - batch: B1 route gate defense unit
+            script: CardfrontB1SimulationTestRunner.gd
+            seeds: 1
+          - batch: B1 162-match matrix probe
+            script: CardfrontB1BalanceAuditTestRunner.gd
+            seeds: 3
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
+      CARDFRONT_B1_AUDIT_SEEDS: ${{ matrix.seeds }}
     steps:
       - uses: actions/checkout@v4
       - name: Cache Godot archive
@@ -45,8 +57,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
           exit $LASTEXITCODE
-      - name: Run B1 simulation tests
+      - name: Run ${{ matrix.batch }}
         shell: pwsh
         run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/CardfrontB1SimulationTestRunner.gd"
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/${{ matrix.script }}"
           exit $LASTEXITCODE
+      - name: Upload B1 audit artifact
+        if: always() && matrix.script == 'CardfrontB1BalanceAuditTestRunner.gd'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardfront-b1-probe-${{ github.run_id }}
+          path: artifacts/cardfront-b1-balance-audit.*
+          if-no-files-found: error
