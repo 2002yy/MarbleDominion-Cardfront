@@ -57,6 +57,29 @@ static func append_standard(sequence: Array, amount: int, max_count: int = -1) -
 		sequence.append(STANDARD)
 
 
+static func convert_standard(sequence: Array, target_type: String, amount: int) -> int:
+	var safe_target: String = sanitize(target_type)
+	if safe_target == STANDARD or amount <= 0:
+		return 0
+	var converted: int = 0
+	for index in range(sequence.size()):
+		if converted >= amount:
+			break
+		if sanitize(str(sequence[index])) != STANDARD:
+			continue
+		sequence[index] = safe_target
+		converted += 1
+	return converted
+
+
+static func apply_conversions(sequence: Array, conversions: Dictionary) -> Dictionary:
+	var applied: Dictionary = {}
+	for projectile_type in [SIEGE, SUPPRESSION]:
+		var converted: int = convert_standard(sequence, projectile_type, maxi(0, int(conversions.get(projectile_type, 0))))
+		applied[projectile_type] = converted
+	return applied
+
+
 static func count_types(sequence: Array) -> Dictionary:
 	var counts: Dictionary = {
 		STANDARD: 0,
