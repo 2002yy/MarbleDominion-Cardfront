@@ -48,8 +48,12 @@ static func evaluate(
 
 		UpgradeManifestScript.UPGRADE_BRIDGEHEAD_PREFABS:
 			var covered: float = maxf(0.0, float(result.get("expected_bridgehead_cells", 0.0)))
-			tactical_bonus = covered * (6.0 + float(value_context["route_pressure"]) * 3.0) \
-				+ (1.0 - float(value_context["own_health_ratio"])) * 8.0
+			var route_excess: float = maxf(0.0, float(value_context["route_pressure"]) - 1.0)
+			var capture_window: float = clampf(covered / 3.0, 0.0, 1.0)
+			tactical_bonus = covered * (3.0 + route_excess * 7.0) * capture_window \
+				+ (1.0 - float(value_context["own_health_ratio"])) * 4.0
+			if covered < 1.5:
+				tactical_multiplier = 0.75
 			reason = "capture_window_bridgehead_opportunity"
 
 		UpgradeManifestScript.UPGRADE_SUPPRESSION_SCREEN:
