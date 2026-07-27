@@ -27,7 +27,7 @@ jobs:
           - batch: B1 5400 directional audit
             script: CardfrontB1BalanceAuditTestRunner.gd
             seeds: 100
-          - batch: B1 21600 hero finalist confirmation
+          - batch: B1 16200 gunner health confirmation
             script: CardfrontB1HeroFinalistAuditTestRunner.gd
             seeds: 100
     env:
