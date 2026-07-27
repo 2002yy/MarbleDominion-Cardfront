@@ -28,7 +28,6 @@ jobs:
           cd repo
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           stored_path = Path('.github/workflows/apply-projectile-types.yml')
           workflow = stored_path.read_text(encoding='utf-8')
@@ -41,14 +40,8 @@ jobs:
           script = script.replace("\\t          raise RuntimeError('bullet visual marker missing')", "              raise RuntimeError('bullet visual marker missing')")
           compile(script, 'stored-projectile-patch', 'exec')
           exec(script, {'__name__': '__main__'})
-          Path('.github/workflows/run-projectile-patch.yml').unlink(missing_ok=True)
-
-          b1_path = Path('.github/workflows/b1-simulation-tests.yml')
-          b1_text = b1_path.read_text(encoding='utf-8')
-          b1_text = re.sub(r'(?ms)^  # BEGIN ONE SHOT PROJECTILE PATCH\n.*?^  # END ONE SHOT PROJECTILE PATCH\n', '', b1_text, count=1)
-          b1_text = b1_text.replace('permissions:\n  contents: write\n\n', '')
-          b1_path.write_text(b1_text, encoding='utf-8')
           PY
+          git restore --source=HEAD -- .github/workflows
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
