@@ -27,9 +27,9 @@ jobs:
           - batch: B1 5400 directional audit
             script: CardfrontB1BalanceAuditTestRunner.gd
             seeds: 100
-          - batch: B1 hero candidate sensitivity
+          - batch: B1 focused hero candidates
             script: CardfrontB1HeroCandidateAuditTestRunner.gd
-            seeds: 10
+            seeds: 20
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
