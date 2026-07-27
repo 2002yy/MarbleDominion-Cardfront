@@ -4,6 +4,7 @@ const SimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontB1P
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 const MapDefinitionScript = preload("res://scripts/cardfront/maps/CardfrontMapDefinition.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
+const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 const ConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
 
 var _assert: TestAssert
@@ -45,6 +46,23 @@ func _run() -> void:
 	context_simulator.make_virtual_state_for_test(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER, 2)
 	var opponent_context: Dictionary = context_simulator.call("_proxy_value_context", balanced_state) as Dictionary
 	_assert.eq(int(opponent_context.get("enemy_defense_points", 0)), 45, "B1 AI context should read the Engineer opponent's 45 initial defense points")
+
+	var typed_sequence: Array = [
+		ProjectileTypeScript.STANDARD,
+		ProjectileTypeScript.SUPPRESSION,
+		ProjectileTypeScript.STANDARD,
+		ProjectileTypeScript.SIEGE,
+	]
+	var prioritized_contacts: Dictionary = simulator.prioritized_defense_contacts_for_test(typed_sequence, 2, 17)
+	_assert.that(prioritized_contacts.has(3), "B1 intent: siege should claim the first defended contact")
+	_assert.that(prioritized_contacts.has(1), "B1 intent: suppression should claim the next defended contact")
+	_assert.that(not prioritized_contacts.has(0) and not prioritized_contacts.has(2), "B1 intent: standards should follow after special projectiles")
+	var intents: Dictionary = simulator.projectile_intents_for_test(typed_sequence)
+	var chamber_candidates: Array = intents.get("chamber_candidates", []) as Array
+	var territory_only: Array = intents.get("territory_only", []) as Array
+	_assert.eq(chamber_candidates, [ProjectileTypeScript.STANDARD, ProjectileTypeScript.STANDARD, ProjectileTypeScript.SIEGE], "B1 intent: standards and siege may pressure the chamber")
+	_assert.eq(territory_only, [ProjectileTypeScript.SUPPRESSION], "B1 intent: suppression should remain route-only")
+	_assert.that(not chamber_candidates.has(ProjectileTypeScript.SUPPRESSION), "B1 intent: suppression must never enter chamber targeting")
 
 	var open_gate: Dictionary = simulator.gate_snapshot_for_test("default_duel", 0, 0.25, 0.25, 0)
 	var closed_gate: Dictionary = simulator.gate_snapshot_for_test("default_duel", 0, 0.75, 0.10, 0)
