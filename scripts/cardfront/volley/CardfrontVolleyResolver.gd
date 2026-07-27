@@ -24,6 +24,10 @@ func build_and_consume(run_state):
 		projectile_sequence.append(ProjectileTypeScript.STANDARD)
 	var conversions: Dictionary = modifiers.get("projectile_conversions", {}) as Dictionary
 	var applied_conversions: Dictionary = ProjectileTypeScript.apply_conversions(projectile_sequence, conversions)
+	projectile_sequence = ProjectileTypeScript.segment_sequence(projectile_sequence)
+	var segments: Dictionary = ProjectileTypeScript.split_segments(projectile_sequence)
+	var special_sequence: Array = segments.get(ProjectileTypeScript.SEGMENT_SPECIAL, []) as Array
+	var standard_sequence: Array = segments.get(ProjectileTypeScript.SEGMENT_STANDARD, []) as Array
 	var resolved_count: int = clampi(projectile_sequence.size(), 1, NORMAL_MAX_VOLLEY_COUNT)
 
 	var plan = VolleyPlanScript.new()
@@ -33,6 +37,10 @@ func build_and_consume(run_state):
 	plan.projectile_sequence = projectile_sequence
 	plan.projectile_counts = ProjectileTypeScript.count_types(projectile_sequence)
 	plan.projectile_conversions_applied = applied_conversions
+	plan.special_projectile_sequence = special_sequence.duplicate()
+	plan.standard_projectile_sequence = standard_sequence.duplicate()
+	plan.special_shot_count = special_sequence.size()
+	plan.standard_shot_count = standard_sequence.size()
 	plan.attack_level = clampi(int(run_state.attack_level), 0, run_state.MAX_ATTACK_LEVEL)
 	plan.chamber_damage_quarters = 4 + plan.attack_level
 	plan.armor_pierce_contacts = maxi(0, int(modifiers.get("armor_pierce_contacts", 0)))
