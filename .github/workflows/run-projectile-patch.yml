@@ -1,3 +1,4 @@
+# Trigger existing one-shot workflow.
 name: Run Projectile Patch
 
 on:
