@@ -30,6 +30,12 @@ func _run() -> void:
 	var repair: Dictionary = simulator.repair_virtual_state_for_test(engineer, 6)
 	_assert.eq(int(repair["applied"]), 6, "repair should visit six distinct eligible cells")
 
+	var context_simulator = SimulatorScript.new()
+	var balanced_state: Dictionary = context_simulator.make_virtual_state_for_test(HeroRegistryScript.HERO_BALANCED_COMMANDER, 1)
+	context_simulator.make_virtual_state_for_test(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER, 2)
+	var opponent_context: Dictionary = context_simulator.call("_proxy_value_context", balanced_state) as Dictionary
+	_assert.eq(int(opponent_context.get("enemy_defense_points", 0)), 45, "B1 AI context should read the Engineer opponent's 45 initial defense points")
+
 	var open_gate: Dictionary = simulator.gate_snapshot_for_test("default_duel", 0, 0.25, 0.25, 0)
 	var closed_gate: Dictionary = simulator.gate_snapshot_for_test("default_duel", 0, 0.75, 0.10, 0)
 	_assert.eq(str(open_gate["state"]), "open", "balanced control should keep a gate open")
