@@ -25,6 +25,17 @@ static func make(grid_size: int) -> Dictionary:
 		"stronghold_ruleset": StrongholdRulesScript.RULESET_ID,
 		"time_limit": CardfrontRulesScript.MATCH_DURATION_SECONDS,
 		"ai_profile": "baseline_duel",
+		"strategy_profile": {
+			"identity": "central_crossfire",
+			"opening_hint": "The inward bridges make central control influence both routes early.",
+		},
+		"route_layout": {
+			"off_bridge_rate": 0.04,
+			"lanes": [
+				{"center_ratio": 0.40, "half_width_ratio": 0.075, "control_half_width_ratio": 0.115, "control_half_height_ratio": 0.11, "traffic_weight": 1.08, "route_quality": 1.05, "blue_side_bias": 0.030},
+				{"center_ratio": 0.60, "half_width_ratio": 0.075, "control_half_width_ratio": 0.115, "control_half_height_ratio": 0.11, "traffic_weight": 0.92, "route_quality": 1.05, "blue_side_bias": -0.030},
+			],
+		},
 		"simulation_profile": {
 			"chamber_hit_chance": 0.188,
 			"average_cells_crossed": 17.5,
