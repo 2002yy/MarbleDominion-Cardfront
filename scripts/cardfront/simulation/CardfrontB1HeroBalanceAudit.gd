@@ -54,6 +54,7 @@ func run(
 		"card_selections": {},
 		"card_applications": {},
 		"card_waste": {},
+		"card_by_hero": {},
 		"position_signatures": {},
 	}
 	var simulator = B1AuditSimulatorScript.new()
@@ -98,6 +99,7 @@ func run(
 		and int(b1_totals["gate_passes"]) > 0
 		and int(b1_totals["shared_upgrade_choice_count"]) > 0
 		and (b1_totals["position_signatures"] as Dictionary).size() == map_ids.size() * 2
+		and (b1_totals["card_by_hero"] as Dictionary).size() == hero_ids.size()
 	)
 	return report
 
@@ -120,6 +122,7 @@ func format_b1_summary(report: Dictionary) -> String:
 		JSON.stringify(b1.get("gate_state_crossings", {})),
 		JSON.stringify(b1.get("lane_traffic", {})),
 	])
+	lines.append("card_by_hero=%s" % JSON.stringify(b1.get("card_by_hero", {})))
 	return "\n".join(lines)
 
 
@@ -141,6 +144,25 @@ func _accumulate_b1(result: Dictionary, totals: Dictionary) -> void:
 	_merge_numeric(totals["card_selections"] as Dictionary, cards.get("selections", {}) as Dictionary)
 	_merge_numeric(totals["card_applications"] as Dictionary, cards.get("applications", {}) as Dictionary)
 	_merge_numeric(totals["card_waste"] as Dictionary, cards.get("wasted_units", {}) as Dictionary)
+	_merge_hero_card_metrics(totals["card_by_hero"] as Dictionary, cards.get("by_hero", {}) as Dictionary)
+
+
+func _merge_hero_card_metrics(target: Dictionary, source: Dictionary) -> void:
+	for raw_hero_id in source.keys():
+		var hero_id: String = str(raw_hero_id)
+		if not target.has(hero_id):
+			target[hero_id] = {
+				"appearances": {},
+				"selections": {},
+				"applications": {},
+				"wasted_units": {},
+			}
+		var target_hero: Dictionary = target[hero_id] as Dictionary
+		var source_hero: Dictionary = source[raw_hero_id] as Dictionary
+		for category in ["appearances", "selections", "applications", "wasted_units"]:
+			var target_category: Dictionary = target_hero.get(category, {}) as Dictionary
+			_merge_numeric(target_category, source_hero.get(category, {}) as Dictionary)
+			target_hero[category] = target_category
 
 
 func _merge_numeric(target: Dictionary, source: Dictionary) -> void:
