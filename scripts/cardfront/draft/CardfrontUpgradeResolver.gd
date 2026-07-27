@@ -20,7 +20,7 @@ func resolve(run_state, upgrade_id: String) -> Dictionary:
 
 	var should_queue_echo: bool = run_state.consume_echo_next_choice()
 	if not _apply_once(run_state, definition):
-			return _failure(upgrade_id, "unknown_effect")
+		return _failure(upgrade_id, "unknown_effect")
 	run_state.record_upgrade(upgrade_id)
 	if should_queue_echo:
 		run_state.queue_echo_upgrade(upgrade_id)
@@ -34,6 +34,7 @@ func resolve(run_state, upgrade_id: String) -> Dictionary:
 		"definition": definition,
 		"state": run_state.snapshot(),
 	}
+
 
 func _apply_once(run_state, definition: Dictionary) -> bool:
 	var effect_id: String = str(definition.get("effect_id", ""))
@@ -58,6 +59,16 @@ func _apply_once(run_state, definition: Dictionary) -> bool:
 			run_state.increase_rarity_level(int(params.get("amount", 0)))
 		"echo_next_choice":
 			run_state.arm_echo_next_choice()
+		"convert_next_volley":
+			run_state.add_next_volley_conversion(
+				str(params.get("projectile_type", "standard")),
+				int(params.get("amount", 0))
+			)
+		"arm_bridgehead_prefabs":
+			run_state.arm_bridgehead_prefabs(
+				int(params.get("charges", 0)),
+				int(params.get("defense_bonus", 0))
+			)
 		_:
 			return false
 	return true
