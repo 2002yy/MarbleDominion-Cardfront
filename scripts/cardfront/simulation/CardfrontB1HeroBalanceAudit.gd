@@ -105,9 +105,12 @@ func format_b1_summary(report: Dictionary) -> String:
 		JSON.stringify(b1.get("gate_state_crossings", {})),
 		JSON.stringify(b1.get("lane_traffic", {})),
 	])
-	for raw_map_id in (report.get("map_reports", {}) as Dictionary).keys():
+	var map_reports: Dictionary = report.get("map_reports", {}) as Dictionary
+	var map_ids: Array = map_reports.keys()
+	map_ids.sort()
+	for raw_map_id in map_ids:
 		var map_id: String = str(raw_map_id)
-		var map_report: Dictionary = (report["map_reports"] as Dictionary)[raw_map_id] as Dictionary
+		var map_report: Dictionary = map_reports[raw_map_id] as Dictionary
 		var pacing: Dictionary = map_report.get("pacing", {}) as Dictionary
 		var route: Dictionary = map_report.get("route_metrics", {}) as Dictionary
 		lines.append(
@@ -188,20 +191,38 @@ func _empty_map_accumulator(hero_ids: Array) -> Dictionary:
 
 
 func _accumulate_map(result: Dictionary, accumulator: Dictionary) -> void:
-	var map_rounds: Array = accumulator["rounds"] as Array
-	_accumulate_match(
-		result,
-		accumulator["hero_stats"] as Dictionary,
-		accumulator["matchup_stats"] as Dictionary,
-		accumulator["mirror_stats"] as Dictionary,
-		map_rounds,
-		accumulator["totals"] as Dictionary
-	)
-	_accumulate_b1(result, accumulator["b1_totals"] as Dictionary)
 	if not bool(result.get("success", false)):
 		return
+	var totals: Dictionary = accumulator["totals"] as Dictionary
+	var rounds: Array = accumulator["rounds"] as Array
+	totals["matches"] = int(totals["matches"]) + 1
+	if bool(result.get("timed_out", false)):
+		totals["timeouts"] = int(totals["timeouts"]) + 1
+	rounds.append(int(result.get("round_count", 0)))
+	var hero_a: String = str(result.get("hero_a", ""))
+	var hero_b: String = str(result.get("hero_b", ""))
+	var winner_slot: String = str(result.get("winner_slot", ""))
+	var draw: bool = bool(result.get("draw", false))
+	var hero_stats: Dictionary = accumulator["hero_stats"] as Dictionary
+	var matchup_stats: Dictionary = accumulator["matchup_stats"] as Dictionary
+	var mirror_stats: Dictionary = accumulator["mirror_stats"] as Dictionary
+	_add_score(hero_stats[hero_a] as Dictionary, winner_slot == "a", draw)
+	_add_score(hero_stats[hero_b] as Dictionary, winner_slot == "b", draw)
+	_add_score(matchup_stats[_matchup_key(hero_a, hero_b)] as Dictionary, winner_slot == "a", draw)
+	if hero_a == hero_b:
+		_add_score(mirror_stats[hero_a] as Dictionary, str(result.get("winner_side", "")) == "blue", draw)
+	var metrics: Dictionary = result.get("metrics", {}) as Dictionary
+	for key in ["invalid_offers", "shot_count", "chamber_hits", "volleys", "defense_absorbed"]:
+		totals[key] = int(totals[key]) + int(metrics.get(key, 0))
+	totals["cells_crossed"] = float(totals["cells_crossed"]) + float(metrics.get("cells_crossed", 0.0))
+	totals["shared_upgrade_choices"] = int(totals["shared_upgrade_choices"]) + int(result.get("shared_upgrade_choice_count", 0))
+	for first_round in (result.get("first_stronghold_round", {}) as Dictionary).values():
+		if int(first_round) > 0:
+			totals["first_stronghold_sum"] = int(totals["first_stronghold_sum"]) + int(first_round)
+			totals["first_stronghold_samples"] = int(totals["first_stronghold_samples"]) + 1
+	_accumulate_b1(result, accumulator["b1_totals"] as Dictionary)
 	accumulator["blue_games"] = int(accumulator["blue_games"]) + 1
-	if bool(result.get("draw", false)):
+	if draw:
 		accumulator["blue_points"] = float(accumulator["blue_points"]) + 0.5
 	elif str(result.get("winner_side", "")) == "blue":
 		accumulator["blue_points"] = float(accumulator["blue_points"]) + 1.0
