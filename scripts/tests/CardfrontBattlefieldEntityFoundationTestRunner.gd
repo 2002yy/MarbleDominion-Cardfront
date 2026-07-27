@@ -1,11 +1,12 @@
 extends SceneTree
 
+const TestAssertScript = preload("res://scripts/tests/TestAssert.gd")
 const RegistryScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntityRegistry.gd")
 const CreatureStateScript = preload("res://scripts/cardfront/entities/CardfrontCreatureState.gd")
 const InteractionScript = preload("res://scripts/cardfront/entities/CardfrontProjectileEntityInteraction.gd")
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
-var _assert: TestAssert
+var _assert = null
 
 
 func _initialize() -> void:
@@ -13,7 +14,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	_assert = TestAssert.new()
+	_assert = TestAssertScript.new()
 	_test_registry_and_collision_order()
 	_test_projectile_interactions()
 	_test_tower_runtime_hooks()
