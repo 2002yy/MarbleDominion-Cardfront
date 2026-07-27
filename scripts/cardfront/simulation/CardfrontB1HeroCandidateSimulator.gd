@@ -1,8 +1,6 @@
 extends CardfrontB1ParityMatchSimulator
 class_name CardfrontB1HeroCandidateSimulator
 
-const CONTACT_FRONT_CELL_COUNT: int = 5
-
 var _candidate_overrides: Dictionary = {}
 
 
