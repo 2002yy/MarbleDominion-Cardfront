@@ -1,12 +1,12 @@
 extends CardfrontBalanceMatchSimulator
 class_name CardfrontSharedAiBalanceMatchSimulator
 
-const ConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
+const SharedSimulationConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
 const AiUpgradePolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
 const UpgradeValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontUpgradeValuePolicy.gd")
 
 var _shared_ai_policy = AiUpgradePolicyScript.new()
-var _active_simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
+var _active_simulation_mode: String = SharedSimulationConfigScript.DEFAULT_SIMULATION_MODE
 var _last_choice_report: Array = []
 var _shared_choice_count: int = 0
 
@@ -17,9 +17,9 @@ func simulate(
 	map_id: String,
 	side_variant: int,
 	seed_value: int,
-	simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
+	simulation_mode: String = SharedSimulationConfigScript.DEFAULT_SIMULATION_MODE
 ) -> Dictionary:
-	_active_simulation_mode = ConfigScript.sanitize_simulation_mode(simulation_mode)
+	_active_simulation_mode = SharedSimulationConfigScript.sanitize_simulation_mode(simulation_mode)
 	_last_choice_report.clear()
 	_shared_choice_count = 0
 	var result: Dictionary = super.simulate(
@@ -39,9 +39,9 @@ func choose_upgrade_id_for_test(
 	offer_ids: Array,
 	state: Dictionary,
 	context: Dictionary = {},
-	simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
+	simulation_mode: String = SharedSimulationConfigScript.DEFAULT_SIMULATION_MODE
 ) -> String:
-	_active_simulation_mode = ConfigScript.sanitize_simulation_mode(simulation_mode)
+	_active_simulation_mode = SharedSimulationConfigScript.sanitize_simulation_mode(simulation_mode)
 	var resolved_context: Dictionary = _proxy_value_context(state)
 	resolved_context.merge(context, true)
 	var chosen_id: String = _shared_ai_policy.choose_id(
@@ -71,7 +71,7 @@ func _choose_upgrade_id_fast(offer_ids: Array, state: Dictionary) -> String:
 
 
 func _valuation_mode_for_simulation(simulation_mode: String) -> String:
-	if ConfigScript.sanitize_simulation_mode(simulation_mode) == ConfigScript.SIMULATION_MODE_HISTORICAL_COMPENSATED:
+	if SharedSimulationConfigScript.sanitize_simulation_mode(simulation_mode) == SharedSimulationConfigScript.SIMULATION_MODE_HISTORICAL_COMPENSATED:
 		return UpgradeValuePolicyScript.MODE_HISTORICAL_FIXED
 	return UpgradeValuePolicyScript.MODE_MARGINAL
 
