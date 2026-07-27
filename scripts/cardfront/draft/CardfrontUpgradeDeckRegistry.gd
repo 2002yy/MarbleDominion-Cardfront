@@ -44,12 +44,12 @@ const DEFINITIONS: Dictionary = {
 	DECK_BARRAGE_CONTROL: {
 		"id": DECK_BARRAGE_CONTROL,
 		"name": "弹幕压制",
-		"description": "围绕压制弹、齐射节奏、穿甲和抽牌成长形成路线控制构筑。",
+		"description": "围绕压制弹、齐射节奏、防御成长和抽牌成长形成路线控制构筑。",
 		"upgrade_ids": [
 			"volley_plus_5",
 			"volley_x2",
 			"attack_level_plus_1",
-			"armor_piercing",
+			"defense_cap_plus_1",
 			"rarity_plus_1",
 			"echo_next_choice",
 			"suppression_screen",
