@@ -40,7 +40,7 @@ func _test_mixes() -> void:
 	_assert.eq(ep.standard_shot_count, 4, "Engineer standard segment")
 	_assert.eq(ProjectileTypeScript.direct_damage_units_for_sequence(ep.projectile_sequence), 6.0, "Engineer direct budget")
 	_assert.eq(ProjectileTypeScript.direct_damage_units_for_sequence(gp.projectile_sequence), 6.0, "Gunner direct budget")
-	_assert.eq(ProjectileTypeScript.territory_pressure_units(ProjectileTypeScript.SUPPRESSION), 1.35, "suppression trades all chamber damage for stronger route occupation")
+	_assert.eq(ProjectileTypeScript.territory_pressure_units(ProjectileTypeScript.SUPPRESSION), 1.42, "suppression trades all chamber damage for stronger route occupation")
 	_assert.eq(ProjectileTypeScript.territory_pressure_units(ProjectileTypeScript.SIEGE), 0.9, "siege trades ten percent territory pressure for chamber and pierce power")
 func _test_cards() -> void:
 	var resolver = VolleyResolverScript.new()
@@ -63,7 +63,7 @@ func _test_cards() -> void:
 	_assert.eq(doubled.projectile_counts[ProjectileTypeScript.SUPPRESSION], 2, "x2 duplicates group")
 	_assert.eq(doubled.projectile_sequence[0], ProjectileTypeScript.SUPPRESSION, "first suppression precedes standards")
 	_assert.eq(doubled.projectile_sequence[1], ProjectileTypeScript.SUPPRESSION, "second suppression precedes standards")
-	_assert.eq(ProjectileTypeScript.territory_pressure_units(doubled.projectile_sequence[0]) + ProjectileTypeScript.territory_pressure_units(doubled.projectile_sequence[1]), 2.7, "two copied suppression shots create a visible route-control spike")
+	_assert.eq(ProjectileTypeScript.territory_pressure_units(doubled.projectile_sequence[0]) + ProjectileTypeScript.territory_pressure_units(doubled.projectile_sequence[1]), 2.84, "two copied suppression shots create a visible route-control spike")
 	var converted = _state(HeroRegistryScript.HERO_BALANCED_COMMANDER)
 	converted.add_next_volley_conversion(ProjectileTypeScript.SIEGE, 2)
 	var converted_plan = resolver.build_and_consume(converted)
