@@ -1,6 +1,23 @@
 extends "res://scripts/cardfront/entities/CardfrontBattlefieldEntityRuntime.gd"
 class_name CardfrontBattlefieldEntityLiveRuntime
 
+const RegistryClassScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntityRegistry.gd")
+const BattlefieldEntityClassScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntity.gd")
+
+
+func configure_dependencies(new_round_director, new_territory_defense_system) -> void:
+	round_director = new_round_director
+	territory_defense_system = new_territory_defense_system
+	_resolve_bullet_pool()
+	if round_director == null or not is_instance_valid(round_director):
+		return
+	var volley_callable := Callable(self, "_on_volley_launched")
+	if round_director.has_signal("volley_launched") and not round_director.volley_launched.is_connected(volley_callable):
+		round_director.volley_launched.connect(volley_callable)
+	var draft_callable := Callable(self, "_on_draft_opened")
+	if round_director.has_signal("draft_opened") and not round_director.draft_opened.is_connected(draft_callable):
+		round_director.draft_opened.connect(draft_callable)
+
 
 func resolve_capture_contact(cell: Vector2i, incoming_owner_id: int, capture_context: Dictionary) -> Dictionary:
 	var result: Dictionary = super.resolve_capture_contact(cell, incoming_owner_id, capture_context)
@@ -52,6 +69,22 @@ func _on_draft_opened(
 	advance_round()
 
 
+func _resolve_bullet_pool() -> void:
+	bullet_pool = null
+	if round_director == null or not is_instance_valid(round_director):
+		return
+	var turret_map = round_director.get("turrets")
+	if not (turret_map is Dictionary):
+		return
+	for turret in (turret_map as Dictionary).values():
+		if turret == null or not is_instance_valid(turret):
+			continue
+		var candidate = turret.get("bullet_container")
+		if candidate != null and is_instance_valid(candidate) and candidate.has_method("get_active_bullets"):
+			bullet_pool = candidate
+			return
+
+
 func _next_owned_step_toward(owner_id: int, origin: Vector2i, target: Vector2i) -> Vector2i:
 	var best: Vector2i = origin
 	var best_distance: int = _manhattan_distance(origin, target)
@@ -63,9 +96,9 @@ func _next_owned_step_toward(owner_id: int, origin: Vector2i, target: Vector2i) 
 			continue
 		var occupied_creature_slots: int = 0
 		for entity in registry.get_entities_at(candidate):
-			if str(entity.entity_kind) == BattlefieldEntityScript.KIND_CREATURE:
+			if str(entity.entity_kind) == BattlefieldEntityClassScript.KIND_CREATURE:
 				occupied_creature_slots += maxi(1, int(entity.size_slots))
-		if occupied_creature_slots >= registry.MAX_CREATURE_SLOTS_PER_CELL:
+		if occupied_creature_slots >= RegistryClassScript.MAX_CREATURE_SLOTS_PER_CELL:
 			continue
 		var distance: int = _manhattan_distance(candidate, target)
 		if distance < best_distance:
