@@ -98,11 +98,21 @@ func _proxy_value_context(state: Dictionary) -> Dictionary:
 	var context: Dictionary = super._proxy_value_context(state)
 	var route_pressure: float = clampf(float(context.get("route_pressure", 1.0)), 0.5, 2.5)
 	var rounds_remaining: int = maxi(1, int(context.get("rounds_remaining", 12)))
+	# Bridgehead construction lasts until three qualifying captures. Over a long
+	# opening horizon, reaching all three is the normal case rather than an edge.
 	context["expected_frontline_captures"] = clampf(
-		0.5 + (route_pressure - 0.75) * 1.4 + float(mini(rounds_remaining, 8)) * 0.12,
+		0.75 + (route_pressure - 0.75) * 1.5 + float(mini(rounds_remaining, 10)) * 0.22,
 		0.0,
 		3.0
 	)
+	# Siege conversions explicitly seek defended bottlenecks in the B1 targeting
+	# model. Their valuation must therefore use the targeted contact opportunity,
+	# not the old random-contact proxy used by generic standard volleys.
+	if float(context.get("enemy_defense_points", 0.0)) > 0.0:
+		context["enemy_defense_contact_chance"] = maxf(
+			float(context.get("enemy_defense_contact_chance", 0.0)),
+			0.65
+		)
 	return context
 
 
