@@ -1,6 +1,6 @@
 extends SceneTree
 
-const SimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontB1ParityMatchSimulator.gd")
+const SimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontB1ArchetypeMatchSimulator.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 const MapDefinitionScript = preload("res://scripts/cardfront/maps/CardfrontMapDefinition.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
@@ -46,6 +46,17 @@ func _run() -> void:
 	context_simulator.make_virtual_state_for_test(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER, 2)
 	var opponent_context: Dictionary = context_simulator.call("_proxy_value_context", balanced_state) as Dictionary
 	_assert.eq(int(opponent_context.get("enemy_defense_points", 0)), 45, "B1 AI context should read the Engineer opponent's 45 initial defense points")
+
+	var pure_standard: Array = [
+		ProjectileTypeScript.STANDARD,
+		ProjectileTypeScript.STANDARD,
+		ProjectileTypeScript.STANDARD,
+	]
+	var siege_mix: Array = [ProjectileTypeScript.SIEGE, ProjectileTypeScript.STANDARD]
+	var suppression_mix: Array = [ProjectileTypeScript.SUPPRESSION, ProjectileTypeScript.STANDARD]
+	_assert.eq(simulator.composition_followthrough_for_test(pure_standard), ProjectileTypeScript.PURE_STANDARD_FOLLOWTHROUGH_MULTIPLIER, "B1 composition: pure standard volleys should hold a route more accurately")
+	_assert.eq(simulator.composition_followthrough_for_test(siege_mix), 1.0, "B1 composition: siege mixtures should keep neutral standard follow-through")
+	_assert.eq(simulator.composition_followthrough_for_test(suppression_mix), ProjectileTypeScript.SUPPRESSION_FOLLOWTHROUGH_MULTIPLIER, "B1 composition: suppression openers should pay a visible rapid-follow-up accuracy cost")
 
 	var typed_sequence: Array = [
 		ProjectileTypeScript.STANDARD,
