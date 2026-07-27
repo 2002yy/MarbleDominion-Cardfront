@@ -57,8 +57,8 @@ static func make(grid_size: int) -> Dictionary:
 			"defense_contact_chance": 0.13,
 			"territory_pressure": 1.02,
 			"stronghold_tempo": -1,
-			"b1_tail_stall_chance": 0.035,
-			"b1_tail_hit_multiplier": 0.35,
+			"b1_tail_stall_chance": 0.08,
+			"b1_tail_hit_multiplier": 0.15,
 		},
 	})
 
