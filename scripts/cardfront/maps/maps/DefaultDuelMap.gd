@@ -42,6 +42,17 @@ static func make(grid_size: int) -> Dictionary:
 		"stronghold_ruleset": StrongholdRulesScript.RULESET_ID,
 		"time_limit": CardfrontRulesScript.MATCH_DURATION_SECONDS,
 		"ai_profile": "baseline_duel",
+		"strategy_profile": {
+			"identity": "two_equal_routes",
+			"opening_hint": "Split pressure across both bridges or commit enough firepower to break one lane.",
+		},
+		"route_layout": {
+			"off_bridge_rate": 0.08,
+			"lanes": [
+				{"center_ratio": 0.265, "half_width_ratio": 0.085, "control_half_width_ratio": 0.10, "control_half_height_ratio": 0.10, "traffic_weight": 1.0, "route_quality": 1.0, "blue_side_bias": 0.018},
+				{"center_ratio": 0.735, "half_width_ratio": 0.085, "control_half_width_ratio": 0.10, "control_half_height_ratio": 0.10, "traffic_weight": 1.0, "route_quality": 1.0, "blue_side_bias": -0.018},
+			],
+		},
 		"simulation_profile": {
 			"chamber_hit_chance": 0.172,
 			"average_cells_crossed": 19.0,
@@ -58,7 +69,3 @@ static func _rect(x0: int, y0: int, x1: int, y1: int, region_type: String) -> Di
 
 static func _square(center_x: int, center_y: int, radius: int, region_type: String) -> Dictionary:
 	return _rect(center_x - radius, center_y - radius, center_x + radius, center_y + radius, region_type)
-
-
-static func _diamond(center_x: int, center_y: int, radius: int, region_type: String) -> Dictionary:
-	return {"shape": CardfrontMapDefinitionScript.SHAPE_DIAMOND, "center_x": center_x, "center_y": center_y, "radius": radius, "type": region_type}
