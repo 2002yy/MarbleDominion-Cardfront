@@ -2,6 +2,7 @@ extends SceneTree
 
 const AuditScript = preload("res://scripts/cardfront/simulation/CardfrontB1HeroBalanceAudit.gd")
 const ConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
+const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 
 const ARTIFACT_DIRECTORY: String = "res://artifacts"
 const JSON_ARTIFACT_PATH: String = "res://artifacts/cardfront-b1-balance-audit.json"
@@ -29,12 +30,24 @@ func _run() -> void:
 	_assert.gt(int(b1.get("gate_passes", 0)), 0, "B1 should record gate passes")
 	_assert.gt(int(b1.get("gate_reflections", 0)) + int(b1.get("river_bank_reflections", 0)), 0, "B1 should record route rejection")
 	_assert.gt(int(b1.get("shared_upgrade_choice_count", 0)), 0, "B1 should use shared marginal choices")
+	var card_by_hero: Dictionary = b1.get("card_by_hero", {}) as Dictionary
+	for hero_id in HeroRegistryScript.get_hero_ids():
+		var safe_id: String = str(hero_id)
+		_assert.that(card_by_hero.has(safe_id), "B1 should aggregate card metrics for %s" % safe_id)
+		var hero_cards: Dictionary = card_by_hero.get(safe_id, {}) as Dictionary
+		_assert.gt(_sum_numeric(hero_cards.get("selections", {}) as Dictionary), 0.0, "B1 should record selections for %s" % safe_id)
 	if seeds_per_case == ConfigScript.FULL_SEEDS_PER_CASE:
 		_assert.eq(int(report.get("matches", 0)), 54000, "B1 full cloud audit should execute 54,000 matches")
 	_assert.that(FileAccess.file_exists(JSON_ARTIFACT_PATH), "B1 JSON artifact should exist")
 	_assert.that(FileAccess.file_exists(TEXT_ARTIFACT_PATH), "B1 text artifact should exist")
 	_assert.report("[CardfrontB1BalanceAudit]")
 	quit(0 if _assert.failures.is_empty() else 1)
+
+func _sum_numeric(values: Dictionary) -> float:
+	var total: float = 0.0
+	for value in values.values():
+		total += float(value)
+	return total
 
 func _write_artifacts(report: Dictionary, summary: String) -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ARTIFACT_DIRECTORY))
