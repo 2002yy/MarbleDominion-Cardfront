@@ -1,6 +1,8 @@
 extends RefCounted
 class_name CardfrontCaptureInterceptor
 
+const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+
 var fortify_layer = null
 var round_director = null
 var territory_defense_system = null
@@ -34,8 +36,12 @@ func should_block_capture(cell: Vector2i, incoming_owner: int, current_owner: in
 			return false
 	return fortify_layer.consume_hit(cell)
 
-func on_capture_applied(cell: Vector2i, incoming_owner: int, _current_owner: int, _capture_context: Dictionary = {}) -> void:
+func on_capture_applied(cell: Vector2i, incoming_owner: int, current_owner: int, _capture_context: Dictionary = {}) -> void:
 	if fortify_layer == null or round_director == null or territory_defense_system == null or not round_director.has_method("get_run_state"):
+		return
+	# First-capture fortification and bridgehead prefabs only apply to neutral land.
+	# Enemy recaptures always begin at 0/cap after the defending layers are removed.
+	if int(current_owner) != RulesScript.NEUTRAL_OWNER:
 		return
 	if not _is_frontline_cell(cell, incoming_owner):
 		return
@@ -43,7 +49,16 @@ func on_capture_applied(cell: Vector2i, incoming_owner: int, _current_owner: int
 	if run_state == null:
 		return
 	var cap: int = maxi(1, int(run_state.territory_defense_cap))
-	var passive_defense: int = clampi(int(run_state.captured_frontline_defense), 0, cap)
+	var passive_defense: int = 0
+	var configured_passive: int = clampi(int(run_state.captured_frontline_defense), 0, cap)
+	if configured_passive > 0:
+		var already_fortified: bool = false
+		if run_state.has_method("has_first_capture_fortified"):
+			already_fortified = bool(run_state.has_first_capture_fortified(cell))
+		if not already_fortified:
+			passive_defense = configured_passive
+			if run_state.has_method("mark_first_capture_fortified"):
+				run_state.mark_first_capture_fortified(cell)
 	var prefab_bonus: int = 0
 	if run_state.has_method("consume_bridgehead_prefab_bonus"):
 		prefab_bonus = maxi(0, int(run_state.consume_bridgehead_prefab_bonus()))
