@@ -1,13 +1,13 @@
 # Project Status / 项目状态
 
-Last updated: 2026-07-27
+Last updated: 2026-07-28
 
 This is the only document that tracks the current version, completed work, active implementation slice, next step, and deferred scope.
 本文件是项目当前版本、已完成内容、正在实施内容、下一步和暂缓范围的唯一状态入口。
 
 ## 1. Current Direction / 当前方向
 
-Cardfront is being rebuilt as a single-match 1v1 physics strategy roguelite:
+Cardfront is being rebuilt toward the following single-match 1v1 physics strategy roguelite flow. This is the approved target flow, not the current complete player-facing runtime:
 
 > 地图选择 -> 玩家选择英雄 -> 展示 AI 英雄 -> 展示双方基础属性 -> 开始对局 -> 调整炮口方向 -> 倒计时结束 -> 全场暂停 -> 三选一强化 -> 超时随机 -> 双方结算 -> 自动齐射 -> 争夺路线并摧毁敌方控制舱
 
@@ -24,6 +24,16 @@ Confirmed product decisions:
 - Territory supplies routes, defense, gate control, stronghold control, and firing advantages; territory percentage is not the primary victory condition.
 - The authoritative game state and projectile simulation remain 2D; the orthographic 3D layer is presentation-only.
 - New upgrades should primarily change projectile routing, capture behavior, volley distribution, and post-capture fortification instead of adding larger flat numbers.
+
+### Current Player-Facing Reality / 当前玩家可见状态
+
+- `main` is complete through `v0.3.3a5`; PR #8 (`v0.3.3a6..a8`) is still a draft experiment and is not part of the shipped baseline.
+- The runtime can receive player and AI hero IDs through configuration, but there is no formal pre-match hero-selection screen.
+- The player cannot yet select a map in the normal flow; live play still enters the currently configured/default battlefield.
+- The AI hero is not formally revealed before battle, and the two heroes' base attributes are not presented together before the first round.
+- Hero identity is currently numeric and systemic. There are no finished hero cards, portraits, silhouettes, faction emblems, selection animation, or in-match hero identity plate.
+- The orthographic arena is a functional graybox presentation built from primitive meshes and flat materials. It is not a finished environment-art pass.
+- Existing legacy card illustrations and compatibility UI do not count as art completion for the new three-choice hero/run loop.
 
 ## 2. Hero Numeric Baseline / 三英雄数值基线
 
@@ -71,6 +81,8 @@ Completed migration:
 Remaining hero work:
 
 - Formal player hero selection and AI hero reveal UI.
+- Minimal first-generation hero art: one readable icon or cartoon silhouette, color accent, and selection card for each hero. This does not require generated portrait art.
+- In-match hero identity plates that preserve readable chamber health, base volley, and core trait without covering the arena.
 - Route-card valuation based on authoritative route and gate pressure.
 - Read-only combat snapshot shared by UI, AI, and simulation.
 
@@ -363,6 +375,10 @@ Requirements:
 
 - Map cards show route preview, bridge/gate count, stronghold composition, identity, and one opening hint.
 - Hero cards show base volley, chamber health, ordinary starting defense, contact-front defense, cap, and strategic identity.
+- Each first-generation hero card includes a simple authored emblem or cartoon silhouette, a distinct accent color, and clear selected/hover/locked states.
+- The initial art pass may use vector shapes, icons, and existing licensed UI assets; it must not wait for generated character portraits.
+- AI reveal reuses the same hero-card language so the matchup is readable before the battlefield is constructed.
+- The battle HUD keeps a compact version of both hero identities visible without covering the arena.
 - Mirror matches remain allowed.
 - Confirmed map and hero IDs must enter runtime configuration before world construction.
 - Desktop and narrow/mobile layouts require dedicated tests.
@@ -430,7 +446,7 @@ Candidate order after B1:
 
 ### Later
 
-- `v0.3.3b0`: formal map/hero pre-match flow and combat snapshot.
+- `v0.3.3b0`: formal map/hero pre-match flow, minimal three-hero art set, AI reveal, and combat snapshot.
 - `v0.3.3b1`: upgrade-effect registry.
 - `v0.3.3b2`: four-card route module.
 - `v0.3.3b3`: final expanded 108,000-match A/B evidence gate.
