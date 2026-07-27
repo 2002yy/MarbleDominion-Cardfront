@@ -38,6 +38,7 @@ func run(
 		"defense_absorbed": 0,
 		"first_stronghold_sum": 0,
 		"first_stronghold_samples": 0,
+		"shared_upgrade_choices": 0,
 	}
 	var b1_totals: Dictionary = {
 		"actual_side_calls": 0,
