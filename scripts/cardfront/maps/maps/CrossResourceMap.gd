@@ -45,17 +45,17 @@ static func make(grid_size: int) -> Dictionary:
 			"route_rejection_rate_max": 32.0,
 		},
 		"route_layout": {
-			"off_bridge_rate": 0.06,
+			"off_bridge_rate": 0.075,
 			"lanes": [
-				{"center_ratio": 0.40, "half_width_ratio": 0.075, "control_half_width_ratio": 0.115, "control_half_height_ratio": 0.11, "traffic_weight": 1.08, "route_quality": 1.02, "blue_side_bias": 0.030},
-				{"center_ratio": 0.60, "half_width_ratio": 0.075, "control_half_width_ratio": 0.115, "control_half_height_ratio": 0.11, "traffic_weight": 0.92, "route_quality": 1.02, "blue_side_bias": -0.030},
+				{"center_ratio": 0.40, "half_width_ratio": 0.075, "control_half_width_ratio": 0.115, "control_half_height_ratio": 0.11, "traffic_weight": 1.08, "route_quality": 1.00, "blue_side_bias": 0.030},
+				{"center_ratio": 0.60, "half_width_ratio": 0.075, "control_half_width_ratio": 0.115, "control_half_height_ratio": 0.11, "traffic_weight": 0.92, "route_quality": 1.00, "blue_side_bias": -0.030},
 			],
 		},
 		"simulation_profile": {
-			"chamber_hit_chance": 0.174,
+			"chamber_hit_chance": 0.165,
 			"average_cells_crossed": 17.5,
-			"defense_contact_chance": 0.12,
-			"territory_pressure": 1.06,
+			"defense_contact_chance": 0.13,
+			"territory_pressure": 1.02,
 			"stronghold_tempo": -1,
 		},
 	})
