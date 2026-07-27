@@ -12,12 +12,12 @@ const ALL_TYPES: Array[String] = [STANDARD, SIEGE, SUPPRESSION]
 
 # Composition control is a visible tradeoff, not hidden hero compensation.
 # Pure-standard volleys hold one route especially well. A suppression opener
-# disrupts the frontline, but its rapid standard follow-through is less precise
-# until a dedicated gunner archetype restores that control.
+# gives up chamber access for stronger route occupation; the following standard
+# segment remains slightly less precise, but is no longer crippled by the opener.
 const PURE_STANDARD_FOLLOWTHROUGH_MULTIPLIER: float = 1.08
-const SUPPRESSION_FOLLOWTHROUGH_MULTIPLIER: float = 0.80
+const SUPPRESSION_FOLLOWTHROUGH_MULTIPLIER: float = 0.94
 const PURE_STANDARD_SPREAD_MULTIPLIER: float = 0.90
-const SUPPRESSION_STANDARD_SPREAD_MULTIPLIER: float = 1.25
+const SUPPRESSION_STANDARD_SPREAD_MULTIPLIER: float = 1.08
 
 
 static func sanitize(projectile_type: String) -> String:
@@ -190,10 +190,10 @@ static func direct_damage_units_for_sequence(sequence: Array) -> float:
 static func territory_pressure_units(projectile_type: String) -> float:
 	match sanitize(projectile_type):
 		SUPPRESSION:
-			# One suppression projectile opens and disrupts a route but cannot claim a
-			# complete cell by itself. x2 produces two suppression shots, together
-			# reaching one standard unit of territory pressure.
-			return 0.50
+			# Suppression cannot damage the chamber, so it must earn its slot through
+			# visible route occupation. One shot is worth more than one standard
+			# territory contact, while still trading away all direct damage.
+			return 1.35
 		SIEGE:
 			return 0.90
 		_:
