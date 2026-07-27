@@ -1,6 +1,9 @@
 extends CardfrontB1BalanceMatchSimulator
 class_name CardfrontB1ParityMatchSimulator
 
+const B1ParityMapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
+const B1ParityConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
+
 var _parity_states_by_owner: Dictionary = {}
 
 
@@ -14,6 +17,11 @@ func simulate(
 ) -> Dictionary:
 	_parity_states_by_owner = {}
 	return super.simulate(hero_a, hero_b, map_id, side_variant, seed_value, simulation_mode)
+
+
+func tail_stall_multiplier_for_test(map_id: String, seed_value: int) -> float:
+	var definition: Dictionary = B1ParityMapRegistryScript.get_map_definition(map_id, B1ParityConfigScript.GRID_SIZE)
+	return _tail_stall_multiplier(definition, seed_value)
 
 
 func _make_state(hero_id: String, owner_id: int) -> Dictionary:
@@ -42,6 +50,37 @@ func _proxy_value_context(state: Dictionary) -> Dictionary:
 	)
 	context["opponent_context_source"] = "b1_virtual_opponent_cells"
 	return context
+
+
+func _resolve_volley(
+	attacker_slot: String,
+	target_slot: String,
+	plan_data: Dictionary,
+	states: Dictionary,
+	territory: Dictionary,
+	defense_pool: Dictionary,
+	profile: Dictionary,
+	seed_value: int,
+	round_number: int,
+	simulation_mode: String
+) -> Dictionary:
+	var adjusted_profile: Dictionary = profile.duplicate(true)
+	adjusted_profile["chamber_hit_chance"] = float(adjusted_profile.get("chamber_hit_chance", 0.17)) * _tail_stall_multiplier(
+		_b1_map_definition,
+		_b1_seed_value
+	)
+	return super._resolve_volley(
+		attacker_slot,
+		target_slot,
+		plan_data,
+		states,
+		territory,
+		defense_pool,
+		adjusted_profile,
+		seed_value,
+		round_number,
+		simulation_mode
+	)
 
 
 func _consume_virtual_defense(
@@ -101,6 +140,14 @@ func _recapture_virtual_cells(state: Dictionary, amount: int, rng: RandomNumberG
 		defense_cells[chosen] = 0
 		recaptured += 1
 	return recaptured
+
+
+func _tail_stall_multiplier(map_definition: Dictionary, seed_value: int) -> float:
+	var profile: Dictionary = map_definition.get("simulation_profile", {}) as Dictionary
+	var chance: float = clampf(float(profile.get("b1_tail_stall_chance", 0.0)), 0.0, 0.25)
+	var multiplier: float = clampf(float(profile.get("b1_tail_hit_multiplier", 1.0)), 0.05, 1.0)
+	var salt: int = str(map_definition.get("id", "")).hash() + 341873
+	return multiplier if _b1_hash_unit(seed_value, salt) < chance else 1.0
 
 
 func _eligible_indices(
