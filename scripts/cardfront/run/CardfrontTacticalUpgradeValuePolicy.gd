@@ -32,13 +32,18 @@ static func evaluate(
 
 	match str(upgrade_id):
 		UpgradeManifestScript.UPGRADE_SIEGE_CALIBRATION:
-			var pierced: float = maxf(0.0, float(result.get("expected_pierced_contacts", 0.0)))
+			var generic_pierced: float = maxf(0.0, float(result.get("expected_pierced_contacts", 0.0)))
 			var siege_converted: int = maxi(0, int(result.get("converted_projectiles", 0)))
-			tactical_bonus = pierced * 9.0 \
-				+ minf(24.0, float(value_context["enemy_defense_points"])) * 0.35 \
-				+ float(value_context["enemy_defense_contact_chance"]) * 12.0 \
-				+ maxf(0.0, float(value_context["route_pressure"]) - 0.75) * 8.0 \
-				+ float(siege_converted) * 3.0
+			var targeted_pierced: float = minf(
+				float(siege_converted) * float(value_context["siege_defense_contact_chance"]),
+				float(value_context["enemy_defense_points"])
+			)
+			var targeted_gain: float = maxf(0.0, targeted_pierced - generic_pierced)
+			result["expected_pierced_contacts"] = targeted_pierced
+			tactical_bonus = targeted_gain * 14.0 \
+				+ targeted_pierced * 4.0 \
+				+ maxf(0.0, float(value_context["route_pressure"]) - 0.75) * 6.0 \
+				+ float(siege_converted) * 2.0
 			reason = "defended_route_siege_opportunity"
 
 		UpgradeManifestScript.UPGRADE_BRIDGEHEAD_PREFABS:
@@ -86,9 +91,15 @@ static func evaluate(
 			reason = "saturated_defense_capacity_investment"
 
 		UpgradeManifestScript.UPGRADE_ARMOR_PIERCING:
-			tactical_bonus = minf(24.0, float(value_context["enemy_defense_points"])) * 0.45 \
-				+ float(value_context["enemy_defense_contact_chance"]) * 18.0 \
-				+ float(value_context["route_pressure"]) * 4.0
+			var defense_points: float = float(value_context["enemy_defense_points"])
+			var contact_chance: float = float(value_context["enemy_defense_contact_chance"])
+			var dense_points: float = maxf(0.0, defense_points - 8.0)
+			var contact_excess: float = maxf(0.0, contact_chance - 0.18)
+			tactical_bonus = minf(16.0, dense_points) * 0.35 \
+				+ contact_excess * 20.0 \
+				+ maxf(0.0, float(value_context["route_pressure"]) - 1.0) * 3.0
+			if defense_points <= 4.0 or contact_chance <= 0.08:
+				tactical_multiplier = 0.60
 			reason = "heavy_defense_bypass_window"
 
 		UpgradeManifestScript.UPGRADE_FRONTLINE_REPAIR:
@@ -126,10 +137,12 @@ static func _state_model(state) -> Dictionary:
 
 
 static func _normalized_context(context: Dictionary) -> Dictionary:
+	var generic_contact: float = clampf(float(context.get("enemy_defense_contact_chance", 0.13)), 0.0, 0.75)
 	return {
 		"rounds_remaining": maxi(1, int(context.get("rounds_remaining", 18))),
 		"enemy_defense_points": maxf(0.0, float(context.get("enemy_defense_points", 0.0))),
-		"enemy_defense_contact_chance": clampf(float(context.get("enemy_defense_contact_chance", 0.13)), 0.0, 0.75),
+		"enemy_defense_contact_chance": generic_contact,
+		"siege_defense_contact_chance": clampf(float(context.get("siege_defense_contact_chance", generic_contact)), 0.0, 0.75),
 		"repairable_frontline_cells": maxi(0, int(context.get("repairable_frontline_cells", 0))),
 		"owned_cell_count": maxi(0, int(context.get("owned_cell_count", 0))),
 		"defended_cell_count": maxi(0, int(context.get("defended_cell_count", 0))),
