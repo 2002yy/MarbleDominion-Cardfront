@@ -128,7 +128,10 @@ func build_intent(owner_id: int, shot_count: int = -1):
 	intent.projectile_sequence = []
 	ProjectileTypeScript.append_standard(intent.projectile_sequence, intent.shot_count)
 	intent.projectile_counts = ProjectileTypeScript.count_types(intent.projectile_sequence)
-	intent.spread = maxf(0.0, float(base_spread))
+	intent.spread = maxf(
+		0.0,
+		float(base_spread) * ProjectileTypeScript.volley_spread_multiplier(intent.projectile_sequence)
+	)
 	intent.reason = str(target.get("reason", FireRulesScript.REASON_BASE))
 	if _manual_angles.has(int(owner_id)):
 		intent.angle = float(_manual_angles[int(owner_id)])
@@ -161,6 +164,10 @@ func issue_volley(
 	while intent.projectile_sequence.size() < intent.shot_count:
 		intent.projectile_sequence.append(ProjectileTypeScript.STANDARD)
 	intent.projectile_counts = ProjectileTypeScript.count_types(intent.projectile_sequence)
+	intent.spread = maxf(
+		0.0,
+		float(base_spread) * ProjectileTypeScript.volley_spread_multiplier(intent.projectile_sequence)
+	)
 	fire_tick.emit(int(owner_id), intent)
 	fire_requested.emit(int(owner_id), intent)
 	if not _request_fire(int(owner_id), intent):
