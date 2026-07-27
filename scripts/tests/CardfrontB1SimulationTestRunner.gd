@@ -8,8 +8,10 @@ const ConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanc
 
 var _assert: TestAssert
 
+
 func _initialize() -> void:
 	call_deferred("_run")
+
 
 func _run() -> void:
 	_assert = TestAssert.new()
@@ -17,8 +19,15 @@ func _run() -> void:
 	await process_frame
 	var simulator = SimulatorScript.new()
 	for map_id in MapRegistryScript.get_registered_map_ids():
-		var definition: Dictionary = MapRegistryScript.get_map_definition(str(map_id), ConfigScript.GRID_SIZE)
-		_assert.eq(MapDefinitionScript.validate(definition), [], "B1 map schema should validate: %s" % str(map_id))
+		var safe_map_id: String = str(map_id)
+		var definition: Dictionary = MapRegistryScript.get_map_definition(safe_map_id, ConfigScript.GRID_SIZE)
+		_assert.eq(MapDefinitionScript.validate(definition), [], "B1 map schema should validate: %s" % safe_map_id)
+		var stalled_seeds: int = 0
+		for seed_value in range(1, 501):
+			if simulator.tail_stall_multiplier_for_test(safe_map_id, seed_value) < 1.0:
+				stalled_seeds += 1
+		_assert.gt(stalled_seeds, 0, "B1 tail pacing should produce some stalled seeds: %s" % safe_map_id)
+		_assert.lt(stalled_seeds, 500, "B1 tail pacing should not stall every seed: %s" % safe_map_id)
 
 	var engineer: Dictionary = simulator.make_virtual_state_for_test(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
 	var defense: Array = engineer["virtual_defense_cells"] as Array
