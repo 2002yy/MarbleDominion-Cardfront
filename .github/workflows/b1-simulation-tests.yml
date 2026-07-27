@@ -27,9 +27,9 @@ jobs:
           - batch: B1 5400 directional audit
             script: CardfrontB1BalanceAuditTestRunner.gd
             seeds: 100
-          - batch: B1 focused hero candidates
-            script: CardfrontB1HeroCandidateAuditTestRunner.gd
-            seeds: 20
+          - batch: B1 21600 hero finalist confirmation
+            script: CardfrontB1HeroFinalistAuditTestRunner.gd
+            seeds: 100
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
@@ -86,10 +86,10 @@ jobs:
           name: cardfront-b1-audit-${{ matrix.seeds }}-${{ github.run_id }}
           path: artifacts/cardfront-b1-balance-audit.*
           if-no-files-found: error
-      - name: Upload B1 candidate artifact
-        if: always() && matrix.script == 'CardfrontB1HeroCandidateAuditTestRunner.gd'
+      - name: Upload B1 finalist artifact
+        if: always() && matrix.script == 'CardfrontB1HeroFinalistAuditTestRunner.gd'
         uses: actions/upload-artifact@v4
         with:
-          name: cardfront-b1-hero-candidates-${{ matrix.seeds }}-${{ github.run_id }}
-          path: artifacts/cardfront-b1-hero-candidates.*
+          name: cardfront-b1-hero-finalists-${{ matrix.seeds }}-${{ github.run_id }}
+          path: artifacts/cardfront-b1-hero-finalists.*
           if-no-files-found: error
