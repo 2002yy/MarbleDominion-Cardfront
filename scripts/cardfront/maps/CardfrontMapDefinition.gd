@@ -47,6 +47,7 @@ static func validate(definition: Dictionary) -> Array:
 		if not simulation_profile.has(required_key):
 			errors.append("missing_simulation_profile:%s" % str(required_key))
 	errors.append_array(_validate_route_layout(definition.get("route_layout", {}) as Dictionary))
+	errors.append_array(_validate_balance_targets(definition.get("balance_targets", {}) as Dictionary))
 	var strategy_profile: Dictionary = definition.get("strategy_profile", {}) as Dictionary
 	if str(strategy_profile.get("identity", "")) == "":
 		errors.append("missing_strategy_identity")
@@ -83,4 +84,28 @@ static func _validate_route_layout(route_layout: Dictionary) -> Array:
 	var off_bridge_rate: float = float(route_layout.get("off_bridge_rate", -1.0))
 	if off_bridge_rate < 0.0 or off_bridge_rate > 0.5:
 		errors.append("route_off_bridge_rate")
+	return errors
+
+
+static func _validate_balance_targets(targets: Dictionary) -> Array:
+	var errors: Array = []
+	if str(targets.get("pacing_identity", "")) == "":
+		errors.append("missing_balance_pacing_identity")
+	for prefix in [
+		"median_round",
+		"p90_round",
+		"timeout_rate",
+		"blue_point_rate",
+		"lane0_share",
+		"route_rejection_rate",
+	]:
+		var min_key: String = "%s_min" % prefix
+		var max_key: String = "%s_max" % prefix
+		if not targets.has(min_key) or not targets.has(max_key):
+			errors.append("missing_balance_target:%s" % prefix)
+			continue
+		var minimum: float = float(targets[min_key])
+		var maximum: float = float(targets[max_key])
+		if minimum > maximum:
+			errors.append("invalid_balance_target_range:%s" % prefix)
 	return errors
