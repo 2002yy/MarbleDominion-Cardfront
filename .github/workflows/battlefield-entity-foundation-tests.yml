@@ -61,12 +61,24 @@ jobs:
       - name: Run entity foundation tests
         shell: pwsh
         run: |
+          $artifactDir = Join-Path "${{ github.workspace }}" "artifacts\battlefield-entity-foundation"
+          New-Item -ItemType Directory -Path $artifactDir -Force | Out-Null
           $scripts = @(
             "CardfrontBattlefieldEntityFoundationTestRunner.gd",
             "CardfrontProjectileTypeCombatTestRunner.gd"
           )
           foreach ($script in $scripts) {
             Write-Host "Running $script"
-            & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/$script"
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            $logPath = Join-Path $artifactDir ($script + ".log")
+            & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/$script" 2>&1 | Tee-Object -FilePath $logPath
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -ne 0) { exit $exitCode }
           }
+
+      - name: Upload focused test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: battlefield-entity-foundation-${{ github.run_id }}
+          path: artifacts/battlefield-entity-foundation/*.log
+          if-no-files-found: warn
