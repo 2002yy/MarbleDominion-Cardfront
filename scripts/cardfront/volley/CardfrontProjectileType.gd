@@ -163,7 +163,10 @@ static func direct_damage_units_for_sequence(sequence: Array) -> float:
 static func territory_pressure_units(projectile_type: String) -> float:
 	match sanitize(projectile_type):
 		SUPPRESSION:
-			return 1.20
+			# One suppression projectile opens and disrupts a route but cannot claim a
+			# complete cell by itself. x2 produces two suppression shots, together
+			# reaching one standard unit of territory pressure.
+			return 0.50
 		SIEGE:
 			return 0.90
 		_:
