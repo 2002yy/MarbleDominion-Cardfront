@@ -67,20 +67,20 @@ static func evaluate(
 
 		UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, UpgradeManifestScript.UPGRADE_VOLLEY_X2:
 			var repeat_count: int = maxi(0, int((model["applied_upgrade_counts"] as Dictionary).get(upgrade_id, 0)))
-			tactical_multiplier = maxf(0.45, 0.84 - float(repeat_count) * 0.13)
+			tactical_multiplier = maxf(0.72, 0.98 - float(repeat_count) * 0.06)
 			var added: int = maxi(0, int(result.get("actual_added_shots", 0)))
 			var wasted: int = maxi(0, int(result.get("wasted_shots", 0)))
 			if wasted > 0:
 				var efficiency: float = float(added) / float(maxi(1, added + wasted))
-				tactical_multiplier *= lerpf(0.68, 1.0, efficiency)
+				tactical_multiplier *= lerpf(0.78, 1.0, efficiency)
 			if str(model["deck_id"]) != DeckRegistryScript.DECK_CORE_TACTICS and float(value_context["route_pressure"]) >= 1.35:
-				tactical_multiplier *= 0.90
+				tactical_multiplier *= 0.95
 			reason = "flat_volley_opportunity_cost"
 
 		UpgradeManifestScript.UPGRADE_RARITY_PLUS_1:
 			var rarity_level: int = clampi(int(model["rarity_level"]), 0, RunStateScript.MAX_RARITY_LEVEL)
 			var horizon: int = maxi(1, int(value_context["rounds_remaining"]))
-			tactical_bonus = float(mini(horizon, 18)) * 0.55 + float(RunStateScript.MAX_RARITY_LEVEL - rarity_level) * 3.0
+			tactical_bonus = float(mini(horizon, 18)) * 0.90 + float(RunStateScript.MAX_RARITY_LEVEL - rarity_level) * 4.0
 			reason = "early_draft_growth_window"
 
 		UpgradeManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1:
@@ -101,10 +101,11 @@ static func evaluate(
 			reason = "heavy_defense_bypass_window"
 
 		UpgradeManifestScript.UPGRADE_FRONTLINE_REPAIR:
-			tactical_bonus = (
-				float(value_context["repairable_frontline_cells"]) * 1.5
-				+ (1.0 - float(value_context["own_health_ratio"])) * 12.0
-			)
+			var actual_repair: int = maxi(0, int(result.get("actual_repair_cells", 0)))
+			var wasted_repair: int = maxi(0, int(result.get("wasted_repair_points", 0)))
+			var repair_efficiency: float = float(actual_repair) / float(maxi(1, actual_repair + wasted_repair))
+			tactical_multiplier = lerpf(0.60, 1.0, repair_efficiency)
+			tactical_bonus = (1.0 - float(value_context["own_health_ratio"])) * 6.0
 			reason = "damaged_frontline_recovery_window"
 
 	var build_factor: float = (
