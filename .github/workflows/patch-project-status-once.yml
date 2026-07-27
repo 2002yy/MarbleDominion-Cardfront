@@ -2,13 +2,14 @@ name: Patch Project Status Once
 
 on:
   push:
+  pull_request:
 
 permissions:
   contents: write
 
 jobs:
   patch-status:
-    if: github.ref_name == 'agent/shared-marginal-upgrade-ai'
+    if: github.event_name == 'pull_request' || github.ref_name == 'agent/shared-marginal-upgrade-ai'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
