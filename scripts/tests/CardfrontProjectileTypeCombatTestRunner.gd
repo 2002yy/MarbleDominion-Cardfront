@@ -36,8 +36,8 @@ func _test_mixes() -> void:
 	_assert.eq(gp.projectile_counts[ProjectileTypeScript.SUPPRESSION], 1, "Gunner suppression")
 	_assert.eq(ProjectileTypeScript.direct_damage_units_for_sequence(ep.projectile_sequence), 6.0, "Engineer direct budget")
 	_assert.eq(ProjectileTypeScript.direct_damage_units_for_sequence(gp.projectile_sequence), 6.0, "Gunner direct budget")
-	_assert.eq(ProjectileTypeScript.territory_pressure_units(ProjectileTypeScript.SUPPRESSION), 1.0, "suppression uses one visible territory contact")
-	_assert.eq(ProjectileTypeScript.territory_pressure_units(ProjectileTypeScript.SIEGE), 1.0, "siege uses one visible territory contact")
+	_assert.eq(ProjectileTypeScript.territory_pressure_units(ProjectileTypeScript.SUPPRESSION), 1.2, "suppression exposes twenty percent extra territory pressure")
+	_assert.eq(ProjectileTypeScript.territory_pressure_units(ProjectileTypeScript.SIEGE), 0.9, "siege trades ten percent territory pressure for chamber and pierce power")
 func _test_cards() -> void:
 	var resolver = VolleyResolverScript.new()
 	var engineer = _state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
