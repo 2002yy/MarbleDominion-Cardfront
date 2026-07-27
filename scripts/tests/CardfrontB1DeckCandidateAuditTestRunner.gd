@@ -42,16 +42,19 @@ func _run() -> void:
 		{}
 	) as Dictionary
 	var engineer_candidates: Dictionary = engineer_health.get("candidate_card_selections", {}) as Dictionary
-	_assert.gt(int(engineer_candidates.get(ManifestScript.UPGRADE_SIEGE_CALIBRATION, 0)), 0, "deck audit should show Engineer selecting siege calibration")
-	_assert.gt(int(engineer_candidates.get(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, 0)), 0, "deck audit should show Engineer selecting bridgehead prefabs")
+	_assert.gt(int(engineer_candidates.get(ManifestScript.UPGRADE_SIEGE_CALIBRATION, 0)), 0, "deck audit should show Engineer selecting the approved siege grouping")
+	_assert.gt(int(engineer_candidates.get(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, 0)), 0, "deck audit should show Engineer selecting the approved bridgehead construction")
 
+	var core_all: Dictionary = scenarios.get("core_all", {}) as Dictionary
 	var recommended: Dictionary = scenarios.get("recommended_decks", {}) as Dictionary
-	var gunner_health: Dictionary = (recommended.get("card_health_by_hero", {}) as Dictionary).get(
-		HeroRegistryScript.HERO_RAPID_GUNNER,
-		{}
-	) as Dictionary
-	var gunner_candidates: Dictionary = gunner_health.get("candidate_card_selections", {}) as Dictionary
-	_assert.gt(int(gunner_candidates.get(ManifestScript.UPGRADE_SUPPRESSION_SCREEN, 0)), 0, "deck audit should show Gunner selecting suppression screen")
+	_assert.that(
+		float(recommended.get("balance_error", INF)) < float(core_all.get("balance_error", INF)),
+		"deck audit: recommended pools should reduce total balance error versus the shared core pool"
+	)
+	_assert.that(
+		float(recommended.get("hero_rate_spread", INF)) < float(core_all.get("hero_rate_spread", INF)),
+		"deck audit: recommended pools should narrow the hero-rate spread"
+	)
 	_assert.that(FileAccess.file_exists(JSON_ARTIFACT_PATH), "deck audit JSON artifact should exist")
 	_assert.that(FileAccess.file_exists(TEXT_ARTIFACT_PATH), "deck audit text artifact should exist")
 	_assert.report("[CardfrontB1DeckCandidateAudit]")
