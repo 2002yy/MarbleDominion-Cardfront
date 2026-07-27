@@ -37,12 +37,19 @@ func should_block_capture(cell: Vector2i, incoming_owner: int, current_owner: in
 func on_capture_applied(cell: Vector2i, incoming_owner: int, _current_owner: int, _capture_context: Dictionary = {}) -> void:
 	if fortify_layer == null or round_director == null or territory_defense_system == null or not round_director.has_method("get_run_state"):
 		return
+	if not _is_frontline_cell(cell, incoming_owner):
+		return
 	var run_state = round_director.get_run_state(int(incoming_owner))
 	if run_state == null:
 		return
-	var captured_defense: int = clampi(int(run_state.captured_frontline_defense), 0, int(run_state.territory_defense_cap))
-	if captured_defense > 0 and _is_frontline_cell(cell, incoming_owner):
-		fortify_layer.set_fortify_stack(cell, captured_defense)
+	var cap: int = maxi(1, int(run_state.territory_defense_cap))
+	var passive_defense: int = clampi(int(run_state.captured_frontline_defense), 0, cap)
+	var prefab_bonus: int = 0
+	if run_state.has_method("consume_bridgehead_prefab_bonus"):
+		prefab_bonus = maxi(0, int(run_state.consume_bridgehead_prefab_bonus()))
+	var resolved_defense: int = clampi(passive_defense + prefab_bonus, 0, cap)
+	if resolved_defense > 0:
+		fortify_layer.set_fortify_stack(cell, resolved_defense)
 
 func _is_frontline_cell(cell: Vector2i, owner_id: int) -> bool:
 	var battlefield = territory_defense_system.battlefield
