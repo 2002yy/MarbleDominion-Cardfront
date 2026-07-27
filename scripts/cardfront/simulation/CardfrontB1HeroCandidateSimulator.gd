@@ -1,4 +1,4 @@
-extends CardfrontB1ParityMatchSimulator
+extends CardfrontB1ArchetypeMatchSimulator
 class_name CardfrontB1HeroCandidateSimulator
 
 var _candidate_overrides: Dictionary = {}
