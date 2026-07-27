@@ -24,6 +24,9 @@ jobs:
           - batch: B1 typed projectile runtime
             script: CardfrontProjectileTypeCombatTestRunner.gd
             seeds: 1
+          - batch: B1 selectable decks and AI
+            script: CardfrontUpgradeDeckTestRunner.gd
+            seeds: 1
           - batch: B1 162-match matrix probe
             script: CardfrontB1BalanceAuditTestRunner.gd
             seeds: 3
