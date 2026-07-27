@@ -29,14 +29,14 @@ const DEFINITIONS: Dictionary = {
 	DECK_FORTIFICATION_CORPS: {
 		"id": DECK_FORTIFICATION_CORPS,
 		"name": "筑垒工兵",
-		"description": "围绕攻城弹、桥头工事、修复、防御上限和延迟联动形成阵地构筑。",
+		"description": "围绕攻城弹、桥头工事、修复、防御上限和长期选品成长形成阵地构筑。",
 		"upgrade_ids": [
 			"volley_plus_5",
 			"volley_x2",
 			"attack_level_plus_1",
 			"defense_cap_plus_1",
 			"frontline_repair",
-			"echo_next_choice",
+			"rarity_plus_1",
 			"siege_calibration",
 			"bridgehead_prefabs",
 		],
