@@ -114,22 +114,28 @@ func _test_deck_aware_ai_values() -> void:
 	var policy = AiPolicyScript.new()
 	var engineer = _hero_state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
 	engineer.set_deck_id(DeckRegistryScript.DECK_FORTIFICATION_CORPS)
-	var defended: Dictionary = _base_context()
-	defended["enemy_defense_points"] = 24
-	defended["enemy_defense_contact_chance"] = 0.65
-	defended["expected_frontline_captures"] = 3.0
-	defended["repairable_frontline_cells"] = 6
-	defended["route_pressure"] = 1.8
-	var siege: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended)
-	var bridgehead: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, engineer, defended)
-	var plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, defended)
-	var armor: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_ARMOR_PIERCING, engineer, defended)
-	_assert.gt(float(siege.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: siege should beat flat shots against a defended route")
+
+	var defended_route: Dictionary = _base_context()
+	defended_route["enemy_defense_points"] = 24
+	defended_route["enemy_defense_contact_chance"] = 0.20
+	defended_route["siege_defense_contact_chance"] = 0.75
+	defended_route["expected_frontline_captures"] = 3.0
+	defended_route["repairable_frontline_cells"] = 6
+	defended_route["route_pressure"] = 1.8
+	var siege: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended_route)
+	var bridgehead: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, engineer, defended_route)
+	var plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, defended_route)
+	_assert.gt(float(siege.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: targeted siege should beat flat shots at a defended bottleneck")
 	_assert.gt(float(siege.get("expected_pierced_contacts", 0.0)), 0.0, "decks AI: siege conversion should expose expected pierced contacts")
 	_assert.gt(float(bridgehead.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: bridgehead should beat flat shots during a three-capture window")
-	_assert.gt(float(armor.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: armor piercing should become rational against dense defense")
 
-	var saturated: Dictionary = defended.duplicate(true)
+	var dense_random_defense: Dictionary = defended_route.duplicate(true)
+	dense_random_defense["enemy_defense_contact_chance"] = 0.65
+	var armor: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_ARMOR_PIERCING, engineer, dense_random_defense)
+	var dense_plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, dense_random_defense)
+	_assert.gt(float(armor.get("score", 0.0)), float(dense_plus_five.get("score", 0.0)), "decks AI: armor piercing should become rational only with dense generic defense contacts")
+
+	var saturated: Dictionary = defended_route.duplicate(true)
 	saturated["repairable_frontline_cells"] = 0
 	saturated["owned_cell_count"] = 18
 	saturated["defended_cell_count"] = 18
@@ -137,7 +143,7 @@ func _test_deck_aware_ai_values() -> void:
 	var saturated_plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, saturated)
 	_assert.gt(float(defense_cap.get("score", 0.0)), float(saturated_plus_five.get("score", 0.0)), "decks AI: defense cap should become rational when a complete line is already saturated")
 
-	var no_capture: Dictionary = defended.duplicate(true)
+	var no_capture: Dictionary = defended_route.duplicate(true)
 	no_capture["expected_frontline_captures"] = 0.0
 	var empty_bridgehead: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, engineer, no_capture)
 	_assert.eq(float(empty_bridgehead.get("score", -1.0)), 0.0, "decks AI: bridgehead should have zero value without expected captures")
@@ -162,12 +168,12 @@ func _test_deck_aware_ai_values() -> void:
 	_assert.gt(float(rarity.get("score", 0.0)), float(balanced_plus_five.get("score", 0.0)), "decks AI: rarity growth should beat flat shots in a long early-game horizon")
 
 	engineer.record_upgrade(ManifestScript.UPGRADE_SIEGE_CALIBRATION, 2)
-	var repeated: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended)
+	var repeated: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended_route)
 	_assert.eq(float(repeated.get("build_repeat_multiplier", 0.0)), 0.8, "decks AI: repeated identical cards should receive a visible diversity penalty")
 	var synergistic = _hero_state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
 	synergistic.set_deck_id(DeckRegistryScript.DECK_FORTIFICATION_CORPS)
 	synergistic.record_upgrade(ManifestScript.UPGRADE_ARMOR_PIERCING)
-	var synergy: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, synergistic, defended)
+	var synergy: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, synergistic, defended_route)
 	_assert.gt(float(synergy.get("build_synergy_multiplier", 1.0)), 1.0, "decks AI: matching siege and anti-fortify tags should receive synergy value")
 
 
