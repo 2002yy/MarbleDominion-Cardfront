@@ -84,9 +84,31 @@ jobs:
           $artifactDir = Join-Path "${{ github.workspace }}" "artifacts\battlefield-entity-foundation"
           New-Item -ItemType Directory -Path $artifactDir -Force | Out-Null
           $logPath = Join-Path $artifactDir ("${{ matrix.script }}" + ".log")
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/${{ matrix.script }}" 2>&1 | Tee-Object -FilePath $logPath
-          $exitCode = $LASTEXITCODE
-          if ($exitCode -ne 0) { exit $exitCode }
+          $stdoutPath = $logPath + ".stdout"
+          $stderrPath = $logPath + ".stderr"
+          $arguments = @(
+            "--headless",
+            "--audio-driver", "Dummy",
+            "--path", "${{ github.workspace }}",
+            "--script", "res://scripts/tests/${{ matrix.script }}"
+          )
+          $process = Start-Process -FilePath "${{ steps.godot.outputs.path }}" -ArgumentList $arguments -NoNewWindow -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+          $finished = $process.WaitForExit(30000)
+          if (-not $finished) {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          }
+          @(
+            "=== STDOUT ===",
+            (Get-Content $stdoutPath -Raw -ErrorAction SilentlyContinue),
+            "=== STDERR ===",
+            (Get-Content $stderrPath -Raw -ErrorAction SilentlyContinue)
+          ) | Set-Content $logPath
+          Get-Content $logPath
+          if (-not $finished) {
+            Write-Error "Godot test exceeded 30 seconds"
+            exit 124
+          }
+          if ($process.ExitCode -ne 0) { exit $process.ExitCode }
 
       - name: Upload focused test log
         if: always()
