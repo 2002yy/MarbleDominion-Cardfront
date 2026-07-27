@@ -17,11 +17,14 @@ static func preview(projectile_type: String, target) -> Dictionary:
 		"disable_rounds": 0,
 		"push_cells": 0,
 		"consume_projectile": target != null,
+		"bounce_projectile": false,
+		"block_territory": target != null,
 		"valid": target != null,
 	}
 	if target == null or not target.is_alive():
 		result["valid"] = false
 		result["consume_projectile"] = false
+		result["block_territory"] = false
 		return result
 
 	match str(target.entity_kind):
@@ -34,6 +37,7 @@ static func preview(projectile_type: String, target) -> Dictionary:
 		_:
 			result["valid"] = false
 			result["consume_projectile"] = false
+			result["block_territory"] = false
 	return result
 
 
@@ -57,23 +61,32 @@ static func _resolve_creature(projectile_type: String, target, result: Dictionar
 		ProjectileTypeScript.SUPPRESSION:
 			result["stun_rounds"] = 1
 			result["push_cells"] = 1
+			result["consume_projectile"] = true
 		ProjectileTypeScript.SIEGE:
 			result["damage"] = 2 if str(target.armor_type) == CreatureStateScript.ARMOR_ARMORED else 1
+			result["consume_projectile"] = true
 		_:
 			result["damage"] = 1
+			result["consume_projectile"] = false
+			result["bounce_projectile"] = true
 
 
 static func _resolve_tower(projectile_type: String, result: Dictionary) -> void:
 	match projectile_type:
 		ProjectileTypeScript.SUPPRESSION:
 			result["disable_rounds"] = 1
+			result["consume_projectile"] = true
 		ProjectileTypeScript.SIEGE:
 			result["damage"] = 3
+			result["consume_projectile"] = true
 		_:
 			result["damage"] = 1
+			result["consume_projectile"] = false
+			result["bounce_projectile"] = true
 
 
 static func _resolve_chamber(projectile_type: String, result: Dictionary) -> void:
+	result["consume_projectile"] = true
 	match projectile_type:
 		ProjectileTypeScript.SUPPRESSION:
 			result["damage"] = 0
