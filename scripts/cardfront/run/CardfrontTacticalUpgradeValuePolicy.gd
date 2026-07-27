@@ -59,17 +59,21 @@ static func evaluate(
 				+ float(value_context["expected_frontline_captures"]) * 3.0
 			reason = "route_pressure_suppression_opportunity"
 
-		UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, UpgradeManifestScript.UPGRADE_VOLLEY_X2:
-			var repeat_count: int = maxi(0, int((model["applied_upgrade_counts"] as Dictionary).get(upgrade_id, 0)))
-			tactical_multiplier = maxf(0.72, 0.98 - float(repeat_count) * 0.06)
-			var added: int = maxi(0, int(result.get("actual_added_shots", 0)))
-			var wasted: int = maxi(0, int(result.get("wasted_shots", 0)))
-			if wasted > 0:
-				var efficiency: float = float(added) / float(maxi(1, added + wasted))
-				tactical_multiplier *= lerpf(0.78, 1.0, efficiency)
+		UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5:
+			var plus_repeat_count: int = maxi(0, int((model["applied_upgrade_counts"] as Dictionary).get(upgrade_id, 0)))
+			tactical_multiplier = maxf(0.72, 0.98 - float(plus_repeat_count) * 0.06)
+			tactical_multiplier *= _shot_efficiency_multiplier(result)
 			if str(model["deck_id"]) != DeckRegistryScript.DECK_CORE_TACTICS and float(value_context["route_pressure"]) >= 1.35:
 				tactical_multiplier *= 0.95
 			reason = "flat_volley_opportunity_cost"
+
+		UpgradeManifestScript.UPGRADE_VOLLEY_X2:
+			var double_repeat_count: int = maxi(0, int((model["applied_upgrade_counts"] as Dictionary).get(upgrade_id, 0)))
+			tactical_multiplier = maxf(0.65, 0.90 - float(double_repeat_count) * 0.08)
+			tactical_multiplier *= _shot_efficiency_multiplier(result)
+			if str(model["deck_id"]) != DeckRegistryScript.DECK_CORE_TACTICS and float(value_context["route_pressure"]) >= 1.35:
+				tactical_multiplier *= 0.94
+			reason = "double_volley_opportunity_cost"
 
 		UpgradeManifestScript.UPGRADE_RARITY_PLUS_1:
 			var rarity_level: int = clampi(int(model["rarity_level"]), 0, RunStateScript.MAX_RARITY_LEVEL)
@@ -125,6 +129,15 @@ static func evaluate(
 	result["tactical_reason"] = reason
 	result["score"] = (score + tactical_bonus) * tactical_multiplier
 	return result
+
+
+static func _shot_efficiency_multiplier(result: Dictionary) -> float:
+	var added: int = maxi(0, int(result.get("actual_added_shots", 0)))
+	var wasted: int = maxi(0, int(result.get("wasted_shots", 0)))
+	if wasted <= 0:
+		return 1.0
+	var efficiency: float = float(added) / float(maxi(1, added + wasted))
+	return lerpf(0.78, 1.0, efficiency)
 
 
 static func _state_model(state) -> Dictionary:
