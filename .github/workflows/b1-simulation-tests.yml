@@ -60,8 +60,19 @@ jobs:
       - name: Run ${{ matrix.batch }}
         shell: pwsh
         run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/${{ matrix.script }}"
-          exit $LASTEXITCODE
+          New-Item -ItemType Directory -Path "${{ github.workspace }}/artifacts/test-logs" -Force | Out-Null
+          $logPath = "${{ github.workspace }}/artifacts/test-logs/${{ matrix.script }}.log"
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/${{ matrix.script }}" *>&1 | Tee-Object -FilePath $logPath
+          $exitCode = $LASTEXITCODE
+          Get-Content -Path $logPath -Tail 300
+          exit $exitCode
+      - name: Upload B1 test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b1-log-${{ matrix.script }}-${{ github.run_id }}
+          path: artifacts/test-logs/${{ matrix.script }}.log
+          if-no-files-found: error
       - name: Upload B1 audit artifact
         if: always() && matrix.script == 'CardfrontB1BalanceAuditTestRunner.gd'
         uses: actions/upload-artifact@v4
