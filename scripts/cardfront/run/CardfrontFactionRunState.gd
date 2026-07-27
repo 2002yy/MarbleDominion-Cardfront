@@ -3,6 +3,7 @@ class_name CardfrontFactionRunState
 
 const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
+const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 const DEFAULT_BASE_VOLLEY_COUNT: int = TuningScript.BASE_VOLLEY_COUNT
 const DEFAULT_PROJECTILE_POWER: int = 1
@@ -17,9 +18,12 @@ var owner_id: int = -1
 var hero_id: String = HeroRegistryScript.DEFAULT_PLAYER_HERO_ID
 var hero_name: String = ""
 var base_volley_count: int = DEFAULT_BASE_VOLLEY_COUNT
+var base_projectile_mix: Dictionary = {}
 var command_chamber_health: int = TuningScript.COMMAND_CHAMBER_HEALTH
 var starting_territory_defense: int = 1
 var starting_contact_front_defense: int = 1
+var captured_frontline_defense: int = 0
+var frontline_repair_bonus: int = 0
 var projectile_power: int = DEFAULT_PROJECTILE_POWER
 var attack_level: int = 0
 var territory_defense_cap: int = DEFAULT_TERRITORY_DEFENSE_CAP
@@ -39,9 +43,16 @@ func setup(new_owner_id: int, new_base_volley_count: int = DEFAULT_BASE_VOLLEY_C
 	hero_id = "custom"
 	hero_name = ""
 	base_volley_count = maxi(1, int(new_base_volley_count))
+	base_projectile_mix = {
+		ProjectileTypeScript.STANDARD: base_volley_count,
+		ProjectileTypeScript.SIEGE: 0,
+		ProjectileTypeScript.SUPPRESSION: 0,
+	}
 	command_chamber_health = TuningScript.COMMAND_CHAMBER_HEALTH
 	starting_territory_defense = 1
 	starting_contact_front_defense = 1
+	captured_frontline_defense = 0
+	frontline_repair_bonus = 0
 	projectile_power = DEFAULT_PROJECTILE_POWER
 	attack_level = 0
 	territory_defense_cap = DEFAULT_TERRITORY_DEFENSE_CAP
@@ -62,6 +73,7 @@ func setup_from_hero(new_owner_id: int, new_hero_id: String) -> void:
 	setup(new_owner_id, int(definition.get("base_volley_count", DEFAULT_BASE_VOLLEY_COUNT)))
 	hero_id = safe_hero_id
 	hero_name = str(definition.get("name", ""))
+	base_projectile_mix = (definition.get("base_projectile_mix", base_projectile_mix) as Dictionary).duplicate(true)
 	command_chamber_health = maxi(1, int(definition.get("command_chamber_health", TuningScript.COMMAND_CHAMBER_HEALTH)))
 	starting_territory_defense = clampi(
 		int(definition.get("starting_territory_defense", 1)),
@@ -79,6 +91,12 @@ func setup_from_hero(new_owner_id: int, new_hero_id: String) -> void:
 		starting_territory_defense,
 		territory_defense_cap
 	)
+	captured_frontline_defense = clampi(
+		int(definition.get("captured_frontline_defense", 0)),
+		0,
+		territory_defense_cap
+	)
+	frontline_repair_bonus = maxi(0, int(definition.get("frontline_repair_bonus", 0)))
 
 
 func add_next_volley_bonus(amount: int) -> void:
@@ -139,8 +157,12 @@ func add_armor_pierce_contacts(amount: int) -> void:
 
 
 func request_territory_repair(amount: int, zone: String = "frontline") -> void:
-	pending_repair_points += maxi(0, int(amount))
-	pending_repair_zone = str(zone) if str(zone) != "" else "frontline"
+	var safe_zone: String = str(zone) if str(zone) != "" else "frontline"
+	var resolved_amount: int = maxi(0, int(amount))
+	if safe_zone == "frontline" and resolved_amount > 0:
+		resolved_amount += frontline_repair_bonus
+	pending_repair_points += resolved_amount
+	pending_repair_zone = safe_zone
 
 
 func consume_pending_repair() -> Dictionary:
@@ -178,9 +200,12 @@ func snapshot() -> Dictionary:
 		"hero_id": hero_id,
 		"hero_name": hero_name,
 		"base_volley_count": base_volley_count,
+		"base_projectile_mix": base_projectile_mix.duplicate(true),
 		"command_chamber_health": command_chamber_health,
 		"starting_territory_defense": starting_territory_defense,
 		"starting_contact_front_defense": starting_contact_front_defense,
+		"captured_frontline_defense": captured_frontline_defense,
+		"frontline_repair_bonus": frontline_repair_bonus,
 		"projectile_power": projectile_power,
 		"attack_level": attack_level,
 		"territory_defense_cap": territory_defense_cap,
