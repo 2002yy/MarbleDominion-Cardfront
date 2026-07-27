@@ -25,6 +25,17 @@ static func make(grid_size: int) -> Dictionary:
 		"stronghold_ruleset": StrongholdRulesScript.RULESET_ID,
 		"time_limit": CardfrontRulesScript.MATCH_DURATION_SECONDS,
 		"ai_profile": "baseline_duel",
+		"strategy_profile": {
+			"identity": "central_power_outer_routes",
+			"opening_hint": "The laboratory rewards central control, while stable crossings sit on the outer wings.",
+		},
+		"route_layout": {
+			"off_bridge_rate": 0.12,
+			"lanes": [
+				{"center_ratio": 0.18, "half_width_ratio": 0.07, "control_half_width_ratio": 0.09, "control_half_height_ratio": 0.10, "traffic_weight": 0.96, "route_quality": 0.98, "blue_side_bias": 0.022},
+				{"center_ratio": 0.82, "half_width_ratio": 0.07, "control_half_width_ratio": 0.09, "control_half_height_ratio": 0.10, "traffic_weight": 1.04, "route_quality": 0.98, "blue_side_bias": -0.022},
+			],
+		},
 		"simulation_profile": {
 			"chamber_hit_chance": 0.157,
 			"average_cells_crossed": 21.0,
