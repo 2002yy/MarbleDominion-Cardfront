@@ -2,7 +2,7 @@ extends RefCounted
 class_name CardfrontCaptureInterceptor
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
-const EntityRuntimeScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntityRuntime.gd")
+const EntityRuntimeScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntityLiveRuntime.gd")
 
 var fortify_layer = null
 var round_director = null
