@@ -2,6 +2,7 @@ extends RefCounted
 class_name CardfrontHeroRegistry
 
 const HeroDefinitionScript = preload("res://scripts/cardfront/heroes/CardfrontHeroDefinition.gd")
+const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 const HERO_BALANCED_COMMANDER: String = "balanced_commander"
 const HERO_RAPID_GUNNER: String = "rapid_gunner"
@@ -15,31 +16,52 @@ const DEFINITIONS: Dictionary = {
 		"id": HERO_BALANCED_COMMANDER,
 		"name": "均衡指挥官",
 		"base_volley_count": 6,
+		"base_projectile_mix": {
+			ProjectileTypeScript.STANDARD: 6,
+			ProjectileTypeScript.SIEGE: 0,
+			ProjectileTypeScript.SUPPRESSION: 0,
+		},
 		"command_chamber_health": 40,
 		"starting_territory_defense": 1,
 		"starting_contact_front_defense": 1,
+		"captured_frontline_defense": 0,
+		"frontline_repair_bonus": 0,
 		"territory_defense_cap": 1,
-		"strategic_identity": "卡牌兼容性",
+		"strategic_identity": "六发标准齐射与卡牌兼容性",
 	},
 	HERO_RAPID_GUNNER: {
 		"id": HERO_RAPID_GUNNER,
 		"name": "连射炮手",
 		"base_volley_count": 7,
+		"base_projectile_mix": {
+			ProjectileTypeScript.STANDARD: 6,
+			ProjectileTypeScript.SIEGE: 0,
+			ProjectileTypeScript.SUPPRESSION: 1,
+		},
 		"command_chamber_health": 36,
 		"starting_territory_defense": 1,
 		"starting_contact_front_defense": 1,
+		"captured_frontline_defense": 0,
+		"frontline_repair_bonus": 0,
 		"territory_defense_cap": 1,
-		"strategic_identity": "齐射倍率收益",
+		"strategic_identity": "六发标准弹加一发压制弹，强化占格与路线覆盖",
 	},
 	HERO_FORTIFICATION_ENGINEER: {
 		"id": HERO_FORTIFICATION_ENGINEER,
 		"name": "筑垒工程师",
 		"base_volley_count": 5,
+		"base_projectile_mix": {
+			ProjectileTypeScript.STANDARD: 4,
+			ProjectileTypeScript.SIEGE: 1,
+			ProjectileTypeScript.SUPPRESSION: 0,
+		},
 		"command_chamber_health": 42,
 		"starting_territory_defense": 1,
 		"starting_contact_front_defense": 2,
+		"captured_frontline_defense": 1,
+		"frontline_repair_bonus": 2,
 		"territory_defense_cap": 2,
-		"strategic_identity": "接敌边界预筑垒与阵地经营",
+		"strategic_identity": "攻城弹、接敌边界预筑垒与持续阵地经营",
 	},
 }
 
