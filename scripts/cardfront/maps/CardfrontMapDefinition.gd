@@ -43,9 +43,17 @@ static func validate(definition: Dictionary) -> Array:
 		"defense_contact_chance",
 		"territory_pressure",
 		"stronghold_tempo",
+		"b1_tail_stall_chance",
+		"b1_tail_hit_multiplier",
 	]:
 		if not simulation_profile.has(required_key):
 			errors.append("missing_simulation_profile:%s" % str(required_key))
+	var tail_chance: float = float(simulation_profile.get("b1_tail_stall_chance", -1.0))
+	if tail_chance < 0.0 or tail_chance > 0.25:
+		errors.append("invalid_b1_tail_stall_chance")
+	var tail_multiplier: float = float(simulation_profile.get("b1_tail_hit_multiplier", -1.0))
+	if tail_multiplier < 0.05 or tail_multiplier > 1.0:
+		errors.append("invalid_b1_tail_hit_multiplier")
 	errors.append_array(_validate_route_layout(definition.get("route_layout", {}) as Dictionary))
 	errors.append_array(_validate_balance_targets(definition.get("balance_targets", {}) as Dictionary))
 	var strategy_profile: Dictionary = definition.get("strategy_profile", {}) as Dictionary
