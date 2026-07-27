@@ -6,6 +6,7 @@ const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd"
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 const StrongholdSystemScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdSystem.gd")
+const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 const VolleyPlanScript = preload("res://scripts/cardfront/volley/CardfrontVolleyPlan.gd")
 
 var _assert: TestAssert
@@ -79,7 +80,12 @@ func _test_lost_control_removes_bonus() -> void:
 func _test_bonus_application_is_explicit_and_bounded() -> void:
 	var system = StrongholdSystemScript.new()
 	var plan = VolleyPlanScript.new()
-	plan.shot_count = 31
+	# Stronghold bonuses append typed projectiles, so the fixture must populate
+	# the typed sequence rather than only assigning the legacy shot_count field.
+	for _index in range(31):
+		plan.projectile_sequence.append(ProjectileTypeScript.STANDARD)
+	plan.shot_count = plan.projectile_sequence.size()
+	plan.projectile_counts = ProjectileTypeScript.count_types(plan.projectile_sequence)
 	plan.projectile_power = 2
 	plan.attack_level = RunStateScript.MAX_ATTACK_LEVEL
 	plan.chamber_damage_quarters = 4 + RunStateScript.MAX_ATTACK_LEVEL
@@ -93,6 +99,7 @@ func _test_bonus_application_is_explicit_and_bounded() -> void:
 	system.apply_to_volley_plan(CardfrontRulesScript.PLAYER_FACTION, plan, snapshot)
 
 	_assert.eq(plan.shot_count, 32, "stronghold: exceptional bonuses should respect the 32-shot safety cap")
+	_assert.eq(plan.projectile_sequence.size(), 32, "stronghold: typed sequence should respect the 32-shot safety cap")
 	_assert.eq(plan.projectile_power, 2, "stronghold: energy bonus must not mutate legacy projectile power")
 	_assert.eq(plan.attack_level, RunStateScript.MAX_RESOLVED_ATTACK_LEVEL, "stronghold: energy should temporarily raise a permanent level-three build to level four")
 	_assert.eq(plan.chamber_damage_quarters, 8, "stronghold: temporary level four should deal 200 percent chamber damage")
