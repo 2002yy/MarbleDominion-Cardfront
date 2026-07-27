@@ -1,0 +1,136 @@
+name: Patch Project Status Once
+
+on:
+  push:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-status:
+    if: github.ref_name == 'agent/shared-marginal-upgrade-ai'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/shared-marginal-upgrade-ai
+          fetch-depth: 0
+
+      - name: Patch PROJECT_STATUS.md
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('docs/PROJECT_STATUS.md')
+          text = path.read_text(encoding='utf-8')
+
+          replacements = [
+              (
+                  '- Replace fixed upgrade scores with a shared marginal-value AI policy.\n- Formal player hero selection and AI hero reveal UI.\n- AI repair, armor-piercing, and route-card valuation based on live route pressure.\n- Read-only combat snapshot shared by UI, AI, and simulation.',
+                  '- Formal player hero selection and AI hero reveal UI.\n- Route-card valuation based on authoritative route and gate pressure.\n- Read-only combat snapshot shared by UI, AI, and simulation.'
+              ),
+              (
+                  'The next AI slice must replace fixed scores such as `x2 = 92` with a shared marginal-value policy used by both live AI and simulation.\n\nRequired value components:',
+                  'Live AI and the current fast-simulation adapter now use the shared `CardfrontUpgradeValuePolicy`. Fixed values such as `x2 = 92` remain only inside the explicitly labeled `historical_fixed` replay mode.\n\nImplemented value components:'
+              ),
+              (
+                  '- Score explanation containing immediate value, long-term value, route value, and expected waste.\n\nA new effect or AI score is incomplete until live runtime, simulation, player-facing explanation, validation, and tests all exist.',
+                  '- Score explanation containing immediate value, persistent value, delayed value, actual consumption, and expected waste.\n- A repeated `x2` has zero immediate marginal value when the next-volley multiplier is already `x2`, because same-round stacking and refresh are disallowed. Echo may still add delayed value when the replay lands in the following round.\n\nA new effect or AI score is incomplete until live runtime, simulation, player-facing explanation, validation, and tests all exist.'
+              ),
+              (
+                  '### Active Next: v0.3.3a5 — Shared Marginal Upgrade Value Policy\n\n- Create a shared `CardfrontUpgradeValuePolicy`.\n- Replace fixed `+5`, `x2`, attack, repair, defense-cap, armor-piercing, Echo, and rarity scores.\n- Use actual added shots and actual consumable effects.\n- Make live AI and the fast simulator call the same policy.\n- Emit per-offer score breakdowns for later B1 auditing.\n\n### v0.3.3a6 — Strategic Map Schema And Preview',
+                  '### Active Next: v0.3.3a6 — Strategic Map Schema And Preview'
+              ),
+          ]
+
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit(f'missing replacement marker:\n{old}')
+              text = text.replace(old, new, 1)
+
+          completed_marker = '- Historical A and provisional B0 audits remain unchanged because this live per-cell rule is intentionally deferred from the proxy simulator until B1.\n\n## 7. Balance Audit Status / 平衡模拟状态'
+          completed_insert = '''- Historical A and provisional B0 audits remain unchanged because this live per-cell rule is intentionally deferred from the proxy simulator until B1.
+
+### v0.3.3a5 — Shared Marginal Upgrade Value Policy
+
+Status: completed in PR #7; the 5,400-match shared-AI proxy audit and full repository Headless suite passed before merge.
+
+- Replaced the live AI fixed score table with `CardfrontUpgradeValuePolicy`.
+- Live runtime values real added shots, cap waste, expected chamber hits, real repairable cells, defended contacts, fillable defense capacity, remaining drafts, and delayed Echo replay.
+- Fast simulation accepts equivalent dictionary state and calls the same value policy.
+- Historical audit replay remains available through the explicit `historical_fixed` mode; its old constants are not used by current live AI.
+- Per-offer reports expose score, immediate value, persistent value, delayed value, actual consumption, and waste.
+- Dedicated tests cover hero-specific volley margins, repeated multiplier waste, near-cap waste, repairable-cell count, armor-piercing demand, rarity timing, Echo, live/simulator state equivalence, and live draft integration.
+
+## 7. Balance Audit Status / 平衡模拟状态'''
+          if completed_marker not in text:
+              raise SystemExit('missing completed-slice insertion marker')
+          text = text.replace(completed_marker, completed_insert, 1)
+
+          audit_marker = '\nB1 risk monitoring for the full Engineer contact line:\n'
+          audit_insert = '''
+### Shared Marginal-AI Proxy Audit
+
+Status: completed in GitHub Actions on 2026-07-27. Artifact run: `30236044493`.
+
+Matrix: `3 heroes x 3 enemy heroes x 3 maps x 2 reported sides x 100 seeds = 5,400`.
+
+Rules:
+
+- Simulation mode: `parity_uncompensated`.
+- Upgrade valuation mode: `marginal`.
+- Hidden hit compensation: disabled.
+- Temporary resolved attack cap: 4.
+- Shared value policy was invoked for `178,632` simulated upgrade choices.
+- Invalid offers: zero.
+
+Results:
+
+- Balanced Commander: `51.31%`.
+- Fortification Engineer: `41.44%`.
+- Rapid Gunner: `57.25%`.
+- Balanced vs Balanced: `46.83%`.
+- Balanced vs Engineer: `58.83%`.
+- Balanced vs Gunner: `42.00%`.
+- Engineer vs Balanced: `39.17%`.
+- Engineer vs Engineer: `49.50%`.
+- Engineer vs Gunner: `34.00%`.
+- Gunner vs Balanced: `53.83%`.
+- Gunner vs Engineer: `65.67%`.
+- Gunner vs Gunner: `46.50%`.
+- Reported mirror blue-side rates: exactly `50.00%` for all three heroes because the proxy still flips one result instead of rerunning geometry.
+- Median: 16 rounds.
+- P90: 22 rounds.
+- Timeout: `0.15%`.
+- First stronghold: round `5.99`.
+- Cells crossed per marble: `19.20`.
+- Chamber hits per volley: `1.514`.
+- Defense absorbed per volley: `1.141`.
+
+Interpretation and boundary:
+
+- Sharing marginal valuation materially improves the old uncompensated proxy result for Engineer (`29.64% -> 41.44%`) and reduces Gunner from `63.41% -> 57.25%`, but Engineer remains below the future valid-B1 decision threshold.
+- This is directional evidence about the AI-policy change only and must not be treated as B1.
+- It still lacks authoritative per-map route geometry, gate passage/reflection, true second-side reruns, and per-cell defense including the Engineer opening contact front.
+- Do not change hero base values from this 5,400-match proxy result.
+- The next complete 54,000-match balance audit remains reserved for B1 after those systems are represented.
+
+B1 risk monitoring for the full Engineer contact line:
+'''
+          if audit_marker not in text:
+              raise SystemExit('missing audit insertion marker')
+          text = text.replace(audit_marker, audit_insert, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit status update
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/PROJECT_STATUS.md
+          git diff --cached --check
+          git commit -m "docs: record shared marginal AI audit"
+          git push origin HEAD:agent/shared-marginal-upgrade-ai
