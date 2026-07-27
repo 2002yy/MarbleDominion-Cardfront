@@ -36,10 +36,10 @@ static func build_sequence(
 	max_count: int
 ) -> Array:
 	var group: Array = []
-	_append_type(group, SIEGE, maxi(0, int(base_mix.get(SIEGE, 0))))
-	_append_type(group, STANDARD, maxi(0, int(base_mix.get(STANDARD, 0))))
-	_append_type(group, SUPPRESSION, maxi(0, int(base_mix.get(SUPPRESSION, 0))))
-	_append_type(group, STANDARD, maxi(0, int(bonus_standard_shots)))
+	append_type(group, SIEGE, maxi(0, int(base_mix.get(SIEGE, 0))))
+	append_type(group, STANDARD, maxi(0, int(base_mix.get(STANDARD, 0))))
+	append_type(group, SUPPRESSION, maxi(0, int(base_mix.get(SUPPRESSION, 0))))
+	append_type(group, STANDARD, maxi(0, int(bonus_standard_shots)))
 	if group.is_empty():
 		group.append(STANDARD)
 	var result: Array = []
@@ -51,10 +51,15 @@ static func build_sequence(
 
 
 static func append_standard(sequence: Array, amount: int, max_count: int = -1) -> void:
+	append_type(sequence, STANDARD, amount, max_count)
+
+
+static func append_type(sequence: Array, projectile_type: String, amount: int, max_count: int = -1) -> void:
+	var safe_type: String = sanitize(projectile_type)
 	for _index in range(maxi(0, int(amount))):
 		if max_count > 0 and sequence.size() >= max_count:
 			break
-		sequence.append(STANDARD)
+		sequence.append(safe_type)
 
 
 static func convert_standard(sequence: Array, target_type: String, amount: int) -> int:
@@ -131,8 +136,3 @@ static func chamber_damage_multiplier(projectile_type: String) -> int:
 			return 0
 		_:
 			return 1
-
-
-static func _append_type(target: Array, projectile_type: String, amount: int) -> void:
-	for _index in range(maxi(0, amount)):
-		target.append(projectile_type)
