@@ -44,7 +44,7 @@ const DEFINITIONS: Dictionary = {
 	DECK_BARRAGE_CONTROL: {
 		"id": DECK_BARRAGE_CONTROL,
 		"name": "弹幕压制",
-		"description": "暂以已确认的通用牌和攻城转换验证炮手构筑；未审定的炮手新卡不进入推荐池。",
+		"description": "围绕压制弹、齐射节奏、穿甲和抽牌成长形成路线控制构筑。",
 		"upgrade_ids": [
 			"volley_plus_5",
 			"volley_x2",
@@ -52,7 +52,7 @@ const DEFINITIONS: Dictionary = {
 			"armor_piercing",
 			"rarity_plus_1",
 			"echo_next_choice",
-			"siege_calibration",
+			"suppression_screen",
 			"frontline_repair",
 		],
 	},
