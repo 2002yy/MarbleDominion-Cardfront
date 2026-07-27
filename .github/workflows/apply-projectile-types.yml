@@ -1,0 +1,894 @@
+name: Apply Projectile Types
+
+on:
+  push:
+    branches:
+      - agent/simulation-parity-b1
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/simulation-parity-b1
+          fetch-depth: 0
+      - name: Apply typed projectile runtime and B1 patches
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          ROOT = Path('.')
+
+          def read(path):
+              return (ROOT / path).read_text(encoding='utf-8-sig')
+
+          def write(path, text):
+              (ROOT / path).write_text(text, encoding='utf-8')
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise RuntimeError(f'{label}: expected one match, got {count}')
+              return text.replace(old, new, 1)
+
+          def replace_func(text, name, replacement):
+              pattern = rf'(?ms)^func {re.escape(name)}\([^\n]*.*?(?=^func |\Z)'
+              matches = list(re.finditer(pattern, text))
+              if len(matches) != 1:
+                  raise RuntimeError(f'{name}: expected one function, got {len(matches)}')
+              m = matches[0]
+              return text[:m.start()] + replacement.rstrip() + '\n\n' + text[m.end():]
+
+          # Round director: pass the already-resolved typed sequence.
+          path = 'scripts/cardfront/run/CardfrontRoundDirector.gd'
+          text = read(path)
+          text = replace_once(
+              text,
+              '''\t\t\t\tint(plan.chamber_damage_quarters),\n\t\t\t\tint(plan.armor_pierce_contacts)\n\t\t\t)''',
+              '''\t\t\t\tint(plan.chamber_damage_quarters),\n\t\t\t\tint(plan.armor_pierce_contacts),\n\t\t\t\tplan.projectile_sequence\n\t\t\t)''',
+              'round director typed payload',
+          )
+          write(path, text)
+
+          # Turret: retain one sequence per burst and emit a per-projectile context.
+          path = 'scripts/Turret.gd'
+          text = read(path)
+          text = replace_once(text, 'class_name Turret\n', 'class_name Turret\n\nconst CardfrontProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")\n', 'turret preload')
+          text = replace_once(text, 'var burst_projectile_power: int = 1\n', 'var burst_projectile_power: int = 1\nvar burst_projectile_sequence: Array = []\n', 'turret sequence field')
+
+          fire_burst = '''func fire_burst(count: int) -> void:
+\tif is_destroyed:
+\t\treturn
+\tif battlefield == null or bullet_container == null:
+\t\treturn
+\tif burst_remaining > 0:
+\t\treturn
+
+\tburst_remaining = clampi(count, 1, GameConfig.get_max_pending_count())
+\tburst_total = burst_remaining
+\tburst_timer = 0.0
+\tburst_index = 0
+\tburst_origin_angle = rotation
+\tburst_directed = false
+\tburst_directed_angle = rotation
+\tburst_directed_spread = 0.0
+\tburst_projectile_power = 1
+\tburst_projectile_sequence.clear()
+\tCardfrontProjectileTypeScript.append_standard(burst_projectile_sequence, burst_remaining)
+\tburst_chamber_damage_quarters = 0
+\tburst_capture_context = {}
+\tdirected_visual_hold_remaining = 0.0
+\tburst_progress_emit_timer = 0.0
+\tburst_last_reported_remaining = burst_remaining
+\tburst_progress.emit(faction_id, burst_remaining)
+\t_set_burst_locked(true)'''
+          text = replace_func(text, 'fire_burst', fire_burst)
+
+          request_burst = '''func request_directed_burst(intent) -> bool:
+\tif intent == null:
+\t\treturn false
+\tvar started: bool = fire_directed(
+\t\tint(intent.shot_count),
+\t\tfloat(intent.angle),
+\t\tfloat(intent.spread),
+\t\tint(intent.get("projectile_power"))
+\t)
+\tif started:
+\t\tburst_chamber_damage_quarters = maxi(0, int(intent.get("chamber_damage_quarters")))
+\t\tburst_projectile_sequence.clear()
+\t\tvar raw_sequence = intent.get("projectile_sequence")
+\t\tif raw_sequence is Array:
+\t\t\tburst_projectile_sequence = (raw_sequence as Array).duplicate()
+\t\tif burst_projectile_sequence.size() > burst_remaining:
+\t\t\tburst_projectile_sequence.resize(burst_remaining)
+\t\twhile burst_projectile_sequence.size() < burst_remaining:
+\t\t\tburst_projectile_sequence.append(CardfrontProjectileTypeScript.STANDARD)
+\t\tburst_capture_context = {
+\t\t\t"armor_pierce_pool": {
+\t\t\t\t"remaining": maxi(0, int(intent.get("armor_pierce_contacts"))),
+\t\t\t},
+\t\t}
+\treturn started'''
+          text = replace_func(text, 'request_directed_burst', request_burst)
+
+          fire_directed = '''func fire_directed(count: int, angle: float, spread: float = 0.0, projectile_power: int = 1) -> bool:
+\tif is_destroyed:
+\t\treturn false
+\tif battlefield == null or bullet_container == null:
+\t\treturn false
+\tif burst_remaining > 0:
+\t\treturn false
+
+\tburst_remaining = clampi(count, 1, GameConfig.get_max_pending_count())
+\tburst_total = burst_remaining
+\tburst_timer = 0.0
+\tburst_index = 0
+\tburst_origin_angle = float(angle)
+\tburst_directed = true
+\tburst_directed_angle = float(angle)
+\tburst_directed_spread = maxf(0.0, float(spread))
+\tburst_projectile_power = clampi(int(projectile_power), 1, 999)
+\tburst_projectile_sequence.clear()
+\tCardfrontProjectileTypeScript.append_standard(burst_projectile_sequence, burst_remaining)
+\tburst_chamber_damage_quarters = 0
+\tburst_capture_context = {}
+\tdirected_visual_hold_remaining = DIRECTED_VISUAL_HOLD_SECONDS
+\tburst_progress_emit_timer = 0.0
+\tburst_last_reported_remaining = burst_remaining
+\tburst_progress.emit(faction_id, burst_remaining)
+\t_set_burst_locked(true)
+\tqueue_redraw()
+\treturn true'''
+          text = replace_func(text, 'fire_directed', fire_directed)
+
+          cancel_burst = '''func cancel_burst() -> int:
+\tvar remaining: int = burst_remaining
+\tburst_remaining = 0
+\tburst_total = 0
+\tburst_index = 0
+\tburst_timer = 0.0
+\tburst_directed = false
+\tburst_directed_spread = 0.0
+\tburst_projectile_power = 1
+\tburst_projectile_sequence.clear()
+\tburst_chamber_damage_quarters = 0
+\tburst_capture_context = {}
+\tdirected_visual_hold_remaining = 0.0
+\tburst_progress_emit_timer = 0.0
+\tburst_last_reported_remaining = 0
+\tburst_progress.emit(faction_id, 0)
+\t_set_burst_locked(false)
+\treturn remaining'''
+          text = replace_func(text, 'cancel_burst', cancel_burst)
+
+          spawn_bullet = '''func _spawn_bullet() -> void:
+\tif bullet_container == null:
+\t\treturn
+
+\tvar shot_angle: float = _current_burst_shot_angle()
+\tvar shot_direction: Vector2 = Vector2.RIGHT.rotated(shot_angle).normalized()
+\tvar muzzle_distance: float = GameConfig.TURRET_RADIUS + 17.0
+\tvar spawn_position: Vector2 = global_position + shot_direction * muzzle_distance
+\tvar projectile_type: String = CardfrontProjectileTypeScript.STANDARD
+\tif burst_index >= 0 and burst_index < burst_projectile_sequence.size():
+\t\tprojectile_type = CardfrontProjectileTypeScript.sanitize(str(burst_projectile_sequence[burst_index]))
+\tvar armor_pool = burst_capture_context.get("armor_pierce_pool", {"remaining": 0})
+\tvar projectile_context: Dictionary = {
+\t\t"projectile_type": projectile_type,
+\t\t"projectile_defense_pierce_remaining": CardfrontProjectileTypeScript.defense_pierce_layers(projectile_type),
+\t\t"armor_pierce_pool": armor_pool,
+\t}
+
+\tif _bullet_container_can_spawn:
+\t\tbullet_container.spawn_bullet(
+\t\t\tfaction_id,
+\t\t\tspawn_position,
+\t\t\tshot_direction,
+\t\t\tbattlefield,
+\t\t\tall_turrets,
+\t\t\tburst_projectile_power,
+\t\t\tburst_chamber_damage_quarters,
+\t\t\tprojectile_context
+\t\t)
+\telse:
+\t\tvar bullet = Bullet.new()
+\t\tbullet.setup(
+\t\t\tfaction_id,
+\t\t\tspawn_position,
+\t\t\tshot_direction,
+\t\t\tbattlefield,
+\t\t\tall_turrets,
+\t\t\tburst_projectile_power,
+\t\t\tburst_chamber_damage_quarters,
+\t\t\tprojectile_context
+\t\t)
+\t\tbullet_container.add_child(bullet)'''
+          text = replace_func(text, '_spawn_bullet', spawn_bullet)
+
+          # Reset typed state in restore and destruction paths.
+          text = replace_once(text, '\tburst_projectile_power = clampi(int(state.get("turret_burst_projectile_power", 1)), 1, 999)\n\tburst_chamber_damage_quarters = 0', '\tburst_projectile_power = clampi(int(state.get("turret_burst_projectile_power", 1)), 1, 999)\n\tburst_projectile_sequence.clear()\n\tburst_chamber_damage_quarters = 0', 'turret restore reset')
+          text = replace_once(text, '\t\tburst_projectile_power = 1\n\t\tburst_chamber_damage_quarters = 0', '\t\tburst_projectile_power = 1\n\t\tburst_projectile_sequence.clear()\n\t\tburst_chamber_damage_quarters = 0', 'turret destroyed restore reset')
+          text = replace_once(text, '\tburst_projectile_power = 1\n\tburst_chamber_damage_quarters = 0\n\tburst_capture_context = {}\n\tburst_last_reported_remaining = 0', '\tburst_projectile_power = 1\n\tburst_projectile_sequence.clear()\n\tburst_chamber_damage_quarters = 0\n\tburst_capture_context = {}\n\tburst_last_reported_remaining = 0', 'turret destroy reset')
+          write(path, text)
+
+          # Bullet: visible type and type-specific chamber behavior.
+          path = 'scripts/Bullet.gd'
+          text = read(path)
+          text = replace_once(text, 'class_name Bullet\n', 'class_name Bullet\n\nconst CardfrontProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")\n', 'bullet preload')
+          text = replace_once(text, 'var damage_power: int = 1\n', 'var damage_power: int = 1\nvar projectile_type: String = CardfrontProjectileTypeScript.STANDARD\n', 'bullet type field')
+          text = replace_once(text, '\tcapture_context = new_capture_context\n\tspeed = GameConfig.BULLET_SPEED', '\tcapture_context = new_capture_context\n\tprojectile_type = CardfrontProjectileTypeScript.sanitize(str(capture_context.get("projectile_type", CardfrontProjectileTypeScript.STANDARD)))\n\tspeed = GameConfig.BULLET_SPEED', 'bullet setup type')
+          text = replace_once(text, '\tcapture_context = {}\n\troute_filter = null', '\tcapture_context = {}\n\tprojectile_type = CardfrontProjectileTypeScript.STANDARD\n\troute_filter = null', 'bullet deactivate type')
+
+          turret_hit = '''func _try_hit_enemy_turret() -> bool:
+\tfor target_faction_id in target_turrets:
+\t\tif target_faction_id == faction_id:
+\t\t\tcontinue
+\t\tvar turret = target_turrets[target_faction_id]
+\t\tif turret == null or turret.is_destroyed:
+\t\t\tcontinue
+\t\tvar hit_radius_sq: float = GameConfig.TURRET_HIT_RADIUS * GameConfig.TURRET_HIT_RADIUS
+\t\tif global_position.distance_squared_to(turret.global_position) > hit_radius_sq:
+\t\t\tcontinue
+\t\tvar damage_multiplier: int = CardfrontProjectileTypeScript.chamber_damage_multiplier(projectile_type)
+\t\tif damage_multiplier > 0:
+\t\t\tif chamber_damage_quarters > 0 and turret.has_method("take_damage_quarters"):
+\t\t\t\tturret.take_damage_quarters(chamber_damage_quarters * damage_power * damage_multiplier)
+\t\t\telse:
+\t\t\t\tturret.take_damage(GameConfig.BULLET_DAMAGE * damage_power * damage_multiplier)
+\t\treturn true
+\treturn false'''
+          text = replace_func(text, '_try_hit_enemy_turret', turret_hit)
+
+          visual_helpers = '''func get_projectile_visual_signature() -> Dictionary:
+\treturn {
+\t\t"projectile_type": projectile_type,
+\t\t"fill": _projectile_visual_color(),
+\t\t"special_ring": projectile_type != CardfrontProjectileTypeScript.STANDARD,
+\t}
+
+
+func _projectile_visual_color() -> Color:
+\tvar faction_color: Color = GameConfig.faction_color(faction_id)
+\tmatch projectile_type:
+\t\tCardfrontProjectileTypeScript.SIEGE:
+\t\t\treturn faction_color.lerp(Color(1.0, 0.56, 0.10), 0.72)
+\t\tCardfrontProjectileTypeScript.SUPPRESSION:
+\t\t\treturn faction_color.lerp(Color(0.18, 0.88, 1.0), 0.68)
+\t\t_:
+\t\t\treturn faction_color
+'''
+          marker = 'func _visual_radius() -> float:'
+          if marker not in text:
+              raise RuntimeError('bullet visual marker missing')
+          text = text.replace(marker, visual_helpers + '\n\n' + marker, 1)
+          text = replace_once(text, '\tvar base = GameConfig.faction_color(faction_id)\n', '\tvar base: Color = _projectile_visual_color()\n', 'bullet visual base')
+          text = replace_once(text, '''\tif simple_draw:\n\t\tdraw_circle(Vector2.ZERO, radius, base)\n\t\treturn''', '''\tif simple_draw:\n\t\tdraw_circle(Vector2.ZERO, radius, base)\n\t\tif projectile_type != CardfrontProjectileTypeScript.STANDARD:\n\t\t\tdraw_arc(Vector2.ZERO, radius + 1.0, 0.0, TAU, 16, Color.WHITE, 1.2)\n\t\treturn''', 'bullet simple visual')
+          text = replace_once(text, '\tdraw_circle(Vector2.ZERO, radius * 0.25, Color(1.0, 1.0, 1.0, 0.14))\n', '''\tdraw_circle(Vector2.ZERO, radius * 0.25, Color(1.0, 1.0, 1.0, 0.14))\n\tif projectile_type == CardfrontProjectileTypeScript.SIEGE:\n\t\tdraw_arc(Vector2.ZERO, radius + 1.8, 0.0, TAU, 20, Color(1.0, 0.82, 0.30, 0.95), 2.0)\n\t\tdraw_line(Vector2(-radius * 0.55, 0.0), Vector2(radius * 0.55, 0.0), Color(0.22, 0.10, 0.02, 0.9), 1.6)\n\telif projectile_type == CardfrontProjectileTypeScript.SUPPRESSION:\n\t\tdraw_arc(Vector2.ZERO, radius + 1.8, 0.0, TAU, 20, Color(0.35, 0.96, 1.0, 0.95), 2.0)\n\t\tdraw_circle(Vector2.ZERO, radius * 0.42, Color(0.02, 0.20, 0.30, 0.72), false, 1.4)\n''', 'bullet special visuals')
+          write(path, text)
+
+          # Capture interceptor: card pierce + siege pierce + engineer captured-front passive.
+          path = 'scripts/cardfront/fortify/CardfrontCaptureInterceptor.gd'
+          write(path, '''extends RefCounted
+class_name CardfrontCaptureInterceptor
+
+var fortify_layer = null
+var round_director = null
+var territory_defense_system = null
+
+
+func setup(new_fortify_layer) -> void:
+\tfortify_layer = new_fortify_layer
+
+
+func configure_runtime(new_round_director, new_territory_defense_system) -> void:
+\tround_director = new_round_director
+\tterritory_defense_system = new_territory_defense_system
+
+
+func should_block_capture(
+\tcell: Vector2i,
+\tincoming_owner: int,
+\tcurrent_owner: int,
+\tcapture_context: Dictionary = {}
+) -> bool:
+\tif incoming_owner == current_owner or fortify_layer == null:
+\t\treturn false
+\tif fortify_layer.get_fortify_stack(cell) <= 0:
+\t\treturn false
+
+\tvar armor_pool = capture_context.get("armor_pierce_pool", null)
+\tif armor_pool is Dictionary and int((armor_pool as Dictionary).get("remaining", 0)) > 0:
+\t\t(armor_pool as Dictionary)["remaining"] = int((armor_pool as Dictionary)["remaining"]) - 1
+\t\tfortify_layer.consume_hit(cell)
+\t\tif fortify_layer.get_fortify_stack(cell) <= 0:
+\t\t\treturn false
+\telif maxi(0, int(capture_context.get("armor_pierce_contacts_remaining", 0))) > 0:
+\t\tcapture_context["armor_pierce_contacts_remaining"] = int(capture_context["armor_pierce_contacts_remaining"]) - 1
+\t\tfortify_layer.consume_hit(cell)
+\t\tif fortify_layer.get_fortify_stack(cell) <= 0:
+\t\t\treturn false
+
+\tvar projectile_pierce: int = maxi(0, int(capture_context.get("projectile_defense_pierce_remaining", 0)))
+\tif projectile_pierce > 0 and fortify_layer.get_fortify_stack(cell) > 0:
+\t\tcapture_context["projectile_defense_pierce_remaining"] = projectile_pierce - 1
+\t\tfortify_layer.consume_hit(cell)
+\t\tif fortify_layer.get_fortify_stack(cell) <= 0:
+\t\t\treturn false
+\treturn fortify_layer.consume_hit(cell)
+
+
+func on_capture_applied(
+\tcell: Vector2i,
+\tincoming_owner: int,
+\t_current_owner: int,
+\t_capture_context: Dictionary = {}
+) -> void:
+\tif fortify_layer == null or round_director == null or territory_defense_system == null:
+\t\treturn
+\tif not round_director.has_method("get_run_state"):
+\t\treturn
+\tvar run_state = round_director.get_run_state(int(incoming_owner))
+\tif run_state == null:
+\t\treturn
+\tvar captured_defense: int = clampi(
+\t\tint(run_state.captured_frontline_defense),
+\t\t0,
+\t\tint(run_state.territory_defense_cap)
+\t)
+\tif captured_defense <= 0 or not _is_frontline_cell(cell, incoming_owner):
+\t\treturn
+\tfortify_layer.set_fortify_stack(cell, captured_defense)
+
+
+func _is_frontline_cell(cell: Vector2i, owner_id: int) -> bool:
+\tvar battlefield = territory_defense_system.battlefield
+\tif battlefield == null or not is_instance_valid(battlefield):
+\t\treturn false
+\tfor offset in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+\t\tvar neighbor: Vector2i = cell + offset
+\t\tif not battlefield.is_inside(neighbor):
+\t\t\tcontinue
+\t\tif int(battlefield.owners[neighbor.x][neighbor.y]) != int(owner_id):
+\t\t\treturn true
+\treturn false
+''')
+
+          # Notify interceptor after a successful owner change.
+          path = 'scripts/Battlefield.gd'
+          text = read(path)
+          text = replace_once(text, '''\towners[cell.x][cell.y] = faction_id\n\t_add_owner_count(old, -1)\n\t_add_owner_count(faction_id, 1)''', '''\towners[cell.x][cell.y] = faction_id\n\t_add_owner_count(old, -1)\n\t_add_owner_count(faction_id, 1)\n\tif capture_interceptor != null and is_instance_valid(capture_interceptor) and capture_interceptor.has_method("on_capture_applied"):\n\t\tcapture_interceptor.on_capture_applied(cell, faction_id, old, capture_context)''', 'battlefield bullet post capture')
+          text = replace_once(text, '''\towners[cell.x][cell.y] = new_owner_id\n\t_add_owner_count(old, -1)\n\t_add_owner_count(new_owner_id, 1)''', '''\towners[cell.x][cell.y] = new_owner_id\n\t_add_owner_count(old, -1)\n\t_add_owner_count(new_owner_id, 1)\n\tif capture_interceptor != null and is_instance_valid(capture_interceptor) and capture_interceptor.has_method("on_capture_applied"):\n\t\tcapture_interceptor.on_capture_applied(cell, new_owner_id, old, {})''', 'battlefield owner post capture')
+          write(path, text)
+
+          # Bind runtime refs once the round and defense systems both exist.
+          path = 'scripts/cardfront/defense/CardfrontTerritoryDefenseSystem.gd'
+          text = read(path)
+          text = replace_once(text, '''\tif round_director.has_method("set_territory_defense_system"):\n\t\tround_director.set_territory_defense_system(self)\n\tvar launch_callable''', '''\tif round_director.has_method("set_territory_defense_system"):\n\t\tround_director.set_territory_defense_system(self)\n\tvar interceptor = battlefield.capture_interceptor\n\tif interceptor != null and interceptor.has_method("configure_runtime"):\n\t\tinterceptor.configure_runtime(round_director, self)\n\tvar launch_callable''', 'defense interceptor runtime binding')
+          write(path, text)
+
+          # B1 typed simulation.
+          path = 'scripts/cardfront/simulation/CardfrontB1BalanceMatchSimulator.gd'
+          text = read(path)
+          text = replace_once(text, 'const B1UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")\n', 'const B1UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")\nconst B1ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")\n', 'B1 projectile preload')
+          text = replace_once(text, 'var _b1_card_by_hero: Dictionary = {}\n', 'var _b1_card_by_hero: Dictionary = {}\nvar _b1_projectile_fired: Dictionary = {}\nvar _b1_projectile_chamber_contacts: Dictionary = {}\nvar _b1_projectile_damage_units: Dictionary = {}\nvar _b1_projectile_defense_pierce: Dictionary = {}\n', 'B1 projectile metrics fields')
+          text = replace_once(text, '''\tmetrics["virtual_recaptures"] = _b1_virtual_recaptures\n\tresult["metrics"] = metrics''', '''\tmetrics["virtual_recaptures"] = _b1_virtual_recaptures\n\tmetrics["projectile_fired"] = _b1_projectile_fired.duplicate(true)\n\tmetrics["projectile_chamber_contacts"] = _b1_projectile_chamber_contacts.duplicate(true)\n\tmetrics["projectile_damage_units"] = _b1_projectile_damage_units.duplicate(true)\n\tmetrics["projectile_defense_pierce"] = _b1_projectile_defense_pierce.duplicate(true)\n\tresult["metrics"] = metrics''', 'B1 result projectile metrics')
+          text = replace_once(text, '''\tstate["starting_contact_front_defense"] = contact_defense\n\tstate["pending_repair_points"] = 0''', '''\tstate["starting_contact_front_defense"] = contact_defense\n\tstate["base_projectile_mix"] = (definition.get("base_projectile_mix", {}) as Dictionary).duplicate(true)\n\tstate["captured_frontline_defense"] = clampi(int(definition.get("captured_frontline_defense", 0)), 0, int(state.get("territory_defense_cap", 1)))\n\tstate["frontline_repair_bonus"] = maxi(0, int(definition.get("frontline_repair_bonus", 0)))\n\tstate["pending_repair_points"] = 0''', 'B1 state projectile/passives')
+          text = replace_once(text, 'var amount: int = maxi(0, int(params.get("amount", 0)))\n\t\tvar applied: int = _repair_virtual_cells(state, amount)', 'var amount: int = maxi(0, int(params.get("amount", 0))) + maxi(0, int(state.get("frontline_repair_bonus", 0)))\n\t\tvar applied: int = _repair_virtual_cells(state, amount)', 'B1 engineer repair bonus')
+
+          build_fast = '''func _build_and_consume_volley_fast(state: Dictionary) -> Dictionary:
+\tvar bonus: int = maxi(0, int(state.get("next_volley_bonus", 0)))
+\tvar multiplier: int = maxi(1, int(state.get("next_volley_multiplier", 1)))
+\tvar sequence: Array = B1ProjectileTypeScript.build_sequence(
+\t\tstate.get("base_projectile_mix", {}) as Dictionary,
+\t\tbonus,
+\t\tmultiplier,
+\t\t24
+\t)
+\tvar result: Dictionary = {
+\t\t"shot_count": sequence.size(),
+\t\t"projectile_sequence": sequence,
+\t\t"projectile_counts": B1ProjectileTypeScript.count_types(sequence),
+\t\t"attack_level": clampi(int(state.get("attack_level", 0)), 0, 3),
+\t\t"armor_pierce_contacts": maxi(0, int(state.get("next_volley_armor_pierce_contacts", 0))),
+\t}
+\tstate["next_volley_bonus"] = 0
+\tstate["next_volley_multiplier"] = 1
+\tstate["next_volley_armor_pierce_contacts"] = 0
+\treturn result'''
+          marker = 'func _proxy_value_context(state: Dictionary) -> Dictionary:'
+          if marker not in text:
+              raise RuntimeError('B1 build insertion marker missing')
+          text = text.replace(marker, build_fast + '\n\n\n' + marker, 1)
+
+          resolve_volley = '''func _resolve_volley(
+\tattacker_slot: String,
+\ttarget_slot: String,
+\tplan_data: Dictionary,
+\tstates: Dictionary,
+\tterritory: Dictionary,
+\t_defense_pool: Dictionary,
+\tprofile: Dictionary,
+\tseed_value: int,
+\tround_number: int,
+\tsimulation_mode: String
+) -> Dictionary:
+\tvar plan: Dictionary = plan_data["plan"] as Dictionary
+\tvar rng: RandomNumberGenerator = _rng_a if attacker_slot == SLOT_A else _rng_b
+\trng.seed = _b1_stream_seed(seed_value, round_number, attacker_slot, _b1_side_variant)
+\tvar projectile_sequence: Array = (plan.get("projectile_sequence", []) as Array).duplicate()
+\tif projectile_sequence.is_empty():
+\t\tB1ProjectileTypeScript.append_standard(projectile_sequence, int(plan.get("shot_count", 0)))
+\tvar shot_count: int = projectile_sequence.size()
+\tfor raw_type in projectile_sequence:
+\t\t_increment_metric(_b1_projectile_fired, B1ProjectileTypeScript.sanitize(str(raw_type)), 1.0)
+\tvar route_result: Dictionary = _resolve_routes(
+\t\tprojectile_sequence,
+\t\tattacker_slot,
+\t\ttarget_slot,
+\t\tterritory,
+\t\tround_number,
+\t\trng
+\t)
+\tvar allowed_projectiles: Array = route_result.get("allowed_projectiles", []) as Array
+\tvar target_state: Dictionary = states[target_slot] as Dictionary
+\tvar defense_chance: float = clampf(
+\t\tfloat(profile.get("defense_contact_chance", 0.13))
+\t\t+ float(target_state.get("territory_defense_cap", 1)) * 0.045
+\t\t+ float(territory[target_slot]) * 0.035,
+\t\t0.0,
+\t\t0.7
+\t)
+\tvar expected_contacts: float = float(allowed_projectiles.size()) * defense_chance
+\tvar contact_sigma: float = sqrt(maxf(0.01, expected_contacts * (1.0 - defense_chance)))
+\tvar defense_contacts: int = clampi(roundi(expected_contacts + rng.randfn(0.0, contact_sigma)), 0, allowed_projectiles.size())
+\tvar contact_indices: Dictionary = _sample_index_set(allowed_projectiles.size(), defense_contacts, rng)
+\tvar armor_remaining: int = maxi(0, int(plan.get("armor_pierce_contacts", 0)))
+\tvar defense_absorbed: int = 0
+\tvar survivors: Array = []
+\tfor index in range(allowed_projectiles.size()):
+\t\tvar projectile_type: String = B1ProjectileTypeScript.sanitize(str(allowed_projectiles[index]))
+\t\tif not contact_indices.has(index):
+\t\t\tsurvivors.append(projectile_type)
+\t\t\tcontinue
+\t\tvar pierce_layers: int = B1ProjectileTypeScript.defense_pierce_layers(projectile_type)
+\t\tif armor_remaining > 0:
+\t\t\tpierce_layers += 1
+\t\t\tarmor_remaining -= 1
+\t\tvar defense_result: Dictionary = _resolve_projectile_defense_contact(target_state, pierce_layers, rng)
+\t\tvar pierced_layers: int = int(defense_result.get("pierced_layers", 0))
+\t\tif pierced_layers > 0:
+\t\t\t_increment_metric(_b1_projectile_defense_pierce, projectile_type, float(pierced_layers))
+\t\tif bool(defense_result.get("absorbed", false)):
+\t\t\tdefense_absorbed += 1
+\t\telse:
+\t\t\tsurvivors.append(projectile_type)
+
+\tvar hit_chance: float = clampf(
+\t\tfloat(profile.get("chamber_hit_chance", 0.17))
+\t\t+ float(territory[attacker_slot] - territory[target_slot]) * 0.10,
+\t\t0.08,
+\t\t0.65
+\t)
+\thit_chance *= pow(6.0 / float(maxi(1, shot_count)), 0.18)
+\thit_chance *= float(route_result.get("average_route_quality", 1.0))
+\tvar base_volley: int = int((states[attacker_slot] as Dictionary).get("base_volley_count", 6))
+\thit_chance = adjust_hit_chance_for_mode(hit_chance, base_volley, simulation_mode)
+\tvar expected_hits: float = float(survivors.size()) * hit_chance
+\tvar hit_sigma: float = sqrt(maxf(0.01, expected_hits * (1.0 - hit_chance)))
+\tvar chamber_contact_count: int = clampi(roundi(expected_hits + rng.randfn(0.0, hit_sigma)), 0, survivors.size())
+\tvar chamber_indices: Dictionary = _sample_index_set(survivors.size(), chamber_contact_count, rng)
+\tvar chamber_hits: int = 0
+\tvar damage_units: float = 0.0
+\tvar territory_contacts: float = 0.0
+\tfor index in range(survivors.size()):
+\t\tvar projectile_type: String = B1ProjectileTypeScript.sanitize(str(survivors[index]))
+\t\tif chamber_indices.has(index):
+\t\t\tchamber_hits += 1
+\t\t\t_increment_metric(_b1_projectile_chamber_contacts, projectile_type, 1.0)
+\t\t\tvar units: float = B1ProjectileTypeScript.direct_damage_units(projectile_type)
+\t\t\tdamage_units += units
+\t\t\t_increment_metric(_b1_projectile_damage_units, projectile_type, units)
+\t\telse:
+\t\t\tterritory_contacts += B1ProjectileTypeScript.territory_pressure_units(projectile_type)
+
+\tvar attacker_state: Dictionary = states[attacker_slot] as Dictionary
+\tvar recapture_budget: int = mini(MAX_CAPTURE_UPDATES_PER_VOLLEY, floori(territory_contacts * 0.25))
+\tvar recaptured: int = _recapture_virtual_cells(attacker_state, recapture_budget, rng)
+\tvar captured: int = _capture_virtual_cells(target_state, mini(MAX_CAPTURE_UPDATES_PER_VOLLEY, maxi(0, floori(territory_contacts) - recaptured)), rng)
+\t_grant_captured_frontline_cells(attacker_state, captured)
+\t_b1_virtual_recaptures += recaptured
+\t_b1_virtual_captures += captured
+\tvar average_cells: float = float(profile.get("average_cells_crossed", 19.0))
+\tvar reflected_shots: int = shot_count - allowed_projectiles.size()
+\tvar cells_crossed: float = maxf(
+\t\tfloat(shot_count) * 3.0,
+\t\tfloat(allowed_projectiles.size()) * average_cells
+\t\t+ float(reflected_shots) * average_cells * 0.35
+\t\t+ rng.randfn(0.0, sqrt(float(maxi(1, shot_count))) * 2.0)
+\t)
+\tvar attack_level: int = int(plan_data.get("attack_level", 0))
+\treturn {
+\t\t"shot_count": shot_count,
+\t\t"chamber_hits": chamber_hits,
+\t\t"damage_quarters": roundi(damage_units * float(4 + attack_level)),
+\t\t"defense_absorbed": defense_absorbed,
+\t\t"territory_contacts": territory_contacts,
+\t\t"cells_crossed": cells_crossed,
+\t\t"gate_passes": int(route_result.get("gate_passes", 0)),
+\t\t"gate_reflections": int(route_result.get("gate_reflections", 0)),
+\t\t"river_bank_reflections": int(route_result.get("river_bank_reflections", 0)),
+\t\t"virtual_captures": captured,
+\t\t"virtual_recaptures": recaptured,
+\t}'''
+          text = replace_func(text, '_resolve_volley', resolve_volley)
+
+          resolve_routes = '''func _resolve_routes(
+\tprojectile_sequence: Array,
+\tattacker_slot: String,
+\t_target_slot: String,
+\tterritory: Dictionary,
+\tround_number: int,
+\trng: RandomNumberGenerator
+) -> Dictionary:
+\tvar route_layout: Dictionary = _b1_map_definition.get("route_layout", {}) as Dictionary
+\tvar lanes: Array = route_layout.get("lanes", []) as Array
+\tvar off_bridge_rate: float = clampf(float(route_layout.get("off_bridge_rate", 0.08)), 0.0, 0.5)
+\tvar allowed_projectiles: Array = []
+\tvar gate_passes: int = 0
+\tvar gate_reflections: int = 0
+\tvar river_reflections: int = 0
+\tvar route_quality_sum: float = 0.0
+\tfor serial in range(projectile_sequence.size()):
+\t\tvar projectile_type: String = B1ProjectileTypeScript.sanitize(str(projectile_sequence[serial]))
+\t\tif lanes.is_empty() or rng.randf() < off_bridge_rate:
+\t\t\triver_reflections += 1
+\t\t\t_b1_river_bank_reflections += 1
+\t\t\tcontinue
+\t\tvar lane_index: int = _choose_lane_index(lanes, rng)
+\t\t_increment_metric(_b1_lane_traffic, str(lane_index), 1.0)
+\t\tvar snapshot: Dictionary = _lane_gate_snapshot(lane_index, territory, round_number)
+\t\tvar state_id: String = str(snapshot.get("state", B1GateRulesScript.STATE_OPEN))
+\t\t_increment_metric(_b1_gate_state_crossings, state_id, 1.0)
+\t\tvar owner_slot: String = str(snapshot.get("owner_slot", ""))
+\t\tvar pass_gate: bool = true
+\t\tif state_id == B1GateRulesScript.STATE_CLOSED and owner_slot != attacker_slot:
+\t\t\tpass_gate = false
+\t\telif state_id == B1GateRulesScript.STATE_HALF_OPEN and owner_slot != attacker_slot:
+\t\t\tpass_gate = (serial + lane_index + round_number) % 2 == 0
+\t\tif pass_gate:
+\t\t\tallowed_projectiles.append(projectile_type)
+\t\t\tgate_passes += 1
+\t\t\t_b1_gate_passes += 1
+\t\t\troute_quality_sum += float((lanes[lane_index] as Dictionary).get("route_quality", 1.0))
+\t\telse:
+\t\t\tgate_reflections += 1
+\t\t\t_b1_gate_reflections += 1
+\treturn {
+\t\t"allowed_shots": allowed_projectiles.size(),
+\t\t"allowed_projectiles": allowed_projectiles,
+\t\t"gate_passes": gate_passes,
+\t\t"gate_reflections": gate_reflections,
+\t\t"river_bank_reflections": river_reflections,
+\t\t"average_route_quality": route_quality_sum / float(maxi(1, allowed_projectiles.size())),
+\t}'''
+          text = replace_func(text, '_resolve_routes', resolve_routes)
+
+          helper_block = '''func _resolve_projectile_defense_contact(state: Dictionary, pierce_layers: int, rng: RandomNumberGenerator) -> Dictionary:
+\tvar defense_cells: Array = state.get("virtual_defense_cells", []) as Array
+\tvar chosen_index: int = _choose_defended_cell_index(state, rng)
+\tif chosen_index < 0 or chosen_index >= defense_cells.size():
+\t\treturn {"absorbed": false, "pierced_layers": 0}
+\tvar pierced: int = 0
+\tfor _index in range(maxi(0, pierce_layers)):
+\t\tif int(defense_cells[chosen_index]) <= 0:
+\t\t\tbreak
+\t\tdefense_cells[chosen_index] = int(defense_cells[chosen_index]) - 1
+\t\tpierced += 1
+\tif int(defense_cells[chosen_index]) <= 0:
+\t\treturn {"absorbed": false, "pierced_layers": pierced}
+\tdefense_cells[chosen_index] = maxi(0, int(defense_cells[chosen_index]) - 1)
+\treturn {"absorbed": true, "pierced_layers": pierced}
+
+
+func _choose_defended_cell_index(state: Dictionary, rng: RandomNumberGenerator) -> int:
+\tvar defense_cells: Array = state.get("virtual_defense_cells", []) as Array
+\tvar owned_cells: Array = state.get("virtual_owned_cells", []) as Array
+\tvar candidates: Array[int] = []
+\tfor index in range(mini(defense_cells.size(), owned_cells.size())):
+\t\tif bool(owned_cells[index]) and int(defense_cells[index]) > 0:
+\t\t\tcandidates.append(index)
+\tif candidates.is_empty():
+\t\treturn -1
+\treturn candidates[rng.randi_range(0, candidates.size() - 1)]
+
+
+func _sample_index_set(total: int, count: int, rng: RandomNumberGenerator) -> Dictionary:
+\tvar indices: Array[int] = []
+\tfor index in range(maxi(0, total)):
+\t\tindices.append(index)
+\tfor index in range(indices.size() - 1, 0, -1):
+\t\tvar swap_index: int = rng.randi_range(0, index)
+\t\tvar temp: int = indices[index]
+\t\tindices[index] = indices[swap_index]
+\t\tindices[swap_index] = temp
+\tvar result: Dictionary = {}
+\tfor index in range(mini(maxi(0, count), indices.size())):
+\t\tresult[indices[index]] = true
+\treturn result
+
+
+func _grant_captured_frontline_cells(state: Dictionary, amount: int) -> void:
+\tvar defense_cells: Array = state.get("virtual_defense_cells", []) as Array
+\tvar owned_cells: Array = state.get("virtual_owned_cells", []) as Array
+\tvar initial_front: Array = state.get("virtual_initial_contact_front", []) as Array
+\tvar captured_defense: int = clampi(
+\t\tint(state.get("captured_frontline_defense", 0)),
+\t\t0,
+\t\tint(state.get("territory_defense_cap", 1))
+\t)
+\tfor _index in range(maxi(0, amount)):
+\t\tdefense_cells.append(captured_defense)
+\t\towned_cells.append(true)
+\t\tinitial_front.append(true)
+'''
+          marker = 'func _consume_virtual_defense('
+          if marker not in text:
+              raise RuntimeError('B1 helper marker missing')
+          text = text.replace(marker, helper_block + '\n\n\n' + marker, 1)
+
+          # Captured/re-captured front cells receive the hero passive in the virtual model.
+          text = replace_once(text, '''\t\towned_cells[chosen] = true\n\t\tdefense_cells[chosen] = 0\n\t\trecaptured += 1''', '''\t\towned_cells[chosen] = true\n\t\tvar captured_defense: int = clampi(int(state.get("captured_frontline_defense", 0)), 0, int(state.get("territory_defense_cap", 1)))\n\t\tdefense_cells[chosen] = captured_defense\n\t\trecaptured += 1''', 'B1 recapture passive')
+
+          # Reset projectile metrics in the existing reset method.
+          reset_match = re.search(r'(?ms)^func _reset_b1_metrics\(\) -> void:\n(.*?)(?=^func |\Z)', text)
+          if not reset_match:
+              raise RuntimeError('B1 reset method missing')
+          reset_body = reset_match.group(0)
+          if '_b1_projectile_fired.clear()' not in reset_body:
+              reset_body = reset_body.rstrip() + '''\n\t_b1_projectile_fired.clear()\n\t_b1_projectile_chamber_contacts.clear()\n\t_b1_projectile_damage_units.clear()\n\t_b1_projectile_defense_pierce.clear()'''
+              text = text[:reset_match.start()] + reset_body + '\n\n' + text[reset_match.end():]
+          write(path, text)
+
+          # B1 parity selector: preserve front-first defended contact selection and recapture passive.
+          path = 'scripts/cardfront/simulation/CardfrontB1ParityMatchSimulator.gd'
+          text = read(path)
+          choose_front = '''func _choose_defended_cell_index(state: Dictionary, rng: RandomNumberGenerator) -> int:
+\tvar defense_cells: Array = state.get("virtual_defense_cells", []) as Array
+\tvar owned_cells: Array = state.get("virtual_owned_cells", []) as Array
+\tvar initial_front: Array = state.get("virtual_initial_contact_front", []) as Array
+\tvar candidates: Array[int] = _eligible_indices(defense_cells, owned_cells, initial_front, true, true)
+\tif candidates.is_empty():
+\t\tcandidates = _eligible_indices(defense_cells, owned_cells, initial_front, true, false)
+\tif candidates.is_empty():
+\t\treturn -1
+\treturn candidates[rng.randi_range(0, candidates.size() - 1)]'''
+          marker = 'func _consume_virtual_defense('
+          if marker not in text:
+              raise RuntimeError('parity contact marker missing')
+          text = text.replace(marker, choose_front + '\n\n\n' + marker, 1)
+          text = replace_once(text, '''\t\towned_cells[chosen] = true\n\t\tdefense_cells[chosen] = 0\n\t\trecaptured += 1''', '''\t\towned_cells[chosen] = true\n\t\tvar captured_defense: int = clampi(int(state.get("captured_frontline_defense", 0)), 0, int(state.get("territory_defense_cap", 1)))\n\t\tdefense_cells[chosen] = captured_defense\n\t\trecaptured += 1''', 'parity recapture passive')
+          write(path, text)
+
+          # Shared marginal AI understands typed direct-damage and engineer repair bonus.
+          path = 'scripts/cardfront/run/CardfrontUpgradeValuePolicy.gd'
+          text = read(path)
+          text = replace_once(text, 'const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")\n', 'const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")\nconst ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")\n', 'value policy projectile preload')
+          old_score = '''\t\t"add_next_volley", "multiply_next_volley":\n\t\t\tvar before_shots: int = _resolved_shot_count(model, context)\n\t\t\tvar raw_before: int = _raw_shot_count(model, context)\n\t\t\tvar after_model: Dictionary = model.duplicate(true)\n\t\t\t_apply_effect_to_model(after_model, upgrade_id)\n\t\t\tvar after_shots: int = _resolved_shot_count(after_model, context)\n\t\t\tvar raw_after: int = _raw_shot_count(after_model, context)\n\t\t\tvar actual_added: int = maxi(0, after_shots - before_shots)\n\t\t\tvar raw_added: int = maxi(0, raw_after - raw_before)\n\t\t\tvar wasted: int = maxi(0, raw_added - actual_added)\n\t\t\tvar resolved_attack_level: int = _resolved_attack_level(model, context)\n\t\t\tvar attack_factor: float = float(4 + resolved_attack_level) / 4.0\n\t\t\tvar reliability_bonus: float = 2.0 if effect_id == "add_next_volley" and actual_added > 0 else 0.0\n\t\t\tresult["actual_added_shots"] = actual_added\n\t\t\tresult["wasted_shots"] = wasted\n\t\t\tresult["immediate_value"] = float(actual_added) * SHOT_VALUE * attack_factor * route_factor + reliability_bonus\n\t\t\tresult["score"] = float(result["immediate_value"])\n\t\t\tresult["reason"] = "actual_added_shots"'''
+          new_score = '''\t\t"add_next_volley", "multiply_next_volley":\n\t\t\tvar before_sequence: Array = _resolved_projectile_sequence(model, context)\n\t\t\tvar raw_before: int = _raw_shot_count(model, context)\n\t\t\tvar after_model: Dictionary = model.duplicate(true)\n\t\t\t_apply_effect_to_model(after_model, upgrade_id)\n\t\t\tvar after_sequence: Array = _resolved_projectile_sequence(after_model, context)\n\t\t\tvar raw_after: int = _raw_shot_count(after_model, context)\n\t\t\tvar actual_added: int = maxi(0, after_sequence.size() - before_sequence.size())\n\t\t\tvar raw_added: int = maxi(0, raw_after - raw_before)\n\t\t\tvar wasted: int = maxi(0, raw_added - actual_added)\n\t\t\tvar direct_added: float = maxf(0.0, ProjectileTypeScript.direct_damage_units_for_sequence(after_sequence) - ProjectileTypeScript.direct_damage_units_for_sequence(before_sequence))\n\t\t\tvar pressure_added: float = maxf(0.0, _territory_units(after_sequence) - _territory_units(before_sequence))\n\t\t\tvar resolved_attack_level: int = _resolved_attack_level(model, context)\n\t\t\tvar attack_factor: float = float(4 + resolved_attack_level) / 4.0\n\t\t\tvar reliability_bonus: float = 2.0 if effect_id == "add_next_volley" and actual_added > 0 else 0.0\n\t\t\tresult["actual_added_shots"] = actual_added\n\t\t\tresult["actual_added_direct_damage_units"] = direct_added\n\t\t\tresult["actual_added_territory_units"] = pressure_added\n\t\t\tresult["wasted_shots"] = wasted\n\t\t\tresult["immediate_value"] = (direct_added * SHOT_VALUE * attack_factor * 0.78 + pressure_added * SHOT_VALUE * 0.22) * route_factor + reliability_bonus\n\t\t\tresult["score"] = float(result["immediate_value"])\n\t\t\tresult["reason"] = "typed_projectile_marginal_value"'''
+          text = replace_once(text, old_score, new_score, 'typed shot marginal score')
+          text = replace_once(text, 'var amount: int = maxi(0, int(params.get("amount", 0)))\n\t\t\tvar repairable_cells', 'var amount: int = maxi(0, int(params.get("amount", 0))) + maxi(0, int(model.get("frontline_repair_bonus", 0)))\n\t\t\tvar repairable_cells', 'value policy repair bonus')
+          text = replace_once(text, '"base_volley_count": 6,\n', '"base_volley_count": 6,\n\t\t"base_projectile_mix": {ProjectileTypeScript.STANDARD: 6, ProjectileTypeScript.SIEGE: 0, ProjectileTypeScript.SUPPRESSION: 0},\n\t\t"frontline_repair_bonus": 0,\n', 'value state typed defaults')
+          helper = '''static func _resolved_projectile_sequence(model: Dictionary, context: Dictionary) -> Array:
+\tvar sequence: Array = ProjectileTypeScript.build_sequence(
+\t\tmodel.get("base_projectile_mix", {}) as Dictionary,
+\t\tmaxi(0, int(model.get("next_volley_bonus", 0))) + maxi(0, int(context.get("pre_multiplier_shot_bonus", 0))),
+\t\tclampi(int(model.get("next_volley_multiplier", 1)), 1, RunStateScript.MAX_NEXT_VOLLEY_MULTIPLIER),
+\t\tVolleyResolverScript.NORMAL_MAX_VOLLEY_COUNT
+\t)
+\tProjectileTypeScript.append_standard(sequence, maxi(0, int(context.get("post_multiplier_shot_bonus", 0))), VolleyResolverScript.MAX_VOLLEY_COUNT)
+\treturn sequence
+
+
+static func _territory_units(sequence: Array) -> float:
+\tvar total: float = 0.0
+\tfor raw_type in sequence:
+\t\ttotal += ProjectileTypeScript.territory_pressure_units(str(raw_type))
+\treturn total
+'''
+          marker = 'static func _raw_shot_count(model: Dictionary, context: Dictionary) -> int:'
+          if marker not in text:
+              raise RuntimeError('value policy helper marker missing')
+          text = text.replace(marker, helper + '\n\n' + marker, 1)
+          write(path, text)
+
+          # New focused runtime and B1 projectile test.
+          test_path = ROOT / 'scripts/tests/CardfrontProjectileTypeCombatTestRunner.gd'
+          test_path.write_text('''extends SceneTree
+
+const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
+const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
+const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
+const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
+const FortifyLayerScript = preload("res://scripts/cardfront/fortify/FortifyLayer.gd")
+const CaptureInterceptorScript = preload("res://scripts/cardfront/fortify/CardfrontCaptureInterceptor.gd")
+
+class MockRoundDirector:
+\textends RefCounted
+\tvar states: Dictionary = {}
+\tfunc get_run_state(owner_id: int):
+\t\treturn states.get(owner_id, null)
+
+class MockDefenseSystem:
+\textends RefCounted
+\tvar battlefield = null
+
+var _assert: TestAssert
+
+
+func _initialize() -> void:
+\tcall_deferred("_run")
+
+
+func _run() -> void:
+\t_assert = TestAssert.new()
+\tprint("[CardfrontProjectileTypeCombatTest] Starting typed projectile tests")
+\tawait process_frame
+\t_test_hero_base_mixes()
+\t_test_plus_five_and_multiplier_semantics()
+\t_test_chamber_damage_and_visual_signatures()
+\t_test_siege_and_suppression_defense_contacts()
+\t_test_engineer_capture_and_repair_passives()
+\t_assert.report("[CardfrontProjectileTypeCombatTest]")
+\tquit(0 if _assert.failures.is_empty() else 1)
+
+
+func _test_hero_base_mixes() -> void:
+\tvar resolver = VolleyResolverScript.new()
+\tvar engineer = _state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
+\tvar balanced = _state(HeroRegistryScript.HERO_BALANCED_COMMANDER)
+\tvar gunner = _state(HeroRegistryScript.HERO_RAPID_GUNNER)
+\tvar ep = resolver.build_and_consume(engineer)
+\tvar bp = resolver.build_and_consume(balanced)
+\tvar gp = resolver.build_and_consume(gunner)
+\t_assert.eq(ep.projectile_counts[ProjectileTypeScript.STANDARD], 4, "projectiles: Engineer has four standard")
+\t_assert.eq(ep.projectile_counts[ProjectileTypeScript.SIEGE], 1, "projectiles: Engineer has one siege")
+\t_assert.eq(bp.projectile_counts[ProjectileTypeScript.STANDARD], 6, "projectiles: Balanced has six standard")
+\t_assert.eq(gp.projectile_counts[ProjectileTypeScript.STANDARD], 6, "projectiles: Gunner has six standard")
+\t_assert.eq(gp.projectile_counts[ProjectileTypeScript.SUPPRESSION], 1, "projectiles: Gunner has one suppression")
+\t_assert.eq(ProjectileTypeScript.direct_damage_units_for_sequence(ep.projectile_sequence), 6.0, "projectiles: Engineer direct budget is six")
+\t_assert.eq(ProjectileTypeScript.direct_damage_units_for_sequence(bp.projectile_sequence), 6.0, "projectiles: Balanced direct budget is six")
+\t_assert.eq(ProjectileTypeScript.direct_damage_units_for_sequence(gp.projectile_sequence), 6.0, "projectiles: Gunner direct budget is six")
+
+
+func _test_plus_five_and_multiplier_semantics() -> void:
+\tvar resolver = VolleyResolverScript.new()
+\tvar engineer = _state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
+\tengineer.add_next_volley_bonus(5)
+\tvar plus_plan = resolver.build_and_consume(engineer)
+\t_assert.eq(plus_plan.shot_count, 10, "projectiles: +5 adds five shots")
+\t_assert.eq(plus_plan.projectile_counts[ProjectileTypeScript.STANDARD], 9, "projectiles: all +5 shots are standard")
+\t_assert.eq(plus_plan.projectile_counts[ProjectileTypeScript.SIEGE], 1, "projectiles: +5 does not add siege")
+\tvar gunner = _state(HeroRegistryScript.HERO_RAPID_GUNNER)
+\tgunner.multiply_next_volley(2)
+\tvar double_plan = resolver.build_and_consume(gunner)
+\t_assert.eq(double_plan.shot_count, 14, "projectiles: x2 duplicates the volley group")
+\t_assert.eq(double_plan.projectile_counts[ProjectileTypeScript.SUPPRESSION], 2, "projectiles: x2 duplicates suppression")
+
+
+func _test_chamber_damage_and_visual_signatures() -> void:
+\tvar target = Turret.new()
+\ttarget.faction_id = RulesScript.AI_FACTION
+\ttarget.configure_health_pool(20, true)
+\ttarget.global_position = Vector2.ZERO
+\tget_root().add_child(target)
+\tvar standard = _bullet(ProjectileTypeScript.STANDARD, target)
+\tvar siege = _bullet(ProjectileTypeScript.SIEGE, target)
+\tvar suppression = _bullet(ProjectileTypeScript.SUPPRESSION, target)
+\t_assert.that(standard._try_hit_enemy_turret(), "projectiles: standard contacts chamber")
+\t_assert.eq(target.health, 19, "projectiles: standard deals one")
+\t_assert.that(siege._try_hit_enemy_turret(), "projectiles: siege contacts chamber")
+\t_assert.eq(target.health, 17, "projectiles: siege deals double")
+\t_assert.that(suppression._try_hit_enemy_turret(), "projectiles: suppression still collides with chamber")
+\t_assert.eq(target.health, 17, "projectiles: suppression deals zero chamber damage")
+\t_assert.neq(standard.get_projectile_visual_signature()["fill"], siege.get_projectile_visual_signature()["fill"], "projectiles: siege visual differs")
+\t_assert.neq(standard.get_projectile_visual_signature()["fill"], suppression.get_projectile_visual_signature()["fill"], "projectiles: suppression visual differs")
+\tfor node in [standard, siege, suppression, target]:
+\t\tTestFixtures.cleanup_node(node)
+
+
+func _test_siege_and_suppression_defense_contacts() -> void:
+\tvar layer = FortifyLayerScript.new()
+\tlayer.configure(4)
+\tvar interceptor = CaptureInterceptorScript.new()
+\tinterceptor.setup(layer)
+\tvar cell := Vector2i(1, 1)
+\tlayer.set_fortify_stack(cell, 1)
+\t_assert.that(not interceptor.should_block_capture(cell, 1, 2, {"projectile_defense_pierce_remaining": 1}), "projectiles: siege captures through one layer")
+\tlayer.set_fortify_stack(cell, 2)
+\t_assert.that(interceptor.should_block_capture(cell, 1, 2, {"projectile_defense_pierce_remaining": 1}), "projectiles: siege alone does not capture through two layers")
+\t_assert.eq(layer.get_fortify_stack(cell), 0, "projectiles: siege consumes two layers on blocked contact")
+\tlayer.set_fortify_stack(cell, 1)
+\t_assert.that(interceptor.should_block_capture(cell, 1, 2, {"projectile_type": ProjectileTypeScript.SUPPRESSION}), "projectiles: suppression consumes normal defense and is blocked")
+
+
+func _test_engineer_capture_and_repair_passives() -> void:
+\tvar battlefield = Battlefield.new()
+\tbattlefield.configure(4)
+\tget_root().add_child(battlefield)
+\tvar owners: Array = []
+\tfor x in range(4):
+\t\tvar column: Array = []
+\t\tfor y in range(4):
+\t\t\tcolumn.append(RulesScript.NEUTRAL_OWNER)
+\t\towners.append(column)
+\towners[1][1] = RulesScript.AI_FACTION
+\towners[1][2] = RulesScript.PLAYER_FACTION
+\tbattlefield.replace_owners(owners, false)
+\tvar layer = FortifyLayerScript.new()
+\tlayer.configure(4)
+\tvar interceptor = CaptureInterceptorScript.new()
+\tinterceptor.setup(layer)
+\tvar director = MockRoundDirector.new()
+\tdirector.states[RulesScript.PLAYER_FACTION] = _state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
+\tdirector.states[RulesScript.AI_FACTION] = _state(HeroRegistryScript.HERO_BALANCED_COMMANDER)
+\tvar defense = MockDefenseSystem.new()
+\tdefense.battlefield = battlefield
+\tinterceptor.configure_runtime(director, defense)
+\tbattlefield.capture_interceptor = interceptor
+\t_assert.eq(battlefield.apply_bullet(Vector2i(1, 1), RulesScript.PLAYER_FACTION, {}), "HIT_ENEMY_CELL", "engineer: captures frontline cell")
+\t_assert.eq(layer.get_fortify_stack(Vector2i(1, 1)), 1, "engineer: captured frontline starts at one defense")
+\tvar engineer = director.states[RulesScript.PLAYER_FACTION]
+\tengineer.request_territory_repair(6, "frontline")
+\t_assert.eq(engineer.consume_pending_repair()["points"], 8, "engineer: frontline repair gains two points")
+\tvar balanced = director.states[RulesScript.AI_FACTION]
+\tbalanced.request_territory_repair(6, "frontline")
+\t_assert.eq(balanced.consume_pending_repair()["points"], 6, "balanced: repair remains six")
+\tTestFixtures.cleanup_node(battlefield)
+
+
+func _state(hero_id: String):
+\tvar state = RunStateScript.new()
+\tstate.setup_from_hero(RulesScript.PLAYER_FACTION, hero_id)
+\treturn state
+
+
+func _bullet(projectile_type: String, target):
+\tvar bullet = Bullet.new()
+\tbullet.setup(
+\t\tRulesScript.PLAYER_FACTION,
+\t\tVector2.ZERO,
+\t\tVector2.RIGHT,
+\t\tnull,
+\t\t{RulesScript.AI_FACTION: target},
+\t\t1,
+\t\t4,
+\t\t{"projectile_type": projectile_type}
+\t)
+\tget_root().add_child(bullet)
+\treturn bullet
+''', encoding='utf-8')
+
+          # Keep B1 CI focused on the selected projectile design; remove obsolete finalist scan.
+          path = '.github/workflows/b1-simulation-tests.yml'
+          text = read(path)
+          old = '''          - batch: B1 16200 gunner health confirmation\n            script: CardfrontB1HeroFinalistAuditTestRunner.gd\n            seeds: 100\n'''
+          new = '''          - batch: B1 typed projectile runtime\n            script: CardfrontProjectileTypeCombatTestRunner.gd\n            seeds: 1\n'''
+          text = replace_once(text, old, new, 'B1 workflow projectile job')
+          write(path, text)
+
+          # Remove this one-shot workflow from the resulting commit.
+          Path('.github/workflows/apply-projectile-types.yml').unlink()
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "combat: implement visible projectile roles"
+          git push origin HEAD:agent/simulation-parity-b1
