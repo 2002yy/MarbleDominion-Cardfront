@@ -1,6 +1,6 @@
 extends SceneTree
 
-const SimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontB1BalanceMatchSimulator.gd")
+const SimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontB1ParityMatchSimulator.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 const MapDefinitionScript = preload("res://scripts/cardfront/maps/CardfrontMapDefinition.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
