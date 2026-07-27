@@ -53,12 +53,15 @@ func _test_hero_volley_margins() -> void:
 	var gunner_plus: Dictionary = policy.evaluate_id(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, gunner, context)
 	var gunner_x2: Dictionary = policy.evaluate_id(UpgradeManifestScript.UPGRADE_VOLLEY_X2, gunner, context)
 
-	_assert.eq(int(engineer_plus.get("actual_added_shots", -1)), 5, "marginal volley: Engineer +5 should add five real shots")
-	_assert.eq(int(engineer_x2.get("actual_added_shots", -1)), 5, "marginal volley: Engineer x2 should add five real shots")
-	_assert.eq(policy.choose_id(offer, engineer, context), UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, "marginal volley: equal Engineer gains should prefer reliable +5")
-	_assert.eq(int(gunner_plus.get("actual_added_shots", -1)), 5, "marginal volley: Gunner +5 should add five real shots")
-	_assert.eq(int(gunner_x2.get("actual_added_shots", -1)), 7, "marginal volley: Gunner x2 should add seven real shots")
-	_assert.eq(policy.choose_id(offer, gunner, context), UpgradeManifestScript.UPGRADE_VOLLEY_X2, "marginal volley: Gunner should prefer the larger real x2 gain")
+	_assert.eq(int(engineer_plus.get("actual_added_shots", -1)), 5, "typed volley: Engineer +5 should add five standard shots")
+	_assert.eq(float(engineer_plus.get("actual_added_direct_damage_units", -1.0)), 5.0, "typed volley: Engineer +5 should add five direct-damage units")
+	_assert.eq(int(engineer_x2.get("actual_added_shots", -1)), 5, "typed volley: Engineer x2 should add five physical shots")
+	_assert.eq(float(engineer_x2.get("actual_added_direct_damage_units", -1.0)), 6.0, "typed volley: Engineer x2 should duplicate the siege shot and add six direct-damage units")
+	_assert.eq(policy.choose_id(offer, engineer, context), UpgradeManifestScript.UPGRADE_VOLLEY_X2, "typed volley: Engineer should prefer x2 because it duplicates the visible siege group")
+	_assert.eq(int(gunner_plus.get("actual_added_shots", -1)), 5, "typed volley: Gunner +5 should add five standard shots")
+	_assert.eq(int(gunner_x2.get("actual_added_shots", -1)), 7, "typed volley: Gunner x2 should add seven physical shots")
+	_assert.eq(float(gunner_x2.get("actual_added_direct_damage_units", -1.0)), 6.0, "typed volley: Gunner x2 should add six direct-damage units plus one suppression shot")
+	_assert.eq(policy.choose_id(offer, gunner, context), UpgradeManifestScript.UPGRADE_VOLLEY_X2, "typed volley: Gunner should prefer the larger mixed-group gain")
 
 
 func _test_existing_multiplier_and_caps_reduce_value() -> void:
@@ -74,8 +77,8 @@ func _test_existing_multiplier_and_caps_reduce_value() -> void:
 	var capped = _hero_state(HeroRegistryScript.HERO_BALANCED_COMMANDER)
 	capped.base_volley_count = 22
 	var capped_result: Dictionary = policy.evaluate_id(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, capped, _base_context())
-	_assert.eq(int(capped_result.get("actual_added_shots", -1)), 2, "marginal cap: +5 near the limit should report only two real shots")
-	_assert.eq(int(capped_result.get("wasted_shots", -1)), 3, "marginal cap: +5 near the limit should report three wasted shots")
+	_assert.eq(int(capped_result.get("actual_added_shots", -1)), 2, "marginal cap: normalized base mix should leave only two real slots")
+	_assert.eq(int(capped_result.get("wasted_shots", -1)), 3, "marginal cap: normalized base mix should report three wasted shots")
 
 
 func _test_repair_uses_actual_distinct_cells() -> void:
@@ -89,10 +92,13 @@ func _test_repair_uses_actual_distinct_cells() -> void:
 	var empty_result: Dictionary = ValuePolicyScript.evaluate(UpgradeManifestScript.UPGRADE_FRONTLINE_REPAIR, state, empty_context)
 	var two_result: Dictionary = ValuePolicyScript.evaluate(UpgradeManifestScript.UPGRADE_FRONTLINE_REPAIR, state, two_context)
 	var six_result: Dictionary = ValuePolicyScript.evaluate(UpgradeManifestScript.UPGRADE_FRONTLINE_REPAIR, state, six_context)
-	_assert.eq(int(empty_result.get("actual_repair_cells", -1)), 0, "marginal repair: no eligible cells should produce zero repair value")
+	_assert.eq(int(empty_result.get("actual_repair_cells", -1)), 0, "marginal repair: Engineer bonus must not invent eligible cells")
+	_assert.eq(int(empty_result.get("repair_budget", -1)), 8, "marginal repair: Engineer should expose an eight-point repair budget")
+	_assert.eq(int(empty_result.get("wasted_repair_points", -1)), 8, "marginal repair: all eight points should be wasted when no cell is damaged")
 	_assert.eq(int(two_result.get("actual_repair_cells", -1)), 2, "marginal repair: two eligible cells should produce two real repairs")
-	_assert.eq(int(two_result.get("wasted_repair_points", -1)), 4, "marginal repair: unused repair points should be reported")
-	_assert.eq(int(six_result.get("actual_repair_cells", -1)), 6, "marginal repair: six eligible cells should consume the full card")
+	_assert.eq(int(two_result.get("wasted_repair_points", -1)), 6, "marginal repair: six points should remain unused with two eligible cells")
+	_assert.eq(int(six_result.get("actual_repair_cells", -1)), 6, "marginal repair: six eligible cells should produce six distinct repairs")
+	_assert.eq(int(six_result.get("wasted_repair_points", -1)), 2, "marginal repair: Engineer bonus should remain visible as two unused points when only six cells are eligible")
 	_assert.gt(float(six_result.get("score", 0.0)), float(two_result.get("score", 0.0)), "marginal repair: six real cells should be worth more than two")
 
 
@@ -178,7 +184,7 @@ func _test_shared_simulator_switches_valuation_modes() -> void:
 		SimulationConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
 	))
 	_assert.eq(historical_choice, UpgradeManifestScript.UPGRADE_VOLLEY_X2, "shared simulator: historical mode should preserve fixed x2 priority")
-	_assert.eq(marginal_choice, UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, "shared simulator: parity mode should use the same Engineer marginal choice as live AI")
+	_assert.eq(marginal_choice, UpgradeManifestScript.UPGRADE_VOLLEY_X2, "shared simulator: parity mode should duplicate the Engineer siege group")
 	var result: Dictionary = simulator.call(
 		"simulate",
 		HeroRegistryScript.HERO_BALANCED_COMMANDER,
