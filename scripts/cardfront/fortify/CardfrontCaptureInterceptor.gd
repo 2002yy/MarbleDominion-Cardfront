@@ -2,10 +2,12 @@ extends RefCounted
 class_name CardfrontCaptureInterceptor
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const EntityRuntimeScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntityRuntime.gd")
 
 var fortify_layer = null
 var round_director = null
 var territory_defense_system = null
+var entity_runtime = null
 
 func setup(new_fortify_layer) -> void:
 	fortify_layer = new_fortify_layer
@@ -13,8 +15,13 @@ func setup(new_fortify_layer) -> void:
 func configure_runtime(new_round_director, new_territory_defense_system) -> void:
 	round_director = new_round_director
 	territory_defense_system = new_territory_defense_system
+	_configure_entity_runtime()
 
 func should_block_capture(cell: Vector2i, incoming_owner: int, current_owner: int, capture_context: Dictionary = {}) -> bool:
+	if entity_runtime != null and is_instance_valid(entity_runtime):
+		var entity_result: Dictionary = entity_runtime.resolve_capture_contact(cell, incoming_owner, capture_context)
+		if bool(entity_result.get("valid", false)) and bool(entity_result.get("block_territory", true)):
+			return true
 	if incoming_owner == current_owner or fortify_layer == null or fortify_layer.get_fortify_stack(cell) <= 0:
 		return false
 	var armor_pool = capture_context.get("armor_pierce_pool", null)
@@ -65,6 +72,25 @@ func on_capture_applied(cell: Vector2i, incoming_owner: int, current_owner: int,
 	var resolved_defense: int = clampi(passive_defense + prefab_bonus, 0, cap)
 	if resolved_defense > 0:
 		fortify_layer.set_fortify_stack(cell, resolved_defense)
+
+func _configure_entity_runtime() -> void:
+	entity_runtime = null
+	if territory_defense_system == null:
+		return
+	var battlefield = territory_defense_system.battlefield
+	if battlefield == null or not is_instance_valid(battlefield):
+		return
+	var existing = battlefield.get_node_or_null("CardfrontBattlefieldEntityRuntime")
+	if existing != null and is_instance_valid(existing):
+		entity_runtime = existing
+	else:
+		entity_runtime = EntityRuntimeScript.new()
+		battlefield.add_child(entity_runtime)
+		if not entity_runtime.setup(battlefield):
+			entity_runtime.queue_free()
+			entity_runtime = null
+			return
+	entity_runtime.configure_dependencies(round_director, territory_defense_system)
 
 func _is_frontline_cell(cell: Vector2i, owner_id: int) -> bool:
 	var battlefield = territory_defense_system.battlefield
