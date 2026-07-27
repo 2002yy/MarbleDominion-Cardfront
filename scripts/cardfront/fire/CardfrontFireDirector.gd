@@ -10,6 +10,7 @@ const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd"
 const FireRulesScript = preload("res://scripts/cardfront/fire/CardfrontFireRules.gd")
 const FireIntentScript = preload("res://scripts/cardfront/fire/CardfrontFireIntent.gd")
 const TargetScorerScript = preload("res://scripts/cardfront/fire/CardfrontTargetScorer.gd")
+const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 var region_map = null
 var battlefield = null
@@ -124,6 +125,9 @@ func build_intent(owner_id: int, shot_count: int = -1):
 	intent.target_region_id = int(target.get("target_region_id", -1))
 	intent.target_cell = target.get("target_cell", Vector2i(-1, -1))
 	intent.shot_count = clampi(int(shot_count if shot_count > 0 else base_shot_count), 1, _max_intent_shots())
+	intent.projectile_sequence = []
+	ProjectileTypeScript.append_standard(intent.projectile_sequence, intent.shot_count)
+	intent.projectile_counts = ProjectileTypeScript.count_types(intent.projectile_sequence)
 	intent.spread = maxf(0.0, float(base_spread))
 	intent.reason = str(target.get("reason", FireRulesScript.REASON_BASE))
 	if _manual_angles.has(int(owner_id)):
@@ -138,7 +142,8 @@ func issue_volley(
 	shot_count: int,
 	projectile_power: int = 1,
 	chamber_damage_quarters: int = 4,
-	armor_pierce_contacts: int = 0
+	armor_pierce_contacts: int = 0,
+	projectile_sequence: Array = []
 ):
 	var intent = build_intent(owner_id, 1)
 	if intent == null:
@@ -148,6 +153,14 @@ func issue_volley(
 	intent.projectile_power = clampi(int(projectile_power), 1, 999)
 	intent.chamber_damage_quarters = clampi(int(chamber_damage_quarters), 1, 9999)
 	intent.armor_pierce_contacts = maxi(0, int(armor_pierce_contacts))
+	intent.projectile_sequence = projectile_sequence.duplicate()
+	if intent.projectile_sequence.is_empty():
+		ProjectileTypeScript.append_standard(intent.projectile_sequence, intent.shot_count)
+	if intent.projectile_sequence.size() > intent.shot_count:
+		intent.projectile_sequence.resize(intent.shot_count)
+	while intent.projectile_sequence.size() < intent.shot_count:
+		intent.projectile_sequence.append(ProjectileTypeScript.STANDARD)
+	intent.projectile_counts = ProjectileTypeScript.count_types(intent.projectile_sequence)
 	fire_tick.emit(int(owner_id), intent)
 	fire_requested.emit(int(owner_id), intent)
 	if not _request_fire(int(owner_id), intent):
