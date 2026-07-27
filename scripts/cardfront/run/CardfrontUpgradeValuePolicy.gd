@@ -52,8 +52,7 @@ static func evaluate(
 		var after_first: Dictionary = model.duplicate(true)
 		_apply_effect_to_model(after_first, safe_id)
 		var future_model: Dictionary = _future_round_model(after_first)
-		var future_context: Dictionary = _advance_context(value_context)
-		var replay_result: Dictionary = _score_once(safe_id, future_model, future_context)
+		var replay_result: Dictionary = _score_once(safe_id, future_model, _advance_context(value_context))
 		if bool(replay_result.get("eligible", false)):
 			var replay_value: float = maxf(0.0, float(replay_result.get("score", 0.0))) * ECHO_REPLAY_DISCOUNT
 			result["delayed_value"] = float(result.get("delayed_value", 0.0)) + replay_value
@@ -90,7 +89,11 @@ static func _score_once(upgrade_id: String, model: Dictionary, context: Dictiona
 			var raw_after: int = _raw_shot_count(after_model, context)
 			var actual_added: int = maxi(0, after_sequence.size() - before_sequence.size())
 			var wasted: int = maxi(0, maxi(0, raw_after - raw_before) - actual_added)
-			var direct_added: float = maxf(0.0, ProjectileTypeScript.direct_damage_units_for_sequence(after_sequence) - ProjectileTypeScript.direct_damage_units_for_sequence(before_sequence))
+			var direct_added: float = maxf(
+				0.0,
+				ProjectileTypeScript.direct_damage_units_for_sequence(after_sequence)
+				- ProjectileTypeScript.direct_damage_units_for_sequence(before_sequence)
+			)
 			var pressure_added: float = maxf(0.0, _territory_units(after_sequence) - _territory_units(before_sequence))
 			var attack_factor: float = float(4 + _resolved_attack_level(model, context)) / 4.0
 			var reliability_bonus: float = 2.0 if effect_id == "add_next_volley" and actual_added > 0 else 0.0
@@ -98,7 +101,11 @@ static func _score_once(upgrade_id: String, model: Dictionary, context: Dictiona
 			result["actual_added_direct_damage_units"] = direct_added
 			result["actual_added_territory_units"] = pressure_added
 			result["wasted_shots"] = wasted
-			result["immediate_value"] = (direct_added * SHOT_VALUE * attack_factor * 0.78 + pressure_added * SHOT_VALUE * 0.22) * route_factor + reliability_bonus
+			result["immediate_value"] = (
+				(direct_added * SHOT_VALUE * attack_factor * 0.78 + pressure_added * SHOT_VALUE * 0.22)
+				* route_factor
+				+ reliability_bonus
+			)
 			result["score"] = float(result["immediate_value"])
 			result["reason"] = "typed_projectile_marginal_value"
 
@@ -134,25 +141,26 @@ static func _score_once(upgrade_id: String, model: Dictionary, context: Dictiona
 				),
 				enemy_defense_points
 			)
-			var before_pierced: float = minf(expected_contacts, float(current_capacity))
-			var after_pierced: float = minf(expected_contacts, float(after_capacity))
-			var actual_pierced: float = maxf(0.0, after_pierced - before_pierced)
+			var actual_pierced: float = maxf(
+				0.0,
+				minf(expected_contacts, float(after_capacity))
+				- minf(expected_contacts, float(current_capacity))
+			)
 			result["expected_pierced_contacts"] = actual_pierced
 			result["immediate_value"] = actual_pierced * PIERCE_CONTACT_VALUE * route_factor
 			result["score"] = float(result["immediate_value"])
 			result["reason"] = "expected_defense_bypass"
 
 		"repair_territory":
+			# The Engineer bonus increases repair budget only. It must never invent repairable cells.
 			var amount: int = maxi(0, int(params.get("amount", 0))) + maxi(0, int(model.get("frontline_repair_bonus", 0)))
-			var repairable_cells: int = (
-				maxi(0, int(context.get("repairable_frontline_cells", 0)))
-				+ maxi(0, int(model.get("frontline_repair_bonus", 0)))
-			)
+			var repairable_cells: int = maxi(0, int(context.get("repairable_frontline_cells", 0)))
 			var pending_before: int = maxi(0, int(model.get("pending_repair_points", 0)))
 			var restored_before: int = mini(repairable_cells, pending_before)
 			var restored_after: int = mini(repairable_cells, pending_before + amount)
 			var actual_repair_cells: int = maxi(0, restored_after - restored_before)
 			result["actual_repair_cells"] = actual_repair_cells
+			result["repair_budget"] = amount
 			result["wasted_repair_points"] = maxi(0, amount - actual_repair_cells)
 			result["immediate_value"] = float(actual_repair_cells) * REPAIR_CELL_VALUE * defense_pressure
 			result["score"] = float(result["immediate_value"])
@@ -216,8 +224,7 @@ static func _best_future_replay_value(model: Dictionary, context: Dictionary) ->
 			continue
 		var after_first: Dictionary = model.duplicate(true)
 		_apply_effect_to_model(after_first, upgrade_id)
-		var replay_model: Dictionary = _future_round_model(after_first)
-		var replay_result: Dictionary = _score_once(upgrade_id, replay_model, future_context)
+		var replay_result: Dictionary = _score_once(upgrade_id, _future_round_model(after_first), future_context)
 		if bool(replay_result.get("eligible", false)):
 			best_value = maxf(best_value, maxf(0.0, float(replay_result.get("score", 0.0))))
 	return best_value
@@ -260,7 +267,11 @@ static func _evaluate_historical(upgrade_id: String, state) -> Dictionary:
 static func _state_model(state) -> Dictionary:
 	var model: Dictionary = {
 		"base_volley_count": 6,
-		"base_projectile_mix": {ProjectileTypeScript.STANDARD: 6, ProjectileTypeScript.SIEGE: 0, ProjectileTypeScript.SUPPRESSION: 0},
+		"base_projectile_mix": {
+			ProjectileTypeScript.STANDARD: 6,
+			ProjectileTypeScript.SIEGE: 0,
+			ProjectileTypeScript.SUPPRESSION: 0,
+		},
 		"frontline_repair_bonus": 0,
 		"next_volley_bonus": 0,
 		"next_volley_multiplier": 1,
@@ -273,16 +284,21 @@ static func _state_model(state) -> Dictionary:
 		"pending_repair_points": 0,
 		"applied_upgrade_counts": {},
 	}
-	if state == null:
-		return model
-	for key in model.keys():
-		if state is Dictionary:
-			model[key] = (state as Dictionary).get(key, model[key])
-		else:
-			var value = state.get(str(key))
-			if value != null:
-				model[key] = value
+	if state != null:
+		for key in model.keys():
+			if state is Dictionary:
+				model[key] = (state as Dictionary).get(key, model[key])
+			else:
+				var value = state.get(str(key))
+				if value != null:
+					model[key] = value
+
 	model["base_volley_count"] = maxi(1, int(model["base_volley_count"]))
+	model["base_projectile_mix"] = _normalize_base_mix(
+		model.get("base_projectile_mix", {}) as Dictionary,
+		int(model["base_volley_count"])
+	)
+	model["frontline_repair_bonus"] = maxi(0, int(model["frontline_repair_bonus"]))
 	model["next_volley_bonus"] = maxi(0, int(model["next_volley_bonus"]))
 	model["next_volley_multiplier"] = clampi(int(model["next_volley_multiplier"]), 1, RunStateScript.MAX_NEXT_VOLLEY_MULTIPLIER)
 	model["next_volley_armor_pierce_contacts"] = maxi(0, int(model["next_volley_armor_pierce_contacts"]))
@@ -294,6 +310,21 @@ static func _state_model(state) -> Dictionary:
 	model["pending_repair_points"] = maxi(0, int(model["pending_repair_points"]))
 	model["applied_upgrade_counts"] = (model["applied_upgrade_counts"] as Dictionary).duplicate()
 	return model
+
+
+static func _normalize_base_mix(raw_mix: Dictionary, base_count: int) -> Dictionary:
+	var safe_count: int = maxi(1, int(base_count))
+	var siege: int = clampi(int(raw_mix.get(ProjectileTypeScript.SIEGE, 0)), 0, safe_count)
+	var suppression: int = clampi(
+		int(raw_mix.get(ProjectileTypeScript.SUPPRESSION, 0)),
+		0,
+		maxi(0, safe_count - siege)
+	)
+	return {
+		ProjectileTypeScript.STANDARD: maxi(0, safe_count - siege - suppression),
+		ProjectileTypeScript.SIEGE: siege,
+		ProjectileTypeScript.SUPPRESSION: suppression,
+	}
 
 
 static func _normalize_context(context: Dictionary) -> Dictionary:
@@ -350,30 +381,21 @@ static func _apply_effect_to_model(model: Dictionary, upgrade_id: String) -> voi
 				RunStateScript.MAX_NEXT_VOLLEY_MULTIPLIER
 			)
 		"increase_attack_level":
-			model["attack_level"] = clampi(
-				int(model.get("attack_level", 0)) + maxi(0, int(params.get("amount", 0))),
-				0,
-				RunStateScript.MAX_ATTACK_LEVEL
-			)
+			model["attack_level"] = clampi(int(model.get("attack_level", 0)) + maxi(0, int(params.get("amount", 0))), 0, RunStateScript.MAX_ATTACK_LEVEL)
 		"increase_defense_cap":
-			model["territory_defense_cap"] = clampi(
-				int(model.get("territory_defense_cap", 1)) + maxi(0, int(params.get("amount", 0))),
-				1,
-				RunStateScript.MAX_TERRITORY_DEFENSE_CAP
-			)
+			model["territory_defense_cap"] = clampi(int(model.get("territory_defense_cap", 1)) + maxi(0, int(params.get("amount", 0))), 1, RunStateScript.MAX_TERRITORY_DEFENSE_CAP)
 		"repair_territory":
-			model["pending_repair_points"] = maxi(0, int(model.get("pending_repair_points", 0)) + maxi(0, int(params.get("amount", 0))))
+			var repair_amount: int = maxi(0, int(params.get("amount", 0)))
+			if str(params.get("zone", "frontline")) == "frontline":
+				repair_amount += maxi(0, int(model.get("frontline_repair_bonus", 0)))
+			model["pending_repair_points"] = maxi(0, int(model.get("pending_repair_points", 0)) + repair_amount)
 		"add_armor_pierce":
 			model["next_volley_armor_pierce_contacts"] = maxi(
 				int(model.get("next_volley_armor_pierce_contacts", 0)),
 				maxi(0, int(params.get("contacts", 0)))
 			)
 		"increase_rarity":
-			model["rarity_level"] = clampi(
-				int(model.get("rarity_level", 0)) + maxi(0, int(params.get("amount", 0))),
-				0,
-				RunStateScript.MAX_RARITY_LEVEL
-			)
+			model["rarity_level"] = clampi(int(model.get("rarity_level", 0)) + maxi(0, int(params.get("amount", 0))), 0, RunStateScript.MAX_RARITY_LEVEL)
 		"echo_next_choice":
 			model["echo_next_choice_armed"] = true
 
@@ -391,9 +413,15 @@ static func _is_eligible(upgrade_id: String, model: Dictionary) -> bool:
 
 
 static func _resolved_projectile_sequence(model: Dictionary, context: Dictionary) -> Array:
-	var sequence: Array = ProjectileTypeScript.build_sequence(model.get("base_projectile_mix", {}) as Dictionary, maxi(0, int(model.get("next_volley_bonus", 0))) + maxi(0, int(context.get("pre_multiplier_shot_bonus", 0))), clampi(int(model.get("next_volley_multiplier", 1)), 1, RunStateScript.MAX_NEXT_VOLLEY_MULTIPLIER), VolleyResolverScript.NORMAL_MAX_VOLLEY_COUNT)
+	var sequence: Array = ProjectileTypeScript.build_sequence(
+		model.get("base_projectile_mix", {}) as Dictionary,
+		maxi(0, int(model.get("next_volley_bonus", 0))) + maxi(0, int(context.get("pre_multiplier_shot_bonus", 0))),
+		clampi(int(model.get("next_volley_multiplier", 1)), 1, RunStateScript.MAX_NEXT_VOLLEY_MULTIPLIER),
+		VolleyResolverScript.NORMAL_MAX_VOLLEY_COUNT
+	)
 	ProjectileTypeScript.append_standard(sequence, maxi(0, int(context.get("post_multiplier_shot_bonus", 0))), VolleyResolverScript.MAX_VOLLEY_COUNT)
 	return sequence
+
 
 static func _territory_units(sequence: Array) -> float:
 	var total: float = 0.0
@@ -412,11 +440,7 @@ static func _raw_shot_count(model: Dictionary, context: Dictionary) -> int:
 
 static func _resolved_shot_count(model: Dictionary, context: Dictionary) -> int:
 	var core_count: int = clampi(_raw_shot_count(model, context), 1, VolleyResolverScript.NORMAL_MAX_VOLLEY_COUNT)
-	return clampi(
-		core_count + maxi(0, int(context.get("post_multiplier_shot_bonus", 0))),
-		1,
-		VolleyResolverScript.MAX_VOLLEY_COUNT
-	)
+	return clampi(core_count + maxi(0, int(context.get("post_multiplier_shot_bonus", 0))), 1, VolleyResolverScript.MAX_VOLLEY_COUNT)
 
 
 static func _resolved_attack_level(model: Dictionary, context: Dictionary) -> int:
@@ -446,8 +470,11 @@ static func _empty_result(upgrade_id: String, valuation_mode: String, reason: St
 		"persistent_value": 0.0,
 		"delayed_value": 0.0,
 		"actual_added_shots": 0,
+		"actual_added_direct_damage_units": 0.0,
+		"actual_added_territory_units": 0.0,
 		"wasted_shots": 0,
 		"actual_repair_cells": 0,
+		"repair_budget": 0,
 		"wasted_repair_points": 0,
 		"expected_pierced_contacts": 0.0,
 		"reason": str(reason),
