@@ -1,6 +1,6 @@
 extends SceneTree
 
-const AuditScript = preload("res://scripts/cardfront/simulation/CardfrontB1HeroBalanceAudit.gd")
+const AuditScript = preload("res://scripts/cardfront/simulation/CardfrontB1ArchetypeHeroBalanceAudit.gd")
 const ConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
