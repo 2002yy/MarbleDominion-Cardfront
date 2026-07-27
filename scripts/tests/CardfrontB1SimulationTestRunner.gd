@@ -35,6 +35,10 @@ func _run() -> void:
 	_assert.eq(str(open_gate["state"]), "open", "balanced control should keep a gate open")
 	_assert.eq(str(closed_gate["state"]), "closed", "dominant control should close a gate")
 
+	var paired_seed_a: int = int(simulator.call("_b1_stream_seed", 91, 4, "a", 0))
+	var paired_seed_b: int = int(simulator.call("_b1_stream_seed", 91, 4, "a", 1))
+	_assert.eq(paired_seed_a, paired_seed_b, "side reruns should share the same random stream")
+
 	var first: Dictionary = simulator.simulate("balanced_commander", "rapid_gunner", "cross_resource", 0, 91, ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED)
 	var repeat: Dictionary = simulator.simulate("balanced_commander", "rapid_gunner", "cross_resource", 0, 91, ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED)
 	var swapped: Dictionary = simulator.simulate("balanced_commander", "rapid_gunner", "cross_resource", 1, 91, ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED)
@@ -43,6 +47,9 @@ func _run() -> void:
 	var metrics: Dictionary = first["metrics"] as Dictionary
 	_assert.gt(int(metrics.get("gate_passes", 0)) + int(metrics.get("gate_reflections", 0)), 0, "B1 should record gate traffic")
 	_assert.gt(int(first.get("shared_upgrade_choice_count", 0)), 0, "B1 should use shared marginal AI")
+	var card_by_hero: Dictionary = ((first.get("card_metrics", {}) as Dictionary).get("by_hero", {}) as Dictionary)
+	_assert.that(card_by_hero.has(HeroRegistryScript.HERO_BALANCED_COMMANDER), "B1 should expose Balanced card metrics")
+	_assert.that(card_by_hero.has(HeroRegistryScript.HERO_RAPID_GUNNER), "B1 should expose Gunner card metrics")
 	_assert.that(bool(first.get("b1_model", false)), "B1 result should identify the model")
 	_assert.report("[CardfrontB1SimulationTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
