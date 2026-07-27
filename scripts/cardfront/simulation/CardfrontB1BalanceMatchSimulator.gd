@@ -25,6 +25,7 @@ var _b1_card_appearances: Dictionary = {}
 var _b1_card_selections: Dictionary = {}
 var _b1_card_applications: Dictionary = {}
 var _b1_card_waste: Dictionary = {}
+var _b1_card_by_hero: Dictionary = {}
 
 
 func simulate(
@@ -65,6 +66,7 @@ func simulate(
 		"selections": _b1_card_selections.duplicate(true),
 		"applications": _b1_card_applications.duplicate(true),
 		"wasted_units": _b1_card_waste.duplicate(true),
+		"by_hero": _b1_card_by_hero.duplicate(true),
 	}
 	return result
 
@@ -119,6 +121,7 @@ func _draw_offer_ids_fast(state: Dictionary, offer_size: int, seed_value: int) -
 	var offer_ids: Array = super._draw_offer_ids_fast(state, offer_size, seed_value)
 	for raw_id in offer_ids:
 		_increment_metric(_b1_card_appearances, str(raw_id), 1.0)
+		_increment_hero_card_metric(state, "appearances", str(raw_id), 1.0)
 	return offer_ids
 
 
@@ -126,6 +129,7 @@ func _choose_upgrade_id_fast(offer_ids: Array, state: Dictionary) -> String:
 	var chosen_id: String = super._choose_upgrade_id_fast(offer_ids, state)
 	if chosen_id != "":
 		_increment_metric(_b1_card_selections, chosen_id, 1.0)
+		_increment_hero_card_metric(state, "selections", chosen_id, 1.0)
 		for raw_entry in get_last_choice_report():
 			var entry: Dictionary = raw_entry as Dictionary
 			if str(entry.get("upgrade_id", entry.get("id", ""))) != chosen_id:
@@ -135,6 +139,7 @@ func _choose_upgrade_id_fast(offer_ids: Array, state: Dictionary) -> String:
 				+ float(entry.get("wasted_repair_points", 0))
 			)
 			_increment_metric(_b1_card_waste, chosen_id, waste)
+			_increment_hero_card_metric(state, "wasted_units", chosen_id, waste)
 			break
 	return chosen_id
 
@@ -142,6 +147,7 @@ func _choose_upgrade_id_fast(offer_ids: Array, state: Dictionary) -> String:
 func _record_upgrade_fast(state: Dictionary, upgrade_id: String) -> void:
 	super._record_upgrade_fast(state, upgrade_id)
 	_increment_metric(_b1_card_applications, upgrade_id, 1.0)
+	_increment_hero_card_metric(state, "applications", upgrade_id, 1.0)
 
 
 func _apply_upgrade_once_fast(state: Dictionary, upgrade_id: String) -> bool:
@@ -486,6 +492,9 @@ func _reset_b1_metrics() -> void:
 	_b1_card_selections = {}
 	_b1_card_applications = {}
 	_b1_card_waste = {}
+	_b1_card_by_hero = {}
+	for hero_id in B1HeroRegistryScript.get_hero_ids():
+		_b1_card_by_hero[str(hero_id)] = {"appearances": {}, "selections": {}, "applications": {}, "wasted_units": {}}
 	for raw_id in B1UpgradeManifestScript.get_upgrade_ids():
 		var upgrade_id: String = str(raw_id)
 		_b1_card_appearances[upgrade_id] = 0
@@ -502,17 +511,26 @@ func _increment_metric(target: Dictionary, key: String, amount: float) -> void:
 		target[key] = float(current) + amount
 
 
+func _increment_hero_card_metric(state: Dictionary, category: String, upgrade_id: String, amount: float) -> void:
+	var hero_id: String = str(state.get("hero_id", "unknown"))
+	if not _b1_card_by_hero.has(hero_id):
+		_b1_card_by_hero[hero_id] = {"appearances": {}, "selections": {}, "applications": {}, "wasted_units": {}}
+	var hero_metrics: Dictionary = _b1_card_by_hero[hero_id] as Dictionary
+	var category_metrics: Dictionary = hero_metrics.get(category, {}) as Dictionary
+	_increment_metric(category_metrics, upgrade_id, amount)
+	hero_metrics[category] = category_metrics
+
+
 func _position_signature(map_id: String, side_variant: int) -> String:
 	var blue_slot: String = SLOT_A if side_variant == 0 else SLOT_B
 	return "%s:blue=%s" % [map_id, blue_slot]
 
 
-func _b1_stream_seed(seed_value: int, round_number: int, slot: String, side_variant: int) -> int:
+func _b1_stream_seed(seed_value: int, round_number: int, slot: String, _side_variant: int) -> int:
 	return abs(
 		int(seed_value) * 1103515245
 		+ int(round_number) * 12345
 		+ str(slot).hash() * 97
-		+ int(side_variant) * 7919
 		+ str(_b1_map_definition.get("id", "")).hash()
 	)
 
