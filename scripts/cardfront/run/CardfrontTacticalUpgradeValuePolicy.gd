@@ -40,7 +40,7 @@ static func evaluate(
 			)
 			var targeted_gain: float = maxf(0.0, targeted_pierced - generic_pierced)
 			result["expected_pierced_contacts"] = targeted_pierced
-			tactical_bonus = targeted_gain * 14.0 \
+			tactical_bonus = targeted_gain * 22.0 \
 				+ targeted_pierced * 4.0 \
 				+ maxf(0.0, float(value_context["route_pressure"]) - 0.75) * 6.0 \
 				+ float(siege_converted) * 2.0
