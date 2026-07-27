@@ -133,13 +133,13 @@ const DEFINITIONS := {
 	UPGRADE_BRIDGEHEAD_PREFABS: {
 		"id": UPGRADE_BRIDGEHEAD_PREFABS,
 		"name": "桥头施工",
-		"symbol": "FORT3",
+		"symbol": "FORT6",
 		"rarity": RARITY_COMMON,
 		"category": "territory",
 		"tags": ["fortify", "frontline", "capture"],
 		"effect_id": "arm_bridgehead_prefabs",
-		"params": {"charges": 3, "defense_bonus": 1},
-		"description": "接下来 3 个从中立状态夺取且夺取后仍为前线的格子额外获得 1 层防守，不超过上限",
+		"params": {"charges": 6, "defense_bonus": 1},
+		"description": "接下来 6 个从中立状态夺取且夺取后仍为前线的格子额外获得 1 层防守，不超过上限",
 	},
 	UPGRADE_SUPPRESSION_SCREEN: {
 		"id": UPGRADE_SUPPRESSION_SCREEN,
