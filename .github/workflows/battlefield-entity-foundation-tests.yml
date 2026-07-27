@@ -22,7 +22,19 @@ concurrency:
 
 jobs:
   godot-foundation:
+    name: ${{ matrix.test_name }}
     runs-on: windows-latest
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - test_name: Entity data foundation
+            script: CardfrontBattlefieldEntityFoundationTestRunner.gd
+          - test_name: Entity live runtime
+            script: CardfrontBattlefieldEntityRuntimeTestRunner.gd
+          - test_name: Typed projectile regression
+            script: CardfrontProjectileTypeCombatTestRunner.gd
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
@@ -66,28 +78,20 @@ jobs:
           & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Run entity foundation tests
+      - name: Run ${{ matrix.test_name }}
         shell: pwsh
         run: |
           $artifactDir = Join-Path "${{ github.workspace }}" "artifacts\battlefield-entity-foundation"
           New-Item -ItemType Directory -Path $artifactDir -Force | Out-Null
-          $scripts = @(
-            "CardfrontBattlefieldEntityFoundationTestRunner.gd",
-            "CardfrontBattlefieldEntityRuntimeTestRunner.gd",
-            "CardfrontProjectileTypeCombatTestRunner.gd"
-          )
-          foreach ($script in $scripts) {
-            Write-Host "Running $script"
-            $logPath = Join-Path $artifactDir ($script + ".log")
-            & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/$script" 2>&1 | Tee-Object -FilePath $logPath
-            $exitCode = $LASTEXITCODE
-            if ($exitCode -ne 0) { exit $exitCode }
-          }
+          $logPath = Join-Path $artifactDir ("${{ matrix.script }}" + ".log")
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/${{ matrix.script }}" 2>&1 | Tee-Object -FilePath $logPath
+          $exitCode = $LASTEXITCODE
+          if ($exitCode -ne 0) { exit $exitCode }
 
-      - name: Upload focused test logs
+      - name: Upload focused test log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: battlefield-entity-foundation-${{ github.run_id }}
+          name: battlefield-entity-${{ matrix.script }}-${{ github.run_id }}
           path: artifacts/battlefield-entity-foundation/*.log
           if-no-files-found: warn
