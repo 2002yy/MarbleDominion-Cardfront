@@ -1,83 +1,88 @@
-name: B1 Balance Model Patch
+name: B1 Simulation Tests
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
 
-permissions:
-  contents: write
+concurrency:
+  group: b1-simulation-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
-  apply-b1-balance-model-patch:
-    if: github.actor != 'github-actions[bot]'
-    runs-on: ubuntu-latest
+  b1-simulation:
+    name: ${{ matrix.batch }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - batch: B1 route gate defense unit
+            script: CardfrontB1SimulationTestRunner.gd
+            seeds: 1
+          - batch: B1 typed projectile runtime
+            script: CardfrontProjectileTypeCombatTestRunner.gd
+            seeds: 1
+          - batch: B1 162-match matrix probe
+            script: CardfrontB1BalanceAuditTestRunner.gd
+            seeds: 3
+          - batch: B1 5400 directional audit
+            script: CardfrontB1BalanceAuditTestRunner.gd
+            seeds: 100
     env:
-      GH_TOKEN: ${{ github.token }}
+      GODOT_VERSION: 4.6.2-stable
+      GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
+      CARDFRONT_B1_AUDIT_SEEDS: ${{ matrix.seeds }}
     steps:
-      - name: Apply model corrections
-        shell: bash
+      - uses: actions/checkout@v4
+      - name: Cache Godot archive
+        uses: actions/cache@v4
+        with:
+          path: .godot-cache
+          key: godot-${{ runner.os }}-${{ env.GODOT_VERSION }}-${{ env.GODOT_ARCHIVE }}
+      - name: Download Godot
+        id: godot
+        shell: pwsh
         run: |
-          set -euo pipefail
-          git clone -q --branch agent/simulation-parity-b1 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
-          cd repo
-          python3 - <<'PY'
-          from pathlib import Path
-
-          def patch(path, old, new, label):
-              p = Path(path)
-              text = p.read_text(encoding='utf-8-sig')
-              count = text.count(old)
-              if count != 1:
-                  raise RuntimeError(f'{label}: expected one match, got {count}')
-              p.write_text(text.replace(old, new, 1), encoding='utf-8')
-
-          patch(
-              'scripts/cardfront/volley/CardfrontProjectileType.gd',
-              '''\tmatch sanitize(projectile_type):\n\t\tSUPPRESSION:\n\t\t\treturn 1.20\n\t\tSIEGE:\n\t\t\treturn 0.90\n\t\t_:\n\t\t\treturn 1.0''',
-              '''\tmatch sanitize(projectile_type):\n\t\tSUPPRESSION:\n\t\t\treturn 1.0\n\t\tSIEGE:\n\t\t\treturn 1.0\n\t\t_:\n\t\t\treturn 1.0''',
-              'public territory pressure',
-          )
-          patch(
-              'scripts/cardfront/simulation/CardfrontB1BalanceMatchSimulator.gd',
-              '''\tvar hit_chance: float = clampf(float(profile.get("chamber_hit_chance", 0.17)) + float(territory[attacker_slot] - territory[target_slot]) * 0.10, 0.08, 0.65)''',
-              '''\tvar territory_to_chamber_hit: float = float(profile.get("territory_to_chamber_hit", 0.0))\n\tvar hit_chance: float = clampf(\n\t\tfloat(profile.get("chamber_hit_chance", 0.17))\n\t\t+ float(territory[attacker_slot] - territory[target_slot]) * territory_to_chamber_hit,\n\t\t0.08,\n\t\t0.65\n\t)''',
-              'remove duplicate territory accuracy',
-          )
-          patch(
-              'scripts/cardfront/run/CardfrontUpgradeValuePolicy.gd',
-              '''\t\t\tvar repairable_cells: int = maxi(0, int(context.get("repairable_frontline_cells", 0)))''',
-              '''\t\t\tvar repairable_cells: int = (\n\t\t\t\tmaxi(0, int(context.get("repairable_frontline_cells", 0)))\n\t\t\t\t+ maxi(0, int(model.get("frontline_repair_bonus", 0)))\n\t\t\t)''',
-              'engineer repair valuation capacity',
-          )
-
-          audit = Path('scripts/cardfront/simulation/CardfrontB1HeroBalanceAudit.gd')
-          text = audit.read_text(encoding='utf-8-sig')
-          old = '''\t\t"card_by_hero": {},\n\t\t"position_signatures": {},'''
-          new = '''\t\t"card_by_hero": {},\n\t\t"projectile_fired": {},\n\t\t"projectile_chamber_contacts": {},\n\t\t"projectile_damage_units": {},\n\t\t"projectile_defense_pierce": {},\n\t\t"position_signatures": {},'''
-          if text.count(old) != 1:
-              raise RuntimeError('audit projectile totals contract mismatch')
-          text = text.replace(old, new, 1)
-          old = '''\t_merge_numeric(totals["lane_traffic"] as Dictionary, metrics.get("lane_traffic", {}) as Dictionary)\n\tvar cards: Dictionary = result.get("card_metrics", {}) as Dictionary'''
-          new = '''\t_merge_numeric(totals["lane_traffic"] as Dictionary, metrics.get("lane_traffic", {}) as Dictionary)\n\tfor projectile_key in ["projectile_fired", "projectile_chamber_contacts", "projectile_damage_units", "projectile_defense_pierce"]:\n\t\t_merge_numeric(totals[projectile_key] as Dictionary, metrics.get(projectile_key, {}) as Dictionary)\n\tvar cards: Dictionary = result.get("card_metrics", {}) as Dictionary'''
-          if text.count(old) != 1:
-              raise RuntimeError('audit projectile accumulation mismatch')
-          text = text.replace(old, new, 1)
-          old = '''\tlines.append("gate_states=%s lane_traffic=%s" % [\n\t\tJSON.stringify(b1.get("gate_state_crossings", {})),\n\t\tJSON.stringify(b1.get("lane_traffic", {})),\n\t])'''
-          new = '''\tlines.append("gate_states=%s lane_traffic=%s" % [\n\t\tJSON.stringify(b1.get("gate_state_crossings", {})),\n\t\tJSON.stringify(b1.get("lane_traffic", {})),\n\t])\n\tlines.append("projectiles fired=%s chamber_contacts=%s damage_units=%s defense_pierce=%s" % [\n\t\tJSON.stringify(b1.get("projectile_fired", {})),\n\t\tJSON.stringify(b1.get("projectile_chamber_contacts", {})),\n\t\tJSON.stringify(b1.get("projectile_damage_units", {})),\n\t\tJSON.stringify(b1.get("projectile_defense_pierce", {})),\n\t])'''
-          if text.count(old) != 1:
-              raise RuntimeError('audit projectile summary mismatch')
-          text = text.replace(old, new, 1)
-          audit.write_text(text, encoding='utf-8')
-
-          test = Path('scripts/tests/CardfrontProjectileTypeCombatTestRunner.gd')
-          text = test.read_text(encoding='utf-8-sig')
-          old = '''\t_assert.eq(ProjectileTypeScript.direct_damage_units_for_sequence(gp.projectile_sequence), 6.0, "Gunner direct budget")'''
-          new = '''\t_assert.eq(ProjectileTypeScript.direct_damage_units_for_sequence(gp.projectile_sequence), 6.0, "Gunner direct budget")\n\t_assert.eq(ProjectileTypeScript.territory_pressure_units(ProjectileTypeScript.SUPPRESSION), 1.0, "suppression uses one visible territory contact")\n\t_assert.eq(ProjectileTypeScript.territory_pressure_units(ProjectileTypeScript.SIEGE), 1.0, "siege uses one visible territory contact")'''
-          if text.count(old) != 1:
-              raise RuntimeError('projectile territory test mismatch')
-          test.write_text(text.replace(old, new, 1), encoding='utf-8')
-          PY
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts
-          git commit -m "balance: decouple territory from chamber accuracy"
-          git push -q origin HEAD:agent/simulation-parity-b1
+          $cacheDir = Join-Path "${{ github.workspace }}" ".godot-cache"
+          New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+          $archiveUrl = "https://github.com/godotengine/godot/releases/download/$env:GODOT_VERSION/$env:GODOT_ARCHIVE"
+          $archivePath = Join-Path $cacheDir $env:GODOT_ARCHIVE
+          $extractPath = Join-Path $env:RUNNER_TEMP "godot"
+          if (-not (Test-Path $archivePath)) { Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath }
+          Expand-Archive -Path $archivePath -DestinationPath $extractPath -Force
+          $godotExe = Get-ChildItem -Path $extractPath -Recurse -Filter "*console.exe" | Select-Object -First 1
+          if (-not $godotExe) { $godotExe = Get-ChildItem -Path $extractPath -Recurse -Filter "*.exe" | Select-Object -First 1 }
+          if (-not $godotExe) { throw "Godot executable not found." }
+          "path=$($godotExe.FullName)" >> $env:GITHUB_OUTPUT
+      - name: Parse and import
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --quit
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
+          exit $LASTEXITCODE
+      - name: Run ${{ matrix.batch }}
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "${{ github.workspace }}/artifacts/test-logs" -Force | Out-Null
+          $logPath = "${{ github.workspace }}/artifacts/test-logs/${{ matrix.script }}-${{ matrix.seeds }}.log"
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/${{ matrix.script }}" *>&1 | Tee-Object -FilePath $logPath
+          $exitCode = $LASTEXITCODE
+          Get-Content -Path $logPath -Tail 300
+          exit $exitCode
+      - name: Upload B1 test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b1-log-${{ matrix.script }}-${{ matrix.seeds }}-${{ github.run_id }}
+          path: artifacts/test-logs/${{ matrix.script }}-${{ matrix.seeds }}.log
+          if-no-files-found: error
+      - name: Upload B1 balance artifact
+        if: always() && matrix.script == 'CardfrontB1BalanceAuditTestRunner.gd'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardfront-b1-audit-${{ matrix.seeds }}-${{ github.run_id }}
+          path: artifacts/cardfront-b1-balance-audit.*
+          if-no-files-found: error
