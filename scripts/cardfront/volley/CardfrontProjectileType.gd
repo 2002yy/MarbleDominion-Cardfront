@@ -193,7 +193,7 @@ static func territory_pressure_units(projectile_type: String) -> float:
 			# Suppression cannot damage the chamber, so it must earn its slot through
 			# visible route occupation. One shot is worth more than one standard
 			# territory contact, while still trading away all direct damage.
-			return 1.35
+			return 1.42
 		SIEGE:
 			return 0.90
 		_:
