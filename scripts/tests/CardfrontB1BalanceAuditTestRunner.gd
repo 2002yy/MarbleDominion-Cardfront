@@ -4,10 +4,12 @@ const AuditScript = preload("res://scripts/cardfront/simulation/CardfrontB1HeroB
 const ConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
+const MapTargetEvaluatorScript = preload("res://scripts/cardfront/simulation/CardfrontMapBalanceTargetEvaluator.gd")
 
 const ARTIFACT_DIRECTORY: String = "res://artifacts"
 const JSON_ARTIFACT_PATH: String = "res://artifacts/cardfront-b1-balance-audit.json"
 const TEXT_ARTIFACT_PATH: String = "res://artifacts/cardfront-b1-balance-audit.txt"
+const MAP_TARGET_GATE_SEEDS: int = 100
 
 var _assert: TestAssert
 
@@ -23,7 +25,12 @@ func _run() -> void:
 	print("[CardfrontB1BalanceAudit] Starting B1 audit with %d seeds per case" % seeds_per_case)
 	var audit = AuditScript.new()
 	var report: Dictionary = audit.run(seeds_per_case, ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED)
-	var summary: String = audit.format_b1_summary(report)
+	var target_evaluation: Dictionary = MapTargetEvaluatorScript.evaluate(report.get("map_reports", {}) as Dictionary)
+	report["map_target_evaluation"] = target_evaluation
+	var summary: String = "%s\n%s" % [
+		audit.format_b1_summary(report),
+		MapTargetEvaluatorScript.format_summary(target_evaluation),
+	]
 	print(summary)
 	_write_artifacts(report, summary)
 	_assert.that(bool(report.get("passed", false)), "B1 audit should satisfy its structural parity gate")
@@ -51,6 +58,8 @@ func _run() -> void:
 		var route_metrics: Dictionary = map_report.get("route_metrics", {}) as Dictionary
 		_assert.gt(float(route_metrics.get("gate_pass_rate", 0.0)), 0.0, "B1 map report should record gate passage for %s" % safe_map_id)
 		_assert.eq((route_metrics.get("lane_share", {}) as Dictionary).size(), 2, "B1 map report should record two lane shares for %s" % safe_map_id)
+	if seeds_per_case >= MAP_TARGET_GATE_SEEDS:
+		_assert.that(bool(target_evaluation.get("passed", false)), "B1 5,400+ audit should satisfy every map balance target")
 	if seeds_per_case == ConfigScript.FULL_SEEDS_PER_CASE:
 		_assert.eq(int(report.get("matches", 0)), 54000, "B1 full cloud audit should execute 54,000 matches")
 	_assert.that(FileAccess.file_exists(JSON_ARTIFACT_PATH), "B1 JSON artifact should exist")
