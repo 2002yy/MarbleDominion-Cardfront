@@ -3,12 +3,24 @@ class_name CardfrontB1HeroFinalistAudit
 
 const FinalistHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 
-const REFERENCE_CANDIDATE_ID: String = "normalize_eng38_gun38"
+const REFERENCE_CANDIDATE_ID: String = "normalize_eng38_gun38_opening_1"
 const FINALISTS: Dictionary = {
-	"normalize_eng38_gun38": {
+	"normalize_eng38_gun36_opening_1": {
 		FinalistHeroRegistryScript.HERO_RAPID_GUNNER: {
 			"base_volley_count": 6,
+			"command_chamber_health": 36,
+			"next_volley_bonus": 1,
+		},
+		FinalistHeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {
+			"base_volley_count": 6,
 			"command_chamber_health": 38,
+		},
+	},
+	"normalize_eng38_gun37_opening_1": {
+		FinalistHeroRegistryScript.HERO_RAPID_GUNNER: {
+			"base_volley_count": 6,
+			"command_chamber_health": 37,
+			"next_volley_bonus": 1,
 		},
 		FinalistHeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {
 			"base_volley_count": 6,
@@ -24,27 +36,6 @@ const FINALISTS: Dictionary = {
 		FinalistHeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {
 			"base_volley_count": 6,
 			"command_chamber_health": 38,
-		},
-	},
-	"normalize_eng40_gun38_opening_1": {
-		FinalistHeroRegistryScript.HERO_RAPID_GUNNER: {
-			"base_volley_count": 6,
-			"command_chamber_health": 38,
-			"next_volley_bonus": 1,
-		},
-		FinalistHeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {
-			"base_volley_count": 6,
-			"command_chamber_health": 40,
-		},
-	},
-	"normalize_eng40_gun40": {
-		FinalistHeroRegistryScript.HERO_RAPID_GUNNER: {
-			"base_volley_count": 6,
-			"command_chamber_health": 40,
-		},
-		FinalistHeroRegistryScript.HERO_FORTIFICATION_ENGINEER: {
-			"base_volley_count": 6,
-			"command_chamber_health": 40,
 		},
 	},
 }
