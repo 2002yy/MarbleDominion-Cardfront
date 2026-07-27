@@ -119,13 +119,14 @@ func _test_deck_aware_ai_values() -> void:
 	defended_route["enemy_defense_points"] = 24
 	defended_route["enemy_defense_contact_chance"] = 0.20
 	defended_route["siege_defense_contact_chance"] = 0.75
+	defended_route["estimated_chamber_hit_chance"] = 0.50
 	defended_route["expected_frontline_captures"] = 3.0
 	defended_route["repairable_frontline_cells"] = 6
-	defended_route["route_pressure"] = 1.8
+	defended_route["route_pressure"] = 2.5
 	var siege: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended_route)
 	var bridgehead: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, engineer, defended_route)
 	var plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, defended_route)
-	_assert.gt(float(siege.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: targeted siege should beat flat shots at a defended bottleneck")
+	_assert.gt(float(siege.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: targeted siege should beat flat shots at a high-confidence defended bottleneck")
 	_assert.gt(float(siege.get("expected_pierced_contacts", 0.0)), 0.0, "decks AI: siege conversion should expose expected pierced contacts")
 	_assert.gt(float(bridgehead.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: bridgehead should beat flat shots during a three-capture window")
 
