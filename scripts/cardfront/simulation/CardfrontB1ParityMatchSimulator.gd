@@ -3,6 +3,7 @@ class_name CardfrontB1ParityMatchSimulator
 
 const B1ParityMapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 const B1ParityConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
+const B1ParityProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 var _parity_states_by_owner: Dictionary = {}
 
@@ -22,6 +23,16 @@ func simulate(
 func tail_stall_multiplier_for_test(map_id: String, seed_value: int) -> float:
 	var definition: Dictionary = B1ParityMapRegistryScript.get_map_definition(map_id, B1ParityConfigScript.GRID_SIZE)
 	return _tail_stall_multiplier(definition, seed_value)
+
+
+func prioritized_defense_contacts_for_test(projectile_sequence: Array, contact_count: int, seed_value: int = 1) -> Dictionary:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(seed_value)
+	return _prioritized_defense_contact_indices(projectile_sequence, contact_count, rng)
+
+
+func projectile_intents_for_test(projectile_sequence: Array) -> Dictionary:
+	return _partition_survivor_intents(projectile_sequence)
 
 
 func _make_state(hero_id: String, owner_id: int) -> Dictionary:
@@ -58,7 +69,7 @@ func _resolve_volley(
 	plan_data: Dictionary,
 	states: Dictionary,
 	territory: Dictionary,
-	defense_pool: Dictionary,
+	_defense_pool: Dictionary,
 	profile: Dictionary,
 	seed_value: int,
 	round_number: int,
@@ -69,18 +80,196 @@ func _resolve_volley(
 		_b1_map_definition,
 		_b1_seed_value
 	)
-	return super._resolve_volley(
+
+	var plan: Dictionary = plan_data["plan"] as Dictionary
+	var rng: RandomNumberGenerator = _rng_a if attacker_slot == SLOT_A else _rng_b
+	rng.seed = _b1_stream_seed(seed_value, round_number, attacker_slot, _b1_side_variant)
+	var projectile_sequence: Array = (plan.get("projectile_sequence", []) as Array).duplicate()
+	if projectile_sequence.is_empty():
+		B1ParityProjectileTypeScript.append_standard(projectile_sequence, int(plan.get("shot_count", 0)))
+	var shot_count: int = projectile_sequence.size()
+	for raw_type in projectile_sequence:
+		_increment_metric(_b1_projectile_fired, B1ParityProjectileTypeScript.sanitize(str(raw_type)), 1.0)
+
+	var route_result: Dictionary = _resolve_routes(
+		projectile_sequence,
 		attacker_slot,
 		target_slot,
-		plan_data,
-		states,
 		territory,
-		defense_pool,
-		adjusted_profile,
-		seed_value,
 		round_number,
+		rng
+	)
+	var allowed_projectiles: Array = route_result.get("allowed_projectiles", []) as Array
+	var target_state: Dictionary = states[target_slot] as Dictionary
+	var defense_chance: float = clampf(
+		float(adjusted_profile.get("defense_contact_chance", 0.13))
+		+ float(target_state.get("territory_defense_cap", 1)) * 0.045
+		+ float(territory[target_slot]) * 0.035,
+		0.0,
+		0.7
+	)
+	var expected_contacts: float = float(allowed_projectiles.size()) * defense_chance
+	var defense_contacts: int = clampi(
+		roundi(expected_contacts + rng.randfn(0.0, sqrt(maxf(0.01, expected_contacts * (1.0 - defense_chance))))),
+		0,
+		allowed_projectiles.size()
+	)
+	# Special projectiles establish the route first. Siege seeks defended cells,
+	# suppression follows to disrupt the same frontline, and standards exploit it.
+	var contact_indices: Dictionary = _prioritized_defense_contact_indices(
+		allowed_projectiles,
+		defense_contacts,
+		rng
+	)
+	var armor_remaining: int = maxi(0, int(plan.get("armor_pierce_contacts", 0)))
+	var defense_absorbed: int = 0
+	var survivors: Array = []
+	for index in range(allowed_projectiles.size()):
+		var projectile_type: String = B1ParityProjectileTypeScript.sanitize(str(allowed_projectiles[index]))
+		if not contact_indices.has(index):
+			survivors.append(projectile_type)
+			continue
+		var pierce_layers: int = B1ParityProjectileTypeScript.defense_pierce_layers(projectile_type)
+		if armor_remaining > 0:
+			pierce_layers += 1
+			armor_remaining -= 1
+		var defense_result: Dictionary = _resolve_projectile_defense_contact(target_state, pierce_layers, rng)
+		var pierced_layers: int = int(defense_result.get("pierced_layers", 0))
+		if pierced_layers > 0:
+			_increment_metric(_b1_projectile_defense_pierce, projectile_type, float(pierced_layers))
+		if bool(defense_result.get("absorbed", false)):
+			defense_absorbed += 1
+		else:
+			survivors.append(projectile_type)
+
+	var intents: Dictionary = _partition_survivor_intents(survivors)
+	var chamber_candidates: Array = intents.get("chamber_candidates", []) as Array
+	var territory_only: Array = intents.get("territory_only", []) as Array
+	var territory_to_chamber_hit: float = float(adjusted_profile.get("territory_to_chamber_hit", 0.0))
+	var hit_chance: float = clampf(
+		float(adjusted_profile.get("chamber_hit_chance", 0.17))
+		+ float(territory[attacker_slot] - territory[target_slot]) * territory_to_chamber_hit,
+		0.08,
+		0.65
+	)
+	hit_chance *= pow(6.0 / float(maxi(1, shot_count)), 0.18)
+	hit_chance *= float(route_result.get("average_route_quality", 1.0))
+	hit_chance = adjust_hit_chance_for_mode(
+		hit_chance,
+		int((states[attacker_slot] as Dictionary).get("base_volley_count", 6)),
 		simulation_mode
 	)
+	var expected_hits: float = float(chamber_candidates.size()) * hit_chance
+	var chamber_contact_count: int = clampi(
+		roundi(expected_hits + rng.randfn(0.0, sqrt(maxf(0.01, expected_hits * (1.0 - hit_chance))))),
+		0,
+		chamber_candidates.size()
+	)
+	var chamber_indices: Dictionary = _sample_index_set(chamber_candidates.size(), chamber_contact_count, rng)
+	var chamber_hits: int = 0
+	var damage_units: float = 0.0
+	var territory_contacts: float = 0.0
+
+	# Suppression projectiles are route-control tools and never target chambers.
+	for raw_type in territory_only:
+		territory_contacts += B1ParityProjectileTypeScript.territory_pressure_units(str(raw_type))
+	for index in range(chamber_candidates.size()):
+		var projectile_type: String = B1ParityProjectileTypeScript.sanitize(str(chamber_candidates[index]))
+		if chamber_indices.has(index):
+			chamber_hits += 1
+			_increment_metric(_b1_projectile_chamber_contacts, projectile_type, 1.0)
+			var units: float = B1ParityProjectileTypeScript.direct_damage_units(projectile_type)
+			damage_units += units
+			_increment_metric(_b1_projectile_damage_units, projectile_type, units)
+		else:
+			territory_contacts += B1ParityProjectileTypeScript.territory_pressure_units(projectile_type)
+
+	var attacker_state: Dictionary = states[attacker_slot] as Dictionary
+	var recaptured: int = _recapture_virtual_cells(
+		attacker_state,
+		mini(MAX_CAPTURE_UPDATES_PER_VOLLEY, floori(territory_contacts * 0.25)),
+		rng
+	)
+	var captured: int = _capture_virtual_cells(
+		target_state,
+		mini(MAX_CAPTURE_UPDATES_PER_VOLLEY, maxi(0, floori(territory_contacts) - recaptured)),
+		rng
+	)
+	_grant_captured_frontline_cells(attacker_state, captured)
+	_b1_virtual_recaptures += recaptured
+	_b1_virtual_captures += captured
+	var average_cells: float = float(adjusted_profile.get("average_cells_crossed", 19.0))
+	var reflected_shots: int = shot_count - allowed_projectiles.size()
+	var cells_crossed: float = maxf(
+		float(shot_count) * 3.0,
+		float(allowed_projectiles.size()) * average_cells
+		+ float(reflected_shots) * average_cells * 0.35
+		+ rng.randfn(0.0, sqrt(float(maxi(1, shot_count))) * 2.0)
+	)
+	return {
+		"shot_count": shot_count,
+		"chamber_hits": chamber_hits,
+		"damage_quarters": roundi(damage_units * float(4 + int(plan_data.get("attack_level", 0)))),
+		"defense_absorbed": defense_absorbed,
+		"territory_contacts": territory_contacts,
+		"cells_crossed": cells_crossed,
+		"gate_passes": int(route_result.get("gate_passes", 0)),
+		"gate_reflections": int(route_result.get("gate_reflections", 0)),
+		"river_bank_reflections": int(route_result.get("river_bank_reflections", 0)),
+		"virtual_captures": captured,
+		"virtual_recaptures": recaptured,
+	}
+
+
+func _prioritized_defense_contact_indices(
+	projectile_sequence: Array,
+	contact_count: int,
+	rng: RandomNumberGenerator
+) -> Dictionary:
+	var groups: Array = [[], [], []]
+	for index in range(projectile_sequence.size()):
+		var projectile_type: String = B1ParityProjectileTypeScript.sanitize(str(projectile_sequence[index]))
+		match projectile_type:
+			B1ParityProjectileTypeScript.SIEGE:
+				(groups[0] as Array).append(index)
+			B1ParityProjectileTypeScript.SUPPRESSION:
+				(groups[1] as Array).append(index)
+			_:
+				(groups[2] as Array).append(index)
+	var result: Dictionary = {}
+	var remaining: int = mini(maxi(0, contact_count), projectile_sequence.size())
+	for raw_group in groups:
+		var group: Array = (raw_group as Array).duplicate()
+		_shuffle_indices(group, rng)
+		for raw_index in group:
+			if remaining <= 0:
+				return result
+			result[int(raw_index)] = true
+			remaining -= 1
+	return result
+
+
+func _partition_survivor_intents(projectile_sequence: Array) -> Dictionary:
+	var chamber_candidates: Array = []
+	var territory_only: Array = []
+	for raw_type in projectile_sequence:
+		var projectile_type: String = B1ParityProjectileTypeScript.sanitize(str(raw_type))
+		if projectile_type == B1ParityProjectileTypeScript.SUPPRESSION:
+			territory_only.append(projectile_type)
+		else:
+			chamber_candidates.append(projectile_type)
+	return {
+		"chamber_candidates": chamber_candidates,
+		"territory_only": territory_only,
+	}
+
+
+func _shuffle_indices(indices: Array, rng: RandomNumberGenerator) -> void:
+	for index in range(indices.size() - 1, 0, -1):
+		var swap_index: int = rng.randi_range(0, index)
+		var temp = indices[index]
+		indices[index] = indices[swap_index]
+		indices[swap_index] = temp
 
 
 func _choose_defended_cell_index(state: Dictionary, rng: RandomNumberGenerator) -> int:
@@ -91,6 +280,7 @@ func _choose_defended_cell_index(state: Dictionary, rng: RandomNumberGenerator) 
 	if candidates.is_empty():
 		candidates = _eligible_indices(defense_cells, owned_cells, initial_front, true, false)
 	return -1 if candidates.is_empty() else candidates[rng.randi_range(0, candidates.size() - 1)]
+
 
 func _consume_virtual_defense(
 	state: Dictionary,
