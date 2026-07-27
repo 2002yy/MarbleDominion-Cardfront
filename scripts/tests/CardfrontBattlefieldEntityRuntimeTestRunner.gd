@@ -160,7 +160,7 @@ func _test_tower_power_and_guidance(fixture: Dictionary) -> void:
 	var runtime = fixture["runtime"]
 	var beacon = null
 	for entity in runtime.registry.entities_by_id.values():
-		if str(entity.get("tower_id")) == runtime.TOWER_FIRE_CONTROL_BEACON:
+		if str(entity.get("tower_id")) == RuntimeScript.TOWER_FIRE_CONTROL_BEACON:
 			beacon = entity
 			break
 	_assert.that(beacon != null, "guidance beacon fixture exists")
@@ -169,7 +169,8 @@ func _test_tower_power_and_guidance(fixture: Dictionary) -> void:
 
 	var bullet = MockBullet.new()
 	battlefield.add_child(bullet)
-	bullet.global_position = battlefield.to_global((Vector2(beacon.cell) + Vector2(0.5, 0.5)) * float(battlefield.cell_size))
+	var guidance_cell := Vector2i(mini(7, beacon.cell.x + 2), beacon.cell.y)
+	bullet.global_position = battlefield.to_global((Vector2(guidance_cell) + Vector2(0.5, 0.5)) * float(battlefield.cell_size))
 	var before_direction: Vector2 = bullet.direction
 	var before_guidance: int = beacon.guidance_remaining
 	runtime._apply_fire_control_guidance(bullet)
