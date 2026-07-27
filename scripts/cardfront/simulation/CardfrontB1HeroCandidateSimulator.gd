@@ -36,6 +36,8 @@ func _make_state(hero_id: String, owner_id: int) -> Dictionary:
 		state["base_volley_count"] = maxi(1, int(hero_override["base_volley_count"]))
 	if hero_override.has("command_chamber_health"):
 		state["command_chamber_health"] = maxi(1, int(hero_override["command_chamber_health"]))
+	if hero_override.has("next_volley_bonus"):
+		state["next_volley_bonus"] = maxi(0, int(hero_override["next_volley_bonus"]))
 	var cap: int = clampi(
 		int(hero_override.get("territory_defense_cap", state.get("territory_defense_cap", 1))),
 		1,
