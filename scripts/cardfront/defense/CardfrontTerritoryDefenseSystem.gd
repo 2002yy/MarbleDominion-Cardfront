@@ -37,6 +37,9 @@ func setup(new_battlefield, new_region_map, new_fortify_layer, new_round_directo
 		return false
 	if round_director.has_method("set_territory_defense_system"):
 		round_director.set_territory_defense_system(self)
+	var interceptor = battlefield.capture_interceptor
+	if interceptor != null and interceptor.has_method("configure_runtime"):
+		interceptor.configure_runtime(round_director, self)
 	var launch_callable := Callable(self, "_on_volley_launched")
 	if not round_director.volley_launched.is_connected(launch_callable):
 		round_director.volley_launched.connect(launch_callable)

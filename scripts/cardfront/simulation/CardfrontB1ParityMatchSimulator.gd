@@ -83,6 +83,15 @@ func _resolve_volley(
 	)
 
 
+func _choose_defended_cell_index(state: Dictionary, rng: RandomNumberGenerator) -> int:
+	var defense_cells: Array = state.get("virtual_defense_cells", []) as Array
+	var owned_cells: Array = state.get("virtual_owned_cells", []) as Array
+	var initial_front: Array = state.get("virtual_initial_contact_front", []) as Array
+	var candidates: Array[int] = _eligible_indices(defense_cells, owned_cells, initial_front, true, true)
+	if candidates.is_empty():
+		candidates = _eligible_indices(defense_cells, owned_cells, initial_front, true, false)
+	return -1 if candidates.is_empty() else candidates[rng.randi_range(0, candidates.size() - 1)]
+
 func _consume_virtual_defense(
 	state: Dictionary,
 	contacts: int,
@@ -137,7 +146,7 @@ func _recapture_virtual_cells(state: Dictionary, amount: int, rng: RandomNumberG
 			break
 		var chosen: int = candidates[rng.randi_range(0, candidates.size() - 1)]
 		owned_cells[chosen] = true
-		defense_cells[chosen] = 0
+		defense_cells[chosen] = clampi(int(state.get("captured_frontline_defense", 0)), 0, int(state.get("territory_defense_cap", 1)))
 		recaptured += 1
 	return recaptured
 

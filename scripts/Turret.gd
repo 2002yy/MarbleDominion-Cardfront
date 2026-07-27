@@ -1,5 +1,7 @@
-﻿extends Node2D
+extends Node2D
 class_name Turret
+
+const CardfrontProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 signal destroyed(faction_id)
 signal burst_lock_changed(faction_id, locked)
@@ -36,6 +38,7 @@ var burst_directed: bool = false
 var burst_directed_angle: float = 0.0
 var burst_directed_spread: float = 0.0
 var burst_projectile_power: int = 1
+var burst_projectile_sequence: Array = []
 var burst_chamber_damage_quarters: int = 0
 var burst_capture_context: Dictionary = {}
 var health_damage_remainder_quarters: int = 0
@@ -165,7 +168,6 @@ func fire_burst(count: int) -> void:
 		return
 	if burst_remaining > 0:
 		return
-
 	burst_remaining = clampi(count, 1, GameConfig.get_max_pending_count())
 	burst_total = burst_remaining
 	burst_timer = 0.0
@@ -175,6 +177,10 @@ func fire_burst(count: int) -> void:
 	burst_directed_angle = rotation
 	burst_directed_spread = 0.0
 	burst_projectile_power = 1
+	burst_projectile_sequence.clear()
+	CardfrontProjectileTypeScript.append_standard(burst_projectile_sequence, burst_remaining)
+	burst_chamber_damage_quarters = 0
+	burst_capture_context = {}
 	directed_visual_hold_remaining = 0.0
 	burst_progress_emit_timer = 0.0
 	burst_last_reported_remaining = burst_remaining
@@ -184,27 +190,23 @@ func fire_burst(count: int) -> void:
 func request_directed_burst(intent) -> bool:
 	if intent == null:
 		return false
-	var started: bool = fire_directed(
-		int(intent.shot_count),
-		float(intent.angle),
-		float(intent.spread),
-		int(intent.get("projectile_power"))
-	)
+	var started: bool = fire_directed(int(intent.shot_count), float(intent.angle), float(intent.spread), int(intent.get("projectile_power")))
 	if started:
 		burst_chamber_damage_quarters = maxi(0, int(intent.get("chamber_damage_quarters")))
-		burst_capture_context = {
-			"armor_pierce_contacts_remaining": maxi(0, int(intent.get("armor_pierce_contacts"))),
-		}
+		burst_projectile_sequence.clear()
+		var raw_sequence = intent.get("projectile_sequence")
+		if raw_sequence is Array:
+			burst_projectile_sequence = (raw_sequence as Array).duplicate()
+		if burst_projectile_sequence.size() > burst_remaining:
+			burst_projectile_sequence.resize(burst_remaining)
+		while burst_projectile_sequence.size() < burst_remaining:
+			burst_projectile_sequence.append(CardfrontProjectileTypeScript.STANDARD)
+		burst_capture_context = {"armor_pierce_pool": {"remaining": maxi(0, int(intent.get("armor_pierce_contacts")))}}
 	return started
 
 func fire_directed(count: int, angle: float, spread: float = 0.0, projectile_power: int = 1) -> bool:
-	if is_destroyed:
+	if is_destroyed or battlefield == null or bullet_container == null or burst_remaining > 0:
 		return false
-	if battlefield == null or bullet_container == null:
-		return false
-	if burst_remaining > 0:
-		return false
-
 	burst_remaining = clampi(count, 1, GameConfig.get_max_pending_count())
 	burst_total = burst_remaining
 	burst_timer = 0.0
@@ -214,6 +216,8 @@ func fire_directed(count: int, angle: float, spread: float = 0.0, projectile_pow
 	burst_directed_angle = float(angle)
 	burst_directed_spread = maxf(0.0, float(spread))
 	burst_projectile_power = clampi(int(projectile_power), 1, 999)
+	burst_projectile_sequence.clear()
+	CardfrontProjectileTypeScript.append_standard(burst_projectile_sequence, burst_remaining)
 	burst_chamber_damage_quarters = 0
 	burst_capture_context = {}
 	directed_visual_hold_remaining = DIRECTED_VISUAL_HOLD_SECONDS
@@ -233,6 +237,7 @@ func cancel_burst() -> int:
 	burst_directed = false
 	burst_directed_spread = 0.0
 	burst_projectile_power = 1
+	burst_projectile_sequence.clear()
 	burst_chamber_damage_quarters = 0
 	burst_capture_context = {}
 	directed_visual_hold_remaining = 0.0
@@ -255,6 +260,7 @@ func restore_from_state(state: Dictionary) -> void:
 	burst_directed_angle = rotation
 	burst_directed_spread = 0.0
 	burst_projectile_power = clampi(int(state.get("turret_burst_projectile_power", 1)), 1, 999)
+	burst_projectile_sequence.clear()
 	burst_chamber_damage_quarters = 0
 	burst_capture_context = {}
 	health_damage_remainder_quarters = 0
@@ -277,6 +283,7 @@ func restore_from_state(state: Dictionary) -> void:
 		burst_directed = false
 		burst_directed_spread = 0.0
 		burst_projectile_power = 1
+		burst_projectile_sequence.clear()
 		burst_chamber_damage_quarters = 0
 		burst_capture_context = {}
 		directed_visual_hold_remaining = 0.0
@@ -397,37 +404,22 @@ func _set_burst_locked(locked: bool) -> void:
 func _spawn_bullet() -> void:
 	if bullet_container == null:
 		return
-
 	var shot_angle: float = _current_burst_shot_angle()
 	var shot_direction: Vector2 = Vector2.RIGHT.rotated(shot_angle).normalized()
-	# v1.9.27：子弹方向与当前可见炮管方向完全一致。
-	# 移除 lateral_wave 出生点横向摆动，避免炮口方向与弹道看起来不一致。
-	var muzzle_distance: float = GameConfig.TURRET_RADIUS + 17.0
-	var spawn_position: Vector2 = global_position + shot_direction * muzzle_distance
-
+	var spawn_position: Vector2 = global_position + shot_direction * (GameConfig.TURRET_RADIUS + 17.0)
+	var projectile_type: String = CardfrontProjectileTypeScript.STANDARD
+	if burst_index >= 0 and burst_index < burst_projectile_sequence.size():
+		projectile_type = CardfrontProjectileTypeScript.sanitize(str(burst_projectile_sequence[burst_index]))
+	var projectile_context: Dictionary = {
+		"projectile_type": projectile_type,
+		"projectile_defense_pierce_remaining": CardfrontProjectileTypeScript.defense_pierce_layers(projectile_type),
+		"armor_pierce_pool": burst_capture_context.get("armor_pierce_pool", {"remaining": 0}),
+	}
 	if _bullet_container_can_spawn:
-		bullet_container.spawn_bullet(
-			faction_id,
-			spawn_position,
-			shot_direction,
-			battlefield,
-			all_turrets,
-			burst_projectile_power,
-			burst_chamber_damage_quarters,
-			burst_capture_context
-		)
+		bullet_container.spawn_bullet(faction_id, spawn_position, shot_direction, battlefield, all_turrets, burst_projectile_power, burst_chamber_damage_quarters, projectile_context)
 	else:
 		var bullet = Bullet.new()
-		bullet.setup(
-			faction_id,
-			spawn_position,
-			shot_direction,
-			battlefield,
-			all_turrets,
-			burst_projectile_power,
-			burst_chamber_damage_quarters,
-			burst_capture_context
-		)
+		bullet.setup(faction_id, spawn_position, shot_direction, battlefield, all_turrets, burst_projectile_power, burst_chamber_damage_quarters, projectile_context)
 		bullet_container.add_child(bullet)
 
 func _current_burst_shot_angle() -> float:
@@ -482,6 +474,7 @@ func _destroy() -> void:
 	burst_remaining = 0
 	burst_total = 0
 	burst_projectile_power = 1
+	burst_projectile_sequence.clear()
 	burst_chamber_damage_quarters = 0
 	burst_capture_context = {}
 	burst_last_reported_remaining = 0

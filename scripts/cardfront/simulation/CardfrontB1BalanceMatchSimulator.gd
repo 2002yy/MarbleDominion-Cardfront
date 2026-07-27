@@ -6,6 +6,7 @@ const B1GateRulesScript = preload("res://scripts/cardfront/gates/CardfrontGateRu
 const B1HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 const B1MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 const B1UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
+const B1ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 const VIRTUAL_CELL_COUNT: int = 40
 const CONTACT_FRONT_CELL_COUNT: int = 5
@@ -26,6 +27,10 @@ var _b1_card_selections: Dictionary = {}
 var _b1_card_applications: Dictionary = {}
 var _b1_card_waste: Dictionary = {}
 var _b1_card_by_hero: Dictionary = {}
+var _b1_projectile_fired: Dictionary = {}
+var _b1_projectile_chamber_contacts: Dictionary = {}
+var _b1_projectile_damage_units: Dictionary = {}
+var _b1_projectile_defense_pierce: Dictionary = {}
 
 
 func simulate(
@@ -56,6 +61,10 @@ func simulate(
 	metrics["lane_traffic"] = _b1_lane_traffic.duplicate(true)
 	metrics["virtual_captures"] = _b1_virtual_captures
 	metrics["virtual_recaptures"] = _b1_virtual_recaptures
+	metrics["projectile_fired"] = _b1_projectile_fired.duplicate(true)
+	metrics["projectile_chamber_contacts"] = _b1_projectile_chamber_contacts.duplicate(true)
+	metrics["projectile_damage_units"] = _b1_projectile_damage_units.duplicate(true)
+	metrics["projectile_defense_pierce"] = _b1_projectile_defense_pierce.duplicate(true)
 	result["metrics"] = metrics
 	result["b1_model"] = true
 	result["side_rerun_mode"] = "actual_simulation_call"
@@ -113,6 +122,9 @@ func _make_state(hero_id: String, owner_id: int) -> Dictionary:
 	state["virtual_owned_cells"] = owned_cells
 	state["virtual_initial_contact_front"] = initial_front
 	state["starting_contact_front_defense"] = contact_defense
+	state["base_projectile_mix"] = (definition.get("base_projectile_mix", {}) as Dictionary).duplicate(true)
+	state["captured_frontline_defense"] = clampi(int(definition.get("captured_frontline_defense", 0)), 0, int(state.get("territory_defense_cap", 1)))
+	state["frontline_repair_bonus"] = maxi(0, int(definition.get("frontline_repair_bonus", 0)))
 	state["pending_repair_points"] = 0
 	return state
 
@@ -154,12 +166,23 @@ func _apply_upgrade_once_fast(state: Dictionary, upgrade_id: String) -> bool:
 	if upgrade_id == B1UpgradeManifestScript.UPGRADE_FRONTLINE_REPAIR:
 		var definition: Dictionary = B1UpgradeManifestScript.get_definition(upgrade_id)
 		var params: Dictionary = definition.get("params", {}) as Dictionary
-		var amount: int = maxi(0, int(params.get("amount", 0)))
+		var amount: int = maxi(0, int(params.get("amount", 0))) + maxi(0, int(state.get("frontline_repair_bonus", 0)))
 		var applied: int = _repair_virtual_cells(state, amount)
 		state["last_repair_applied"] = applied
 		state["last_repair_wasted"] = maxi(0, amount - applied)
 		return true
 	return super._apply_upgrade_once_fast(state, upgrade_id)
+
+
+func _build_and_consume_volley_fast(state: Dictionary) -> Dictionary:
+	var bonus: int = maxi(0, int(state.get("next_volley_bonus", 0)))
+	var multiplier: int = maxi(1, int(state.get("next_volley_multiplier", 1)))
+	var sequence: Array = B1ProjectileTypeScript.build_sequence(state.get("base_projectile_mix", {}) as Dictionary, bonus, multiplier, 24)
+	var result: Dictionary = {"shot_count": sequence.size(), "projectile_sequence": sequence, "projectile_counts": B1ProjectileTypeScript.count_types(sequence), "attack_level": clampi(int(state.get("attack_level", 0)), 0, 3), "armor_pierce_contacts": maxi(0, int(state.get("next_volley_armor_pierce_contacts", 0)))}
+	state["next_volley_bonus"] = 0
+	state["next_volley_multiplier"] = 1
+	state["next_volley_armor_pierce_contacts"] = 0
+	return result
 
 
 func _proxy_value_context(state: Dictionary) -> Dictionary:
@@ -188,119 +211,85 @@ func _proxy_value_context(state: Dictionary) -> Dictionary:
 	return context
 
 
-func _resolve_volley(
-	attacker_slot: String,
-	target_slot: String,
-	plan_data: Dictionary,
-	states: Dictionary,
-	territory: Dictionary,
-	_defense_pool: Dictionary,
-	profile: Dictionary,
-	seed_value: int,
-	round_number: int,
-	simulation_mode: String
-) -> Dictionary:
+func _resolve_volley(attacker_slot: String, target_slot: String, plan_data: Dictionary, states: Dictionary, territory: Dictionary, _defense_pool: Dictionary, profile: Dictionary, seed_value: int, round_number: int, simulation_mode: String) -> Dictionary:
 	var plan: Dictionary = plan_data["plan"] as Dictionary
 	var rng: RandomNumberGenerator = _rng_a if attacker_slot == SLOT_A else _rng_b
 	rng.seed = _b1_stream_seed(seed_value, round_number, attacker_slot, _b1_side_variant)
-	var shot_count: int = int(plan.get("shot_count", 0))
-	var route_result: Dictionary = _resolve_routes(
-		shot_count,
-		attacker_slot,
-		target_slot,
-		territory,
-		round_number,
-		rng
-	)
-	var allowed_shots: int = int(route_result.get("allowed_shots", 0))
+	var projectile_sequence: Array = (plan.get("projectile_sequence", []) as Array).duplicate()
+	if projectile_sequence.is_empty():
+		B1ProjectileTypeScript.append_standard(projectile_sequence, int(plan.get("shot_count", 0)))
+	var shot_count: int = projectile_sequence.size()
+	for raw_type in projectile_sequence:
+		_increment_metric(_b1_projectile_fired, B1ProjectileTypeScript.sanitize(str(raw_type)), 1.0)
+	var route_result: Dictionary = _resolve_routes(projectile_sequence, attacker_slot, target_slot, territory, round_number, rng)
+	var allowed_projectiles: Array = route_result.get("allowed_projectiles", []) as Array
 	var target_state: Dictionary = states[target_slot] as Dictionary
-	var defense_chance: float = clampf(
-		float(profile.get("defense_contact_chance", 0.13))
-		+ float(target_state.get("territory_defense_cap", 1)) * 0.045
-		+ float(territory[target_slot]) * 0.035,
-		0.0,
-		0.7
-	)
-	var expected_contacts: float = float(allowed_shots) * defense_chance
-	var contact_sigma: float = sqrt(maxf(0.01, expected_contacts * (1.0 - defense_chance)))
-	var defense_contacts: int = clampi(
-		roundi(expected_contacts + rng.randfn(0.0, contact_sigma)),
-		0,
-		allowed_shots
-	)
-	var armor_contacts: int = maxi(0, int(plan.get("armor_pierce_contacts", 0)))
-	var defense_result: Dictionary = _consume_virtual_defense(target_state, defense_contacts, armor_contacts, rng)
-	var defense_absorbed: int = int(defense_result.get("absorbed", 0))
-	var remaining_shots: int = maxi(0, allowed_shots - defense_absorbed)
-	var hit_chance: float = clampf(
-		float(profile.get("chamber_hit_chance", 0.17))
-		+ float(territory[attacker_slot] - territory[target_slot]) * 0.10,
-		0.08,
-		0.65
-	)
+	var defense_chance: float = clampf(float(profile.get("defense_contact_chance", 0.13)) + float(target_state.get("territory_defense_cap", 1)) * 0.045 + float(territory[target_slot]) * 0.035, 0.0, 0.7)
+	var expected_contacts: float = float(allowed_projectiles.size()) * defense_chance
+	var defense_contacts: int = clampi(roundi(expected_contacts + rng.randfn(0.0, sqrt(maxf(0.01, expected_contacts * (1.0 - defense_chance))))), 0, allowed_projectiles.size())
+	var contact_indices: Dictionary = _sample_index_set(allowed_projectiles.size(), defense_contacts, rng)
+	var armor_remaining: int = maxi(0, int(plan.get("armor_pierce_contacts", 0)))
+	var defense_absorbed: int = 0
+	var survivors: Array = []
+	for index in range(allowed_projectiles.size()):
+		var projectile_type: String = B1ProjectileTypeScript.sanitize(str(allowed_projectiles[index]))
+		if not contact_indices.has(index):
+			survivors.append(projectile_type)
+			continue
+		var pierce_layers: int = B1ProjectileTypeScript.defense_pierce_layers(projectile_type)
+		if armor_remaining > 0:
+			pierce_layers += 1
+			armor_remaining -= 1
+		var defense_result: Dictionary = _resolve_projectile_defense_contact(target_state, pierce_layers, rng)
+		var pierced_layers: int = int(defense_result.get("pierced_layers", 0))
+		if pierced_layers > 0:
+			_increment_metric(_b1_projectile_defense_pierce, projectile_type, float(pierced_layers))
+		if bool(defense_result.get("absorbed", false)):
+			defense_absorbed += 1
+		else:
+			survivors.append(projectile_type)
+	var hit_chance: float = clampf(float(profile.get("chamber_hit_chance", 0.17)) + float(territory[attacker_slot] - territory[target_slot]) * 0.10, 0.08, 0.65)
 	hit_chance *= pow(6.0 / float(maxi(1, shot_count)), 0.18)
 	hit_chance *= float(route_result.get("average_route_quality", 1.0))
-	var base_volley: int = int((states[attacker_slot] as Dictionary).get("base_volley_count", 6))
-	hit_chance = adjust_hit_chance_for_mode(hit_chance, base_volley, simulation_mode)
-	var expected_hits: float = float(remaining_shots) * hit_chance
-	var hit_sigma: float = sqrt(maxf(0.01, expected_hits * (1.0 - hit_chance)))
-	var chamber_hits: int = clampi(
-		roundi(expected_hits + rng.randfn(0.0, hit_sigma)),
-		0,
-		remaining_shots
-	)
-	var territory_contacts: int = remaining_shots - chamber_hits
+	hit_chance = adjust_hit_chance_for_mode(hit_chance, int((states[attacker_slot] as Dictionary).get("base_volley_count", 6)), simulation_mode)
+	var expected_hits: float = float(survivors.size()) * hit_chance
+	var chamber_contact_count: int = clampi(roundi(expected_hits + rng.randfn(0.0, sqrt(maxf(0.01, expected_hits * (1.0 - hit_chance))))), 0, survivors.size())
+	var chamber_indices: Dictionary = _sample_index_set(survivors.size(), chamber_contact_count, rng)
+	var chamber_hits: int = 0
+	var damage_units: float = 0.0
+	var territory_contacts: float = 0.0
+	for index in range(survivors.size()):
+		var projectile_type: String = B1ProjectileTypeScript.sanitize(str(survivors[index]))
+		if chamber_indices.has(index):
+			chamber_hits += 1
+			_increment_metric(_b1_projectile_chamber_contacts, projectile_type, 1.0)
+			var units: float = B1ProjectileTypeScript.direct_damage_units(projectile_type)
+			damage_units += units
+			_increment_metric(_b1_projectile_damage_units, projectile_type, units)
+		else:
+			territory_contacts += B1ProjectileTypeScript.territory_pressure_units(projectile_type)
 	var attacker_state: Dictionary = states[attacker_slot] as Dictionary
-	var recapture_budget: int = mini(MAX_CAPTURE_UPDATES_PER_VOLLEY, floori(float(territory_contacts) * 0.25))
-	var recaptured: int = _recapture_virtual_cells(attacker_state, recapture_budget, rng)
-	var captured: int = _capture_virtual_cells(
-		target_state,
-		mini(MAX_CAPTURE_UPDATES_PER_VOLLEY, maxi(0, territory_contacts - recaptured)),
-		rng
-	)
+	var recaptured: int = _recapture_virtual_cells(attacker_state, mini(MAX_CAPTURE_UPDATES_PER_VOLLEY, floori(territory_contacts * 0.25)), rng)
+	var captured: int = _capture_virtual_cells(target_state, mini(MAX_CAPTURE_UPDATES_PER_VOLLEY, maxi(0, floori(territory_contacts) - recaptured)), rng)
+	_grant_captured_frontline_cells(attacker_state, captured)
 	_b1_virtual_recaptures += recaptured
 	_b1_virtual_captures += captured
 	var average_cells: float = float(profile.get("average_cells_crossed", 19.0))
-	var reflected_shots: int = shot_count - allowed_shots
-	var cells_crossed: float = maxf(
-		float(shot_count) * 3.0,
-		float(allowed_shots) * average_cells
-		+ float(reflected_shots) * average_cells * 0.35
-		+ rng.randfn(0.0, sqrt(float(maxi(1, shot_count))) * 2.0)
-	)
-	var attack_level: int = int(plan_data.get("attack_level", 0))
-	return {
-		"shot_count": shot_count,
-		"chamber_hits": chamber_hits,
-		"damage_quarters": chamber_hits * (4 + attack_level),
-		"defense_absorbed": defense_absorbed,
-		"territory_contacts": territory_contacts,
-		"cells_crossed": cells_crossed,
-		"gate_passes": int(route_result.get("gate_passes", 0)),
-		"gate_reflections": int(route_result.get("gate_reflections", 0)),
-		"river_bank_reflections": int(route_result.get("river_bank_reflections", 0)),
-		"virtual_captures": captured,
-		"virtual_recaptures": recaptured,
-	}
+	var reflected_shots: int = shot_count - allowed_projectiles.size()
+	var cells_crossed: float = maxf(float(shot_count) * 3.0, float(allowed_projectiles.size()) * average_cells + float(reflected_shots) * average_cells * 0.35 + rng.randfn(0.0, sqrt(float(maxi(1, shot_count))) * 2.0))
+	return {"shot_count": shot_count, "chamber_hits": chamber_hits, "damage_quarters": roundi(damage_units * float(4 + int(plan_data.get("attack_level", 0)))), "defense_absorbed": defense_absorbed, "territory_contacts": territory_contacts, "cells_crossed": cells_crossed, "gate_passes": int(route_result.get("gate_passes", 0)), "gate_reflections": int(route_result.get("gate_reflections", 0)), "river_bank_reflections": int(route_result.get("river_bank_reflections", 0)), "virtual_captures": captured, "virtual_recaptures": recaptured}
 
-
-func _resolve_routes(
-	shot_count: int,
-	attacker_slot: String,
-	_target_slot: String,
-	territory: Dictionary,
-	round_number: int,
-	rng: RandomNumberGenerator
-) -> Dictionary:
+func _resolve_routes(projectile_sequence: Array, attacker_slot: String, _target_slot: String, territory: Dictionary, round_number: int, rng: RandomNumberGenerator) -> Dictionary:
 	var route_layout: Dictionary = _b1_map_definition.get("route_layout", {}) as Dictionary
 	var lanes: Array = route_layout.get("lanes", []) as Array
 	var off_bridge_rate: float = clampf(float(route_layout.get("off_bridge_rate", 0.08)), 0.0, 0.5)
-	var allowed: int = 0
+	var allowed_projectiles: Array = []
 	var gate_passes: int = 0
 	var gate_reflections: int = 0
 	var river_reflections: int = 0
 	var route_quality_sum: float = 0.0
-	for serial in range(1, shot_count + 1):
+	for serial in range(projectile_sequence.size()):
+		var projectile_type: String = B1ProjectileTypeScript.sanitize(str(projectile_sequence[serial]))
 		if lanes.is_empty() or rng.randf() < off_bridge_rate:
 			river_reflections += 1
 			_b1_river_bank_reflections += 1
@@ -311,27 +300,18 @@ func _resolve_routes(
 		var state_id: String = str(snapshot.get("state", B1GateRulesScript.STATE_OPEN))
 		_increment_metric(_b1_gate_state_crossings, state_id, 1.0)
 		var owner_slot: String = str(snapshot.get("owner_slot", ""))
-		var pass_gate: bool = true
-		if state_id == B1GateRulesScript.STATE_CLOSED and owner_slot != attacker_slot:
-			pass_gate = false
-		elif state_id == B1GateRulesScript.STATE_HALF_OPEN and owner_slot != attacker_slot:
+		var pass_gate: bool = not (state_id == B1GateRulesScript.STATE_CLOSED and owner_slot != attacker_slot)
+		if state_id == B1GateRulesScript.STATE_HALF_OPEN and owner_slot != attacker_slot:
 			pass_gate = (serial + lane_index + round_number) % 2 == 0
 		if pass_gate:
-			allowed += 1
+			allowed_projectiles.append(projectile_type)
 			gate_passes += 1
 			_b1_gate_passes += 1
 			route_quality_sum += float((lanes[lane_index] as Dictionary).get("route_quality", 1.0))
 		else:
 			gate_reflections += 1
 			_b1_gate_reflections += 1
-	return {
-		"allowed_shots": allowed,
-		"gate_passes": gate_passes,
-		"gate_reflections": gate_reflections,
-		"river_bank_reflections": river_reflections,
-		"average_route_quality": route_quality_sum / float(maxi(1, allowed)),
-	}
-
+	return {"allowed_shots": allowed_projectiles.size(), "allowed_projectiles": allowed_projectiles, "gate_passes": gate_passes, "gate_reflections": gate_reflections, "river_bank_reflections": river_reflections, "average_route_quality": route_quality_sum / float(maxi(1, allowed_projectiles.size()))}
 
 func _lane_gate_snapshot(lane_index: int, territory: Dictionary, round_number: int) -> Dictionary:
 	var lanes: Array = ((_b1_map_definition.get("route_layout", {}) as Dictionary).get("lanes", []) as Array)
@@ -370,6 +350,56 @@ func _choose_lane_index(lanes: Array, rng: RandomNumberGenerator) -> int:
 		if cursor <= 0.0:
 			return index
 	return maxi(0, lanes.size() - 1)
+
+
+func _resolve_projectile_defense_contact(state: Dictionary, pierce_layers: int, rng: RandomNumberGenerator) -> Dictionary:
+	var defense_cells: Array = state.get("virtual_defense_cells", []) as Array
+	var chosen_index: int = _choose_defended_cell_index(state, rng)
+	if chosen_index < 0 or chosen_index >= defense_cells.size():
+		return {"absorbed": false, "pierced_layers": 0}
+	var pierced: int = 0
+	for _index in range(maxi(0, pierce_layers)):
+		if int(defense_cells[chosen_index]) <= 0:
+			break
+		defense_cells[chosen_index] = int(defense_cells[chosen_index]) - 1
+		pierced += 1
+	if int(defense_cells[chosen_index]) <= 0:
+		return {"absorbed": false, "pierced_layers": pierced}
+	defense_cells[chosen_index] = maxi(0, int(defense_cells[chosen_index]) - 1)
+	return {"absorbed": true, "pierced_layers": pierced}
+
+func _choose_defended_cell_index(state: Dictionary, rng: RandomNumberGenerator) -> int:
+	var defense_cells: Array = state.get("virtual_defense_cells", []) as Array
+	var owned_cells: Array = state.get("virtual_owned_cells", []) as Array
+	var candidates: Array[int] = []
+	for index in range(mini(defense_cells.size(), owned_cells.size())):
+		if bool(owned_cells[index]) and int(defense_cells[index]) > 0:
+			candidates.append(index)
+	return -1 if candidates.is_empty() else candidates[rng.randi_range(0, candidates.size() - 1)]
+
+func _sample_index_set(total: int, count: int, rng: RandomNumberGenerator) -> Dictionary:
+	var indices: Array[int] = []
+	for index in range(maxi(0, total)):
+		indices.append(index)
+	for index in range(indices.size() - 1, 0, -1):
+		var swap_index: int = rng.randi_range(0, index)
+		var temp: int = indices[index]
+		indices[index] = indices[swap_index]
+		indices[swap_index] = temp
+	var result: Dictionary = {}
+	for index in range(mini(maxi(0, count), indices.size())):
+		result[indices[index]] = true
+	return result
+
+func _grant_captured_frontline_cells(state: Dictionary, amount: int) -> void:
+	var defense_cells: Array = state.get("virtual_defense_cells", []) as Array
+	var owned_cells: Array = state.get("virtual_owned_cells", []) as Array
+	var initial_front: Array = state.get("virtual_initial_contact_front", []) as Array
+	var captured_defense: int = clampi(int(state.get("captured_frontline_defense", 0)), 0, int(state.get("territory_defense_cap", 1)))
+	for _index in range(maxi(0, amount)):
+		defense_cells.append(captured_defense)
+		owned_cells.append(true)
+		initial_front.append(true)
 
 
 func _consume_virtual_defense(
@@ -452,7 +482,7 @@ func _recapture_virtual_cells(state: Dictionary, amount: int, rng: RandomNumberG
 			break
 		var chosen: int = candidates[rng.randi_range(0, candidates.size() - 1)]
 		owned_cells[chosen] = true
-		defense_cells[chosen] = 0
+		defense_cells[chosen] = clampi(int(state.get("captured_frontline_defense", 0)), 0, int(state.get("territory_defense_cap", 1)))
 		recaptured += 1
 	return recaptured
 
@@ -501,7 +531,10 @@ func _reset_b1_metrics() -> void:
 		_b1_card_selections[upgrade_id] = 0
 		_b1_card_applications[upgrade_id] = 0
 		_b1_card_waste[upgrade_id] = 0.0
-
+	_b1_projectile_fired.clear()
+	_b1_projectile_chamber_contacts.clear()
+	_b1_projectile_damage_units.clear()
+	_b1_projectile_defense_pierce.clear()
 
 func _increment_metric(target: Dictionary, key: String, amount: float) -> void:
 	var current = target.get(key, 0)

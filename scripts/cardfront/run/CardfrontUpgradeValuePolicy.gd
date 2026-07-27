@@ -5,6 +5,7 @@ const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUp
 const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDraftSystem.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
+const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 const MODE_MARGINAL: String = "marginal"
 const MODE_HISTORICAL_FIXED: String = "historical_fixed"
@@ -81,23 +82,25 @@ static func _score_once(upgrade_id: String, model: Dictionary, context: Dictiona
 
 	match effect_id:
 		"add_next_volley", "multiply_next_volley":
-			var before_shots: int = _resolved_shot_count(model, context)
+			var before_sequence: Array = _resolved_projectile_sequence(model, context)
 			var raw_before: int = _raw_shot_count(model, context)
 			var after_model: Dictionary = model.duplicate(true)
 			_apply_effect_to_model(after_model, upgrade_id)
-			var after_shots: int = _resolved_shot_count(after_model, context)
+			var after_sequence: Array = _resolved_projectile_sequence(after_model, context)
 			var raw_after: int = _raw_shot_count(after_model, context)
-			var actual_added: int = maxi(0, after_shots - before_shots)
-			var raw_added: int = maxi(0, raw_after - raw_before)
-			var wasted: int = maxi(0, raw_added - actual_added)
-			var resolved_attack_level: int = _resolved_attack_level(model, context)
-			var attack_factor: float = float(4 + resolved_attack_level) / 4.0
+			var actual_added: int = maxi(0, after_sequence.size() - before_sequence.size())
+			var wasted: int = maxi(0, maxi(0, raw_after - raw_before) - actual_added)
+			var direct_added: float = maxf(0.0, ProjectileTypeScript.direct_damage_units_for_sequence(after_sequence) - ProjectileTypeScript.direct_damage_units_for_sequence(before_sequence))
+			var pressure_added: float = maxf(0.0, _territory_units(after_sequence) - _territory_units(before_sequence))
+			var attack_factor: float = float(4 + _resolved_attack_level(model, context)) / 4.0
 			var reliability_bonus: float = 2.0 if effect_id == "add_next_volley" and actual_added > 0 else 0.0
 			result["actual_added_shots"] = actual_added
+			result["actual_added_direct_damage_units"] = direct_added
+			result["actual_added_territory_units"] = pressure_added
 			result["wasted_shots"] = wasted
-			result["immediate_value"] = float(actual_added) * SHOT_VALUE * attack_factor * route_factor + reliability_bonus
+			result["immediate_value"] = (direct_added * SHOT_VALUE * attack_factor * 0.78 + pressure_added * SHOT_VALUE * 0.22) * route_factor + reliability_bonus
 			result["score"] = float(result["immediate_value"])
-			result["reason"] = "actual_added_shots"
+			result["reason"] = "typed_projectile_marginal_value"
 
 		"increase_attack_level":
 			var amount: int = maxi(0, int(params.get("amount", 0)))
@@ -140,7 +143,7 @@ static func _score_once(upgrade_id: String, model: Dictionary, context: Dictiona
 			result["reason"] = "expected_defense_bypass"
 
 		"repair_territory":
-			var amount: int = maxi(0, int(params.get("amount", 0)))
+			var amount: int = maxi(0, int(params.get("amount", 0))) + maxi(0, int(model.get("frontline_repair_bonus", 0)))
 			var repairable_cells: int = maxi(0, int(context.get("repairable_frontline_cells", 0)))
 			var pending_before: int = maxi(0, int(model.get("pending_repair_points", 0)))
 			var restored_before: int = mini(repairable_cells, pending_before)
@@ -254,6 +257,8 @@ static func _evaluate_historical(upgrade_id: String, state) -> Dictionary:
 static func _state_model(state) -> Dictionary:
 	var model: Dictionary = {
 		"base_volley_count": 6,
+		"base_projectile_mix": {ProjectileTypeScript.STANDARD: 6, ProjectileTypeScript.SIEGE: 0, ProjectileTypeScript.SUPPRESSION: 0},
+		"frontline_repair_bonus": 0,
 		"next_volley_bonus": 0,
 		"next_volley_multiplier": 1,
 		"next_volley_armor_pierce_contacts": 0,
@@ -380,6 +385,18 @@ static func _is_eligible(upgrade_id: String, model: Dictionary) -> bool:
 	if upgrade_id == UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE:
 		return not bool(model.get("echo_next_choice_armed", false))
 	return true
+
+
+static func _resolved_projectile_sequence(model: Dictionary, context: Dictionary) -> Array:
+	var sequence: Array = ProjectileTypeScript.build_sequence(model.get("base_projectile_mix", {}) as Dictionary, maxi(0, int(model.get("next_volley_bonus", 0))) + maxi(0, int(context.get("pre_multiplier_shot_bonus", 0))), clampi(int(model.get("next_volley_multiplier", 1)), 1, RunStateScript.MAX_NEXT_VOLLEY_MULTIPLIER), VolleyResolverScript.NORMAL_MAX_VOLLEY_COUNT)
+	ProjectileTypeScript.append_standard(sequence, maxi(0, int(context.get("post_multiplier_shot_bonus", 0))), VolleyResolverScript.MAX_VOLLEY_COUNT)
+	return sequence
+
+static func _territory_units(sequence: Array) -> float:
+	var total: float = 0.0
+	for raw_type in sequence:
+		total += ProjectileTypeScript.territory_pressure_units(str(raw_type))
+	return total
 
 
 static func _raw_shot_count(model: Dictionary, context: Dictionary) -> int:
