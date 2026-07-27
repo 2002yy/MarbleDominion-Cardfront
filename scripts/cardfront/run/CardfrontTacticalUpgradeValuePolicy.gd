@@ -38,13 +38,13 @@ static func evaluate(
 	match str(upgrade_id):
 		UpgradeManifestScript.UPGRADE_SIEGE_CALIBRATION:
 			var pierced: float = maxf(0.0, float(result.get("expected_pierced_contacts", 0.0)))
-			var converted: int = maxi(0, int(result.get("converted_projectiles", 0)))
+			var siege_converted: int = maxi(0, int(result.get("converted_projectiles", 0)))
 			tactical_bonus = (
 				pierced * 9.0
 				+ minf(24.0, float(value_context["enemy_defense_points"])) * 0.35
 				+ float(value_context["enemy_defense_contact_chance"]) * 12.0
 				+ maxf(0.0, float(value_context["route_pressure"]) - 0.75) * 8.0
-				+ float(converted) * 3.0
+				+ float(siege_converted) * 3.0
 			)
 			reason = "defended_route_siege_opportunity"
 
@@ -57,9 +57,9 @@ static func evaluate(
 			reason = "capture_window_bridgehead_opportunity"
 
 		UpgradeManifestScript.UPGRADE_SUPPRESSION_SCREEN:
-			var converted: int = maxi(0, int(result.get("converted_projectiles", 0)))
+			var suppression_converted: int = maxi(0, int(result.get("converted_projectiles", 0)))
 			tactical_bonus = (
-				float(converted) * (6.0 + float(value_context["route_pressure"]) * 7.0)
+				float(suppression_converted) * (6.0 + float(value_context["route_pressure"]) * 7.0)
 				+ maxf(0.0, float(value_context["route_pressure"]) - 0.75) * 12.0
 				+ float(value_context["expected_frontline_captures"]) * 3.0
 			)
