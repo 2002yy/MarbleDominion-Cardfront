@@ -205,14 +205,26 @@ jobs:
         shell: pwsh
         run: |
           $scripts = "${{ matrix.scripts }}" -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+          $artifactDir = Join-Path "${{ github.workspace }}" "artifacts\headless\${{ strategy.job-index }}"
+          New-Item -ItemType Directory -Path $artifactDir -Force | Out-Null
 
           foreach ($script in $scripts) {
             Write-Host "Running $script"
-            & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/$script"
-            if ($LASTEXITCODE -ne 0) {
-              exit $LASTEXITCODE
+            $logPath = Join-Path $artifactDir ($script + ".log")
+            & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/$script" 2>&1 | Tee-Object -FilePath $logPath
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -ne 0) {
+              exit $exitCode
             }
           }
+
+      - name: Upload headless script logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: headless-${{ strategy.job-index }}-${{ github.run_id }}
+          path: artifacts/headless/**/*.log
+          if-no-files-found: warn
 
       - name: Upload parity balance audit
         if: always() && matrix.batch == 'Cardfront v0.3 parity balance audit'
