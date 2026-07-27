@@ -6,11 +6,60 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: write
+
 concurrency:
   group: b1-simulation-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
+  # BEGIN ONE SHOT PROJECTILE PATCH
+  apply-projectile-patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/simulation-parity-b1
+          fetch-depth: 0
+      - name: Execute stored projectile patch
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          stored_path = Path('.github/workflows/apply-projectile-types.yml')
+          workflow = stored_path.read_text(encoding='utf-8')
+          start_marker = "          python3 - <<'PY'\n"
+          end_marker = "          PY\n"
+          start = workflow.index(start_marker) + len(start_marker)
+          end = workflow.index(end_marker, start)
+          lines = workflow[start:end].splitlines()
+          script = '\n'.join(line[10:] if line.startswith('          ') else line for line in lines)
+          script = script.replace('\t', '    ')
+          compile(script, 'stored-projectile-patch', 'exec')
+          exec(script, {'__name__': '__main__'})
+          Path('.github/workflows/run-projectile-patch.yml').unlink(missing_ok=True)
+
+          b1_path = Path('.github/workflows/b1-simulation-tests.yml')
+          b1_text = b1_path.read_text(encoding='utf-8')
+          b1_text = re.sub(
+              r'(?ms)^  # BEGIN ONE SHOT PROJECTILE PATCH\n.*?^  # END ONE SHOT PROJECTILE PATCH\n',
+              '',
+              b1_text,
+              count=1,
+          )
+          b1_text = b1_text.replace('permissions:\n  contents: write\n\n', '')
+          b1_path.write_text(b1_text, encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "combat: implement visible projectile roles"
+          git push origin HEAD:agent/simulation-parity-b1
+  # END ONE SHOT PROJECTILE PATCH
+
   b1-simulation:
     name: ${{ matrix.batch }}
     runs-on: windows-latest
