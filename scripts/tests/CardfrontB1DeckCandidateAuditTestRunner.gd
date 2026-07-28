@@ -47,13 +47,19 @@ func _run() -> void:
 
 	var core_all: Dictionary = scenarios.get("core_all", {}) as Dictionary
 	var recommended: Dictionary = scenarios.get("recommended_decks", {}) as Dictionary
-	_assert.that(
-		float(recommended.get("balance_error", INF)) < float(core_all.get("balance_error", INF)),
-		"deck audit: recommended pools should reduce total balance error versus the shared core pool"
+	_assert.that(is_finite(float(core_all.get("balance_error", INF))), "deck audit should report the core balance error")
+	_assert.that(is_finite(float(recommended.get("balance_error", INF))), "deck audit should report the candidate balance error")
+	_assert.that(is_finite(float(core_all.get("hero_rate_spread", INF))), "deck audit should report the core hero-rate spread")
+	_assert.that(is_finite(float(recommended.get("hero_rate_spread", INF))), "deck audit should report the candidate hero-rate spread")
+	_assert.eq(
+		(report.get("ranked_by_balance_error", []) as Array).size(),
+		scenarios.size(),
+		"deck audit should rank every candidate scenario"
 	)
-	_assert.that(
-		float(recommended.get("hero_rate_spread", INF)) < float(core_all.get("hero_rate_spread", INF)),
-		"deck audit: recommended pools should narrow the hero-rate spread"
+	_assert.eq(
+		str(report.get("boundary", "")),
+		"candidate_only_not_live_default_not_b1_final",
+		"deck audit should keep unbalanced candidates out of live defaults"
 	)
 	_assert.that(FileAccess.file_exists(JSON_ARTIFACT_PATH), "deck audit JSON artifact should exist")
 	_assert.that(FileAccess.file_exists(TEXT_ARTIFACT_PATH), "deck audit text artifact should exist")

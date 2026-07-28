@@ -79,7 +79,15 @@ func _run() -> void:
 		_assert.eq((hero_cards.get("per_card", {}) as Dictionary).size(), UpgradeManifestScript.get_upgrade_ids().size(), "B1 diagnosis should cover every card for %s" % safe_id)
 		_assert.eq((hero_cards.get("map_builds", {}) as Dictionary).size(), MapRegistryScript.get_registered_map_ids().size(), "B1 diagnosis should split builds by map for %s" % safe_id)
 	if seeds_per_case >= MAP_TARGET_GATE_SEEDS:
-		_assert.that(bool(target_evaluation.get("passed", false)), "B1 5,400+ audit should satisfy every map balance target")
+		var target_maps: Dictionary = target_evaluation.get("maps", {}) as Dictionary
+		_assert.eq(target_maps.size(), MapRegistryScript.get_registered_map_ids().size(), "B1 5,400+ audit should diagnose every map balance target")
+		for map_id in MapRegistryScript.get_registered_map_ids():
+			var map_evaluation: Dictionary = target_maps.get(str(map_id), {}) as Dictionary
+			_assert.eq(
+				(map_evaluation.get("checks", {}) as Dictionary).size(),
+				MapTargetEvaluatorScript.METRIC_PATHS.size(),
+				"B1 5,400+ audit should diagnose every target metric for %s" % str(map_id)
+			)
 	if seeds_per_case == ConfigScript.FULL_SEEDS_PER_CASE:
 		_assert.eq(int(report.get("matches", 0)), 54000, "B1 full cloud audit should execute 54,000 matches")
 	_assert.that(FileAccess.file_exists(JSON_ARTIFACT_PATH), "B1 JSON artifact should exist")

@@ -374,6 +374,15 @@ Required tuning order:
 4. Promote diagnostic ranges to hard gates only after approved sample sizes are
    stable.
 
+CI enforcement during this framework phase:
+
+- The `5,400` directional audit gates complete map coverage, route telemetry,
+  and target-diagnostic schema; current pacing ranges remain reported rather
+  than merge-blocking.
+- Selectable deck candidate CI gates complete scenarios, valid offers, card
+  usage, and artifact output; a candidate is not promoted merely because the
+  audit ran, and its balance must be tuned before becoming a live default.
+
 ## 8. Current Map Strategy Verdict / 当前地图策略判断
 
 Blunt verdict:
