@@ -35,6 +35,148 @@ Confirmed product decisions:
 - The orthographic arena has a first-generation environment-art pass: map-specific palettes plus green-field banners, industrial stacks, or laboratory pylons. It is no longer a single-palette graybox, though bespoke meshes, textures, and polish remain future art work.
 - Existing legacy card illustrations and compatibility UI do not count as art completion for the new three-choice hero/run loop.
 
+### Approved Art Direction / 已批准美术方向
+
+The approved visual target is:
+
+> **明亮玩具沙盘 + 清晰竞技路线 + 粗轮廓占领块**
+
+The arena should feel bright, open, readable, and tactile. It must not return to
+the compressed dark-gray prototype look, and it must not become a noisy
+cyberpunk HUD or a realistic military battlefield.
+
+Reference responsibilities:
+
+- [Clash Royale](https://supercell.com/en/games/clashroyale/): learn from its
+  vertical arena composition, immediately visible opposing cores, and natural
+  separation created by the river and bridges.
+- [Minion Masters](https://store.steampowered.com/app/489520/Minion_Masters/):
+  learn from its oblique depth, opposing bases, and readable pressure around
+  the central routes.
+- [Into the Breach](https://store.steampowered.com/app/590380/Into_the_Breach/):
+  learn from the absolute clarity of tile ownership, attack routes, danger,
+  and state changes.
+- [Bad North](https://store.steampowered.com/app/688420/Bad_North/): learn from
+  its low-poly terrain, soft bright lighting, simplified architecture, and
+  strong silhouettes.
+
+These games are references for composition and readability, not templates to
+copy. Cardfront must retain its own visual identity:
+
+- bright marble trajectories;
+- thick, clearly separated ownership blocks;
+- two authoritative bridge gates;
+- a visible player-versus-AI command-chamber confrontation;
+- territory state that remains readable while projectiles are moving.
+
+### Approved Asset Stack / 已批准资源组合
+
+**Primary environment skeleton: KayKit Medieval Hexagon**
+
+- Use its 200+ stylized buildings, terrain pieces, and props as the fastest
+  route to a coherent readable battlefield.
+- Prefer the included blue/red faction variations and shared gradient atlas.
+- License: CC0.
+- Sources:
+  [KayKit official page](https://www.kaylousberg.com/game-assets/medieval-hexagon),
+  [Godot package](https://godotengine.org/asset-library/asset/2900).
+
+**Walls, bridges, gates, and command chambers: Kenney Castle Kit + Mini Arena**
+
+- Use selected pieces for turret bases, walls, bridge structures, gate
+  machinery, flags, and map-edge construction.
+- Do not import either pack wholesale into every scene.
+- License: CC0.
+- Sources:
+  [Castle Kit](https://kenney.nl/assets/castle-kit),
+  [Mini Arena](https://kenney.nl/assets/mini-arena),
+  [Kenney license guidance](https://kenney.nl/support).
+
+**Peripheral nature: Quaternius Stylized Nature MegaKit**
+
+- Use trees, rocks, bushes, and ground accents only around the outer frame of
+  the battlefield.
+- Keep the playable grid, bridge approaches, projectile lanes, and command
+  chambers visually clear.
+- The pack provides glTF assets and a Godot implementation.
+- License: CC0.
+- Source:
+  [Quaternius official pack page](https://quaternius.com/packs/stylizednaturemegakit.html).
+
+**Chinese typography: Noto Sans SC**
+
+- Use Black or Bold for titles, hero names, major percentages, countdowns, and
+  large combat numbers.
+- Use Medium for descriptions, secondary stats, hints, and normal HUD text.
+- License: SIL Open Font License; the font may be bundled with the game under
+  its license terms.
+- Source:
+  [Noto official usage and license guidance](https://notofonts.github.io/noto-docs/website/use/).
+
+### Art Integration Rules / 美术接入规则
+
+- Do not mix the raw appearance of three asset packs in the same scene. Route
+  imported meshes through one Cardfront material palette, one lighting setup,
+  and one outline/bevel language.
+- Prefer glTF/GLB for imported 3D assets. Imported art remains presentation
+  only and must not become authoritative projectile, gate, capture, or
+  collision state.
+- Keep environment paths in a dedicated registry with explicit fallbacks. Do
+  not scatter asset paths through `Main.gd`, gameplay systems, or individual
+  effect handlers.
+- Preserve the current 2D authoritative simulation. The orthographic 3D arena
+  mirrors ownership, defense, gates, projectiles, chambers, and effects.
+- Use strong faction identity without flooding entire tiles with saturated
+  color: blue/red inset borders, raised rims, corner markers, and restrained
+  surface tint should work together.
+- Neutral cells require their own warm or natural value range and must not be
+  confused with an unlit faction tile.
+- Territory borders must remain visible for isolated and scattered captured
+  cells, not only for large connected regions.
+- River water, bridge decks, gate machinery, command chambers, projectiles,
+  and ownership borders must occupy distinct value and hue ranges.
+- Decorative foliage and structures belong mainly outside the playable core.
+  They must not hide bridge entrances, projectile contacts, target previews,
+  or the thick ownership outlines.
+- Every imported pack, modified asset, font, and license must be recorded in
+  the existing asset-source and license documentation before release.
+
+### First Art Benchmark / 首个正式美术标杆
+
+Do not attempt to finish all three maps at once. The first art-production slice
+must complete `default_duel` as the benchmark scene before the industrial and
+laboratory maps inherit the same material language.
+
+The `default_duel` benchmark includes:
+
+- bright grass and readable terrain variation;
+- modeled river banks instead of a flat color strip;
+- two visually substantial bridge gates aligned with authoritative routes;
+- distinct blue and red command chambers outside the central play space;
+- thick, cartoon-like ownership blocks with clear faction and neutral states;
+- unified sunlight, ambient fill, shadows, and color grading;
+- restrained rocks, trees, flags, walls, and arena-edge dressing;
+- high-contrast marble trajectories and hit/capture feedback;
+- compact HUD and hero plates that do not cover the arena.
+
+Benchmark acceptance:
+
+- At first glance, a player can identify both command chambers, the river, both
+  legal crossings, and the current front line.
+- Blue, red, and neutral scattered cells remain distinguishable without
+  reading labels.
+- Ownership borders remain clear during volleys and do not flicker or disappear
+  at oblique camera angles.
+- The arena reads as bright and expanded rather than dark, compressed, or
+  surrounded by heavy UI.
+- Desktop `1120x720` and a narrow/mobile viewport both preserve the core routes
+  and do not overlap critical HUD with the battlefield.
+- Before/after screenshots are captured from deterministic camera states and
+  reviewed side by side.
+- The benchmark remains inside the existing arena performance budget.
+- Only after this benchmark is accepted should the same art system expand to
+  Cross Strongholds and Central Lab.
+
 ## 2. Hero Numeric Baseline / 三英雄数值基线
 
 The current public baseline is:
@@ -51,7 +193,9 @@ Locked Engineer opening rule:
 - On the current horizontal spawn layout, this is the full row facing the neutral center.
 - Engineer contact-front cells begin at `2/2`.
 - Other Engineer starting territory begins at `1/2`.
-- Newly captured and recaptured territory begins at `0/2`.
+- Balanced Commander and Rapid Gunner captures begin at zero defense.
+- Fortification Engineer's first capture of a neutral frontline cell begins at
+  `1/2` once per cell; later recaptures of that cell begin at `0/2`.
 - Raising the cap does not refill current defense.
 - The opening contact front is detected and applied once during match initialization.
 - Later frontline movement never creates a new free two-layer line.
@@ -72,7 +216,10 @@ Completed migration:
 - Starting territory defense is seeded once and no longer refills automatically before every volley.
 - Territory-defense hard cap is 4; Engineer starts with capacity 2.
 - Engineer starts with a visible one-time `2/2` contact front while its interior remains `1/2`.
-- Newly captured and recaptured territory begins at zero current defense.
+- Balanced Commander and Rapid Gunner captures begin at zero current defense.
+- Fortification Engineer gains one defense layer on the first neutral
+  frontline capture of each cell; enemy captures and Engineer recaptures begin
+  at zero.
 - Permanent attack growth uses levels `0..3`.
 - Temporary effects may raise the resolved attack level to 4 for one volley.
 - Echo queues and replays the next selected upgrade during the following round.
@@ -101,7 +248,9 @@ Remaining hero work:
 - Hard cap is 4.
 - Ordinary starting owned cells begin at `1 / hero cap`.
 - Engineer contact-front cells are the only opening exception and begin at `2/2`.
-- Newly captured or recaptured cells begin at `0 / current cap`.
+- Balanced Commander and Rapid Gunner captures begin at `0 / current cap`.
+- Fortification Engineer's first neutral frontline capture of a cell begins at
+  `1 / current cap`; recaptures begin at zero.
 - Increasing the cap does not refill current defense.
 - An effective hostile hit removes one current-defense point; a later hit captures after defense reaches zero.
 - Automatic full-map refill is removed.
@@ -129,7 +278,141 @@ Catalog limits:
 - Same-round multiplier stacking is disallowed.
 - Do not prioritize flat additions such as `+8`, `x3`, or permanent `+50%` damage.
 
-Approved future route module:
+### Authoritative Content Inventory / 当前内容唯一确认清单
+
+This section is the authoritative answer to "what content exists now." A
+roadmap name, simulator candidate, legacy script, or tested prototype does not
+count as formal player-facing content unless this section says it is active.
+
+#### Active Formal Upgrade Pool / 正式启用强化池
+
+The normal player-facing run uses `core_tactics`, containing exactly eight
+upgrades:
+
+| Upgrade | Rarity | Exact current behavior |
+| --- | --- | --- |
+| Reinforced Volley / 增援齐射 | Common | Next volley adds 5 standard projectiles. These bonus shots are appended after the hero base group and are not copied by Double Volley. |
+| Double Volley / 双倍齐射 | Uncommon | Next volley copies the hero's complete typed base projectile group once. It does not stack above `x2`. |
+| Attack Training / 攻击训练 | Uncommon | Permanent attack level `+1`, capped at level 3. Each level adds 25% chamber damage; temporary effects may resolve at level 4 for 200%. |
+| Thicken Position / 加厚阵地 | Common | Permanent territory-defense cap `+1`, hard-capped at 4. Existing cells are not refilled. |
+| Frontline Repair / 前线修复 | Common | Repairs up to 6 distinct owned frontline cells by 1 layer each. Engineer receives 2 additional repair points, for up to 8 distinct repairs when targets exist. |
+| Armor-Piercing Trajectory / 穿甲轨迹 | Uncommon | The first 6 defended contacts in the next volley ignore one defense layer. |
+| Rarity Premonition / 稀有预感 | Uncommon | Permanent rarity level `+1`, capped at level 3, increasing later high-rarity offer probability. |
+| Delayed Echo / 延迟回响 | Rare | Arms the next selected upgrade; that upgrade resolves normally, then replays once in the following round. |
+
+Runtime boundary:
+
+- The normal live run state defaults to `core_tactics`.
+- The pre-match screen does not currently expose deck selection.
+- Normal volleys cap at 24 projectiles; explicitly exceptional paths may cap at
+  32.
+- Special projectiles fire before the standard segment so their route effect is
+  visible.
+
+#### Implemented Candidate Upgrades / 已实现候选强化
+
+Three additional upgrades exist in the manifest, resolver, AI valuation,
+simulation, and tests. They are not in the default live pool:
+
+| Upgrade | Rarity | Exact current behavior | Current status |
+| --- | --- | --- | --- |
+| Siege Formation / 攻城编组 | Uncommon | Converts up to 2 standard projectiles in the next volley into siege projectiles. | Available only through the `fortification_corps` candidate deck or injected configuration. |
+| Bridgehead Construction / 桥头施工 | Common | The next 6 first captures of neutral frontline cells gain 1 defense layer, capped by the owner's defense capacity. | Available only through the `fortification_corps` candidate deck or injected configuration. |
+| Suppression Formation / 压制编队 | Uncommon | Converts up to 2 standard projectiles in the next volley into suppression projectiles. | Available only through the `barrage_control` candidate deck or injected configuration. |
+
+Candidate deck definitions:
+
+- `core_tactics`: the active default eight-card pool.
+- `fortification_corps`: an implemented Engineer-oriented candidate containing
+  Siege Formation and Bridgehead Construction.
+- `barrage_control`: an implemented Gunner-oriented candidate containing
+  Suppression Formation.
+- Candidate decks remain audit/configuration content. They are not selectable
+  from the formal pre-match screen and are not promoted merely because their
+  tests pass.
+
+#### Legacy Targeted Cards / 旧目标式卡牌
+
+The earlier click-a-card-then-click-a-target system still contains four cards
+for compatibility and regression coverage. The new live three-choice run does
+not construct the legacy `CardPlaySystem`, so these are not part of the current
+formal match loop:
+
+| ID | Card | Cost | Target and effect |
+| ---: | --- | --- | --- |
+| 1001 | Frontline Fortify / 前线加固 | 10 energy, 3 parts | Owned border cell; adds 3 fortification stacks. |
+| 1002 | Calibrated Shot / 校准射击 | 8 energy, 5 parts | Enemy region; prioritizes that region for 6 seconds. |
+| 1003 | Morale Fluctuation / 民心起伏 | 5 energy, 2 parts | Owned region; applies the player-support morale mode. |
+| 1004 | Pioneer Beacon / 拓荒信标 | 8 energy, 4 parts | Owned border cell; converts up to 3 adjacent neutral cells. |
+
+These four cards must not be counted when describing the active three-choice
+upgrade catalog, and their old energy/parts economy must not be reintroduced
+into the new loop by accident.
+
+#### Active Hero Baseline / 正式英雄与精确数值
+
+| Hero | Base projectile group | Chamber HP | Starting defense | Contact-front defense | First neutral frontline capture | Repair bonus | Defense cap |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Balanced Commander / 均衡指挥官 | 6 standard | 40 | 1 | 1 | 0 | 0 | 1 |
+| Rapid Gunner / 连射炮手 | 6 standard + 1 suppression | 36 | 1 | 1 | 0 | 0 | 1 |
+| Fortification Engineer / 筑垒工程师 | 4 standard + 1 siege | 42 | 1 | 2 | 1, once per neutral cell | +2 Frontline Repair points | 2 |
+
+Projectile semantics:
+
+- Standard: 1 chamber damage unit; deals 1 damage to creatures or towers and
+  normally bounces from them.
+- Siege: 2 chamber damage units, pierces 1 territory-defense layer, deals 1 to
+  normal creatures, 2 to armored creatures, and 3 to defense towers; consumed
+  on entity contact.
+- Suppression: cannot damage the command chamber or creatures; contributes
+  stronger territory/route pressure, stuns and pushes creatures for one round,
+  and disables defense towers for one round.
+- Double Volley copies the hero's typed base group. For example, Engineer
+  receives two siege projectiles and Gunner receives two suppression
+  projectiles before caps and conversions.
+
+#### Battlefield Entities / 战场生物与建筑实体
+
+The shared entity runtime is active as a collision and behavior foundation, but
+formal summon content is not yet active.
+
+Implemented foundation rules:
+
+- Maximum 3 creatures per faction.
+- Maximum 2 defense towers per faction.
+- Maximum 2 creature slots per cell.
+- Creatures support normal or armored defense, HP, movement, behavior, timed
+  duration, stun, push, projectile collision, and round actions.
+- Defense towers support HP, power from tile ownership, interception, summoning,
+  trajectory guidance, disable state, and fixed map building slots.
+
+Implemented prototypes:
+
+| Entity | Current values | Status |
+| --- | --- | --- |
+| Repair Unit / 修复单位 | 1 HP, normal armor, movement 1, `repair_frontline`, lasts 3 rounds, restores 1 defense layer to a nearby eligible frontline cell per action. | Debug/test prototype only; spawned in pairs by `debug_spawn_repair_units`. |
+| Fire-Control Beacon / 火控信标 | 5 HP, guides up to 6 standard projectiles per volley, guidance strength 0.35, radius 3 cells. | Debug/test prototype only; explicitly marked `prototype_only`. |
+| Generic summoner tower | Configurable creature ID and summon interval. | Engine capability only; no formal card, content definition, or live placement flow. |
+
+Neutral and friendly creature decision:
+
+- **Neutral creature:** approved direction is a strong third-party battlefield
+  presence that can affect both factions. No neutral creature catalog, neutral
+  AI, summon upgrade, final values, or formal visual currently exists.
+- **Friendly creature:** approved direction is a medium-strength faction-owned
+  unit with construction synergy. The Repair Unit proves movement, repair, and
+  collision behavior, but no player-facing summon upgrade or final unit values
+  currently exists.
+- Neither neutral nor friendly creatures are currently offered in the formal
+  three-choice pool.
+- Their exact HP, lifetime, movement, spawn rules, AI priorities, and card
+  rarity remain deliberately unlocked. They require a dedicated content
+  decision before implementation.
+
+#### Explicitly Paused Content / 明确暂缓内容
+
+The following are approved concepts but are **not current implementation
+targets**:
 
 | Upgrade | Rarity | Approved behavior |
 | --- | --- | --- |
@@ -137,6 +420,12 @@ Approved future route module:
 | Gate Breach Round / 破门弹 | Uncommon | First 4 rejected gate crossings become valid bridge passages; off-bridge river crossing remains blocked |
 | Bridgehead Fortification / 桥头筑垒 | Uncommon | First 6 newly captured cells inside gate-control zones gain 1 current defense |
 | Split-Lane Volley / 双路齐射 | Rare | Total shots unchanged; divide the volley between selected and horizontally mirrored directions |
+
+- `v0.3.3b2 Four-card Route Module` is paused until the user explicitly
+  reactivates it.
+- `v0.3.3b3` and its expanded 108,000-match A/B audit are paused.
+- Candidate-deck promotion, hero-number changes, and hard balance gates must not
+  wait on or silently trigger either paused slice.
 
 ## 5. Strongholds And Timeout / 据点与超时
 
@@ -397,16 +686,21 @@ CI enforcement during this framework phase:
 
 Blunt verdict:
 
-> 当前有“通用双桥闸门策略”和“默认五据点策略”，但几乎没有玩家可直观感受到的地图之间策略差异。
+> 三张地图已经可选并进入实时区域、桥梁和闸门装配，但当前仍主要依赖路线位置、据点布局和第一代程序配色表达差异；正式环境几何与玩家可直观复述的地图个性仍未完成。
 
 Why:
 
 - Three map definitions exist in the registry: Five Strongholds, Cross Strongholds, and Central Lab.
-- Their stronghold shapes and fast-simulation proxy values differ.
-- Live runtime currently calls `generate_default_layout()` and therefore always builds the default stronghold layout.
-- Cross Strongholds and Central Lab are currently registry/simulation definitions, not fully selectable live battlefields.
-- All live gate geometry uses globally fixed two-lane positions, widths, and control-zone sizes.
-- The map schema does not yet own river/bridge/gate geometry or a player-facing strategic identity.
+- Their stronghold shapes, route layouts, strategy profiles, and simulation values differ.
+- The selected `map_id` now drives live `RegionMap` generation.
+- Live gate crossing, control sampling, and orthographic bridge presentation use
+  each map's authoritative `route_layout`.
+- The formal pre-match screen exposes all three maps with route previews,
+  identities, and opening hints.
+- The current environmental distinction is still a first-generation palette
+  and landmark pass rather than finished modeled terrain.
+- Human playtest evidence has not yet established that a new player can explain
+  each map's main route decision after one match.
 
 Approved strategic map specification:
 
@@ -490,6 +784,8 @@ A new effect or AI score is incomplete until live runtime, simulation, player-fa
 - Keep current B1 balance ranges diagnostic while content architecture settles.
 - Consolidate route/capture/defense/draft/delayed upgrade effect registration.
 - Preserve live/simulation contract tests for every promoted effect.
+- Do not start the paused four-card route module or 108,000-match audit as part
+  of this registry work.
 
 ### Completed: v0.3.3a6 — Strategic Map Schema And Preview
 
@@ -528,10 +824,10 @@ Candidate order after B1:
 
 ### Later
 
-- `v0.3.3b1`: upgrade-effect registry.
-- `v0.3.3b2`: four-card route module.
-- `v0.3.3b3`: final expanded 108,000-match A/B evidence gate.
-- `v0.3.4`: map geometry expansion and visual polish.
+- `v0.3.4`: complete the `default_duel` formal-art benchmark, then expand the
+  approved environment language to Cross Strongholds and Central Lab.
+- `v0.3.3b2` and `v0.3.3b3` remain paused and are not implied by completing
+  `v0.3.3b1`.
 
 ## 12. Acceptance Requirements / 验收要求
 
@@ -562,4 +858,9 @@ No map is considered strategically complete until a player can describe its main
 - Single-bridge and asymmetric competitive maps before true side reruns exist.
 - Moving or random bridges during combat.
 - Large bumper/obstacle catalogs before the first three route identities work.
+- The four-card route module until explicitly reactivated.
+- The 108,000-match A/B audit, candidate-deck promotion, and hard balance gates
+  while the core framework and art benchmark remain in progress.
+- Formal neutral/friendly creature summon content until its dedicated content
+  inventory, behavior rules, and values are approved.
 - Rewriting projectile simulation as true 3D physics.
