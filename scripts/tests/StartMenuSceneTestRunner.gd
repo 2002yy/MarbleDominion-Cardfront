@@ -18,6 +18,9 @@ class DummyOwner extends RefCounted:
 	func _start_game(_grid_size: int) -> void:
 		pass
 
+	func _request_start_from_menu() -> void:
+		pass
+
 	func _continue_saved_game() -> void:
 		pass
 

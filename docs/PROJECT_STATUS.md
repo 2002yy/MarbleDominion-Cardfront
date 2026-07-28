@@ -27,12 +27,12 @@ Confirmed product decisions:
 
 ### Current Player-Facing Reality / 当前玩家可见状态
 
-- `main` is complete through `v0.3.3a5`; PR #8 (`v0.3.3a6..a8`) is still a draft experiment and is not part of the shipped baseline.
-- The runtime can receive player and AI hero IDs through configuration, but there is no formal pre-match hero-selection screen.
-- The player cannot yet select a map in the normal flow; live play still enters the currently configured/default battlefield.
-- The AI hero is not formally revealed before battle, and the two heroes' base attributes are not presented together before the first round.
-- Hero identity is currently numeric and systemic. There are no finished hero cards, portraits, silhouettes, faction emblems, selection animation, or in-match hero identity plate.
-- The orthographic arena is a functional graybox presentation built from primitive meshes and flat materials. It is not a finished environment-art pass.
+- `main` includes the B1 route, projectile, entity, simulation-parity, and calibration framework through `v0.3.3a8`.
+- Starting Cardfront from the normal menu opens a formal three-step deployment flow: map selection, player hero selection, then AI reveal and matchup confirmation.
+- All three registered maps are selectable and the chosen `map_id` now drives the live `RegionMap`, not only simulation.
+- The reveal screen presents both heroes' base volley, chamber health, defense capacity, and strategic trait before battle.
+- Each hero has a compact cartoon silhouette, accent color, selection card, press/reveal animation, and an in-match identity plate.
+- The orthographic arena has a first-generation environment-art pass: map-specific palettes plus green-field banners, industrial stacks, or laboratory pylons. It is no longer a single-palette graybox, though bespoke meshes, textures, and polish remain future art work.
 - Existing legacy card illustrations and compatibility UI do not count as art completion for the new three-choice hero/run loop.
 
 ## 2. Hero Numeric Baseline / 三英雄数值基线
@@ -80,11 +80,9 @@ Completed migration:
 
 Remaining hero work:
 
-- Formal player hero selection and AI hero reveal UI.
-- Minimal first-generation hero art: one readable icon or cartoon silhouette, color accent, and selection card for each hero. This does not require generated portrait art.
-- In-match hero identity plates that preserve readable chamber health, base volley, and core trait without covering the arena.
 - Route-card valuation based on authoritative route and gate pressure.
 - Read-only combat snapshot shared by UI, AI, and simulation.
+- Replace first-generation vector silhouettes only if later art direction approves bespoke hero portraits; the current icons remain the readable fallback.
 
 ## 3. Attack And Defense Semantics / 攻防语义
 
@@ -475,14 +473,32 @@ A new effect or AI score is incomplete until live runtime, simulation, player-fa
 
 ## 11. Active And Planned Slices / 当前与后续阶段
 
-### Active Next: v0.3.3a6 — Strategic Map Schema And Preview
+### Completed: v0.3.3b0 — Formal Pre-Match And Environment Identity
+
+- Three-step Cardfront deployment screen: map, player hero, AI reveal.
+- Three selectable live maps and three selectable player heroes.
+- Side-by-side base-stat comparison before battle.
+- Lightweight cartoon silhouettes, hero selection cards, and selection/reveal motion.
+- Compact in-match player/AI hero identity plates outside the arena core.
+- Map-specific environment palettes and landmarks for green-field, industrial,
+  and laboratory identities.
+- Headless coverage for selection flow, runtime map propagation, hero plates,
+  and environment-theme separation.
+
+### Active Next: v0.3.3b1 — Upgrade Effect Registry
+
+- Keep current B1 balance ranges diagnostic while content architecture settles.
+- Consolidate route/capture/defense/draft/delayed upgrade effect registration.
+- Preserve live/simulation contract tests for every promoted effect.
+
+### Completed: v0.3.3a6 — Strategic Map Schema And Preview
 
 - Add `route_layout` and `strategy_profile` to all three map definitions.
 - Validate sorted, non-overlapping bridge lanes and bounded control zones.
 - Add player-facing identity and opening-hint data.
 - Add route-layout snapshots/tests without changing live behavior yet.
 
-### v0.3.3a7 — Live Map And Gate Geometry
+### Completed: v0.3.3a7 — Live Map And Gate Geometry
 
 - Stop forcing `generate_default_layout()` in live runtime.
 - Build the selected map definition from configuration.
@@ -490,7 +506,7 @@ A new effect or AI score is incomplete until live runtime, simulation, player-fa
 - Move 3D bridges and gates from the same authoritative route data.
 - Add visual and physics alignment tests.
 
-### v0.3.3a8 — Simulation Parity B1
+### Completed: v0.3.3a8 — Simulation Parity B1
 
 - Share gate thresholds and projectile admission between live runtime and B1.
 - Contract-test core upgrade and volley resolution against live run state.
@@ -512,7 +528,6 @@ Candidate order after B1:
 
 ### Later
 
-- `v0.3.3b0`: formal map/hero pre-match flow, minimal three-hero art set, AI reveal, and combat snapshot.
 - `v0.3.3b1`: upgrade-effect registry.
 - `v0.3.3b2`: four-card route module.
 - `v0.3.3b3`: final expanded 108,000-match A/B evidence gate.

@@ -26,6 +26,7 @@ var region_map = null
 var bullet_pool = null
 var turrets: Dictionary = {}
 var layout: Dictionary = {}
+var map_id: String = "default_duel"
 
 var viewport_container: SubViewportContainer
 var world_viewport: SubViewport
@@ -74,6 +75,7 @@ func setup(new_battlefield, new_region_map, new_bullet_pool, new_turrets: Dictio
 	bullet_pool = new_bullet_pool
 	turrets = new_turrets.duplicate(false)
 	layout = new_layout.duplicate(true)
+	map_id = str(layout.get("map_id", "default_duel"))
 	_build_viewport(arena_view_rect)
 	_build_world()
 	_build_tiles()
@@ -232,7 +234,7 @@ func _build_world() -> void:
 	environment_node.name = "WorldEnvironment"
 	arena_environment = Environment.new()
 	arena_environment.background_mode = Environment.BG_COLOR
-	arena_environment.background_color = Color(0.69, 0.79, 0.76)
+	arena_environment.background_color = _theme_color("sky")
 	arena_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	arena_environment.ambient_light_color = Color(0.94, 0.95, 0.84)
 	arena_environment.ambient_light_energy = 1.02
@@ -256,7 +258,7 @@ func _build_world() -> void:
 	outer_box.size = Vector3(arena_width + 18.0, 0.64, arena_depth + 18.0)
 	outer_floor.mesh = outer_box
 	outer_floor.position.y = -0.48
-	outer_floor.material_override = _make_material(Color(0.25, 0.39, 0.23), 0.0)
+	outer_floor.material_override = _make_material(_theme_color("outer"), 0.0)
 	world_root.add_child(outer_floor)
 
 	var floor_mesh := MeshInstance3D.new()
@@ -265,10 +267,11 @@ func _build_world() -> void:
 	floor_box.size = Vector3(arena_width + 10.0, 0.42, arena_depth + 10.0)
 	floor_mesh.mesh = floor_box
 	floor_mesh.position.y = -0.24
-	floor_mesh.material_override = _make_material(Color(0.42, 0.55, 0.27), 0.0)
+	floor_mesh.material_override = _make_material(_theme_color("ground"), 0.0)
 	world_root.add_child(floor_mesh)
 	_build_lane_paths(grid)
 	_build_edge_landscape(grid, arena_width)
+	_build_map_landmarks(grid, arena_width)
 	_build_river_and_bridges(grid, arena_width)
 
 	camera = Camera3D.new()
@@ -462,7 +465,7 @@ func _build_lane_paths(grid: float) -> void:
 		lane_mesh.size = Vector3(3.0, 0.10, (grid - 3.0) * ARENA_Z_SCALE)
 		lane.mesh = lane_mesh
 		lane.position = Vector3(lane_x, TILE_HEIGHT + 0.035, 0.0)
-		lane.material_override = _make_material(PATH_COLOR, 0.0)
+		lane.material_override = _make_material(_theme_color("path"), 0.0)
 		world_root.add_child(lane)
 
 
@@ -484,9 +487,89 @@ func _build_edge_landscape(grid: float, arena_width: float) -> void:
 				grid * z_positions[index] * ARENA_Z_SCALE
 			)
 			bush.scale = Vector3(1.20, 0.92 + float(index % 3) * 0.08, 1.0)
-			var bush_color := Color(0.27, 0.48, 0.22) if index % 2 == 0 else Color(0.34, 0.55, 0.24)
+			var bush_color: Color = _theme_color("foliage_a") if index % 2 == 0 else _theme_color("foliage_b")
 			bush.material_override = _make_material(bush_color, 0.0)
 			world_root.add_child(bush)
+
+
+func _build_map_landmarks(grid: float, arena_width: float) -> void:
+	match map_id:
+		"central_lab":
+			for side in [-1.0, 1.0]:
+				for z_ratio in [-0.25, 0.25]:
+					_add_landmark_pylon(
+						Vector3(side * (arena_width * 0.5 + 2.2), 1.8, grid * z_ratio * ARENA_Z_SCALE),
+						Color(0.64, 0.48, 0.86)
+					)
+		"cross_resource":
+			for side in [-1.0, 1.0]:
+				for z_ratio in [-0.31, 0.31]:
+					_add_factory_stack(
+						Vector3(side * (arena_width * 0.5 + 2.4), 0.0, grid * z_ratio * ARENA_Z_SCALE)
+					)
+		_:
+			for side in [-1.0, 1.0]:
+				_add_banner(
+					Vector3(side * (arena_width * 0.5 + 2.0), 0.0, -grid * 0.34 * ARENA_Z_SCALE),
+					Color(0.94, 0.73, 0.22)
+				)
+
+
+func _add_landmark_pylon(position_value: Vector3, color: Color) -> void:
+	var base := MeshInstance3D.new()
+	base.name = "LabPylon"
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 0.82
+	mesh.bottom_radius = 1.20
+	mesh.height = 3.8
+	mesh.radial_segments = 8
+	base.mesh = mesh
+	base.position = position_value
+	base.material_override = _make_material(color.darkened(0.18), 0.08)
+	world_root.add_child(base)
+	var orb := MeshInstance3D.new()
+	var orb_mesh := SphereMesh.new()
+	orb_mesh.radius = 0.78
+	orb_mesh.height = 1.56
+	orb.mesh = orb_mesh
+	orb.position = position_value + Vector3(0.0, 2.35, 0.0)
+	orb.material_override = _make_material(color.lightened(0.15), 0.42)
+	world_root.add_child(orb)
+
+
+func _add_factory_stack(position_value: Vector3) -> void:
+	for offset in [-0.75, 0.75]:
+		var stack := MeshInstance3D.new()
+		stack.name = "FactoryStack"
+		var mesh := CylinderMesh.new()
+		mesh.top_radius = 0.46
+		mesh.bottom_radius = 0.72
+		mesh.height = 4.6 if offset < 0.0 else 3.7
+		mesh.radial_segments = 8
+		stack.mesh = mesh
+		stack.position = position_value + Vector3(offset, mesh.height * 0.5, 0.0)
+		stack.material_override = _make_material(Color(0.37, 0.40, 0.38), 0.0)
+		world_root.add_child(stack)
+
+
+func _add_banner(position_value: Vector3, color: Color) -> void:
+	var pole := MeshInstance3D.new()
+	pole.name = "ArenaBannerPole"
+	var pole_mesh := CylinderMesh.new()
+	pole_mesh.top_radius = 0.12
+	pole_mesh.bottom_radius = 0.16
+	pole_mesh.height = 4.8
+	pole.mesh = pole_mesh
+	pole.position = position_value + Vector3(0.0, 2.4, 0.0)
+	pole.material_override = _make_material(Color(0.24, 0.28, 0.23), 0.0)
+	world_root.add_child(pole)
+	var flag := MeshInstance3D.new()
+	var flag_mesh := BoxMesh.new()
+	flag_mesh.size = Vector3(1.8, 1.1, 0.10)
+	flag.mesh = flag_mesh
+	flag.position = position_value + Vector3(0.8, 3.75, 0.0)
+	flag.material_override = _make_material(color, 0.08)
+	world_root.add_child(flag)
 
 
 func _build_river_and_bridges(grid: float, arena_width: float) -> void:
@@ -896,13 +979,52 @@ func _simulation_to_world(simulation_position: Vector2, height: float) -> Vector
 
 func _tile_color(owner_id: int, region_type: String, cell: Vector2i) -> Color:
 	var checker_index: int = floori(float(cell.x) / float(CHECKER_CELL_SPAN)) + floori(float(cell.y) / float(CHECKER_CELL_SPAN))
-	var owner_color: Color = GRASS_LIGHT if checker_index % 2 == 0 else GRASS_DARK
+	var owner_color: Color = _theme_color("tile_a") if checker_index % 2 == 0 else _theme_color("tile_b")
 	if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
 		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.38)
 	var accent: Color = _region_accent(region_type)
 	if region_type != RegionTypeScript.NORMAL:
 		owner_color = owner_color.lerp(accent, 0.18).lightened(0.04)
 	return Color(owner_color.r, owner_color.g, owner_color.b, 1.0)
+
+
+func _theme_color(key: String) -> Color:
+	var theme: Dictionary
+	match map_id:
+		"cross_resource":
+			theme = {
+				"sky": Color(0.76, 0.80, 0.73),
+				"outer": Color(0.36, 0.39, 0.31),
+				"ground": Color(0.56, 0.57, 0.34),
+				"tile_a": Color(0.61, 0.62, 0.36),
+				"tile_b": Color(0.54, 0.56, 0.31),
+				"path": Color(0.66, 0.45, 0.24, 0.76),
+				"foliage_a": Color(0.35, 0.48, 0.24),
+				"foliage_b": Color(0.43, 0.54, 0.27),
+			}
+		"central_lab":
+			theme = {
+				"sky": Color(0.72, 0.79, 0.82),
+				"outer": Color(0.28, 0.38, 0.40),
+				"ground": Color(0.43, 0.56, 0.48),
+				"tile_a": Color(0.49, 0.62, 0.51),
+				"tile_b": Color(0.43, 0.56, 0.46),
+				"path": Color(0.48, 0.43, 0.54, 0.72),
+				"foliage_a": Color(0.26, 0.44, 0.36),
+				"foliage_b": Color(0.32, 0.50, 0.40),
+			}
+		_:
+			theme = {
+				"sky": Color(0.69, 0.79, 0.76),
+				"outer": Color(0.25, 0.39, 0.23),
+				"ground": Color(0.42, 0.55, 0.27),
+				"tile_a": GRASS_LIGHT,
+				"tile_b": GRASS_DARK,
+				"path": PATH_COLOR,
+				"foliage_a": Color(0.27, 0.48, 0.22),
+				"foliage_b": Color(0.34, 0.55, 0.24),
+			}
+	return theme.get(key, Color.WHITE)
 
 
 func _region_accent(region_type: String) -> Color:

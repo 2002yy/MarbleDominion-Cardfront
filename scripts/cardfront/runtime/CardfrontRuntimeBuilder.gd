@@ -45,7 +45,7 @@ func build_core_systems(game_layer: Node, runtime, yield_callback: Callable = Ca
 		return _failure("core", "missing_runtime")
 	_clear_core_refs(runtime)
 
-	if not _record_or_fail("regions", create_regions(game_layer, runtime.battlefield), runtime):
+	if not _record_or_fail("regions", create_regions(game_layer, runtime.battlefield, str(runtime.current_config.get("map_id", "default_duel"))), runtime):
 		return _build_result(false)
 	if not _record_or_fail("region_control_blocks", create_region_control_blocks(game_layer, runtime.region_map, runtime.battlefield), runtime):
 		return _build_result(false)
@@ -69,7 +69,7 @@ func build_live_core_systems(game_layer: Node, runtime) -> Dictionary:
 		return _failure("live_core", "missing_runtime")
 	_clear_core_refs(runtime)
 
-	if not _record_or_fail("regions", create_regions(game_layer, runtime.battlefield), runtime):
+	if not _record_or_fail("regions", create_regions(game_layer, runtime.battlefield, str(runtime.current_config.get("map_id", "default_duel"))), runtime):
 		return _build_result(false)
 	if not _record_or_fail("region_control_blocks", create_region_control_blocks(game_layer, runtime.region_map, runtime.battlefield), runtime):
 		return _build_result(false)
@@ -127,7 +127,9 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		return _build_result(false)
 	if not _record_or_fail("command_chambers", CardfrontArenaBuilderScript.create_command_chambers(game_layer, runtime.turrets, runtime.hero_assignments), runtime):
 		return _build_result(false)
-	if not _record_or_fail("orthographic_arena", CardfrontArenaBuilderScript.create_orthographic_view(game_layer, runtime.battlefield, runtime.region_map, runtime.bullet_pool, runtime.turrets, runtime.current_layout), runtime):
+	var arena_layout: Dictionary = runtime.current_layout.duplicate(true)
+	arena_layout["map_id"] = str(runtime.current_config.get("map_id", "default_duel"))
+	if not _record_or_fail("orthographic_arena", CardfrontArenaBuilderScript.create_orthographic_view(game_layer, runtime.battlefield, runtime.region_map, runtime.bullet_pool, runtime.turrets, arena_layout), runtime):
 		return _build_result(false)
 	if not _record_or_fail("gate_connectivity", create_gate_connectivity_system(game_layer, runtime.battlefield, runtime.bullet_pool, runtime.orthographic_arena_view), runtime):
 		return _build_result(false)
@@ -226,7 +228,7 @@ func _clear_world_layer_refs(runtime) -> void:
 	runtime.territory_defense_system = null
 
 
-static func create_regions(game_layer: Node, battlefield) -> Dictionary:
+static func create_regions(game_layer: Node, battlefield, map_id: String = "default_duel") -> Dictionary:
 	if game_layer == null or not is_instance_valid(game_layer):
 		return {"configured": false, "reason": "missing_game_layer"}
 	if battlefield == null or not is_instance_valid(battlefield):
@@ -234,7 +236,7 @@ static func create_regions(game_layer: Node, battlefield) -> Dictionary:
 
 	var region_map = RegionMapScript.new()
 	region_map.configure(int(battlefield.grid_size))
-	region_map.generate_default_layout()
+	region_map.generate_layout(map_id)
 
 	var overlay = RegionOverlayLayerScript.new()
 	overlay.setup(region_map, battlefield, GameConfig.GAME_MODE_CARDFRONT)
