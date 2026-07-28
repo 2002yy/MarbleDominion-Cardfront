@@ -417,8 +417,7 @@ func _on_palette_option_selected(index: int) -> void:
 
 
 func _on_start_pressed() -> void:
-	_owner._save_menu_preferences()
-	_owner._start_game(_owner.selected_grid_size)
+	_owner._request_start_from_menu()
 
 
 func _on_reset_pressed() -> void:

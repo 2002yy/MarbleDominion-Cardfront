@@ -27,7 +27,10 @@ const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/C
 const CardfrontStatusFormatterScript = preload("res://scripts/cardfront/ui/CardfrontStatusFormatter.gd")
 const CardfrontMatchFlowTextScript = preload("res://scripts/cardfront/ui/CardfrontMatchFlowText.gd")
 const CardfrontHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
+const CardfrontMapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 const CardfrontHUDScene = preload("res://scenes/ui/cardfront/CardfrontHUD.tscn")
+const CardfrontPrematchScene = preload("res://scenes/ui/cardfront/CardfrontPrematchScreen.tscn")
+const CardfrontBattleHeroHudScene = preload("res://scenes/ui/cardfront/CardfrontBattleHeroHud.tscn")
 const GameHUDScene = preload("res://scenes/ui/GameHUD.tscn")
 
 var runtime = GameRuntimeContextScript.new()
@@ -44,6 +47,7 @@ var selected_quality_name: String = GameConfig.QUALITY_MEDIUM
 var selected_game_mode_name: String = GameConfig.GAME_MODE_BASIC
 var selected_cardfront_player_hero_id: String = CardfrontHeroRegistryScript.DEFAULT_PLAYER_HERO_ID
 var selected_cardfront_ai_hero_id: String = CardfrontHeroRegistryScript.DEFAULT_AI_HERO_ID
+var selected_cardfront_map_id: String = CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID
 var selected_time_limit_minutes: int = GameConfig.DEFAULT_TIMED_MODE_MINUTES
 var selected_save_slot: int = 1
 var game_elapsed_time: float = 0.0
@@ -54,6 +58,7 @@ var menu_start_button
 var menu_continue_button
 var menu_save_slot_buttons: Dictionary = {}
 var menu_status_label
+var cardfront_prematch_screen = null
 var pending_menu_status_message: String = ""
 var ui_time: float = 0.0
 var chamber_scale: float = 1.0
@@ -99,6 +104,7 @@ func _sync_runtime_context(grid_size: int) -> void:
 		"game_mode_name": selected_game_mode_name,
 		"player_hero_id": selected_cardfront_player_hero_id,
 		"ai_hero_id": selected_cardfront_ai_hero_id,
+		"map_id": selected_cardfront_map_id,
 		"time_limit_minutes": selected_time_limit_minutes,
 		"save_slot": selected_save_slot,
 	})
@@ -518,8 +524,59 @@ func _create_ui() -> void:
 			_create_cardfront_tutorial_overlay()
 		_create_cardfront_three_choice_panel()
 		_configure_cardfront_three_choice_ui()
+		_create_cardfront_battle_hero_hud()
 
 	_on_scores_changed(runtime.battlefield.count_cells_by_team())
+
+
+func _request_start_from_menu() -> void:
+	_save_menu_preferences()
+	if _is_cardfront_mode():
+		_open_cardfront_prematch()
+	else:
+		_start_game(selected_grid_size)
+
+
+func _open_cardfront_prematch() -> void:
+	if cardfront_prematch_screen != null and is_instance_valid(cardfront_prematch_screen):
+		return
+	cardfront_prematch_screen = CardfrontPrematchScene.instantiate()
+	add_child(cardfront_prematch_screen)
+	cardfront_prematch_screen.setup(selected_cardfront_map_id, selected_cardfront_player_hero_id)
+	cardfront_prematch_screen.battle_confirmed.connect(_on_cardfront_prematch_confirmed)
+	cardfront_prematch_screen.cancelled.connect(_on_cardfront_prematch_cancelled)
+	if menu_layer != null and is_instance_valid(menu_layer):
+		menu_layer.visible = false
+
+
+func _on_cardfront_prematch_confirmed(map_id: String, player_hero_id: String, ai_hero_id: String) -> void:
+	selected_cardfront_map_id = map_id
+	selected_cardfront_player_hero_id = player_hero_id
+	selected_cardfront_ai_hero_id = ai_hero_id
+	_save_menu_preferences()
+	_close_cardfront_prematch()
+	_start_game(selected_grid_size)
+
+
+func _on_cardfront_prematch_cancelled() -> void:
+	_close_cardfront_prematch()
+	if menu_layer != null and is_instance_valid(menu_layer):
+		menu_layer.visible = true
+
+
+func _close_cardfront_prematch() -> void:
+	if cardfront_prematch_screen != null and is_instance_valid(cardfront_prematch_screen):
+		cardfront_prematch_screen.queue_free()
+	cardfront_prematch_screen = null
+
+
+func _create_cardfront_battle_hero_hud() -> void:
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var hero_hud = CardfrontBattleHeroHudScene.instantiate()
+	ui_canvas.add_child(hero_hud)
+	hero_hud.configure(runtime.hero_assignments)
 
 
 func _configure_cardfront_three_choice_ui() -> void:
@@ -802,6 +859,12 @@ func _load_menu_preferences() -> void:
 	selected_palette_name = _sanitize_pref_palette(str(data.get("palette_name", "默认随机")))
 	selected_quality_name = _sanitize_pref_quality(str(data.get("quality_name", GameConfig.QUALITY_MEDIUM)))
 	selected_game_mode_name = _sanitize_pref_mode(str(data.get("game_mode_name", GameConfig.GAME_MODE_BASIC)))
+	selected_cardfront_map_id = str(data.get("cardfront_map_id", CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID))
+	if not CardfrontMapRegistryScript.get_registered_map_ids().has(selected_cardfront_map_id):
+		selected_cardfront_map_id = CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID
+	selected_cardfront_player_hero_id = CardfrontHeroRegistryScript.sanitize_hero_id(
+		str(data.get("cardfront_player_hero_id", CardfrontHeroRegistryScript.DEFAULT_PLAYER_HERO_ID))
+	)
 	selected_time_limit_minutes = clampi(int(data.get("time_limit_minutes", GameConfig.DEFAULT_TIMED_MODE_MINUTES)), GameConfig.TIMED_MODE_MIN_MINUTES, GameConfig.TIMED_MODE_MAX_MINUTES)
 	selected_save_slot = clampi(int(data.get("save_slot", 1)), 1, SAVE_SLOT_COUNT)
 
@@ -831,6 +894,8 @@ func _save_menu_preferences() -> void:
 		"palette_name": selected_palette_name,
 		"quality_name": selected_quality_name,
 		"game_mode_name": selected_game_mode_name,
+		"cardfront_map_id": selected_cardfront_map_id,
+		"cardfront_player_hero_id": selected_cardfront_player_hero_id,
 		"time_limit_minutes": selected_time_limit_minutes,
 		"save_slot": selected_save_slot,
 	}
@@ -846,6 +911,9 @@ func reset_menu_preferences() -> void:
 	selected_palette_name = "默认随机"
 	selected_quality_name = GameConfig.QUALITY_MEDIUM
 	selected_game_mode_name = GameConfig.GAME_MODE_BASIC
+	selected_cardfront_map_id = CardfrontMapRegistryScript.DEFAULT_DUEL_MAP_ID
+	selected_cardfront_player_hero_id = CardfrontHeroRegistryScript.DEFAULT_PLAYER_HERO_ID
+	selected_cardfront_ai_hero_id = CardfrontHeroRegistryScript.DEFAULT_AI_HERO_ID
 	selected_time_limit_minutes = GameConfig.DEFAULT_TIMED_MODE_MINUTES
 	_save_menu_preferences()
 	_create_start_menu()
@@ -858,6 +926,7 @@ func _save_and_exit_to_menu() -> void:
 	_create_start_menu()
 
 func _cleanup_menu() -> void:
+	_close_cardfront_prematch()
 	if menu_layer != null:
 		menu_layer.queue_free()
 		menu_layer = null
