@@ -28,15 +28,20 @@ class MockBullet:
 
 var _assert: TestAssert
 var _finished: bool = false
+var _watchdog_timer: Timer
 
 
 func _initialize() -> void:
 	call_deferred("_run")
-	call_deferred("_watchdog")
+	_watchdog_timer = Timer.new()
+	_watchdog_timer.one_shot = true
+	_watchdog_timer.wait_time = WATCHDOG_SECONDS
+	_watchdog_timer.autostart = true
+	_watchdog_timer.timeout.connect(_on_watchdog_timeout)
+	get_root().add_child(_watchdog_timer)
 
 
-func _watchdog() -> void:
-	await create_timer(WATCHDOG_SECONDS).timeout
+func _on_watchdog_timeout() -> void:
 	if _finished:
 		return
 	push_error("[CardfrontBattlefieldEntityRuntimeTest] WATCHDOG: test did not finish")
@@ -54,6 +59,8 @@ func _run() -> void:
 	_test_projectile_contacts(fixture)
 	print("[CardfrontBattlefieldEntityRuntimeTest] repair")
 	_test_repair_action(fixture)
+	print("[CardfrontBattlefieldEntityRuntimeTest] expiry")
+	_test_expiry_signal(fixture)
 	print("[CardfrontBattlefieldEntityRuntimeTest] tower")
 	_test_tower_power_and_guidance(fixture)
 	print("[CardfrontBattlefieldEntityRuntimeTest] report")
@@ -61,6 +68,9 @@ func _run() -> void:
 	_finished = true
 	var battlefield = fixture["battlefield"]
 	TestFixtures.cleanup_node(battlefield)
+	TestFixtures.cleanup_node(fixture["defense"])
+	_watchdog_timer.stop()
+	TestFixtures.cleanup_node(_watchdog_timer)
 	quit(0 if _assert.failures.is_empty() else 1)
 
 
@@ -172,6 +182,30 @@ func _test_repair_action(fixture: Dictionary) -> void:
 	var after: int = fortify.get_fortify_stack(target)
 	_assert.that(after >= before, "repair unit never reduces defense")
 	_assert.gte(after, 1, "repair unit restores a nearby frontline layer")
+
+
+func _test_expiry_signal(fixture: Dictionary) -> void:
+	var runtime = fixture["runtime"]
+	var expiring = runtime.registry.spawn_creature(
+		"expiring_unit",
+		"repair_unit",
+		RulesScript.PLAYER_FACTION,
+		Vector2i(1, 5),
+		1,
+		CreatureStateScript.ARMOR_NORMAL,
+		1,
+		"repair",
+		1
+	)
+	var removed_ids: Array = []
+	runtime.entity_removed.connect(
+		func(entity_id, _kind, _owner_id, _cell): removed_ids.append(str(entity_id))
+	)
+	runtime.advance_round()
+	_assert.that(
+		removed_ids.has(expiring.entity_id),
+		"expired creature emits entity_removed for death presentation"
+	)
 
 
 func _test_tower_power_and_guidance(fixture: Dictionary) -> void:

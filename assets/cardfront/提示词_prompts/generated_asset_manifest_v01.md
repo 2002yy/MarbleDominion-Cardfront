@@ -51,12 +51,27 @@ these VFX methods. Missing textures fall back to procedural draw circles.
 
 | Creature | Runtime file | Source file | Current integration |
 |---|---|---|---|
-| Gate Colossus / 闸门巨像 | `assets/cardfront_runtime/中立生物_neutral_creatures/256/gate_colossus/{idle,move,attack,hit,death}/frame_*.png` | `assets/cardfront/中立生物_neutral_creatures/source/闸门巨像_gate_colossus_v01.png` plus source strips under `animations/` | Five-state `AnimatedSprite2D` actor wired through `CardfrontEntityVisualRegistry.gd` and `CardfrontEntityDebugLayer.gd`; static 256px sprite and procedural drawing remain fallbacks. |
+| Gate Colossus / 闸门巨像 | `assets/cardfront_runtime/中立生物_neutral_creatures/256/gate_colossus/{idle,move,attack,hit,death}/frame_*.png` | `assets/cardfront/中立生物_neutral_creatures/source/闸门巨像_gate_colossus_v01.png` plus source strips under `animations/` | Five-state `AnimatedSprite2D` actor wired through `CardfrontEntityVisualRegistry.gd` and `CardfrontEntityPresentationLayer.gd`; static 256px sprite and procedural drawing remain fallbacks. |
 
 The source was generated specifically for Cardfront with the built-in image
 generation workflow. Animation strips were chroma-keyed, normalized to a shared
 bottom-center anchor on 256x256 transparent canvases, and validated as
 `idle:4`, `move:6`, `attack:6`, `hit:4`, and `death:6`.
+
+## 5b. Friendly Battlefield Entities / 友方战场实体
+
+| Entity | Runtime animation set | Action states | Production |
+|---|---|---|---|
+| Repair Unit | `assets/cardfront_runtime/战场实体_battlefield_entities/256/repair_unit/` | `idle`, `move`, `repair`, `hit`, `death` | Deterministic toy-robot frame generator |
+| Armored Guard | `assets/cardfront_runtime/战场实体_battlefield_entities/256/armored_guard/` | `idle`, `move`, `block`, `hit`, `death` | Deterministic toy-robot frame generator |
+| Sapper Unit | `assets/cardfront_runtime/战场实体_battlefield_entities/256/sapper_unit/` | `idle`, `move`, `attack`, `detonate`, `hit`, `death` | Deterministic toy-robot frame generator |
+| Scout Unit | `assets/cardfront_runtime/战场实体_battlefield_entities/256/scout_unit/` | `idle`, `move`, `guide`, `hit`, `death` | Deterministic toy-drone frame generator |
+
+All friendly frames are 256x256 RGBA, bottom-center anchored, use stable bold
+outlines, and can be horizontally mirrored for left/right movement. Contact
+sheets live under `assets/cardfront/战场实体_battlefield_entities/previews/`.
+Fire-Control Beacon and Interceptor Tower use procedural presentation actors
+rather than frame strips.
 
 ## 6. Runtime Derivation / 运行时派生
 
@@ -69,8 +84,11 @@ Processed runtime sizes:
 | `装置图标_devices_icons/` | `cardfront_runtime/装置图标_icons/48/` | 48x48 | background transparency + Lanczos resize |
 | `特效纹理_vfx_textures/` | `cardfront_runtime/视觉特效_vfx/128/` | 128x128 | alpha preserved + Lanczos resize |
 | `中立生物_neutral_creatures/source/` and `animations/` | `cardfront_runtime/中立生物_neutral_creatures/256/gate_colossus/` | 256x256 per frame | chroma-key alpha + shared-scale bottom-center normalization |
+| `scripts/tools/generate_cardfront_entity_animations.py` | `cardfront_runtime/战场实体_battlefield_entities/256/` | 256x256 per frame | deterministic RGBA frames + bottom-center anchor + contact sheets |
 
 Processing script: `tools/process_cardfront_assets.py`
+Friendly entity animation generator:
+`scripts/tools/generate_cardfront_entity_animations.py`
 
 ## 7. Boundaries / 边界
 

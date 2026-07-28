@@ -11,6 +11,7 @@ const RARITY_COLORS: Dictionary = {
 
 @onready var rarity_label: Label = get_node("RarityLabel")
 @onready var symbol_label: Label = get_node("SymbolLabel")
+@onready var stats_label: Label = get_node("StatsLabel")
 @onready var name_label: Label = get_node("NameLabel")
 @onready var description_label: Label = get_node("DescriptionLabel")
 @onready var lock_label: Label = get_node("LockLabel")
@@ -37,6 +38,8 @@ func setup(new_definition: Dictionary) -> void:
 	upgrade_id = str(definition.get("id", ""))
 	rarity_label.text = _rarity_text(str(definition.get("rarity", "common")))
 	symbol_label.text = str(definition.get("symbol", "?"))
+	stats_label.text = str(definition.get("display_stats", ""))
+	stats_label.visible = not stats_label.text.is_empty()
 	name_label.text = str(definition.get("name", upgrade_id))
 	description_label.text = str(definition.get("description", ""))
 	lock_label.visible = false

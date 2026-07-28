@@ -234,6 +234,7 @@ func spawn_counter_projectile(tower, incoming_direction: Vector2) -> void:
 			"armor_pierce_pool": {"remaining": 0},
 		}
 	)
+	runtime.tower_counter_fired.emit(tower.entity_id, tower.owner_id)
 
 
 func update_power_states() -> void:

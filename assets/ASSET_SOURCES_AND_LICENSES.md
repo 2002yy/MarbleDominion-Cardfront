@@ -86,7 +86,7 @@ Credits rule:
 
 - source: AI-generated project-specific Cardfront assets (original staging/source)
 - generated for: Marble Dominion: Cardfront
-- usage: card illustrations, device sprites, VFX textures, neutral-creature sprites
+- usage: card illustrations, device sprites, VFX textures, neutral-creature sprites, deterministic friendly-entity animation previews
 - restriction: do not use as third-party source pack; project-specific generated assets
 - manifest: `assets/cardfront/提示词_prompts/generated_asset_manifest_v01.md`
 - current status: source/staged AI-generated originals plus processed runtime derivatives; runtime use is tracked in section 8
@@ -96,6 +96,7 @@ Credits rule:
   - 装置图标_devices_icons/ (1 status icon)
   - 特效纹理_vfx_textures/ (3 VFX textures) — processed 128 runtime versions are wired by `CardfrontVfxLayer.gd`
   - 中立生物_neutral_creatures/ (Gate Colossus source and animation strips) — normalized `idle`, `move`, `attack`, `hit`, and `death` frames are wired by `CardfrontEntityVisualRegistry.gd`
+  - 战场实体_battlefield_entities/ (friendly entity contact sheets) — generated locally by `scripts/tools/generate_cardfront_entity_animations.py`
 
 ### `assets/cardfront_runtime/`
 
@@ -106,6 +107,7 @@ Credits rule:
 - device icons under `装置图标_icons/48/` are staged runtime icons for later HUD polish
 - card illustrations under `卡牌插图_cards/512/` are wired by `CardVisualRegistry.gd`
 - neutral-creature sprites under `中立生物_neutral_creatures/256/` are wired by `CardfrontEntityVisualRegistry.gd`; Gate Colossus uses a five-state `AnimatedSprite2D` presentation actor with static and procedural fallbacks
+- friendly entity frames under `战场实体_battlefield_entities/256/` are wired by `CardfrontEntityVisualRegistry.gd`; Repair Unit, Armored Guard, Sapper Unit, and Scout use complete role-specific animation sets
 
 ## 4. Not Mirrored Into `assets/` / 未直接镜像进 `assets/` 的素材
 
@@ -215,6 +217,7 @@ fallbacks, but assets are no longer disconnected from code.
 | Device sprites | `scripts/cardfront/devices/DeviceVisualRegistry.gd` and `CardfrontDeviceOverlayLayer.gd` | Absorber, Engineer, Pioneer Beacon, and Temporary Reflector sprites load from `assets/cardfront_runtime/装置精灵_devices/96/`. |
 | VFX textures | `scripts/cardfront/vfx/CardfrontVfxLayer.gd` | Energy ripple, shield crack/pulse, and region pulse load from `assets/cardfront_runtime/视觉特效_vfx/128/`, with draw-circle fallback. |
 | Card audio feedback | `scripts/cardfront/ui/CardfrontCardAudioFeedback.gd` | Hover, click, success, and fail feedback use curated `assets/音效_sfx/` files when present; missing assets fail silently. |
+| Battlefield entities | `scripts/cardfront/entities/CardfrontEntityVisualRegistry.gd` and `CardfrontEntityPresentationLayer.gd` | Gate Colossus plus four friendly entity animation sets are active; two defense towers use procedural hybrid actors and all assets retain runtime fallbacks. |
 | UI art registry prep | `scripts/cardfront/ui/CardfrontUiAssetRegistry.gd` | Kenney font, Kenney/Wenrexa panels, and Game-Icons paths are centralized with `ResourceLoader.exists` fallback. |
 
 ### Current UI art state / 当前 UI 美术状态

@@ -415,10 +415,21 @@ Creature and defense-tower card-pool decision:
 - **Friendly creature:** approved direction is a medium-strength faction-owned
   unit with construction synergy. Repair Units and the Armored Guard now provide
   formal player-facing summon upgrades with distinct support and blocking roles.
-- Creature summons and defense-tower construction/upgrades are confirmed as
-  **future three-choice card-pool content**, not a separate out-of-pool system.
+  Repair Unit, Armored Guard, Sapper Unit, and Scout now have deterministic
+  256px animation sets with `idle`, `move`, role action, `hit`, and `death`;
+  Sapper additionally has separate `attack` and terminal `detonate` states.
+- Creature summons and defense-tower construction/upgrades are active
+  **three-choice card-pool content**, not a separate out-of-pool system.
 - Repair Units, Armored Guard, Sapper Unit, Gate Colossus, Fire-Control Beacon,
   and Interceptor Tower are offered by the current formal pool.
+- Fire-Control Beacon and Interceptor Tower use presentation-only hybrid actors:
+  stable procedural bodies plus guidance, firing, interception, counterfire,
+  power-loss, hit, and destruction feedback.
+- Battlefield entities display a faction badge, HP, compact role/status marks,
+  tower level, power state, and remaining interception count. Hovering an entity
+  shows a short HP/movement/duration or HP/level/power summary.
+- The six entity choice cards expose direct stats for summon count, HP,
+  duration, tower level, guidance/interception capacity, or occupied slots.
 
 Confirmed future card-pool inventory:
 
@@ -928,8 +939,9 @@ Candidate order after B1:
 
 ### Later
 
-- Next gameplay engineering target: entity-runtime coupling closeout and an
-  eighteen-card live playtest; do not add another card batch first.
+- Next gameplay engineering target: an eighteen-card live playtest and
+  readability audit; the entity-runtime coupling closeout is complete, and no
+  additional card batch should be added first.
 - `v0.3.4`: complete the `default_duel` formal-art benchmark, then expand the
   approved environment language to Cross Strongholds and Central Lab.
 - `v0.3.3b2` and `v0.3.3b3` remain paused and are not implied by completing

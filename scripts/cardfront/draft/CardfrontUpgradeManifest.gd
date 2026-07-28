@@ -177,6 +177,7 @@ const DEFINITIONS := {
 		"tags": ["creature", "repair", "frontline", "fortify"],
 		"effect_id": "queue_entity_action",
 		"params": {"action": "summon_repair_units", "amount": 2},
+		"display_stats": "×2 · HP 1 · 持续 3 回合",
 		"description": "召唤 2 只维修单位；每只持续 3 回合，移动到受损前线并修复 1 层防守",
 	},
 	UPGRADE_FIRE_CONTROL_BEACON: {
@@ -188,6 +189,7 @@ const DEFINITIONS := {
 		"tags": ["tower", "guidance", "route", "building"],
 		"effect_id": "queue_entity_action",
 		"params": {"action": "build_or_upgrade_tower", "tower_id": "fire_control_beacon"},
+		"display_stats": "HP 5 · L1–3 · 引导 6/8/10",
 		"description": "在路线塔位建造火控信标；重复选择升级，引导数量依次为 6、8、10 发",
 	},
 	UPGRADE_INTERCEPTOR_TOWER: {
@@ -199,6 +201,7 @@ const DEFINITIONS := {
 		"tags": ["tower", "intercept", "defense", "building"],
 		"effect_id": "queue_entity_action",
 		"params": {"action": "build_or_upgrade_tower", "tower_id": "interceptor_tower"},
+		"display_stats": "HP 4 · L1–3 · 拦截 2/3/3",
 		"description": "在路线塔位建造拦截塔；每轮拦截标准弹数量依次为 2、3、3，三级耗尽额度后反击 1 发",
 	},
 	UPGRADE_BUILDING_VOLLEY: {
@@ -238,6 +241,7 @@ const DEFINITIONS := {
 		"tags": ["creature", "armored", "frontline", "gate", "defense"],
 		"effect_id": "queue_entity_action",
 		"params": {"action": "summon_armored_guard", "amount": 1},
+		"display_stats": "×1 · HP 4 · 永久",
 		"description": "召唤 1 名 4 生命装甲护卫；每轮移动 1 格并驻守最近闸门入口或争夺前线，持续至被击毁",
 	},
 	UPGRADE_SAPPER_UNIT: {
@@ -249,6 +253,7 @@ const DEFINITIONS := {
 		"tags": ["creature", "armored", "siege", "tower", "anti_fortify"],
 		"effect_id": "queue_entity_action",
 		"params": {"action": "summon_sapper_unit", "amount": 1},
+		"display_stats": "×1 · HP 3 · 命中后自爆",
 		"description": "召唤 1 名 3 生命装甲掘城单位；优先炸敌塔 3 点，其次拆除目标格最多 2 层防守，对控制舱仅造成 1 点，结算后自毁",
 	},
 	UPGRADE_GATE_COLOSSUS: {
@@ -260,6 +265,7 @@ const DEFINITIONS := {
 		"tags": ["creature", "neutral", "armored", "gate", "comeback"],
 		"effect_id": "queue_entity_action",
 		"params": {"action": "summon_gate_colossus", "amount": 1},
+		"display_stats": "中立 · HP 6 · 占 2 槽",
 		"description": "从中央闸门唤醒 1 只 6 生命中立巨像；它占 2 格容量并攻击当前领土领先方，双方弹丸都能伤害它，每方整局限一次",
 	},
 }

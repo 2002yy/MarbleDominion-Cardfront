@@ -66,7 +66,11 @@ func sync_cell(target_cell: Vector2i, immediate: bool = false) -> void:
 
 
 func play_attack() -> void:
-	_play_state(STATE_ATTACK)
+	play_action(STATE_ATTACK)
+
+
+func play_action(action_name: StringName) -> void:
+	_play_state(action_name)
 
 
 func play_hit() -> void:
@@ -81,6 +85,16 @@ func play_death() -> void:
 	if _move_tween != null and _move_tween.is_valid():
 		_move_tween.kill()
 	_play_state(STATE_DEATH, true)
+
+
+func play_terminal(action_name: StringName) -> void:
+	if _dying:
+		return
+	_dying = true
+	_moving = false
+	if _move_tween != null and _move_tween.is_valid():
+		_move_tween.kill()
+	_play_state(action_name, true)
 
 
 func is_dying() -> bool:
@@ -114,10 +128,10 @@ func _on_move_finished() -> void:
 
 
 func _on_animation_finished() -> void:
-	if current_state == STATE_DEATH:
+	if _dying:
 		death_finished.emit(entity_id)
 		return
-	if current_state == STATE_ATTACK or current_state == STATE_HIT:
+	if current_state != STATE_IDLE and current_state != STATE_MOVE:
 		_resume_locomotion()
 
 
@@ -138,6 +152,8 @@ func _state_priority(state: StringName) -> int:
 		STATE_HIT:
 			return 4
 		STATE_ATTACK:
+			return 3
+		&"repair", &"block", &"guide", &"detonate":
 			return 3
 		STATE_MOVE:
 			return 2

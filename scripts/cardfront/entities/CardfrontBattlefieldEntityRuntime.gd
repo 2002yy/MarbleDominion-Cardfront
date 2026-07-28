@@ -8,6 +8,7 @@ signal creature_repaired(entity_id, cell, restored_points)
 signal tower_power_changed(entity_id, powered)
 signal projectile_guided(tower_entity_id, owner_id, projectile_type)
 signal building_volley_fired(owner_id, tower_entity_id, shot_count)
+signal tower_counter_fired(tower_entity_id, owner_id)
 signal heavy_charge_exploded(owner_id, cell, center_target_id)
 signal sapper_detonated(owner_id, target_kind, cell, damage)
 signal neutral_creature_attacked(result)
@@ -121,7 +122,14 @@ func advance_round() -> void:
 	_update_tower_power_states()
 	_run_creature_actions()
 	_process_tower_summons()
-	registry.tick_round()
+	var expired_entities: Array = registry.tick_round()
+	for entity in expired_entities:
+		entity_removed.emit(
+			str(entity.entity_id),
+			str(entity.entity_kind),
+			int(entity.owner_id),
+			entity.cell
+		)
 	_cleanup_dead_entities()
 	_mark_visuals_dirty()
 

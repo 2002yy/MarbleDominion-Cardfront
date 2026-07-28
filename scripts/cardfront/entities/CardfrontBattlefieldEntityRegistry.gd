@@ -182,15 +182,18 @@ func begin_volley() -> void:
 			entity.begin_volley()
 
 
-func tick_round() -> void:
+func tick_round() -> Array:
 	var expired_ids: Array = []
+	var expired_entities: Array = []
 	for entity_id in entities_by_id.keys():
 		var entity = entities_by_id[entity_id]
 		entity.tick_round()
 		if not entity.is_alive():
 			expired_ids.append(str(entity_id))
+			expired_entities.append(entity)
 	for entity_id in expired_ids:
 		remove_entity(entity_id)
+	return expired_entities
 
 
 func snapshot() -> Dictionary:
