@@ -317,6 +317,7 @@ func _make_state(hero_id: String, owner_id: int) -> Dictionary:
 		"tower_levels": {},
 		"building_volley_level": 0,
 		"heavy_charge_armed": false,
+		"neutral_creature_summoned": false,
 		"applied_upgrade_counts": {},
 	}
 
@@ -459,6 +460,8 @@ func _upgrade_score_fast(upgrade_id: String, state: Dictionary) -> float:
 			return 77.0
 		UpgradeManifestScript.UPGRADE_SAPPER_UNIT:
 			return 80.0 + float(int(state.get("owned_defense_tower_count", 0))) * 4.0
+		UpgradeManifestScript.UPGRADE_GATE_COLOSSUS:
+			return 76.0
 	return 0.0
 
 
@@ -518,6 +521,8 @@ func _apply_upgrade_once_fast(state: Dictionary, upgrade_id: String) -> bool:
 						3,
 						int(state.get("owned_creature_count", 0)) + maxi(0, int(params.get("amount", 1)))
 					)
+				"summon_gate_colossus":
+					state["neutral_creature_summoned"] = true
 				"build_or_upgrade_tower":
 					var tower_id: String = str(params.get("tower_id", ""))
 					var levels: Dictionary = state.get("tower_levels", {}) as Dictionary
@@ -588,6 +593,8 @@ func _is_upgrade_eligible_fast(upgrade_id: String, state: Dictionary) -> bool:
 		return int(state.get("owned_creature_count", 0)) < 3
 	if upgrade_id == UpgradeManifestScript.UPGRADE_SAPPER_UNIT:
 		return int(state.get("owned_creature_count", 0)) < 3
+	if upgrade_id == UpgradeManifestScript.UPGRADE_GATE_COLOSSUS:
+		return not bool(state.get("neutral_creature_summoned", false))
 	if upgrade_id == UpgradeManifestScript.UPGRADE_FIRE_CONTROL_BEACON:
 		return int((state.get("tower_levels", {}) as Dictionary).get("fire_control_beacon", 0)) < 3
 	if upgrade_id == UpgradeManifestScript.UPGRADE_INTERCEPTOR_TOWER:

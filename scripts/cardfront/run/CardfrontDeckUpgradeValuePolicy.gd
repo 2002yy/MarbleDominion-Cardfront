@@ -139,6 +139,12 @@ static func _score_entity_upgrade(
 						18.0 + float(enemy_towers) * 18.0 + minf(12.0, defense_points)
 					)
 					result["reason"] = "sapper_structure_demolition_value"
+				"summon_gate_colossus":
+					var own_ratio: float = clampf(float(context.get("own_health_ratio", 1.0)), 0.0, 1.0)
+					var enemy_ratio: float = clampf(float(context.get("enemy_health_ratio", 1.0)), 0.0, 1.0)
+					var comeback_need: float = maxf(0.0, enemy_ratio - own_ratio)
+					result["persistent_value"] = 30.0 + comeback_need * 44.0 + route_pressure * 5.0
+					result["reason"] = "neutral_colossus_comeback_value"
 				"build_or_upgrade_tower":
 					var tower_id: String = str(params.get("tower_id", ""))
 					var current_level: int = int((model.get("tower_levels", {}) as Dictionary).get(tower_id, 0))
@@ -183,6 +189,7 @@ static func _extend_echo_value(
 			UpgradeManifestScript.UPGRADE_HEAVY_CHARGE,
 			UpgradeManifestScript.UPGRADE_ARMORED_GUARD,
 			UpgradeManifestScript.UPGRADE_SAPPER_UNIT,
+			UpgradeManifestScript.UPGRADE_GATE_COLOSSUS,
 		]:
 			continue
 		var candidate: Dictionary = evaluate(candidate_id, model, future_context, MODE_MARGINAL)
@@ -247,6 +254,7 @@ static func _state_model(state) -> Dictionary:
 		"owned_defense_tower_count": 0,
 		"tower_levels": {},
 		"building_volley_level": 0,
+		"neutral_creature_summoned": false,
 		"applied_upgrade_counts": {},
 	}
 	if state != null:
@@ -270,6 +278,7 @@ static func _state_model(state) -> Dictionary:
 	model["owned_defense_tower_count"] = maxi(0, int(model["owned_defense_tower_count"]))
 	model["tower_levels"] = (model["tower_levels"] as Dictionary).duplicate(true)
 	model["building_volley_level"] = clampi(int(model["building_volley_level"]), 0, 3)
+	model["neutral_creature_summoned"] = bool(model["neutral_creature_summoned"])
 	model["applied_upgrade_counts"] = (model["applied_upgrade_counts"] as Dictionary).duplicate()
 	return model
 

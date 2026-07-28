@@ -38,6 +38,7 @@ func _make_state(hero_id: String, owner_id: int) -> Dictionary:
 	state["tower_levels"] = {}
 	state["building_volley_level"] = 0
 	state["heavy_charge_armed"] = false
+	state["neutral_creature_summoned"] = false
 	return state
 
 
@@ -92,6 +93,8 @@ func _apply_upgrade_once_fast(state: Dictionary, upgrade_id: String) -> bool:
 						3,
 						int(state.get("owned_creature_count", 0)) + maxi(0, int(params.get("amount", 1)))
 					)
+				"summon_gate_colossus":
+					state["neutral_creature_summoned"] = true
 				"build_or_upgrade_tower":
 					var tower_id: String = str(params.get("tower_id", ""))
 					var levels: Dictionary = state.get("tower_levels", {}) as Dictionary
@@ -151,6 +154,8 @@ func _is_upgrade_eligible_fast(upgrade_id: String, state: Dictionary) -> bool:
 			return int(state.get("owned_creature_count", 0)) < 3
 		ManifestScript.UPGRADE_SAPPER_UNIT:
 			return int(state.get("owned_creature_count", 0)) < 3
+		ManifestScript.UPGRADE_GATE_COLOSSUS:
+			return not bool(state.get("neutral_creature_summoned", false))
 		ManifestScript.UPGRADE_FIRE_CONTROL_BEACON:
 			return int((state.get("tower_levels", {}) as Dictionary).get("fire_control_beacon", 0)) < 3
 		ManifestScript.UPGRADE_INTERCEPTOR_TOWER:

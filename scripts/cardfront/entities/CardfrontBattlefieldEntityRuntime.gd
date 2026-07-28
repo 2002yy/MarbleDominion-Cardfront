@@ -10,6 +10,7 @@ signal projectile_guided(tower_entity_id, owner_id, projectile_type)
 signal building_volley_fired(owner_id, tower_entity_id, shot_count)
 signal heavy_charge_exploded(owner_id, cell, center_target_id)
 signal sapper_detonated(owner_id, target_kind, cell, damage)
+signal neutral_creature_attacked(result)
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
@@ -20,6 +21,7 @@ const RegistryScript = preload("res://scripts/cardfront/entities/CardfrontBattle
 const InteractionScript = preload("res://scripts/cardfront/entities/CardfrontProjectileEntityInteraction.gd")
 const DebugLayerScript = preload("res://scripts/cardfront/entities/CardfrontEntityDebugLayer.gd")
 const SapperSystemScript = preload("res://scripts/cardfront/entities/CardfrontSapperSystem.gd")
+const NeutralCreatureSystemScript = preload("res://scripts/cardfront/entities/CardfrontNeutralCreatureSystem.gd")
 
 const CREATURE_REPAIR_UNIT: String = "repair_unit"
 const CREATURE_SCOUT_UNIT: String = "scout_unit"
@@ -44,6 +46,7 @@ var debug_layer = null
 var _entity_serial: int = 0
 var _repaired_cells_this_round: Dictionary = {}
 var _sapper_system = SapperSystemScript.new()
+var _neutral_creature_system = NeutralCreatureSystemScript.new()
 
 
 func _init() -> void:
@@ -57,6 +60,7 @@ func setup(new_battlefield, new_map_definition: Dictionary = {}) -> bool:
 		return false
 	battlefield = new_battlefield
 	_sapper_system.setup(self)
+	_neutral_creature_system.setup(self)
 	registry.clear()
 	map_definition = new_map_definition.duplicate(true)
 	if map_definition.is_empty():
@@ -201,6 +205,12 @@ func apply_pending_upgrade_actions(owner_id: int, run_state) -> Array:
 				results.append({
 					"action": "summon_sapper_unit",
 					"spawned": 1 if sapper != null else 0,
+				})
+			"summon_gate_colossus":
+				var colossus = _neutral_creature_system.spawn(owner_id)
+				results.append({
+					"action": "summon_gate_colossus",
+					"spawned": 1 if colossus != null else 0,
 				})
 			"build_or_upgrade_tower":
 				var tower_result: Dictionary = build_or_upgrade_tower(owner_id, str(action.get("tower_id", "")))
@@ -737,6 +747,12 @@ func _run_creature_actions() -> void:
 			continue
 		if not entity.can_act():
 			continue
+		if (
+			int(entity.owner_id) == RulesScript.NEUTRAL_OWNER
+			and str(entity.behavior_type) == "neutral_gate_colossus"
+		):
+			_neutral_creature_system.run(entity)
+			continue
 		match str(entity.behavior_type):
 			"repair_frontline":
 				_run_repair_unit(entity)
@@ -1025,11 +1041,11 @@ func _remove_entity(entity_id: String) -> void:
 
 func _ensure_debug_layer() -> void:
 	if debug_layer != null and is_instance_valid(debug_layer):
-		debug_layer.setup(battlefield, registry)
+		debug_layer.setup(battlefield, registry, self)
 		return
 	debug_layer = DebugLayerScript.new()
 	add_child(debug_layer)
-	debug_layer.setup(battlefield, registry)
+	debug_layer.setup(battlefield, registry, self)
 
 
 func _mark_visuals_dirty() -> void:

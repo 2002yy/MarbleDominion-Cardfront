@@ -34,6 +34,7 @@ const DEFINITIONS: Dictionary = {
 			"heavy_charge",
 			"armored_guard",
 			"sapper_unit",
+			"gate_colossus",
 		],
 	},
 	DECK_FORTIFICATION_CORPS: {
@@ -55,6 +56,7 @@ const DEFINITIONS: Dictionary = {
 			"heavy_charge",
 			"armored_guard",
 			"sapper_unit",
+			"gate_colossus",
 		],
 	},
 	DECK_BARRAGE_CONTROL: {

@@ -104,6 +104,8 @@ jobs:
               CardfrontEntityCardRuntimeTestRunner.gd
               CardfrontArmoredGuardTestRunner.gd
               CardfrontSapperUnitTestRunner.gd
+              CardfrontNeutralCreatureTestRunner.gd
+              CardfrontEntityAnimationTestRunner.gd
           - batch: Cardfront v0.3 arena spike
             scripts: |
               CardfrontArenaLayoutTestRunner.gd

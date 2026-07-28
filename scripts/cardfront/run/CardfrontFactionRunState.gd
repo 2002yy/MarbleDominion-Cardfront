@@ -42,6 +42,7 @@ var pending_repair_zone: String = "frontline"
 var pending_entity_actions: Array = []
 var building_volley_level: int = 0
 var heavy_charge_spec: Dictionary = {}
+var neutral_creature_summoned: bool = false
 var owned_creature_count: int = 0
 var owned_defense_tower_count: int = 0
 var tower_levels: Dictionary = {}
@@ -80,6 +81,7 @@ func setup(new_owner_id: int, new_base_volley_count: int = DEFAULT_BASE_VOLLEY_C
 	pending_entity_actions.clear()
 	building_volley_level = 0
 	heavy_charge_spec.clear()
+	neutral_creature_summoned = false
 	owned_creature_count = 0
 	owned_defense_tower_count = 0
 	tower_levels.clear()
@@ -231,6 +233,10 @@ func arm_heavy_charge(spec: Dictionary) -> void:
 	heavy_charge_spec = spec.duplicate(true)
 
 
+func mark_neutral_creature_summoned() -> void:
+	neutral_creature_summoned = true
+
+
 func sync_entity_summary(creature_count: int, tower_count: int, levels: Dictionary) -> void:
 	owned_creature_count = maxi(0, int(creature_count))
 	owned_defense_tower_count = maxi(0, int(tower_count))
@@ -264,6 +270,7 @@ func consume_next_volley_modifiers() -> Dictionary:
 		"armor_pierce_contacts": next_volley_armor_pierce_contacts,
 		"projectile_conversions": next_volley_conversions.duplicate(true),
 		"heavy_charge_spec": heavy_charge_spec.duplicate(true),
+		"neutral_creature_summoned": neutral_creature_summoned,
 	}
 	next_volley_bonus = 0
 	next_volley_multiplier = 1

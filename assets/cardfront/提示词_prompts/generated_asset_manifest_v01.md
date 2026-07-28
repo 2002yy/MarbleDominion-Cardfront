@@ -47,7 +47,18 @@ should register 128/256 thumbnails in `CardVisualRegistry.thumbnail`.
 `CardfrontEffectVisualBridge.gd` now maps the 4 existing card-success events to
 these VFX methods. Missing textures fall back to procedural draw circles.
 
-## 5. Runtime Derivation / 运行时派生
+## 5. Neutral Creatures / 中立生物
+
+| Creature | Runtime file | Source file | Current integration |
+|---|---|---|---|
+| Gate Colossus / 闸门巨像 | `assets/cardfront_runtime/中立生物_neutral_creatures/256/gate_colossus/{idle,move,attack,hit,death}/frame_*.png` | `assets/cardfront/中立生物_neutral_creatures/source/闸门巨像_gate_colossus_v01.png` plus source strips under `animations/` | Five-state `AnimatedSprite2D` actor wired through `CardfrontEntityVisualRegistry.gd` and `CardfrontEntityDebugLayer.gd`; static 256px sprite and procedural drawing remain fallbacks. |
+
+The source was generated specifically for Cardfront with the built-in image
+generation workflow. Animation strips were chroma-keyed, normalized to a shared
+bottom-center anchor on 256x256 transparent canvases, and validated as
+`idle:4`, `move:6`, `attack:6`, `hit:4`, and `death:6`.
+
+## 6. Runtime Derivation / 运行时派生
 
 Processed runtime sizes:
 
@@ -57,12 +68,13 @@ Processed runtime sizes:
 | `装置地图精灵_devices_map_sprites/` | `cardfront_runtime/装置精灵_devices/96/` | 96x96 | background transparency + Lanczos resize |
 | `装置图标_devices_icons/` | `cardfront_runtime/装置图标_icons/48/` | 48x48 | background transparency + Lanczos resize |
 | `特效纹理_vfx_textures/` | `cardfront_runtime/视觉特效_vfx/128/` | 128x128 | alpha preserved + Lanczos resize |
+| `中立生物_neutral_creatures/source/` and `animations/` | `cardfront_runtime/中立生物_neutral_creatures/256/gate_colossus/` | 256x256 per frame | chroma-key alpha + shared-scale bottom-center normalization |
 
 Processing script: `tools/process_cardfront_assets.py`
 
-## 6. Boundaries / 边界
+## 7. Boundaries / 边界
 
 - These assets are project-specific AI-generated assets, not a reusable third-party pack.
 - Do not use raw 1024 source images directly as small sprites.
-- Use registries (`CardVisualRegistry`, `DeviceVisualRegistry`, `CardfrontUiAssetRegistry`) for runtime paths.
+- Use registries (`CardVisualRegistry`, `DeviceVisualRegistry`, `CardfrontUiAssetRegistry`, `CardfrontEntityVisualRegistry`) for runtime paths.
 - Keep `ResourceLoader.exists` fallback behavior in tests and UI code.

@@ -22,6 +22,7 @@ const UPGRADE_BUILDING_VOLLEY: String = "building_volley"
 const UPGRADE_HEAVY_CHARGE: String = "heavy_charge"
 const UPGRADE_ARMORED_GUARD: String = "armored_guard"
 const UPGRADE_SAPPER_UNIT: String = "sapper_unit"
+const UPGRADE_GATE_COLOSSUS: String = "gate_colossus"
 
 # Historical A/B0 baseline. Keep this list available for audit fixtures.
 const CORE_UPGRADE_IDS: Array[String] = [
@@ -53,6 +54,7 @@ const FORMAL_UPGRADE_IDS: Array[String] = [
 	UPGRADE_HEAVY_CHARGE,
 	UPGRADE_ARMORED_GUARD,
 	UPGRADE_SAPPER_UNIT,
+	UPGRADE_GATE_COLOSSUS,
 ]
 
 const DEFINITIONS := {
@@ -248,6 +250,17 @@ const DEFINITIONS := {
 		"effect_id": "queue_entity_action",
 		"params": {"action": "summon_sapper_unit", "amount": 1},
 		"description": "召唤 1 名 3 生命装甲掘城单位；优先炸敌塔 3 点，其次拆除目标格最多 2 层防守，对控制舱仅造成 1 点，结算后自毁",
+	},
+	UPGRADE_GATE_COLOSSUS: {
+		"id": UPGRADE_GATE_COLOSSUS,
+		"name": "唤醒闸门巨像",
+		"symbol": "GOLEM6",
+		"rarity": RARITY_RARE,
+		"category": "neutral_entity",
+		"tags": ["creature", "neutral", "armored", "gate", "comeback"],
+		"effect_id": "queue_entity_action",
+		"params": {"action": "summon_gate_colossus", "amount": 1},
+		"description": "从中央闸门唤醒 1 只 6 生命中立巨像；它占 2 格容量并攻击当前领土领先方，双方弹丸都能伤害它，每方整局限一次",
 	},
 }
 

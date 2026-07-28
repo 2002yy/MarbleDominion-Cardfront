@@ -82,6 +82,8 @@ func is_upgrade_eligible(definition: Dictionary, run_state = null) -> bool:
 		return int(run_state.get("owned_creature_count")) < 3
 	if upgrade_id == UpgradeManifestScript.UPGRADE_SAPPER_UNIT:
 		return int(run_state.get("owned_creature_count")) < 3
+	if upgrade_id == UpgradeManifestScript.UPGRADE_GATE_COLOSSUS:
+		return not bool(run_state.get("neutral_creature_summoned"))
 	if upgrade_id == UpgradeManifestScript.UPGRADE_FIRE_CONTROL_BEACON:
 		return int(run_state.call("get_tower_level", "fire_control_beacon")) < 3
 	if upgrade_id == UpgradeManifestScript.UPGRADE_INTERCEPTOR_TOWER:

@@ -8,6 +8,8 @@ static func apply(run_state, effect_id: String, params: Dictionary) -> bool:
 	match str(effect_id):
 		"queue_entity_action":
 			run_state.queue_entity_action(params)
+			if str(params.get("action", "")) == "summon_gate_colossus":
+				run_state.mark_neutral_creature_summoned()
 		"increase_building_volley":
 			run_state.increase_building_volley_level(int(params.get("amount", 0)))
 		"arm_heavy_charge":

@@ -42,13 +42,15 @@ func spawn_creature(
 	armor_type: String = "normal",
 	movement: int = 1,
 	behavior_type: String = "hold_frontline",
-	rounds_remaining: int = -1
+	rounds_remaining: int = -1,
+	size_slots: int = 1
 ):
 	if not _can_register_entity(entity_id):
 		return null
 	if owner_id >= 0 and count_owner_entities(owner_id, BattlefieldEntityScript.KIND_CREATURE) >= MAX_CREATURES_PER_FACTION:
 		return null
-	if _creature_slots_at(cell) >= MAX_CREATURE_SLOTS_PER_CELL:
+	var safe_size_slots: int = clampi(int(size_slots), 1, MAX_CREATURE_SLOTS_PER_CELL)
+	if _creature_slots_at(cell) + safe_size_slots > MAX_CREATURE_SLOTS_PER_CELL:
 		return null
 	var creature = CreatureStateScript.new()
 	creature.setup_creature(
@@ -62,6 +64,7 @@ func spawn_creature(
 		behavior_type,
 		rounds_remaining
 	)
+	creature.size_slots = safe_size_slots
 	_register_entity(creature)
 	return creature
 

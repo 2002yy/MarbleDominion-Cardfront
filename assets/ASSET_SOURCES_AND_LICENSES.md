@@ -86,7 +86,7 @@ Credits rule:
 
 - source: AI-generated project-specific Cardfront assets (original staging/source)
 - generated for: Marble Dominion: Cardfront
-- usage: card illustrations, device sprites, VFX textures
+- usage: card illustrations, device sprites, VFX textures, neutral-creature sprites
 - restriction: do not use as third-party source pack; project-specific generated assets
 - manifest: `assets/cardfront/提示词_prompts/generated_asset_manifest_v01.md`
 - current status: source/staged AI-generated originals plus processed runtime derivatives; runtime use is tracked in section 8
@@ -95,6 +95,7 @@ Credits rule:
   - 装置地图精灵_devices_map_sprites/ (4 device sprites) — processed 96 runtime versions are wired by `DeviceVisualRegistry.gd`
   - 装置图标_devices_icons/ (1 status icon)
   - 特效纹理_vfx_textures/ (3 VFX textures) — processed 128 runtime versions are wired by `CardfrontVfxLayer.gd`
+  - 中立生物_neutral_creatures/ (Gate Colossus source and animation strips) — normalized `idle`, `move`, `attack`, `hit`, and `death` frames are wired by `CardfrontEntityVisualRegistry.gd`
 
 ### `assets/cardfront_runtime/`
 
@@ -104,6 +105,7 @@ Credits rule:
 - VFX textures under `视觉特效_vfx/128/` are wired by `CardfrontVfxLayer.gd`
 - device icons under `装置图标_icons/48/` are staged runtime icons for later HUD polish
 - card illustrations under `卡牌插图_cards/512/` are wired by `CardVisualRegistry.gd`
+- neutral-creature sprites under `中立生物_neutral_creatures/256/` are wired by `CardfrontEntityVisualRegistry.gd`; Gate Colossus uses a five-state `AnimatedSprite2D` presentation actor with static and procedural fallbacks
 
 ## 4. Not Mirrored Into `assets/` / 未直接镜像进 `assets/` 的素材
 
