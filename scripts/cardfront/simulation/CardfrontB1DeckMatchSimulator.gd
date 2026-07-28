@@ -87,6 +87,11 @@ func _apply_upgrade_once_fast(state: Dictionary, upgrade_id: String) -> bool:
 						3,
 						int(state.get("owned_creature_count", 0)) + maxi(0, int(params.get("amount", 1)))
 					)
+				"summon_sapper_unit":
+					state["owned_creature_count"] = mini(
+						3,
+						int(state.get("owned_creature_count", 0)) + maxi(0, int(params.get("amount", 1)))
+					)
 				"build_or_upgrade_tower":
 					var tower_id: String = str(params.get("tower_id", ""))
 					var levels: Dictionary = state.get("tower_levels", {}) as Dictionary
@@ -143,6 +148,8 @@ func _is_upgrade_eligible_fast(upgrade_id: String, state: Dictionary) -> bool:
 		ManifestScript.UPGRADE_REPAIR_UNITS:
 			return int(state.get("owned_creature_count", 0)) <= 1
 		ManifestScript.UPGRADE_ARMORED_GUARD:
+			return int(state.get("owned_creature_count", 0)) < 3
+		ManifestScript.UPGRADE_SAPPER_UNIT:
 			return int(state.get("owned_creature_count", 0)) < 3
 		ManifestScript.UPGRADE_FIRE_CONTROL_BEACON:
 			return int((state.get("tower_levels", {}) as Dictionary).get("fire_control_beacon", 0)) < 3

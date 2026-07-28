@@ -9,7 +9,7 @@ const DECK_BARRAGE_CONTROL: String = "barrage_control"
 
 const DEFAULT_DECK_ID: String = DECK_CORE_TACTICS
 const MIN_DECK_SIZE: int = 8
-const MAX_DECK_SIZE: int = 16
+const MAX_DECK_SIZE: int = 18
 
 const DEFINITIONS: Dictionary = {
 	DECK_CORE_TACTICS: {
@@ -33,6 +33,7 @@ const DEFINITIONS: Dictionary = {
 			"building_volley",
 			"heavy_charge",
 			"armored_guard",
+			"sapper_unit",
 		],
 	},
 	DECK_FORTIFICATION_CORPS: {
@@ -53,6 +54,7 @@ const DEFINITIONS: Dictionary = {
 			"building_volley",
 			"heavy_charge",
 			"armored_guard",
+			"sapper_unit",
 		],
 	},
 	DECK_BARRAGE_CONTROL: {

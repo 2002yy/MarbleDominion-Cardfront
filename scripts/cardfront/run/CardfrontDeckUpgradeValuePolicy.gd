@@ -131,6 +131,14 @@ static func _score_entity_upgrade(
 					var spawned: int = mini(capacity, maxi(0, int(params.get("amount", 1))))
 					result["persistent_value"] = float(spawned) * (24.0 + route_pressure * 8.0)
 					result["reason"] = "armored_guard_route_block_value"
+				"summon_sapper_unit":
+					var capacity: int = maxi(0, 3 - int(model.get("owned_creature_count", 0)))
+					var spawned: int = mini(capacity, maxi(0, int(params.get("amount", 1))))
+					var defense_points: float = maxf(0.0, float(context.get("enemy_defense_points", 0.0)))
+					result["persistent_value"] = float(spawned) * (
+						18.0 + float(enemy_towers) * 18.0 + minf(12.0, defense_points)
+					)
+					result["reason"] = "sapper_structure_demolition_value"
 				"build_or_upgrade_tower":
 					var tower_id: String = str(params.get("tower_id", ""))
 					var current_level: int = int((model.get("tower_levels", {}) as Dictionary).get(tower_id, 0))
@@ -174,6 +182,7 @@ static func _extend_echo_value(
 			UpgradeManifestScript.UPGRADE_BUILDING_VOLLEY,
 			UpgradeManifestScript.UPGRADE_HEAVY_CHARGE,
 			UpgradeManifestScript.UPGRADE_ARMORED_GUARD,
+			UpgradeManifestScript.UPGRADE_SAPPER_UNIT,
 		]:
 			continue
 		var candidate: Dictionary = evaluate(candidate_id, model, future_context, MODE_MARGINAL)

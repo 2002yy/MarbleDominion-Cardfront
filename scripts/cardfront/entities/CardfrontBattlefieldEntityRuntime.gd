@@ -9,6 +9,7 @@ signal tower_power_changed(entity_id, powered)
 signal projectile_guided(tower_entity_id, owner_id, projectile_type)
 signal building_volley_fired(owner_id, tower_entity_id, shot_count)
 signal heavy_charge_exploded(owner_id, cell, center_target_id)
+signal sapper_detonated(owner_id, target_kind, cell, damage)
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
@@ -18,10 +19,12 @@ const CreatureStateScript = preload("res://scripts/cardfront/entities/CardfrontC
 const RegistryScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntityRegistry.gd")
 const InteractionScript = preload("res://scripts/cardfront/entities/CardfrontProjectileEntityInteraction.gd")
 const DebugLayerScript = preload("res://scripts/cardfront/entities/CardfrontEntityDebugLayer.gd")
+const SapperSystemScript = preload("res://scripts/cardfront/entities/CardfrontSapperSystem.gd")
 
 const CREATURE_REPAIR_UNIT: String = "repair_unit"
 const CREATURE_SCOUT_UNIT: String = "scout_unit"
 const CREATURE_ARMORED_GUARD: String = "armored_guard"
+const CREATURE_SAPPER_UNIT: String = "sapper_unit"
 const TOWER_FIRE_CONTROL_BEACON: String = "fire_control_beacon"
 const TOWER_INTERCEPTOR: String = "interceptor_tower"
 const DEFAULT_FIRE_CONTROL_HP: int = 5
@@ -40,6 +43,7 @@ var map_definition: Dictionary = {}
 var debug_layer = null
 var _entity_serial: int = 0
 var _repaired_cells_this_round: Dictionary = {}
+var _sapper_system = SapperSystemScript.new()
 
 
 func _init() -> void:
@@ -52,6 +56,7 @@ func setup(new_battlefield, new_map_definition: Dictionary = {}) -> bool:
 	if new_battlefield == null or not is_instance_valid(new_battlefield):
 		return false
 	battlefield = new_battlefield
+	_sapper_system.setup(self)
 	registry.clear()
 	map_definition = new_map_definition.duplicate(true)
 	if map_definition.is_empty():
@@ -191,6 +196,12 @@ func apply_pending_upgrade_actions(owner_id: int, run_state) -> Array:
 					"action": "summon_armored_guard",
 					"spawned": 1 if guard != null else 0,
 				})
+			"summon_sapper_unit":
+				var sapper = spawn_sapper_unit(owner_id)
+				results.append({
+					"action": "summon_sapper_unit",
+					"spawned": 1 if sapper != null else 0,
+				})
 			"build_or_upgrade_tower":
 				var tower_result: Dictionary = build_or_upgrade_tower(owner_id, str(action.get("tower_id", "")))
 				results.append(tower_result)
@@ -296,6 +307,25 @@ func spawn_armored_guard(owner_id: int):
 		entity_spawned.emit(guard.entity_id, guard.entity_kind, guard.owner_id, guard.cell)
 	_mark_visuals_dirty()
 	return guard
+
+
+func spawn_sapper_unit(owner_id: int):
+	var spawn_cell: Vector2i = _find_owner_spawn_cell(owner_id, 1)
+	var sapper = registry.spawn_creature(
+		_next_entity_id("sapper"),
+		CREATURE_SAPPER_UNIT,
+		owner_id,
+		spawn_cell,
+		3,
+		CreatureStateScript.ARMOR_ARMORED,
+		1,
+		"sapper_assault",
+		-1
+	)
+	if sapper != null:
+		entity_spawned.emit(sapper.entity_id, sapper.entity_kind, sapper.owner_id, sapper.cell)
+	_mark_visuals_dirty()
+	return sapper
 
 
 func debug_spawn_fire_control_beacon(owner_id: int, lane_index: int = 0):
@@ -712,6 +742,8 @@ func _run_creature_actions() -> void:
 				_run_repair_unit(entity)
 			"guard_frontline":
 				_run_armored_guard(entity)
+			"sapper_assault":
+				_run_sapper_unit(entity)
 
 
 func _run_repair_unit(creature) -> void:
@@ -733,6 +765,10 @@ func _run_armored_guard(creature) -> void:
 	var next_cell: Vector2i = _next_owned_step_toward(creature.owner_id, creature.cell, target)
 	if next_cell != creature.cell:
 		registry.move_entity(creature.entity_id, next_cell)
+
+
+func _run_sapper_unit(creature) -> void:
+	_sapper_system.run(creature)
 
 
 func _repair_frontline_cell(creature, cell: Vector2i) -> bool:
@@ -880,6 +916,10 @@ func _find_nearest_guard_post(owner_id: int, origin: Vector2i) -> Vector2i:
 			best = candidate
 			best_distance = distance
 	return best
+
+
+func _command_chamber_cell(owner_id: int) -> Vector2i:
+	return _sapper_system.command_chamber_cell(owner_id)
 
 
 func _next_owned_step_toward(owner_id: int, origin: Vector2i, target: Vector2i) -> Vector2i:

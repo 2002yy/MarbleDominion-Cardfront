@@ -35,11 +35,11 @@ func _run() -> void:
 
 
 func _test_deck_contracts() -> void:
-	_assert.eq(ManifestScript.validate_all(), [], "decks: all sixteen card definitions should validate")
+	_assert.eq(ManifestScript.validate_all(), [], "decks: all seventeen card definitions should validate")
 	_assert.eq(DeckRegistryScript.validate_all(), [], "decks: all three bounded decks should validate")
 	_assert.eq(ManifestScript.CORE_UPGRADE_IDS.size(), 8, "decks: historical audit baseline should contain eight cards")
-	_assert.eq(ManifestScript.get_upgrade_ids().size(), 16, "decks: formal live pool should contain sixteen cards")
-	_assert.eq(ManifestScript.get_all_upgrade_ids().size(), 16, "decks: catalog should contain only implemented cards")
+	_assert.eq(ManifestScript.get_upgrade_ids().size(), 17, "decks: formal live pool should contain seventeen cards")
+	_assert.eq(ManifestScript.get_all_upgrade_ids().size(), 17, "decks: catalog should contain only implemented cards")
 	for deck_id in DeckRegistryScript.get_deck_ids():
 		var deck_size: int = DeckRegistryScript.get_upgrade_ids(str(deck_id)).size()
 		_assert.that(deck_size >= DeckRegistryScript.MIN_DECK_SIZE and deck_size <= DeckRegistryScript.MAX_DECK_SIZE, "decks: every deck should stay inside the supported size range")
@@ -59,6 +59,7 @@ func _test_default_pool_exposes_formal_conversions() -> void:
 	_assert.that(seen.has(ManifestScript.UPGRADE_REPAIR_UNITS), "decks: default live pool should expose repair units")
 	_assert.that(seen.has(ManifestScript.UPGRADE_FIRE_CONTROL_BEACON), "decks: default live pool should expose fire-control beacon")
 	_assert.that(seen.has(ManifestScript.UPGRADE_ARMORED_GUARD), "decks: default live pool should expose armored guard")
+	_assert.that(seen.has(ManifestScript.UPGRADE_SAPPER_UNIT), "decks: default live pool should expose sapper unit")
 
 
 func _test_candidate_decks_filter_offers() -> void:
@@ -75,6 +76,7 @@ func _test_candidate_decks_filter_offers() -> void:
 	_assert.that(fortification_seen.has(ManifestScript.UPGRADE_HEAVY_CHARGE), "decks: fortification deck should expose heavy charge")
 	_assert.that(fortification_seen.has(ManifestScript.UPGRADE_INTERCEPTOR_TOWER), "decks: fortification deck should expose interceptor tower")
 	_assert.that(fortification_seen.has(ManifestScript.UPGRADE_ARMORED_GUARD), "decks: fortification deck should expose armored guard")
+	_assert.that(fortification_seen.has(ManifestScript.UPGRADE_SAPPER_UNIT), "decks: fortification deck should expose sapper unit")
 
 	state.set_deck_id(DeckRegistryScript.DECK_BARRAGE_CONTROL)
 	var barrage_seen: Dictionary = {}
@@ -117,6 +119,8 @@ func _test_entity_upgrade_state() -> void:
 	_assert.eq(state.pending_entity_actions.size(), 1, "decks: repair units should queue one summon action")
 	_assert.that(bool(resolver.resolve(state, ManifestScript.UPGRADE_ARMORED_GUARD).get("success", false)), "decks: armored guard should resolve")
 	_assert.eq(state.pending_entity_actions.size(), 2, "decks: armored guard should queue one summon action")
+	_assert.that(bool(resolver.resolve(state, ManifestScript.UPGRADE_SAPPER_UNIT).get("success", false)), "decks: sapper unit should resolve")
+	_assert.eq(state.pending_entity_actions.size(), 3, "decks: sapper unit should queue one summon action")
 	_assert.that(bool(resolver.resolve(state, ManifestScript.UPGRADE_BUILDING_VOLLEY).get("success", false)), "decks: building volley should resolve")
 	_assert.eq(state.building_volley_level, 1, "decks: building volley should gain one permanent level")
 	_assert.that(bool(resolver.resolve(state, ManifestScript.UPGRADE_HEAVY_CHARGE).get("success", false)), "decks: heavy charge should resolve")
@@ -140,11 +144,13 @@ func _test_deck_aware_ai_values() -> void:
 	defended_route["enemy_defense_tower_count"] = 2
 	var heavy_charge: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_HEAVY_CHARGE, engineer, defended_route)
 	var armored_guard: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_ARMORED_GUARD, engineer, defended_route)
+	var sapper: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SAPPER_UNIT, engineer, defended_route)
 	var plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, defended_route)
 	_assert.gt(float(siege.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: targeted siege should beat flat shots at a high-confidence defended bottleneck")
 	_assert.gt(float(siege.get("expected_pierced_contacts", 0.0)), 0.0, "decks AI: siege conversion should expose expected pierced contacts")
 	_assert.gt(float(heavy_charge.get("score", 0.0)), 0.0, "decks AI: heavy charge should gain value against enemy towers")
 	_assert.gt(float(armored_guard.get("score", 0.0)), 0.0, "decks AI: armored guard should gain persistent route-block value")
+	_assert.gt(float(sapper.get("score", 0.0)), float(armored_guard.get("score", 0.0)), "decks AI: sapper should gain extra value against defended enemy towers")
 
 	var dense_random_defense: Dictionary = defended_route.duplicate(true)
 	dense_random_defense["enemy_defense_contact_chance"] = 0.65

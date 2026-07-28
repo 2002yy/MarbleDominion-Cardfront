@@ -32,8 +32,8 @@ func _run() -> void:
 func _test_manifest_is_valid() -> void:
 	_assert.eq(UpgradeManifestScript.validate_all(), [], "upgrade manifest: all core and candidate definitions should validate")
 	_assert.eq(UpgradeManifestScript.CORE_UPGRADE_IDS.size(), 8, "upgrade manifest: historical audit baseline should stay at eight upgrades")
-	_assert.eq(UpgradeManifestScript.get_upgrade_ids().size(), 16, "upgrade manifest: formal live pool should contain sixteen upgrades")
-	_assert.eq(UpgradeManifestScript.get_all_upgrade_ids().size(), 16, "upgrade manifest: catalog should contain only implemented upgrades")
+	_assert.eq(UpgradeManifestScript.get_upgrade_ids().size(), 17, "upgrade manifest: formal live pool should contain seventeen upgrades")
+	_assert.eq(UpgradeManifestScript.get_all_upgrade_ids().size(), 17, "upgrade manifest: catalog should contain only implemented upgrades")
 	_assert.eq(DeckRegistryScript.validate_all(), [], "upgrade decks: all selectable candidate decks should validate")
 
 

@@ -21,6 +21,7 @@ const UPGRADE_INTERCEPTOR_TOWER: String = "interceptor_tower"
 const UPGRADE_BUILDING_VOLLEY: String = "building_volley"
 const UPGRADE_HEAVY_CHARGE: String = "heavy_charge"
 const UPGRADE_ARMORED_GUARD: String = "armored_guard"
+const UPGRADE_SAPPER_UNIT: String = "sapper_unit"
 
 # Historical A/B0 baseline. Keep this list available for audit fixtures.
 const CORE_UPGRADE_IDS: Array[String] = [
@@ -51,6 +52,7 @@ const FORMAL_UPGRADE_IDS: Array[String] = [
 	UPGRADE_BUILDING_VOLLEY,
 	UPGRADE_HEAVY_CHARGE,
 	UPGRADE_ARMORED_GUARD,
+	UPGRADE_SAPPER_UNIT,
 ]
 
 const DEFINITIONS := {
@@ -235,6 +237,17 @@ const DEFINITIONS := {
 		"effect_id": "queue_entity_action",
 		"params": {"action": "summon_armored_guard", "amount": 1},
 		"description": "召唤 1 名 4 生命装甲护卫；每轮移动 1 格并驻守最近闸门入口或争夺前线，持续至被击毁",
+	},
+	UPGRADE_SAPPER_UNIT: {
+		"id": UPGRADE_SAPPER_UNIT,
+		"name": "掘城单位",
+		"symbol": "SAP3",
+		"rarity": RARITY_UNCOMMON,
+		"category": "entity",
+		"tags": ["creature", "armored", "siege", "tower", "anti_fortify"],
+		"effect_id": "queue_entity_action",
+		"params": {"action": "summon_sapper_unit", "amount": 1},
+		"description": "召唤 1 名 3 生命装甲掘城单位；优先炸敌塔 3 点，其次拆除目标格最多 2 层防守，对控制舱仅造成 1 点，结算后自毁",
 	},
 }
 
