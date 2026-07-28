@@ -26,6 +26,18 @@ func _init() -> void:
 		_upgrade_definitions[str(upgrade_id)] = UpgradeManifestScript.get_definition(str(upgrade_id))
 
 
+func _simulation_max_rounds() -> int:
+	return ConfigScript.MAX_ROUNDS
+
+
+func _drafts_enabled() -> bool:
+	return true
+
+
+func _strongholds_enabled() -> bool:
+	return true
+
+
 func simulate(
 	hero_a: String,
 	hero_b: String,
@@ -65,6 +77,10 @@ func simulate(
 		SLOT_B: _first_activation_round(seed_value, SLOT_B, int(profile["stronghold_tempo"])),
 	}
 	var available_types: Array = _stronghold_types(map_definition)
+	var slot_metrics: Dictionary = {
+		SLOT_A: _empty_slot_metrics(),
+		SLOT_B: _empty_slot_metrics(),
+	}
 	var metrics: Dictionary = {
 		"cells_crossed": 0.0,
 		"shot_count": 0,
@@ -76,40 +92,43 @@ func simulate(
 	var winner_slot: String = ""
 	var draw: bool = false
 	var timed_out: bool = false
-	var resolved_round: int = ConfigScript.MAX_ROUNDS
+	var max_rounds: int = maxi(1, _simulation_max_rounds())
+	var resolved_round: int = max_rounds
 
-	for round_number in range(1, ConfigScript.MAX_ROUNDS + 1):
-		for slot in [SLOT_A, SLOT_B]:
-			_activate_strongholds(
-				slot,
-				round_number,
-				activation_rounds,
-				available_types,
-				active_strongholds,
-				first_stronghold_round
-			)
+	for round_number in range(1, max_rounds + 1):
+		if _strongholds_enabled():
+			for slot in [SLOT_A, SLOT_B]:
+				_activate_strongholds(
+					slot,
+					round_number,
+					activation_rounds,
+					available_types,
+					active_strongholds,
+					first_stronghold_round
+				)
 
 		var plans: Dictionary = {}
 		for slot in [SLOT_A, SLOT_B]:
 			var state: Dictionary = states[slot] as Dictionary
 			var strongholds: Array = active_strongholds[slot] as Array
-			var offer_size: int = (
-				StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT
-				if RegionTypeScript.LAB in strongholds
-				else DraftSystemScript.DEFAULT_OFFER_SIZE
-			)
-			var offer_ids: Array = _draw_offer_ids_fast(
-				state,
-				offer_size,
-				_stream_seed(seed_value, round_number, str(slot), 11)
-			)
-			if offer_ids.size() != offer_size:
-				metrics["invalid_offers"] = int(metrics["invalid_offers"]) + 1
-			var choice_id: String = _choose_upgrade_id_fast(offer_ids, state)
-			if choice_id == "":
-				metrics["invalid_offers"] = int(metrics["invalid_offers"]) + 1
-			elif not _resolve_upgrade_fast(state, choice_id):
-				metrics["invalid_offers"] = int(metrics["invalid_offers"]) + 1
+			if _drafts_enabled():
+				var offer_size: int = (
+					StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT
+						if RegionTypeScript.LAB in strongholds
+						else DraftSystemScript.DEFAULT_OFFER_SIZE
+				)
+				var offer_ids: Array = _draw_offer_ids_fast(
+					state,
+					offer_size,
+					_stream_seed(seed_value, round_number, str(slot), 11)
+				)
+				if offer_ids.size() != offer_size:
+					metrics["invalid_offers"] = int(metrics["invalid_offers"]) + 1
+				var choice_id: String = _choose_upgrade_id_fast(offer_ids, state)
+				if choice_id == "":
+					metrics["invalid_offers"] = int(metrics["invalid_offers"]) + 1
+				elif not _resolve_upgrade_fast(state, choice_id):
+					metrics["invalid_offers"] = int(metrics["invalid_offers"]) + 1
 
 			defense_pool[slot] = int(defense_pool[slot]) + int(state["pending_repair_points"])
 			state["pending_repair_points"] = 0
@@ -164,6 +183,16 @@ func simulate(
 			metrics["chamber_hits"] = int(metrics["chamber_hits"]) + int(volley_result["chamber_hits"])
 			metrics["defense_absorbed"] = int(metrics["defense_absorbed"]) + int(volley_result["defense_absorbed"])
 			metrics["volleys"] = int(metrics["volleys"]) + 1
+			var attacker_metrics: Dictionary = slot_metrics[slot] as Dictionary
+			var defender_metrics: Dictionary = slot_metrics[target_slot] as Dictionary
+			attacker_metrics["shots_fired"] = int(attacker_metrics["shots_fired"]) + int(volley_result["shot_count"])
+			attacker_metrics["chamber_damage_dealt_quarters"] = int(attacker_metrics["chamber_damage_dealt_quarters"]) + int(volley_result["damage_quarters"])
+			attacker_metrics["territory_contacts"] = float(attacker_metrics["territory_contacts"]) + float(volley_result["territory_contacts"])
+			attacker_metrics["gate_passes"] = int(attacker_metrics["gate_passes"]) + int(volley_result.get("gate_passes", 0))
+			attacker_metrics["route_rejections"] = int(attacker_metrics["route_rejections"]) + int(volley_result.get("gate_reflections", 0)) + int(volley_result.get("river_bank_reflections", 0))
+			attacker_metrics["virtual_captures"] = int(attacker_metrics["virtual_captures"]) + int(volley_result.get("virtual_captures", 0))
+			attacker_metrics["virtual_recaptures"] = int(attacker_metrics["virtual_recaptures"]) + int(volley_result.get("virtual_recaptures", 0))
+			defender_metrics["defense_absorbed"] = int(defender_metrics["defense_absorbed"]) + int(volley_result["defense_absorbed"])
 
 		_apply_territory_pressure(territory, round_results, profile)
 		var a_destroyed: bool = int(health_quarters[SLOT_A]) <= 0
@@ -218,6 +247,24 @@ func simulate(
 		"active_strongholds": active_strongholds,
 		"first_stronghold_round": first_stronghold_round,
 		"metrics": metrics,
+		"slot_metrics": slot_metrics,
+		"state_snapshots": {
+			SLOT_A: (states[SLOT_A] as Dictionary).duplicate(true),
+			SLOT_B: (states[SLOT_B] as Dictionary).duplicate(true),
+		},
+	}
+
+
+func _empty_slot_metrics() -> Dictionary:
+	return {
+		"shots_fired": 0,
+		"chamber_damage_dealt_quarters": 0,
+		"territory_contacts": 0.0,
+		"defense_absorbed": 0,
+		"gate_passes": 0,
+		"route_rejections": 0,
+		"virtual_captures": 0,
+		"virtual_recaptures": 0,
 	}
 
 

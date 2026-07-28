@@ -1,5 +1,7 @@
-﻿extends Node2D
+extends Node2D
 class_name Bullet
+
+const CardfrontProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 const MAX_RESTORE_TRAIL_POINTS: int = 3
 
@@ -9,6 +11,7 @@ var speed = GameConfig.BULLET_SPEED
 var battlefield
 var target_turrets = {}
 var damage_power: int = 1
+var projectile_type: String = CardfrontProjectileTypeScript.STANDARD
 var chamber_damage_quarters: int = 0
 var capture_context: Dictionary = {}
 var last_cell = Vector2i(-999, -999)
@@ -53,6 +56,7 @@ func setup(
 	damage_power = clampi(int(new_damage_power), 1, 999)
 	chamber_damage_quarters = maxi(0, int(new_chamber_damage_quarters))
 	capture_context = new_capture_context
+	projectile_type = CardfrontProjectileTypeScript.sanitize(str(capture_context.get("projectile_type", CardfrontProjectileTypeScript.STANDARD)))
 	speed = GameConfig.BULLET_SPEED
 	last_cell = Vector2i(-999, -999)
 	age = 0.0
@@ -100,6 +104,7 @@ func deactivate() -> void:
 	target_turrets = {}
 	chamber_damage_quarters = 0
 	capture_context = {}
+	projectile_type = CardfrontProjectileTypeScript.STANDARD
 	route_filter = null
 	route_context = {}
 	trail_points.clear()
@@ -338,18 +343,33 @@ func _try_hit_enemy_turret() -> bool:
 		if target_faction_id == faction_id:
 			continue
 		var turret = target_turrets[target_faction_id]
-		if turret == null:
+		if turret == null or turret.is_destroyed:
 			continue
-		if turret.is_destroyed:
+		if global_position.distance_squared_to(turret.global_position) > GameConfig.TURRET_HIT_RADIUS * GameConfig.TURRET_HIT_RADIUS:
 			continue
-		var hit_radius_sq: float = GameConfig.TURRET_HIT_RADIUS * GameConfig.TURRET_HIT_RADIUS
-		if global_position.distance_squared_to(turret.global_position) <= hit_radius_sq:
+		var damage_multiplier: int = CardfrontProjectileTypeScript.chamber_damage_multiplier(projectile_type)
+		if damage_multiplier > 0:
 			if chamber_damage_quarters > 0 and turret.has_method("take_damage_quarters"):
-				turret.take_damage_quarters(chamber_damage_quarters * damage_power)
+				turret.take_damage_quarters(chamber_damage_quarters * damage_power * damage_multiplier)
 			else:
-				turret.take_damage(GameConfig.BULLET_DAMAGE * damage_power)
-			return true
+				turret.take_damage(GameConfig.BULLET_DAMAGE * damage_power * damage_multiplier)
+		return true
 	return false
+
+func get_projectile_visual_signature() -> Dictionary:
+	return {"projectile_type": projectile_type, "fill": _projectile_visual_color(), "special_ring": projectile_type != CardfrontProjectileTypeScript.STANDARD}
+
+
+func _projectile_visual_color() -> Color:
+	var faction_color: Color = GameConfig.faction_color(faction_id)
+	match projectile_type:
+		CardfrontProjectileTypeScript.SIEGE:
+			return faction_color.lerp(Color(1.0, 0.56, 0.10), 0.72)
+		CardfrontProjectileTypeScript.SUPPRESSION:
+			return faction_color.lerp(Color(0.18, 0.88, 1.0), 0.68)
+		_:
+			return faction_color
+
 
 func _visual_radius() -> float:
 	if battlefield != null:
@@ -357,7 +377,7 @@ func _visual_radius() -> float:
 	return GameConfig.BULLET_RADIUS
 
 func _draw() -> void:
-	var base = GameConfig.faction_color(faction_id)
+	var base: Color = _projectile_visual_color()
 	var radius: float = _visual_radius()
 
 	# v1.9.29：拖尾已移到 BulletTrailLayer 统一绘制。
@@ -365,6 +385,8 @@ func _draw() -> void:
 
 	if simple_draw:
 		draw_circle(Vector2.ZERO, radius, base)
+		if projectile_type != CardfrontProjectileTypeScript.STANDARD:
+			draw_arc(Vector2.ZERO, radius + 1.0, 0.0, TAU, 16, Color.WHITE, 1.2)
 		return
 
 	if not reduce_visual_effects:
@@ -378,3 +400,7 @@ func _draw() -> void:
 		draw_circle(Vector2(-2.2, -2.0), radius * 0.30, Color(1.0, 1.0, 1.0, 0.76))
 		draw_circle(Vector2(-3.3, -3.0), radius * 0.13, Color(1.0, 1.0, 1.0, 0.48))
 		draw_circle(Vector2.ZERO, radius * 0.25, Color(1.0, 1.0, 1.0, 0.14))
+	if projectile_type == CardfrontProjectileTypeScript.SIEGE:
+		draw_arc(Vector2.ZERO, radius + 1.8, 0.0, TAU, 20, Color(1.0, 0.82, 0.30, 0.95), 2.0)
+	elif projectile_type == CardfrontProjectileTypeScript.SUPPRESSION:
+		draw_arc(Vector2.ZERO, radius + 1.8, 0.0, TAU, 20, Color(0.35, 0.96, 1.0, 0.95), 2.0)

@@ -1,4 +1,4 @@
-﻿extends Node2D
+extends Node2D
 class_name Battlefield
 
 signal scores_changed(counts)
@@ -175,6 +175,8 @@ func apply_bullet(cell: Vector2i, faction_id: int, capture_context: Dictionary =
 	owners[cell.x][cell.y] = faction_id
 	_add_owner_count(old, -1)
 	_add_owner_count(faction_id, 1)
+	if capture_interceptor != null and is_instance_valid(capture_interceptor) and capture_interceptor.has_method("on_capture_applied"):
+		capture_interceptor.on_capture_applied(cell, faction_id, old, capture_context)
 	_paint_cached_cell(cell, faction_id)
 	_request_visual_update()
 	_request_score_emit()
@@ -193,6 +195,8 @@ func apply_owner_change(cell: Vector2i, new_owner_id: int, _source_reason: Strin
 	owners[cell.x][cell.y] = new_owner_id
 	_add_owner_count(old, -1)
 	_add_owner_count(new_owner_id, 1)
+	if capture_interceptor != null and is_instance_valid(capture_interceptor) and capture_interceptor.has_method("on_capture_applied"):
+		capture_interceptor.on_capture_applied(cell, new_owner_id, old, {})
 	_paint_cached_cell(cell, new_owner_id)
 	_request_visual_update()
 	_request_score_emit()

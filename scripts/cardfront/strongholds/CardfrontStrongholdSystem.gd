@@ -9,6 +9,7 @@ const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd"
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
+const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 var region_map = null
 var battlefield = null
@@ -94,7 +95,9 @@ func apply_to_volley_plan(owner_id: int, plan, snapshot: Dictionary = {}) -> voi
 	var bonus: Dictionary = source.get(int(owner_id), _empty_owner_bonus()) as Dictionary
 	var shot_bonus: int = maxi(0, int(bonus.get("shot_count_bonus", 0)))
 	var attack_level_bonus: int = maxi(0, int(bonus.get("temporary_attack_level_bonus", 0)))
-	plan.shot_count = clampi(int(plan.shot_count) + shot_bonus, 1, VolleyResolverScript.MAX_VOLLEY_COUNT)
+	ProjectileTypeScript.append_standard(plan.projectile_sequence, shot_bonus, VolleyResolverScript.MAX_VOLLEY_COUNT)
+	plan.shot_count = clampi(plan.projectile_sequence.size(), 1, VolleyResolverScript.MAX_VOLLEY_COUNT)
+	plan.projectile_counts = ProjectileTypeScript.count_types(plan.projectile_sequence)
 	plan.attack_level = clampi(
 		int(plan.attack_level) + attack_level_bonus,
 		0,

@@ -2,7 +2,7 @@ extends RefCounted
 class_name CardfrontAiUpgradePolicy
 
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
-const ValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontUpgradeValuePolicy.gd")
+const ValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontTacticalUpgradeValuePolicy.gd")
 
 var last_ranked_evaluations: Array = []
 

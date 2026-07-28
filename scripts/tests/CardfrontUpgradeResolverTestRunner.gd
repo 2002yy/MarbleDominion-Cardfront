@@ -82,7 +82,9 @@ func _test_echo_repeats_on_the_following_round() -> void:
 
 func _test_multiplier_does_not_stack_and_volley_is_capped() -> void:
 	var fixture: Dictionary = _make_fixture()
-	fixture.state.base_volley_count = 20
+	# setup() is the authoritative typed-projectile fixture builder; assigning only
+	# base_volley_count would leave base_projectile_mix at the old ten-shot group.
+	fixture.state.setup(0, 20)
 	fixture.state.multiply_next_volley(2)
 	fixture.state.multiply_next_volley(2)
 	var plan = fixture.volleys.build_and_consume(fixture.state)

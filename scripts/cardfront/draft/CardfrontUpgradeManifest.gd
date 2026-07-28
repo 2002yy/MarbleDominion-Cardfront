@@ -13,6 +13,22 @@ const UPGRADE_FRONTLINE_REPAIR: String = "frontline_repair"
 const UPGRADE_ARMOR_PIERCING: String = "armor_piercing"
 const UPGRADE_RARITY_PLUS_1: String = "rarity_plus_1"
 const UPGRADE_ECHO_NEXT_CHOICE: String = "echo_next_choice"
+const UPGRADE_SIEGE_CALIBRATION: String = "siege_calibration"
+const UPGRADE_BRIDGEHEAD_PREFABS: String = "bridgehead_prefabs"
+const UPGRADE_SUPPRESSION_SCREEN: String = "suppression_screen"
+
+# Historical A/B0 and the default live pool must remain the original eight cards.
+# Candidate cards are exposed through get_all_upgrade_ids() and deck definitions.
+const CORE_UPGRADE_IDS: Array[String] = [
+	UPGRADE_VOLLEY_PLUS_5,
+	UPGRADE_VOLLEY_X2,
+	UPGRADE_ATTACK_LEVEL_PLUS_1,
+	UPGRADE_DEFENSE_CAP_PLUS_1,
+	UPGRADE_FRONTLINE_REPAIR,
+	UPGRADE_ARMOR_PIERCING,
+	UPGRADE_RARITY_PLUS_1,
+	UPGRADE_ECHO_NEXT_CHOICE,
+]
 
 const DEFINITIONS := {
 	UPGRADE_VOLLEY_PLUS_5: {
@@ -21,9 +37,10 @@ const DEFINITIONS := {
 		"symbol": "+5",
 		"rarity": RARITY_COMMON,
 		"category": "next_volley",
+		"tags": ["volley", "standard", "tempo"],
 		"effect_id": "add_next_volley",
 		"params": {"amount": 5},
-		"description": "下一次齐射增加 5 发",
+		"description": "下一次齐射增加 5 发标准弹；不产生特殊弹，也不被双倍齐射复制",
 	},
 	UPGRADE_VOLLEY_X2: {
 		"id": UPGRADE_VOLLEY_X2,
@@ -31,9 +48,10 @@ const DEFINITIONS := {
 		"symbol": "x2",
 		"rarity": RARITY_UNCOMMON,
 		"category": "next_volley",
+		"tags": ["volley", "typed_group", "combo"],
 		"effect_id": "multiply_next_volley",
 		"params": {"multiplier": 2},
-		"description": "下一次齐射数量翻倍",
+		"description": "下一次齐射复制英雄基础弹组，包含基础攻城弹或压制弹",
 	},
 	UPGRADE_ATTACK_LEVEL_PLUS_1: {
 		"id": UPGRADE_ATTACK_LEVEL_PLUS_1,
@@ -41,9 +59,10 @@ const DEFINITIONS := {
 		"symbol": "+25%",
 		"rarity": RARITY_UNCOMMON,
 		"category": "run_growth",
+		"tags": ["chamber", "growth"],
 		"effect_id": "increase_attack_level",
 		"params": {"amount": 1},
-		"description": "本局控制舱伤害永久提高 25%，最多 3 级",
+		"description": "本局可伤害控制舱的弹丸伤害永久提高 25%，最多 3 级",
 	},
 	UPGRADE_DEFENSE_CAP_PLUS_1: {
 		"id": UPGRADE_DEFENSE_CAP_PLUS_1,
@@ -51,9 +70,10 @@ const DEFINITIONS := {
 		"symbol": "+1",
 		"rarity": RARITY_COMMON,
 		"category": "run_growth",
+		"tags": ["fortify", "growth"],
 		"effect_id": "increase_defense_cap",
 		"params": {"amount": 1},
-		"description": "本局地图防守值上限永久增加 1",
+		"description": "本局地图防守值上限永久增加 1，不自动补满",
 	},
 	UPGRADE_FRONTLINE_REPAIR: {
 		"id": UPGRADE_FRONTLINE_REPAIR,
@@ -61,9 +81,10 @@ const DEFINITIONS := {
 		"symbol": "+6",
 		"rarity": RARITY_COMMON,
 		"category": "territory",
+		"tags": ["fortify", "frontline", "repair"],
 		"effect_id": "repair_territory",
 		"params": {"amount": 6, "zone": "frontline"},
-		"description": "为前线领土恢复共 6 层防守，每轮每格最多恢复 1 层",
+		"description": "为前线领土恢复共 6 层防守，每轮每格最多恢复 1 层；工程师额外恢复 2 层",
 	},
 	UPGRADE_ARMOR_PIERCING: {
 		"id": UPGRADE_ARMOR_PIERCING,
@@ -71,6 +92,7 @@ const DEFINITIONS := {
 		"symbol": "AP6",
 		"rarity": RARITY_UNCOMMON,
 		"category": "next_volley",
+		"tags": ["volley", "anti_fortify", "siege"],
 		"effect_id": "add_armor_pierce",
 		"params": {"contacts": 6},
 		"description": "下一次齐射前 6 次防守接触忽略 1 层防守",
@@ -81,6 +103,7 @@ const DEFINITIONS := {
 		"symbol": "UP",
 		"rarity": RARITY_UNCOMMON,
 		"category": "draft_growth",
+		"tags": ["draft", "growth"],
 		"effect_id": "increase_rarity",
 		"params": {"amount": 1},
 		"description": "本局后续抽取的高稀有强化概率提高",
@@ -91,9 +114,43 @@ const DEFINITIONS := {
 		"symbol": "ECHO",
 		"rarity": RARITY_RARE,
 		"category": "draft_growth",
+		"tags": ["draft", "combo"],
 		"effect_id": "echo_next_choice",
 		"params": {},
 		"description": "下一次选择结算一次，并在再下一轮额外重放一次",
+	},
+	UPGRADE_SIEGE_CALIBRATION: {
+		"id": UPGRADE_SIEGE_CALIBRATION,
+		"name": "攻城编组",
+		"symbol": "SIEGE2",
+		"rarity": RARITY_UNCOMMON,
+		"category": "next_volley",
+		"tags": ["volley", "siege", "anti_fortify", "chamber"],
+		"effect_id": "convert_next_volley",
+		"params": {"projectile_type": "siege", "amount": 2},
+		"description": "下一次齐射将最多 2 发标准弹转换为攻城弹，并编入特殊弹段优先发射",
+	},
+	UPGRADE_BRIDGEHEAD_PREFABS: {
+		"id": UPGRADE_BRIDGEHEAD_PREFABS,
+		"name": "桥头施工",
+		"symbol": "FORT6",
+		"rarity": RARITY_COMMON,
+		"category": "territory",
+		"tags": ["fortify", "frontline", "capture"],
+		"effect_id": "arm_bridgehead_prefabs",
+		"params": {"charges": 6, "defense_bonus": 1},
+		"description": "接下来 6 个从中立状态夺取且夺取后仍为前线的格子额外获得 1 层防守，不超过上限",
+	},
+	UPGRADE_SUPPRESSION_SCREEN: {
+		"id": UPGRADE_SUPPRESSION_SCREEN,
+		"name": "压制编队",
+		"symbol": "SUP2",
+		"rarity": RARITY_UNCOMMON,
+		"category": "next_volley",
+		"tags": ["volley", "suppression", "territory", "route"],
+		"effect_id": "convert_next_volley",
+		"params": {"projectile_type": "suppression", "amount": 2},
+		"description": "下一次齐射将最多 2 发标准弹转换为压制弹，强化占格与路线压力但不能伤害控制舱",
 	},
 }
 
@@ -106,10 +163,16 @@ const REQUIRED_PARAMS := {
 	"add_armor_pierce": ["contacts"],
 	"increase_rarity": ["amount"],
 	"echo_next_choice": [],
+	"convert_next_volley": ["projectile_type", "amount"],
+	"arm_bridgehead_prefabs": ["charges", "defense_bonus"],
 }
 
 
 static func get_upgrade_ids() -> Array:
+	return CORE_UPGRADE_IDS.duplicate()
+
+
+static func get_all_upgrade_ids() -> Array:
 	var ids: Array = DEFINITIONS.keys()
 	ids.sort()
 	return ids
@@ -129,7 +192,7 @@ static func is_rarity_valid(rarity: String) -> bool:
 
 static func validate_all() -> Array:
 	var errors: Array = []
-	for upgrade_id in get_upgrade_ids():
+	for upgrade_id in get_all_upgrade_ids():
 		var definition: Dictionary = DEFINITIONS[str(upgrade_id)]
 		if str(definition.get("id", "")) != str(upgrade_id):
 			errors.append("id_mismatch:%s" % str(upgrade_id))
@@ -141,6 +204,9 @@ static func validate_all() -> Array:
 			errors.append("missing_description:%s" % str(upgrade_id))
 		if not is_rarity_valid(str(definition.get("rarity", ""))):
 			errors.append("invalid_rarity:%s" % str(upgrade_id))
+		var tags: Array = definition.get("tags", []) as Array
+		if tags.is_empty():
+			errors.append("missing_tags:%s" % str(upgrade_id))
 		var effect_id: String = str(definition.get("effect_id", ""))
 		if not REQUIRED_PARAMS.has(effect_id):
 			errors.append("unknown_effect:%s:%s" % [str(upgrade_id), effect_id])

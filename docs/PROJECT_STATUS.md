@@ -333,6 +333,68 @@ B1 risk monitoring for the full Engineer contact line:
 - First-stronghold timing and Engineer mirror stagnation must be reported.
 - If the full line creates excessive delay, narrow the free `2/2` bonus to cells near the two bridge/control zones instead of removing the visible mechanic.
 
+### B1 Opening And Archetype Calibration Framework
+
+Status: implemented on the B1 branch; balance thresholds are diagnostic and do
+not yet fail CI.
+
+The new five-round opening audit:
+
+- Runs both real side variants across all heroes and registered maps.
+- Disables upgrades and stronghold bonuses to isolate hero base strength.
+- Reports hero point rate and mirror blue-side rate.
+- Reports early chamber damage, territory pressure, defense absorption, route
+  passage/rejection, captures, and ending territory by hero.
+- Records the intended `48%..52%` hero and `49%..51%` mirror ranges without
+  enforcing them yet.
+
+The 100-seed opening baseline (`5,400` matches) reports:
+
+- Balanced Commander: `48.13%`.
+- Fortification Engineer: `57.78%`.
+- Rapid Gunner: `44.10%`.
+- Mirror blue-side rates: Balanced `49.83%`, Engineer `50.83%`, Gunner `50.67%`.
+
+Interpretation:
+
+- The opening imbalance is primarily hero strength, not a large universal side
+  advantage.
+- Engineer defense absorption is already clearly differentiated.
+- Gunner shot volume and route traffic lead, but that identity does not yet
+  convert into acceptable opening points.
+- This baseline is sufficient to identify the opening-strength direction, but
+  thresholds remain diagnostic until the model contract and tuning procedure
+  are accepted.
+
+The full-match archetype evaluator now reports, without gating:
+
+- Gunner shot volume and route pressure.
+- Engineer defense absorption, bridgehead hold/recapture, and repair choice
+  share.
+- Balanced rarity choice share, Echo choice share, and build diversity.
+- Intended archetype indicator lead of `20%..35%` with final hero rates inside
+  `47%..53%`.
+
+Required tuning order:
+
+1. Keep live/simulation contracts green for gates, core upgrade effects, volley
+   sequences, per-cell defense semantics, and shared AI valuation.
+2. Stabilize the opening audit, then tune only health, base volley, or starting
+   defense if needed.
+3. Tune deck offer weights, exclusive effect strength, and AI marginal values
+   for late-game archetype growth.
+4. Promote diagnostic ranges to hard gates only after approved sample sizes are
+   stable.
+
+CI enforcement during this framework phase:
+
+- The `5,400` directional audit gates complete map coverage, route telemetry,
+  and target-diagnostic schema; current pacing ranges remain reported rather
+  than merge-blocking.
+- Selectable deck candidate CI gates complete scenarios, valid offers, card
+  usage, and artifact output; a candidate is not promoted merely because the
+  audit ran, and its balance must be tuned before becoming a live default.
+
 ## 8. Current Map Strategy Verdict / 当前地图策略判断
 
 Blunt verdict:
@@ -430,6 +492,10 @@ A new effect or AI score is incomplete until live runtime, simulation, player-fa
 
 ### v0.3.3a8 — Simulation Parity B1
 
+- Share gate thresholds and projectile admission between live runtime and B1.
+- Contract-test core upgrade and volley resolution against live run state.
+- Add a five-round no-upgrade opening-strength audit.
+- Add per-hero gameplay and archetype-growth diagnostics.
 - Model Engineer opening contact-front cells and per-cell repair/defense.
 - Model open, half-open, and closed gate passage/reflection.
 - Actually rerun both side variants.

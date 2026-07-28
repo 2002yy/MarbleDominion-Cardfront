@@ -1,0 +1,116 @@
+name: Battlefield Entity Foundation Tests
+
+on:
+  pull_request:
+    paths:
+      - "scripts/cardfront/entities/**"
+      - "scripts/cardfront/fortify/CardfrontCaptureInterceptor.gd"
+      - "scripts/cardfront/run/CardfrontFactionRunState.gd"
+      - "scripts/cardfront/volley/**"
+      - "scripts/tests/CardfrontBattlefieldEntityFoundationTestRunner.gd"
+      - "scripts/tests/CardfrontBattlefieldEntityRuntimeTestRunner.gd"
+      - "scripts/tests/CardfrontProjectileTypeCombatTestRunner.gd"
+      - "docs/BATTLEFIELD_ENTITIES_AND_DEFENSE_TOWERS_PLAN.md"
+      - ".github/workflows/battlefield-entity-foundation-tests.yml"
+
+concurrency:
+  group: battlefield-entity-foundation-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  godot-foundation:
+    name: ${{ matrix.test_name }}
+    runs-on: windows-latest
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - test_name: Entity data foundation
+            script: CardfrontBattlefieldEntityFoundationTestRunner.gd
+          - test_name: Entity live runtime
+            script: CardfrontBattlefieldEntityRuntimeTestRunner.gd
+          - test_name: Typed projectile regression
+            script: CardfrontProjectileTypeCombatTestRunner.gd
+    env:
+      GODOT_VERSION: 4.6.2-stable
+      GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot archive
+        uses: actions/cache@v4
+        with:
+          path: .godot-cache
+          key: godot-${{ runner.os }}-${{ env.GODOT_VERSION }}-${{ env.GODOT_ARCHIVE }}
+
+      - name: Download Godot
+        id: godot
+        shell: pwsh
+        run: |
+          $cacheDir = Join-Path "${{ github.workspace }}" ".godot-cache"
+          New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+          $archiveUrl = "https://github.com/godotengine/godot/releases/download/$env:GODOT_VERSION/$env:GODOT_ARCHIVE"
+          $archivePath = Join-Path $cacheDir $env:GODOT_ARCHIVE
+          $extractPath = Join-Path $env:RUNNER_TEMP "godot"
+          if (-not (Test-Path $archivePath)) {
+            Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath
+          }
+          Expand-Archive -Path $archivePath -DestinationPath $extractPath -Force
+          $godotExe = Get-ChildItem -Path $extractPath -Recurse -Filter "*console.exe" | Select-Object -First 1
+          if (-not $godotExe) {
+            throw "Godot executable not found after extraction."
+          }
+          "path=$($godotExe.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Parse project
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --quit
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Import project
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run ${{ matrix.test_name }}
+        shell: pwsh
+        run: |
+          $artifactDir = Join-Path "${{ github.workspace }}" "artifacts\battlefield-entity-foundation"
+          New-Item -ItemType Directory -Path $artifactDir -Force | Out-Null
+          $logPath = Join-Path $artifactDir ("${{ matrix.script }}" + ".log")
+          $stdoutPath = $logPath + ".stdout"
+          $stderrPath = $logPath + ".stderr"
+          $arguments = @(
+            "--headless",
+            "--audio-driver", "Dummy",
+            "--path", "${{ github.workspace }}",
+            "--script", "res://scripts/tests/${{ matrix.script }}"
+          )
+          $process = Start-Process -FilePath "${{ steps.godot.outputs.path }}" -ArgumentList $arguments -NoNewWindow -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+          $finished = $process.WaitForExit(30000)
+          if (-not $finished) {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          }
+          @(
+            "=== STDOUT ===",
+            (Get-Content $stdoutPath -Raw -ErrorAction SilentlyContinue),
+            "=== STDERR ===",
+            (Get-Content $stderrPath -Raw -ErrorAction SilentlyContinue)
+          ) | Set-Content $logPath
+          Get-Content $logPath
+          if (-not $finished) {
+            Write-Error "Godot test exceeded 30 seconds"
+            exit 124
+          }
+          if ($process.ExitCode -ne 0) { exit $process.ExitCode }
+
+      - name: Upload focused test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: battlefield-entity-${{ matrix.script }}-${{ github.run_id }}
+          path: artifacts/battlefield-entity-foundation/*.log
+          if-no-files-found: warn

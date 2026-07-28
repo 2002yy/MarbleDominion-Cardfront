@@ -348,7 +348,8 @@ func _launch_resolved_volleys() -> void:
 				int(plan.shot_count),
 				int(plan.projectile_power),
 				int(plan.chamber_damage_quarters),
-				int(plan.armor_pierce_contacts)
+				int(plan.armor_pierce_contacts),
+				plan.projectile_sequence
 			)
 		issued_intents[int(owner_id)] = intent
 	volley_launched.emit(current_plans.duplicate(false), issued_intents)

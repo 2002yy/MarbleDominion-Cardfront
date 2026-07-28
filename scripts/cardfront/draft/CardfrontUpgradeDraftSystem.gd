@@ -2,6 +2,7 @@ extends RefCounted
 class_name CardfrontUpgradeDraftSystem
 
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
+const DeckRegistryScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDeckRegistry.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 
 const DEFAULT_OFFER_SIZE: int = 3
@@ -35,10 +36,11 @@ func draw_offer(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE) -> Array
 func draw_offer_ids(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE) -> Array:
 	var resolved_offer_size: int = clampi(int(offer_size), 1, MAX_OFFER_SIZE)
 	var candidate_ids: Array = []
-	for raw_upgrade_id in UpgradeManifestScript.get_upgrade_ids():
-		var definition: Dictionary = UpgradeManifestScript.get_definition(str(raw_upgrade_id))
+	for raw_upgrade_id in _deck_upgrade_ids(run_state):
+		var upgrade_id: String = str(raw_upgrade_id)
+		var definition: Dictionary = UpgradeManifestScript.get_definition(upgrade_id)
 		if is_upgrade_eligible(definition, run_state):
-			candidate_ids.append(str(raw_upgrade_id))
+			candidate_ids.append(upgrade_id)
 	var result: Array = []
 	while result.size() < resolved_offer_size and not candidate_ids.is_empty():
 		var selected_index: int = _weighted_index(candidate_ids, run_state)
@@ -48,6 +50,7 @@ func draw_offer_ids(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE) -> A
 		result.append(upgrade_id)
 		candidate_ids.remove_at(selected_index)
 	return result
+
 
 func choose_timeout_fallback(offer: Array) -> Dictionary:
 	if offer.is_empty():
@@ -88,6 +91,15 @@ func weight_for_definition(definition: Dictionary, run_state = null) -> float:
 		UpgradeManifestScript.RARITY_RARE:
 			return RARE_BASE_WEIGHT + float(rarity_level) * 8.0
 	return 0.0
+
+
+func _deck_upgrade_ids(run_state) -> Array:
+	var deck_id: String = DeckRegistryScript.DEFAULT_DECK_ID
+	if run_state != null:
+		var requested = run_state.get("deck_id")
+		if requested != null:
+			deck_id = str(requested)
+	return DeckRegistryScript.get_upgrade_ids(deck_id)
 
 
 func _weighted_index(candidate_ids: Array, run_state) -> int:

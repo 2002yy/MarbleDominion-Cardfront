@@ -43,7 +43,77 @@ static func validate(definition: Dictionary) -> Array:
 		"defense_contact_chance",
 		"territory_pressure",
 		"stronghold_tempo",
+		"b1_tail_stall_chance",
+		"b1_tail_hit_multiplier",
 	]:
 		if not simulation_profile.has(required_key):
 			errors.append("missing_simulation_profile:%s" % str(required_key))
+	var tail_chance: float = float(simulation_profile.get("b1_tail_stall_chance", -1.0))
+	if tail_chance < 0.0 or tail_chance > 0.25:
+		errors.append("invalid_b1_tail_stall_chance")
+	var tail_multiplier: float = float(simulation_profile.get("b1_tail_hit_multiplier", -1.0))
+	if tail_multiplier < 0.05 or tail_multiplier > 1.0:
+		errors.append("invalid_b1_tail_hit_multiplier")
+	errors.append_array(_validate_route_layout(definition.get("route_layout", {}) as Dictionary))
+	errors.append_array(_validate_balance_targets(definition.get("balance_targets", {}) as Dictionary))
+	var strategy_profile: Dictionary = definition.get("strategy_profile", {}) as Dictionary
+	if str(strategy_profile.get("identity", "")) == "":
+		errors.append("missing_strategy_identity")
+	if str(strategy_profile.get("opening_hint", "")) == "":
+		errors.append("missing_strategy_opening_hint")
+	return errors
+
+
+static func _validate_route_layout(route_layout: Dictionary) -> Array:
+	var errors: Array = []
+	var lanes: Array = route_layout.get("lanes", []) as Array
+	if lanes.size() != 2:
+		return ["route_lane_count"]
+	var previous_right: float = -1.0
+	for index in range(lanes.size()):
+		var lane: Dictionary = lanes[index] as Dictionary
+		var center: float = float(lane.get("center_ratio", -1.0))
+		var half_width: float = float(lane.get("half_width_ratio", 0.0))
+		var control_half_width: float = float(lane.get("control_half_width_ratio", 0.0))
+		var control_half_height: float = float(lane.get("control_half_height_ratio", 0.0))
+		var weight: float = float(lane.get("traffic_weight", 0.0))
+		if center <= 0.0 or center >= 1.0:
+			errors.append("route_lane_center:%d" % index)
+		if half_width <= 0.0 or center - half_width < 0.0 or center + half_width > 1.0:
+			errors.append("route_lane_width:%d" % index)
+		if control_half_width <= 0.0 or control_half_height <= 0.0:
+			errors.append("route_control_zone:%d" % index)
+		if weight <= 0.0:
+			errors.append("route_traffic_weight:%d" % index)
+		var left: float = center - half_width
+		if left <= previous_right:
+			errors.append("route_lane_overlap_or_unsorted:%d" % index)
+		previous_right = center + half_width
+	var off_bridge_rate: float = float(route_layout.get("off_bridge_rate", -1.0))
+	if off_bridge_rate < 0.0 or off_bridge_rate > 0.5:
+		errors.append("route_off_bridge_rate")
+	return errors
+
+
+static func _validate_balance_targets(targets: Dictionary) -> Array:
+	var errors: Array = []
+	if str(targets.get("pacing_identity", "")) == "":
+		errors.append("missing_balance_pacing_identity")
+	for prefix in [
+		"median_round",
+		"p90_round",
+		"timeout_rate",
+		"blue_point_rate",
+		"lane0_share",
+		"route_rejection_rate",
+	]:
+		var min_key: String = "%s_min" % prefix
+		var max_key: String = "%s_max" % prefix
+		if not targets.has(min_key) or not targets.has(max_key):
+			errors.append("missing_balance_target:%s" % prefix)
+			continue
+		var minimum: float = float(targets[min_key])
+		var maximum: float = float(targets[max_key])
+		if minimum > maximum:
+			errors.append("invalid_balance_target_range:%s" % prefix)
 	return errors

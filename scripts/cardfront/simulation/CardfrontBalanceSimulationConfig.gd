@@ -18,8 +18,11 @@ const MATCHUP_WIN_RATE_MAX: float = 57.0
 const MIRROR_BLUE_RATE_MIN: float = 49.0
 const MIRROR_BLUE_RATE_MAX: float = 51.0
 
-const MEDIAN_ROUND_MIN: float = 16.0
-const MEDIAN_ROUND_MAX: float = 22.0
+# The three current map identities target roughly 18-21, 21-24, and 23-27
+# rounds. The aggregate gate therefore protects a deliberate slower match pace
+# without accepting hard timeouts as normal outcomes.
+const MEDIAN_ROUND_MIN: float = 20.0
+const MEDIAN_ROUND_MAX: float = 27.0
 const P90_ROUND_MAX: float = 34.0
 const TIMEOUT_RATE_MIN: float = 10.0
 const TIMEOUT_RATE_MAX: float = 25.0
