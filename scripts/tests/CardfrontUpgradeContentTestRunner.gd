@@ -41,7 +41,9 @@ func _test_cards_are_text_and_symbol_driven() -> void:
 	for upgrade_id in UpgradeManifestScript.get_all_upgrade_ids():
 		var definition: Dictionary = UpgradeManifestScript.get_definition(str(upgrade_id))
 		_assert.that(str(definition.get("name", "")) != "", "upgrade content: card should have a name")
-		_assert.that(str(definition.get("symbol", "")) != "", "upgrade content: card should have a bold symbol")
+		var symbol: String = str(definition.get("symbol", ""))
+		_assert.that(symbol != "", "upgrade content: card should have a bold symbol")
+		_assert.that(not _contains_ascii_letters(symbol), "upgrade content: card symbols should use direct Chinese and numeric language")
 		_assert.that(str(definition.get("description", "")) != "", "upgrade content: card should have a direct description")
 		_assert.that(not definition.has("texture_path"), "upgrade content: base card should not require generated art")
 
@@ -148,3 +150,11 @@ func _offer_ids(offer: Array) -> Array:
 		if raw_definition is Dictionary:
 			result.append(str((raw_definition as Dictionary).get("id", "")))
 	return result
+
+
+func _contains_ascii_letters(value: String) -> bool:
+	for index in range(value.length()):
+		var codepoint: int = value.unicode_at(index)
+		if (codepoint >= 65 and codepoint <= 90) or (codepoint >= 97 and codepoint <= 122):
+			return true
+	return false

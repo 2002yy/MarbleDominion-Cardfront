@@ -141,6 +141,14 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		return _build_result(false)
 	if not _record_or_fail("territory_defense", create_territory_defense_system(game_layer, runtime.battlefield, runtime.region_map, runtime.fortify_layer, runtime.round_director), runtime):
 		return _build_result(false)
+	var capture_interceptor = runtime.battlefield.capture_interceptor
+	if (
+		runtime.orthographic_arena_view != null
+		and is_instance_valid(runtime.orthographic_arena_view)
+		and capture_interceptor != null
+		and capture_interceptor.entity_runtime != null
+	):
+		runtime.orthographic_arena_view.set_entity_runtime(capture_interceptor.entity_runtime)
 	return _build_result(true)
 
 

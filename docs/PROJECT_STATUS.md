@@ -902,6 +902,23 @@ A new effect or AI score is incomplete until live runtime, simulation, player-fa
 - Added native runtime, content, deck, AI-value, and simulation-contract
   coverage.
 
+### Completed Current Slice: Draft And Battlefield Visual Hierarchy
+
+- Replaced internal card-face abbreviations such as `SIEGE2`, `SUP2`, and
+  `GOLEM6` with direct Chinese and numeric effect language.
+- Three-card offers now occupy three explicit equal columns. The compact
+  four-card layout is only used when the Laboratory bonus is active.
+- Enlarged the effective orthographic playfield while reducing command
+  chamber, bridge gate, outer-floor, and edge-decoration dominance.
+- Increased projectile prominence and connected live creatures and defense
+  towers to the formal orthographic presentation layer without changing the
+  authoritative 2D simulation.
+- Added stable same-cell visual offsets so creatures and towers do not fully
+  overlap at bridge entrances.
+- Fixed neutral-colossus lookup so tower entities are not read as creatures.
+- Added content-language, draft-layout, visual-hierarchy, and formal-entity
+  presentation assertions.
+
 ### Completed: v0.3.3a6 — Strategic Map Schema And Preview
 
 - Add `route_layout` and `strategy_profile` to all three map definitions.
@@ -939,11 +956,28 @@ Candidate order after B1:
 
 ### Later
 
-- Next gameplay engineering target: an eighteen-card live playtest and
-  readability audit; the entity-runtime coupling closeout is complete, and no
-  additional card batch should be added first.
-- `v0.3.4`: complete the `default_duel` formal-art benchmark, then expand the
-  approved environment language to Cross Strongholds and Central Lab.
+- Next batch 1: formal entity readability. Replace numeric floating labels with
+  compact faction-colored HP bars, give Fire-Control Beacon and Interceptor
+  Tower distinct silhouettes, expose powered/intercept/guidance state, and
+  improve crowded bridge-slot spacing. Do not add cards or change combat
+  values.
+- Next batch 2: projectile readability. Separate standard, siege, and
+  suppression projectiles through size, color, trail, contact flash, and impact
+  feedback while retaining authoritative 2D projectile rules.
+- Next batch 3: `v0.3.4 default_duel` formal-art benchmark. Replace the remaining
+  graybox command chambers, gates, river banks, and arena border with the
+  approved bright toy-sandbox language. Command chambers must read as compact
+  control buildings rather than tanks; background scenery must stay
+  subordinate to the combat field.
+- Next batch 4: eighteen-card live playtest and readability audit. Measure
+  whether every three-choice card, entity role, tower state, projectile type,
+  gate state, and stronghold percentage can be understood during real play.
+  Fix confusing presentation before adding new content.
+- Engineering cleanup alongside those batches: repair the stale Godot UI import
+  cache/fallback warnings and keep screenshot capture as a repeatable visual
+  acceptance tool.
+- After the `default_duel` benchmark passes human screenshot review, extend the
+  same material and lighting language to Cross Strongholds and Central Lab.
 - `v0.3.3b2` and `v0.3.3b3` remain paused and are not implied by completing
   `v0.3.3b1`.
 
@@ -979,7 +1013,6 @@ No map is considered strategically complete until a player can describe its main
 - The four-card route module until explicitly reactivated.
 - The 108,000-match A/B audit, candidate-deck promotion, and hard balance gates
   while the core framework and art benchmark remain in progress.
-- Implementing formal neutral/friendly creature and tower cards until the `TBD`
-  fields in the authoritative inventory are explicitly approved; their place
-  in the future three-choice card pool is already confirmed.
+- Additional creature, tower, or route-card batches beyond the confirmed
+  eighteen-card live pool.
 - Rewriting projectile simulation as true 3D physics.

@@ -108,6 +108,7 @@ offset_right = 926.0
 offset_bottom = 390.0
 mouse_filter = 1
 theme_override_constants/separation = 13
+alignment = 1
 
 [node name="AiStatusLabel" type="Label" parent="DraftRoot/ChoiceShell"]
 layout_mode = 0

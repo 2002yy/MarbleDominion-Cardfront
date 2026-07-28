@@ -31,6 +31,7 @@ var _pending_player_upgrade_name: String = ""
 var _pending_player_upgrade_times: int = 1
 var _upgrade_toast_remaining: float = 0.0
 var _last_stronghold_bonuses: Dictionary = {}
+var _view_size: Vector2 = Vector2(1120, 720)
 
 
 func _ready() -> void:
@@ -47,6 +48,7 @@ func setup(new_director, view_size: Vector2 = Vector2(1120, 720)) -> bool:
 	if director == null or not is_instance_valid(director):
 		visible = false
 		return false
+	_view_size = view_size
 	draft_root.position = Vector2.ZERO
 	draft_root.size = view_size
 	dimmer.position = Vector2.ZERO
@@ -155,6 +157,7 @@ func _on_draft_opened(player_offer: Array, _ai_offer: Array, timeout_seconds: fl
 		card.setup(raw_definition as Dictionary)
 		card.upgrade_chosen.connect(_choose_upgrade)
 		_choice_cards.append(card)
+	_layout_choice_cards(_choice_cards.size())
 	var player_bonus: Dictionary = _last_stronghold_bonuses.get(RulesScript.PLAYER_FACTION, {}) as Dictionary
 	var has_lab_choice: bool = int(player_bonus.get("draft_choice_count", 3)) >= StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT
 	title_label.text = "实验室加成：四选一" if has_lab_choice else "\u9009\u62e9\u672c\u8f6e\u5f3a\u5316"
@@ -169,6 +172,19 @@ func _on_draft_opened(player_offer: Array, _ai_offer: Array, timeout_seconds: fl
 	timer_label.text = "%.1f" % _timeout_seconds
 	battle_status.visible = false
 	draft_root.visible = true
+
+
+func _layout_choice_cards(choice_count: int) -> void:
+	var safe_count: int = clampi(choice_count, 1, 4)
+	var card_width: float = 280.0 if safe_count <= 3 else 214.0
+	var separation: int = 20 if safe_count <= 3 else 13
+	card_box.add_theme_constant_override("separation", separation)
+	card_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	for card in _choice_cards:
+		if card != null and is_instance_valid(card):
+			card.custom_minimum_size = Vector2(card_width, 266.0)
+			card.size = card.custom_minimum_size
+			card.pivot_offset = card.custom_minimum_size * 0.5
 
 
 func _on_draft_time_updated(time_remaining: float, timeout_seconds: float) -> void:

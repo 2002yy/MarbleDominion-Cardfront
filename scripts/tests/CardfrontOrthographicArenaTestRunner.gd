@@ -45,6 +45,10 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.eq(view.get_gate_openness_for_test(0), 0.5, "orthographic arena: presentation gate should retain its openness")
 	_assert.gte(view.get_territory_boundary_count_for_test(), 160, "orthographic arena: outer edge and ownership fronts should receive bold boundaries")
 	_assert.gte(view.get_arena_depth_ratio_for_test(), 1.08, "orthographic arena: visual depth should exceed width for a tall open field")
+	_assert.that(view.get_camera_size_ratio_for_test() <= 1.20, "orthographic arena: playable field should fill the viewport")
+	_assert.that(view.get_command_chamber_width_for_test() <= 5.0, "orthographic arena: command chambers should not dominate combat entities")
+	_assert.that(view.get_bridge_visual_width_for_test() <= 4.0, "orthographic arena: bridge gates should preserve combat space")
+	_assert.that(view.get_edge_decoration_count_for_test() <= 8, "orthographic arena: peripheral decoration should stay subordinate")
 	_assert.eq(view.get_checker_cell_span_for_test(), 1, "orthographic arena: checker detail should resolve every simulation cell")
 	_assert.eq(view.get_turret_proxy_count_for_test(), 2, "orthographic arena: player and AI should each have one visual proxy")
 	var background: Color = view.get_background_color_for_test()
@@ -62,6 +66,12 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	var world_position: Vector3 = view.simulation_to_world_for_test(player_turret.global_position)
 	_assert.that(world_position.z > 20.0, "orthographic arena: bottom player turret should map beyond the positive-Z map edge")
 	_assert.eq(view.get_sparse_claim_marker_count_for_test(), 0, "orthographic arena: connected spawn territories should not be covered in sparse markers")
+
+	var entity_runtime = main.runtime.battlefield.capture_interceptor.entity_runtime
+	entity_runtime.debug_spawn_repair_units(CardfrontRulesScript.PLAYER_FACTION, 1)
+	entity_runtime.build_or_upgrade_tower(CardfrontRulesScript.PLAYER_FACTION, "interceptor_tower")
+	await process_frame
+	_assert.gte(view.get_entity_proxy_count_for_test(), 2, "orthographic arena: creatures and defense towers should enter the formal 3D view")
 
 	var isolated_cell := Vector2i(20, 20)
 	main.runtime.battlefield.owners[isolated_cell.x][isolated_cell.y] = CardfrontRulesScript.PLAYER_FACTION

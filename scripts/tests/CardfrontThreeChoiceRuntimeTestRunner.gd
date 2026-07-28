@@ -47,6 +47,8 @@ func _test_player_choice_pauses_resolves_and_launches() -> void:
 	_assert.eq(director.get_phase(), MatchPhaseScript.DRAFT_PAUSED, "draft: phase should be paused draft")
 	_assert.that(panel.draft_root.visible, "draft: formal choice overlay should be visible")
 	_assert.eq(panel.get_visible_choice_count(), 3, "draft: exactly three player choices should be visible")
+	for card in panel.get_choice_cards():
+		_assert.eq(card.custom_minimum_size.x, 280.0, "draft: three-choice cards should fill three explicit columns")
 	_assert.that(director.phase_controller.get_selected_upgrade_id(RulesScript.AI_FACTION) != "", "draft: AI should lock a choice")
 	_assert.that(not main.runtime.direction_controller.is_processing_unhandled_input(), "draft: direction hotkeys should be disabled")
 
@@ -116,6 +118,7 @@ func _test_strongholds_modify_draft_and_volley() -> void:
 	var shell_rect: Rect2 = main.runtime.three_choice_panel.choice_shell.get_global_rect()
 	var previous_x: float = -INF
 	for card in main.runtime.three_choice_panel.get_choice_cards():
+		_assert.eq(card.custom_minimum_size.x, 214.0, "runtime stronghold: laboratory bonus should use the compact four-card layout")
 		var card_rect: Rect2 = card.get_global_rect()
 		_assert.that(shell_rect.encloses(card_rect), "runtime stronghold: every laboratory choice should remain inside the choice shell")
 		_assert.gt(card_rect.position.x, previous_x, "runtime stronghold: four choices should remain horizontally ordered")

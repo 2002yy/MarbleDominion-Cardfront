@@ -208,6 +208,7 @@ func _find_by_summoner(summoner_owner_id: int):
 		if (
 			entity != null
 			and entity.is_alive()
+			and str(entity.entity_kind) == "creature"
 			and str(entity.creature_id) == CREATURE_GATE_COLOSSUS
 			and int(entity.metadata.get("summoned_by", -999)) == int(summoner_owner_id)
 		):

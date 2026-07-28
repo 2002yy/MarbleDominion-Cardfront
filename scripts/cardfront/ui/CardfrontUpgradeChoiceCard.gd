@@ -38,6 +38,7 @@ func setup(new_definition: Dictionary) -> void:
 	upgrade_id = str(definition.get("id", ""))
 	rarity_label.text = _rarity_text(str(definition.get("rarity", "common")))
 	symbol_label.text = str(definition.get("symbol", "?"))
+	symbol_label.add_theme_font_size_override("font_size", _symbol_font_size(symbol_label.text))
 	stats_label.text = str(definition.get("display_stats", ""))
 	stats_label.visible = not stats_label.text.is_empty()
 	name_label.text = str(definition.get("name", upgrade_id))
@@ -47,6 +48,15 @@ func setup(new_definition: Dictionary) -> void:
 	scale = Vector2.ONE
 	modulate = Color.WHITE
 	_apply_style(false)
+
+
+func _symbol_font_size(symbol_text: String) -> int:
+	var glyph_count: int = symbol_text.length()
+	if glyph_count <= 3:
+		return 48
+	if glyph_count <= 5:
+		return 36
+	return 29
 
 
 func set_locked(selected: bool) -> void:

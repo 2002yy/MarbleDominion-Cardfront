@@ -72,7 +72,7 @@ const DEFINITIONS := {
 	UPGRADE_VOLLEY_X2: {
 		"id": UPGRADE_VOLLEY_X2,
 		"name": "双倍齐射",
-		"symbol": "x2",
+		"symbol": "×2",
 		"rarity": RARITY_UNCOMMON,
 		"category": "next_volley",
 		"tags": ["volley", "typed_group", "combo"],
@@ -116,7 +116,7 @@ const DEFINITIONS := {
 	UPGRADE_ARMOR_PIERCING: {
 		"id": UPGRADE_ARMOR_PIERCING,
 		"name": "穿甲轨迹",
-		"symbol": "AP6",
+		"symbol": "破甲6",
 		"rarity": RARITY_UNCOMMON,
 		"category": "next_volley",
 		"tags": ["volley", "anti_fortify", "siege"],
@@ -127,7 +127,7 @@ const DEFINITIONS := {
 	UPGRADE_RARITY_PLUS_1: {
 		"id": UPGRADE_RARITY_PLUS_1,
 		"name": "稀有预感",
-		"symbol": "UP",
+		"symbol": "稀有+1",
 		"rarity": RARITY_UNCOMMON,
 		"category": "draft_growth",
 		"tags": ["draft", "growth"],
@@ -138,7 +138,7 @@ const DEFINITIONS := {
 	UPGRADE_ECHO_NEXT_CHOICE: {
 		"id": UPGRADE_ECHO_NEXT_CHOICE,
 		"name": "延迟回响",
-		"symbol": "ECHO",
+		"symbol": "复制",
 		"rarity": RARITY_RARE,
 		"category": "draft_growth",
 		"tags": ["draft", "combo"],
@@ -149,7 +149,7 @@ const DEFINITIONS := {
 	UPGRADE_SIEGE_CALIBRATION: {
 		"id": UPGRADE_SIEGE_CALIBRATION,
 		"name": "攻城编组",
-		"symbol": "SIEGE2",
+		"symbol": "攻城2",
 		"rarity": RARITY_UNCOMMON,
 		"category": "next_volley",
 		"tags": ["volley", "siege", "anti_fortify", "chamber"],
@@ -160,7 +160,7 @@ const DEFINITIONS := {
 	UPGRADE_SUPPRESSION_SCREEN: {
 		"id": UPGRADE_SUPPRESSION_SCREEN,
 		"name": "压制编队",
-		"symbol": "SUP2",
+		"symbol": "压制2",
 		"rarity": RARITY_UNCOMMON,
 		"category": "next_volley",
 		"tags": ["volley", "suppression", "territory", "route"],
@@ -171,7 +171,7 @@ const DEFINITIONS := {
 	UPGRADE_REPAIR_UNITS: {
 		"id": UPGRADE_REPAIR_UNITS,
 		"name": "维修单位",
-		"symbol": "2xBOT",
+		"symbol": "维修2",
 		"rarity": RARITY_COMMON,
 		"category": "entity",
 		"tags": ["creature", "repair", "frontline", "fortify"],
@@ -183,7 +183,7 @@ const DEFINITIONS := {
 	UPGRADE_FIRE_CONTROL_BEACON: {
 		"id": UPGRADE_FIRE_CONTROL_BEACON,
 		"name": "火控信标",
-		"symbol": "GUIDE",
+		"symbol": "引导",
 		"rarity": RARITY_UNCOMMON,
 		"category": "building",
 		"tags": ["tower", "guidance", "route", "building"],
@@ -195,7 +195,7 @@ const DEFINITIONS := {
 	UPGRADE_INTERCEPTOR_TOWER: {
 		"id": UPGRADE_INTERCEPTOR_TOWER,
 		"name": "拦截塔",
-		"symbol": "BLOCK",
+		"symbol": "拦截",
 		"rarity": RARITY_UNCOMMON,
 		"category": "building",
 		"tags": ["tower", "intercept", "defense", "building"],
@@ -207,7 +207,7 @@ const DEFINITIONS := {
 	UPGRADE_BUILDING_VOLLEY: {
 		"id": UPGRADE_BUILDING_VOLLEY,
 		"name": "建筑齐射",
-		"symbol": "TOWER+",
+		"symbol": "建筑齐射",
 		"rarity": RARITY_RARE,
 		"category": "building_growth",
 		"tags": ["tower", "volley", "building", "growth"],
@@ -218,7 +218,7 @@ const DEFINITIONS := {
 	UPGRADE_HEAVY_CHARGE: {
 		"id": UPGRADE_HEAVY_CHARGE,
 		"name": "重型装药",
-		"symbol": "BLAST",
+		"symbol": "重装爆破",
 		"rarity": RARITY_RARE,
 		"category": "next_volley",
 		"tags": ["explosion", "tower", "siege", "anti_building"],
@@ -235,7 +235,7 @@ const DEFINITIONS := {
 	UPGRADE_ARMORED_GUARD: {
 		"id": UPGRADE_ARMORED_GUARD,
 		"name": "装甲护卫",
-		"symbol": "GUARD4",
+		"symbol": "护卫4",
 		"rarity": RARITY_UNCOMMON,
 		"category": "entity",
 		"tags": ["creature", "armored", "frontline", "gate", "defense"],
@@ -247,7 +247,7 @@ const DEFINITIONS := {
 	UPGRADE_SAPPER_UNIT: {
 		"id": UPGRADE_SAPPER_UNIT,
 		"name": "掘城单位",
-		"symbol": "SAP3",
+		"symbol": "掘城3",
 		"rarity": RARITY_UNCOMMON,
 		"category": "entity",
 		"tags": ["creature", "armored", "siege", "tower", "anti_fortify"],
@@ -259,7 +259,7 @@ const DEFINITIONS := {
 	UPGRADE_GATE_COLOSSUS: {
 		"id": UPGRADE_GATE_COLOSSUS,
 		"name": "唤醒闸门巨像",
-		"symbol": "GOLEM6",
+		"symbol": "巨像6",
 		"rarity": RARITY_RARE,
 		"category": "neutral_entity",
 		"tags": ["creature", "neutral", "armored", "gate", "comeback"],

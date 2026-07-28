@@ -11,9 +11,10 @@ script = ExtResource("1_card")
 
 [node name="RarityLabel" type="Label" parent="."]
 layout_mode = 0
+anchor_right = 1.0
 offset_left = 15.0
 offset_top = 12.0
-offset_right = 199.0
+offset_right = -15.0
 offset_bottom = 35.0
 mouse_filter = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -24,9 +25,10 @@ horizontal_alignment = 1
 
 [node name="SymbolLabel" type="Label" parent="."]
 layout_mode = 0
+anchor_right = 1.0
 offset_left = 12.0
 offset_top = 40.0
-offset_right = 202.0
+offset_right = -12.0
 offset_bottom = 106.0
 mouse_filter = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -38,9 +40,10 @@ vertical_alignment = 1
 
 [node name="StatsLabel" type="Label" parent="."]
 layout_mode = 0
+anchor_right = 1.0
 offset_left = 12.0
 offset_top = 105.0
-offset_right = 202.0
+offset_right = -12.0
 offset_bottom = 132.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.78, 0.9, 0.95, 1)
@@ -53,18 +56,20 @@ vertical_alignment = 1
 
 [node name="Divider" type="ColorRect" parent="."]
 layout_mode = 0
+anchor_right = 1.0
 offset_left = 18.0
 offset_top = 135.0
-offset_right = 196.0
+offset_right = -18.0
 offset_bottom = 138.0
 mouse_filter = 2
 color = Color(0.35, 0.7, 0.92, 0.5)
 
 [node name="NameLabel" type="Label" parent="."]
 layout_mode = 0
+anchor_right = 1.0
 offset_left = 12.0
 offset_top = 142.0
-offset_right = 202.0
+offset_right = -12.0
 offset_bottom = 174.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
@@ -77,9 +82,10 @@ vertical_alignment = 1
 
 [node name="DescriptionLabel" type="Label" parent="."]
 layout_mode = 0
+anchor_right = 1.0
 offset_left = 17.0
 offset_top = 177.0
-offset_right = 197.0
+offset_right = -17.0
 offset_bottom = 241.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.82, 0.88, 0.94, 1)
@@ -94,9 +100,10 @@ autowrap_mode = 2
 [node name="LockLabel" type="Label" parent="."]
 visible = false
 layout_mode = 0
+anchor_right = 1.0
 offset_left = 44.0
 offset_top = 226.0
-offset_right = 170.0
+offset_right = -44.0
 offset_bottom = 257.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
