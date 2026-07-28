@@ -20,6 +20,7 @@ const UPGRADE_FIRE_CONTROL_BEACON: String = "fire_control_beacon"
 const UPGRADE_INTERCEPTOR_TOWER: String = "interceptor_tower"
 const UPGRADE_BUILDING_VOLLEY: String = "building_volley"
 const UPGRADE_HEAVY_CHARGE: String = "heavy_charge"
+const UPGRADE_ARMORED_GUARD: String = "armored_guard"
 
 # Historical A/B0 baseline. Keep this list available for audit fixtures.
 const CORE_UPGRADE_IDS: Array[String] = [
@@ -49,6 +50,7 @@ const FORMAL_UPGRADE_IDS: Array[String] = [
 	UPGRADE_INTERCEPTOR_TOWER,
 	UPGRADE_BUILDING_VOLLEY,
 	UPGRADE_HEAVY_CHARGE,
+	UPGRADE_ARMORED_GUARD,
 ]
 
 const DEFINITIONS := {
@@ -222,6 +224,17 @@ const DEFINITIONS := {
 			"defense_damage": 1,
 		},
 		"description": "下一轮首次命中敌塔时爆炸：中心塔额外受 1 伤害，半径 2 内敌方实体受 1 伤害，半径 1 内敌方格失去 1 层防守",
+	},
+	UPGRADE_ARMORED_GUARD: {
+		"id": UPGRADE_ARMORED_GUARD,
+		"name": "装甲护卫",
+		"symbol": "GUARD4",
+		"rarity": RARITY_UNCOMMON,
+		"category": "entity",
+		"tags": ["creature", "armored", "frontline", "gate", "defense"],
+		"effect_id": "queue_entity_action",
+		"params": {"action": "summon_armored_guard", "amount": 1},
+		"description": "召唤 1 名 4 生命装甲护卫；每轮移动 1 格并驻守最近闸门入口或争夺前线，持续至被击毁",
 	},
 }
 

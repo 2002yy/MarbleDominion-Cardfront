@@ -455,6 +455,8 @@ func _upgrade_score_fast(upgrade_id: String, state: Dictionary) -> float:
 			return 70.0 + float(int(state.get("owned_defense_tower_count", 0))) * 9.0
 		UpgradeManifestScript.UPGRADE_HEAVY_CHARGE:
 			return 74.0
+		UpgradeManifestScript.UPGRADE_ARMORED_GUARD:
+			return 77.0
 	return 0.0
 
 
@@ -503,6 +505,11 @@ func _apply_upgrade_once_fast(state: Dictionary, upgrade_id: String) -> bool:
 					state["owned_creature_count"] = mini(
 						3,
 						int(state.get("owned_creature_count", 0)) + maxi(0, int(params.get("amount", 2)))
+					)
+				"summon_armored_guard":
+					state["owned_creature_count"] = mini(
+						3,
+						int(state.get("owned_creature_count", 0)) + maxi(0, int(params.get("amount", 1)))
 					)
 				"build_or_upgrade_tower":
 					var tower_id: String = str(params.get("tower_id", ""))
@@ -570,6 +577,8 @@ func _is_upgrade_eligible_fast(upgrade_id: String, state: Dictionary) -> bool:
 		return not bool(state["echo_next_choice_armed"])
 	if upgrade_id == UpgradeManifestScript.UPGRADE_REPAIR_UNITS:
 		return int(state.get("owned_creature_count", 0)) <= 1
+	if upgrade_id == UpgradeManifestScript.UPGRADE_ARMORED_GUARD:
+		return int(state.get("owned_creature_count", 0)) < 3
 	if upgrade_id == UpgradeManifestScript.UPGRADE_FIRE_CONTROL_BEACON:
 		return int((state.get("tower_levels", {}) as Dictionary).get("fire_control_beacon", 0)) < 3
 	if upgrade_id == UpgradeManifestScript.UPGRADE_INTERCEPTOR_TOWER:

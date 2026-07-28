@@ -118,6 +118,7 @@ static func evaluate(
 		UpgradeManifestScript.UPGRADE_INTERCEPTOR_TOWER,
 		UpgradeManifestScript.UPGRADE_BUILDING_VOLLEY,
 		UpgradeManifestScript.UPGRADE_HEAVY_CHARGE,
+		UpgradeManifestScript.UPGRADE_ARMORED_GUARD,
 	]:
 		tactical_bonus *= build_factor
 

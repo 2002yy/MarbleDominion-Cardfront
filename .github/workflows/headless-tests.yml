@@ -102,6 +102,7 @@ jobs:
               CardfrontMatchPhaseControllerTestRunner.gd
               CardfrontUpgradeResolverTestRunner.gd
               CardfrontEntityCardRuntimeTestRunner.gd
+              CardfrontArmoredGuardTestRunner.gd
           - batch: Cardfront v0.3 arena spike
             scripts: |
               CardfrontArenaLayoutTestRunner.gd

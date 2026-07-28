@@ -21,6 +21,7 @@ const DebugLayerScript = preload("res://scripts/cardfront/entities/CardfrontEnti
 
 const CREATURE_REPAIR_UNIT: String = "repair_unit"
 const CREATURE_SCOUT_UNIT: String = "scout_unit"
+const CREATURE_ARMORED_GUARD: String = "armored_guard"
 const TOWER_FIRE_CONTROL_BEACON: String = "fire_control_beacon"
 const TOWER_INTERCEPTOR: String = "interceptor_tower"
 const DEFAULT_FIRE_CONTROL_HP: int = 5
@@ -184,6 +185,12 @@ func apply_pending_upgrade_actions(owner_id: int, run_state) -> Array:
 			"summon_repair_units":
 				var spawned: Array = spawn_repair_units(owner_id, int(action.get("amount", 2)))
 				results.append({"action": "summon_repair_units", "spawned": spawned.size()})
+			"summon_armored_guard":
+				var guard = spawn_armored_guard(owner_id)
+				results.append({
+					"action": "summon_armored_guard",
+					"spawned": 1 if guard != null else 0,
+				})
 			"build_or_upgrade_tower":
 				var tower_result: Dictionary = build_or_upgrade_tower(owner_id, str(action.get("tower_id", "")))
 				results.append(tower_result)
@@ -270,6 +277,25 @@ func spawn_repair_units(owner_id: int, amount: int = 2) -> Array:
 		entity_spawned.emit(creature.entity_id, creature.entity_kind, creature.owner_id, creature.cell)
 	_mark_visuals_dirty()
 	return spawned
+
+
+func spawn_armored_guard(owner_id: int):
+	var spawn_cell: Vector2i = _find_owner_spawn_cell(owner_id, 0)
+	var guard = registry.spawn_creature(
+		_next_entity_id("guard"),
+		CREATURE_ARMORED_GUARD,
+		owner_id,
+		spawn_cell,
+		4,
+		CreatureStateScript.ARMOR_ARMORED,
+		1,
+		"guard_frontline",
+		-1
+	)
+	if guard != null:
+		entity_spawned.emit(guard.entity_id, guard.entity_kind, guard.owner_id, guard.cell)
+	_mark_visuals_dirty()
+	return guard
 
 
 func debug_spawn_fire_control_beacon(owner_id: int, lane_index: int = 0):
@@ -684,6 +710,8 @@ func _run_creature_actions() -> void:
 		match str(entity.behavior_type):
 			"repair_frontline":
 				_run_repair_unit(entity)
+			"guard_frontline":
+				_run_armored_guard(entity)
 
 
 func _run_repair_unit(creature) -> void:
@@ -693,6 +721,15 @@ func _run_repair_unit(creature) -> void:
 	if _manhattan_distance(creature.cell, target) <= 1:
 		if _repair_frontline_cell(creature, target):
 			return
+	var next_cell: Vector2i = _next_owned_step_toward(creature.owner_id, creature.cell, target)
+	if next_cell != creature.cell:
+		registry.move_entity(creature.entity_id, next_cell)
+
+
+func _run_armored_guard(creature) -> void:
+	var target: Vector2i = _find_nearest_guard_post(creature.owner_id, creature.cell)
+	if target.x < 0 or target == creature.cell:
+		return
 	var next_cell: Vector2i = _next_owned_step_toward(creature.owner_id, creature.cell, target)
 	if next_cell != creature.cell:
 		registry.move_entity(creature.entity_id, next_cell)
@@ -751,6 +788,10 @@ func _process_tower_summons() -> void:
 
 
 func _has_owner_creature_id(owner_id: int, creature_id: String) -> bool:
+	return _find_owner_creature_id(owner_id, creature_id) != null
+
+
+func _find_owner_creature_id(owner_id: int, creature_id: String):
 	for entity in registry.entities_by_id.values():
 		if (
 			entity != null
@@ -759,8 +800,8 @@ func _has_owner_creature_id(owner_id: int, creature_id: String) -> bool:
 			and int(entity.owner_id) == int(owner_id)
 			and str(entity.creature_id) == str(creature_id)
 		):
-			return true
-	return false
+			return entity
+	return null
 
 
 func _push_creature(creature, projectile_direction: Vector2, distance: int) -> bool:
@@ -799,6 +840,45 @@ func _find_nearest_repairable_frontline(owner_id: int, origin: Vector2i) -> Vect
 			if distance < best_distance:
 				best = cell
 				best_distance = distance
+	return best
+
+
+func _find_nearest_guard_post(owner_id: int, origin: Vector2i) -> Vector2i:
+	var candidates: Array[Vector2i] = []
+	var size: int = int(battlefield.grid_size)
+	var river_y: int = size >> 1
+	var gate_y: int = river_y - 1 if int(owner_id) == RulesScript.AI_FACTION else river_y
+	var lanes: Array = ((map_definition.get("route_layout", {}) as Dictionary).get("lanes", []) as Array)
+	if lanes.size() < 2:
+		lanes = [{"center_ratio": 0.30}, {"center_ratio": 0.70}]
+	for lane in lanes:
+		var lane_definition: Dictionary = lane as Dictionary
+		var gate_x: int = clampi(
+			roundi(float(size - 1) * float(lane_definition.get("center_ratio", 0.5))),
+			0,
+			size - 1
+		)
+		var gate_cell := Vector2i(gate_x, gate_y)
+		if (
+			battlefield.is_inside(gate_cell)
+			and int(battlefield.owners[gate_cell.x][gate_cell.y]) == int(owner_id)
+		):
+			candidates.append(gate_cell)
+	for x in range(size):
+		for y in range(size):
+			var cell := Vector2i(x, y)
+			if (
+				int(battlefield.owners[x][y]) == int(owner_id)
+				and _is_frontline_cell(cell, owner_id)
+			):
+				candidates.append(cell)
+	var best := Vector2i(-1, -1)
+	var best_distance: int = 1 << 30
+	for candidate in candidates:
+		var distance: int = _manhattan_distance(origin, candidate)
+		if distance < best_distance:
+			best = candidate
+			best_distance = distance
 	return best
 
 

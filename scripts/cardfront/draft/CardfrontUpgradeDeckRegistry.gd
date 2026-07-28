@@ -32,6 +32,7 @@ const DEFINITIONS: Dictionary = {
 			"interceptor_tower",
 			"building_volley",
 			"heavy_charge",
+			"armored_guard",
 		],
 	},
 	DECK_FORTIFICATION_CORPS: {
@@ -51,6 +52,7 @@ const DEFINITIONS: Dictionary = {
 			"interceptor_tower",
 			"building_volley",
 			"heavy_charge",
+			"armored_guard",
 		],
 	},
 	DECK_BARRAGE_CONTROL: {
