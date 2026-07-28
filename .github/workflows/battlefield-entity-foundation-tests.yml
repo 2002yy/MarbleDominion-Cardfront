@@ -9,6 +9,7 @@ on:
       - "scripts/cardfront/volley/**"
       - "scripts/tests/CardfrontBattlefieldEntityFoundationTestRunner.gd"
       - "scripts/tests/CardfrontBattlefieldEntityRuntimeTestRunner.gd"
+      - "scripts/tests/CardfrontEntityRuntimeBoundaryTestRunner.gd"
       - "scripts/tests/CardfrontProjectileTypeCombatTestRunner.gd"
       - "docs/BATTLEFIELD_ENTITIES_AND_DEFENSE_TOWERS_PLAN.md"
       - ".github/workflows/battlefield-entity-foundation-tests.yml"
@@ -30,6 +31,8 @@ jobs:
             script: CardfrontBattlefieldEntityFoundationTestRunner.gd
           - test_name: Entity live runtime
             script: CardfrontBattlefieldEntityRuntimeTestRunner.gd
+          - test_name: Entity runtime boundary
+            script: CardfrontEntityRuntimeBoundaryTestRunner.gd
           - test_name: Typed projectile regression
             script: CardfrontProjectileTypeCombatTestRunner.gd
     env:

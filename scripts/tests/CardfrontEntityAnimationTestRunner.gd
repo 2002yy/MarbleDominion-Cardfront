@@ -3,7 +3,7 @@ extends SceneTree
 const VisualRegistryScript = preload("res://scripts/cardfront/entities/CardfrontEntityVisualRegistry.gd")
 const VisualActorScript = preload("res://scripts/cardfront/entities/CardfrontEntityVisualActor.gd")
 const EntityRegistryScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntityRegistry.gd")
-const DebugLayerScript = preload("res://scripts/cardfront/entities/CardfrontEntityDebugLayer.gd")
+const PresentationLayerScript = preload("res://scripts/cardfront/entities/CardfrontEntityPresentationLayer.gd")
 
 
 class MockBattlefield:
@@ -119,7 +119,7 @@ func _test_runtime_signal_routing() -> void:
 		-1,
 		2
 	)
-	var layer = DebugLayerScript.new()
+	var layer = PresentationLayerScript.new()
 	battlefield.add_child(layer)
 	layer.setup(battlefield, registry, runtime)
 	var actor = layer._actors_by_entity_id.get("gate_colossus_live", null)

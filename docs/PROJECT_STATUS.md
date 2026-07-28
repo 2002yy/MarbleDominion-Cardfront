@@ -475,7 +475,7 @@ Current measured hotspots:
 
 | Priority | Module | Current size | Judgment and required boundary |
 | --- | --- | --- | --- |
-| P0 | `CardfrontBattlefieldEntityRuntime.gd` | 1066 lines / 57 functions | Still the largest new coordinator. Sapper targeting, neutral AI, and shared gate navigation are now extracted, but projectile contact, heavy-charge splash, tower volleys/guidance, repairs, tower summons, and lifecycle cleanup remain combined. Before adding another entity family, split `CardfrontEntityProjectileBridge`, `CardfrontTowerRuntime`, and `CardfrontCreatureActionCoordinator`; target the coordinator below 650 lines. |
+| Closed | `CardfrontBattlefieldEntityRuntime.gd` | 478 lines | The main coordinator now owns lifecycle, assembly, signals, and compatibility forwarding only. Projectile contact/heavy-charge work, tower volleys/guidance, and creature actions are delegated to dedicated runtime modules; the coordinator is guarded at 650 lines. |
 | P1 | `CardfrontBalanceMatchSimulator.gd` | 702 lines / 26 functions | Upgrade application and eligibility switches duplicate the B1 deck simulator. Introduce a shared simulation upgrade adapter before another card batch so live and audit models cannot drift independently. |
 | P1 | Manifest/deck/draft/value chain | 330-line Manifest plus multiple registries | Adding one card still requires synchronized edits across Manifest, deck registry, draft eligibility, live resolver, two value policies, and two simulators. The next content-foundation pass should centralize eligibility and simulation metadata instead of growing parallel `match` lists. |
 | P2 | `CardfrontRoundDirector.gd` | 461 lines / 33 functions | Acceptable as a phase coordinator. Do not move entity targeting, collision, visuals, or card-specific effects into it. |
@@ -488,10 +488,17 @@ Completed coupling reduction in this slice:
   movement, and attacks.
 - `CardfrontEntityGateNavigator.gd` is the single creature gate-crossing policy
   used by both systems.
+- `CardfrontEntityProjectileBridge.gd` owns projectile contact, live bullet
+  processing, guidance, bounce/intercept state, and Heavy Charge splash.
+- `CardfrontTowerRuntime.gd` owns tower construction, level configuration,
+  power, building volleys, counter-projectiles, and tower summons.
+- `CardfrontCreatureActionCoordinator.gd` owns repair, guard, and Sapper
+  creature spawning, movement, and per-round actions.
 - `CardfrontEntityVisualActor.gd` owns presentation-only animation and smooth
-  cell-to-cell movement. `CardfrontEntityDebugLayer.gd` routes runtime signals
-  to actors without moving damage or lifecycle authority out of the entity
-  runtime.
+  cell-to-cell movement. `CardfrontEntityPresentationLayer.gd` owns formal
+  creature/tower rendering and routes runtime signals to actors.
+- `CardfrontEntityDebugLayer.gd` is now debug-only: building slots, collision
+  outlines, and health bars. It does not load formal art or own animation actors.
 
 Heavy Charge / 重型装药 is locked as a Rare next-volley combo card:
 
