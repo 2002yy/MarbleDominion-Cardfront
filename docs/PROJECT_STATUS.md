@@ -35,6 +35,148 @@ Confirmed product decisions:
 - The orthographic arena has a first-generation environment-art pass: map-specific palettes plus green-field banners, industrial stacks, or laboratory pylons. It is no longer a single-palette graybox, though bespoke meshes, textures, and polish remain future art work.
 - Existing legacy card illustrations and compatibility UI do not count as art completion for the new three-choice hero/run loop.
 
+### Approved Art Direction / 已批准美术方向
+
+The approved visual target is:
+
+> **明亮玩具沙盘 + 清晰竞技路线 + 粗轮廓占领块**
+
+The arena should feel bright, open, readable, and tactile. It must not return to
+the compressed dark-gray prototype look, and it must not become a noisy
+cyberpunk HUD or a realistic military battlefield.
+
+Reference responsibilities:
+
+- [Clash Royale](https://supercell.com/en/games/clashroyale/): learn from its
+  vertical arena composition, immediately visible opposing cores, and natural
+  separation created by the river and bridges.
+- [Minion Masters](https://store.steampowered.com/app/489520/Minion_Masters/):
+  learn from its oblique depth, opposing bases, and readable pressure around
+  the central routes.
+- [Into the Breach](https://store.steampowered.com/app/590380/Into_the_Breach/):
+  learn from the absolute clarity of tile ownership, attack routes, danger,
+  and state changes.
+- [Bad North](https://store.steampowered.com/app/688420/Bad_North/): learn from
+  its low-poly terrain, soft bright lighting, simplified architecture, and
+  strong silhouettes.
+
+These games are references for composition and readability, not templates to
+copy. Cardfront must retain its own visual identity:
+
+- bright marble trajectories;
+- thick, clearly separated ownership blocks;
+- two authoritative bridge gates;
+- a visible player-versus-AI command-chamber confrontation;
+- territory state that remains readable while projectiles are moving.
+
+### Approved Asset Stack / 已批准资源组合
+
+**Primary environment skeleton: KayKit Medieval Hexagon**
+
+- Use its 200+ stylized buildings, terrain pieces, and props as the fastest
+  route to a coherent readable battlefield.
+- Prefer the included blue/red faction variations and shared gradient atlas.
+- License: CC0.
+- Sources:
+  [KayKit official page](https://www.kaylousberg.com/game-assets/medieval-hexagon),
+  [Godot package](https://godotengine.org/asset-library/asset/2900).
+
+**Walls, bridges, gates, and command chambers: Kenney Castle Kit + Mini Arena**
+
+- Use selected pieces for turret bases, walls, bridge structures, gate
+  machinery, flags, and map-edge construction.
+- Do not import either pack wholesale into every scene.
+- License: CC0.
+- Sources:
+  [Castle Kit](https://kenney.nl/assets/castle-kit),
+  [Mini Arena](https://kenney.nl/assets/mini-arena),
+  [Kenney license guidance](https://kenney.nl/support).
+
+**Peripheral nature: Quaternius Stylized Nature MegaKit**
+
+- Use trees, rocks, bushes, and ground accents only around the outer frame of
+  the battlefield.
+- Keep the playable grid, bridge approaches, projectile lanes, and command
+  chambers visually clear.
+- The pack provides glTF assets and a Godot implementation.
+- License: CC0.
+- Source:
+  [Quaternius official pack page](https://quaternius.com/packs/stylizednaturemegakit.html).
+
+**Chinese typography: Noto Sans SC**
+
+- Use Black or Bold for titles, hero names, major percentages, countdowns, and
+  large combat numbers.
+- Use Medium for descriptions, secondary stats, hints, and normal HUD text.
+- License: SIL Open Font License; the font may be bundled with the game under
+  its license terms.
+- Source:
+  [Noto official usage and license guidance](https://notofonts.github.io/noto-docs/website/use/).
+
+### Art Integration Rules / 美术接入规则
+
+- Do not mix the raw appearance of three asset packs in the same scene. Route
+  imported meshes through one Cardfront material palette, one lighting setup,
+  and one outline/bevel language.
+- Prefer glTF/GLB for imported 3D assets. Imported art remains presentation
+  only and must not become authoritative projectile, gate, capture, or
+  collision state.
+- Keep environment paths in a dedicated registry with explicit fallbacks. Do
+  not scatter asset paths through `Main.gd`, gameplay systems, or individual
+  effect handlers.
+- Preserve the current 2D authoritative simulation. The orthographic 3D arena
+  mirrors ownership, defense, gates, projectiles, chambers, and effects.
+- Use strong faction identity without flooding entire tiles with saturated
+  color: blue/red inset borders, raised rims, corner markers, and restrained
+  surface tint should work together.
+- Neutral cells require their own warm or natural value range and must not be
+  confused with an unlit faction tile.
+- Territory borders must remain visible for isolated and scattered captured
+  cells, not only for large connected regions.
+- River water, bridge decks, gate machinery, command chambers, projectiles,
+  and ownership borders must occupy distinct value and hue ranges.
+- Decorative foliage and structures belong mainly outside the playable core.
+  They must not hide bridge entrances, projectile contacts, target previews,
+  or the thick ownership outlines.
+- Every imported pack, modified asset, font, and license must be recorded in
+  the existing asset-source and license documentation before release.
+
+### First Art Benchmark / 首个正式美术标杆
+
+Do not attempt to finish all three maps at once. The first art-production slice
+must complete `default_duel` as the benchmark scene before the industrial and
+laboratory maps inherit the same material language.
+
+The `default_duel` benchmark includes:
+
+- bright grass and readable terrain variation;
+- modeled river banks instead of a flat color strip;
+- two visually substantial bridge gates aligned with authoritative routes;
+- distinct blue and red command chambers outside the central play space;
+- thick, cartoon-like ownership blocks with clear faction and neutral states;
+- unified sunlight, ambient fill, shadows, and color grading;
+- restrained rocks, trees, flags, walls, and arena-edge dressing;
+- high-contrast marble trajectories and hit/capture feedback;
+- compact HUD and hero plates that do not cover the arena.
+
+Benchmark acceptance:
+
+- At first glance, a player can identify both command chambers, the river, both
+  legal crossings, and the current front line.
+- Blue, red, and neutral scattered cells remain distinguishable without
+  reading labels.
+- Ownership borders remain clear during volleys and do not flicker or disappear
+  at oblique camera angles.
+- The arena reads as bright and expanded rather than dark, compressed, or
+  surrounded by heavy UI.
+- Desktop `1120x720` and a narrow/mobile viewport both preserve the core routes
+  and do not overlap critical HUD with the battlefield.
+- Before/after screenshots are captured from deterministic camera states and
+  reviewed side by side.
+- The benchmark remains inside the existing arena performance budget.
+- Only after this benchmark is accepted should the same art system expand to
+  Cross Strongholds and Central Lab.
+
 ## 2. Hero Numeric Baseline / 三英雄数值基线
 
 The current public baseline is:
@@ -397,16 +539,21 @@ CI enforcement during this framework phase:
 
 Blunt verdict:
 
-> 当前有“通用双桥闸门策略”和“默认五据点策略”，但几乎没有玩家可直观感受到的地图之间策略差异。
+> 三张地图已经可选并进入实时区域、桥梁和闸门装配，但当前仍主要依赖路线位置、据点布局和第一代程序配色表达差异；正式环境几何与玩家可直观复述的地图个性仍未完成。
 
 Why:
 
 - Three map definitions exist in the registry: Five Strongholds, Cross Strongholds, and Central Lab.
-- Their stronghold shapes and fast-simulation proxy values differ.
-- Live runtime currently calls `generate_default_layout()` and therefore always builds the default stronghold layout.
-- Cross Strongholds and Central Lab are currently registry/simulation definitions, not fully selectable live battlefields.
-- All live gate geometry uses globally fixed two-lane positions, widths, and control-zone sizes.
-- The map schema does not yet own river/bridge/gate geometry or a player-facing strategic identity.
+- Their stronghold shapes, route layouts, strategy profiles, and simulation values differ.
+- The selected `map_id` now drives live `RegionMap` generation.
+- Live gate crossing, control sampling, and orthographic bridge presentation use
+  each map's authoritative `route_layout`.
+- The formal pre-match screen exposes all three maps with route previews,
+  identities, and opening hints.
+- The current environmental distinction is still a first-generation palette
+  and landmark pass rather than finished modeled terrain.
+- Human playtest evidence has not yet established that a new player can explain
+  each map's main route decision after one match.
 
 Approved strategic map specification:
 
@@ -531,7 +678,8 @@ Candidate order after B1:
 - `v0.3.3b1`: upgrade-effect registry.
 - `v0.3.3b2`: four-card route module.
 - `v0.3.3b3`: final expanded 108,000-match A/B evidence gate.
-- `v0.3.4`: map geometry expansion and visual polish.
+- `v0.3.4`: complete the `default_duel` formal-art benchmark, then expand the
+  approved environment language to Cross Strongholds and Central Lab.
 
 ## 12. Acceptance Requirements / 验收要求
 
