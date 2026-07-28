@@ -146,7 +146,8 @@ func issue_volley(
 	projectile_power: int = 1,
 	chamber_damage_quarters: int = 4,
 	armor_pierce_contacts: int = 0,
-	projectile_sequence: Array = []
+	projectile_sequence: Array = [],
+	heavy_charge_pool: Dictionary = {}
 ):
 	var intent = build_intent(owner_id, 1)
 	if intent == null:
@@ -156,6 +157,7 @@ func issue_volley(
 	intent.projectile_power = clampi(int(projectile_power), 1, 999)
 	intent.chamber_damage_quarters = clampi(int(chamber_damage_quarters), 1, 9999)
 	intent.armor_pierce_contacts = maxi(0, int(armor_pierce_contacts))
+	intent.heavy_charge_pool = heavy_charge_pool
 	intent.projectile_sequence = projectile_sequence.duplicate()
 	if intent.projectile_sequence.is_empty():
 		ProjectileTypeScript.append_standard(intent.projectile_sequence, intent.shot_count)

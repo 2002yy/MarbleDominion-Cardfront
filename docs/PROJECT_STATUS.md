@@ -27,7 +27,9 @@ Confirmed product decisions:
 
 ### Current Player-Facing Reality / 当前玩家可见状态
 
-- `main` includes the B1 route, projectile, entity, simulation-parity, and calibration framework through `v0.3.3a8`.
+- The current implementation branch includes the B1 route, projectile,
+  simulation-parity, typed-projectile, and first formal entity/building-card
+  slices.
 - Starting Cardfront from the normal menu opens a formal three-step deployment flow: map selection, player hero selection, then AI reveal and matchup confirmation.
 - All three registered maps are selectable and the chosen `map_id` now drives the live `RegionMap`, not only simulation.
 - The reveal screen presents both heroes' base volley, chamber health, defense capacity, and strategic trait before battle.
@@ -288,7 +290,7 @@ count as formal player-facing content unless this section says it is active.
 
 #### Active Formal Upgrade Pool / 正式启用强化池
 
-The normal player-facing run uses `core_tactics`, containing exactly ten
+The normal player-facing run uses `core_tactics`, containing exactly fifteen
 upgrades:
 
 | Upgrade | Rarity | Exact current behavior |
@@ -303,6 +305,11 @@ upgrades:
 | Delayed Echo / 延迟回响 | Rare | Arms the next selected upgrade; that upgrade resolves normally, then replays once in the following round. |
 | Siege Formation / 攻城编组 | Uncommon | Converts up to 2 standard projectiles in the next volley into siege projectiles; special projectiles fire before standards. |
 | Suppression Formation / 压制编队 | Uncommon | Converts up to 2 standard projectiles in the next volley into suppression projectiles; these increase route pressure but cannot damage the command chamber. |
+| Repair Units / 维修单位 | Common | Summons 2 friendly Repair Units. Each has 1 HP, movement 1, lasts 3 owner rounds, seeks damaged friendly frontline cells, and restores 1 defense layer when adjacent. One cell can receive at most one creature repair per round. |
+| Fire-Control Beacon / 火控信标 | Uncommon | Builds or upgrades one fixed-slot beacon, maximum level 3. It has 5 HP and guides 6/8/10 standard projectiles per volley. Levels 2/3 maintain one 1-HP scout with a 3/2-round respawn; the scout lightly corrects up to 3 nearby standard projectiles per volley. |
+| Interceptor Tower / 拦截塔 | Uncommon | Builds or upgrades one fixed-slot 4-HP tower, maximum level 3. It intercepts the first 2/3/3 enemy standard projectiles each volley; level 3 fires one standard counter-projectile after exhausting its quota. Siege and suppression projectiles are not intercepted. |
+| Building Volley / 建筑齐射 | Rare | Permanent level 1-3. Every powered friendly defense tower independently fires 2/3/4 standard projectiles from its route slot. These shots are not copied by `+5` or `x2`; combined command-chamber and building shots cap at 32. Requires at least one friendly tower before it can be offered. |
+| Heavy Charge / 重型装药 | Rare | Arms the next volley. Its first non-intercepted enemy defense-tower contact resolves normal projectile damage, then adds 1 center structure damage, deals 1 damage to other enemy entities within Manhattan radius 2, and removes 1 defense layer from enemy cells within radius 1. It never directly damages the command chamber. |
 
 Runtime boundary:
 
@@ -313,20 +320,11 @@ Runtime boundary:
 - Special projectiles fire before the standard segment so their route effect is
   visible.
 
-#### Implemented Candidate Upgrades / 已实现候选强化
-
-One additional upgrade remains implemented in the manifest, resolver, AI
-valuation, simulation, and tests without entering the default live pool:
-
-| Upgrade | Rarity | Exact current behavior | Current status |
-| --- | --- | --- | --- |
-| Bridgehead Construction / 桥头施工 | Common | The next 6 first captures of neutral frontline cells gain 1 defense layer, capped by the owner's defense capacity. | Available only through the `fortification_corps` candidate deck or injected configuration. |
-
 Candidate deck definitions:
 
-- `core_tactics`: the active default ten-card pool.
+- `core_tactics`: the active default fifteen-card pool.
 - `fortification_corps`: an implemented Engineer-oriented candidate containing
-  Siege Formation and Bridgehead Construction.
+  Siege Formation, the three entity cards, Building Volley, and Heavy Charge.
 - `barrage_control`: an implemented Gunner-oriented candidate containing
   Suppression Formation.
 - Candidate decks remain audit/configuration content. They are not selectable
@@ -375,8 +373,8 @@ Projectile semantics:
 
 #### Battlefield Entities / 战场生物与建筑实体
 
-The shared entity runtime is active as a collision and behavior foundation, but
-formal summon content is not yet active.
+The shared entity runtime is active and the first formal creature/tower cards
+are now part of the live three-choice pool.
 
 Implemented foundation rules:
 
@@ -388,13 +386,14 @@ Implemented foundation rules:
 - Defense towers support HP, power from tile ownership, interception, summoning,
   trajectory guidance, disable state, and fixed map building slots.
 
-Implemented prototypes:
+Implemented formal entities:
 
 | Entity | Current values | Status |
 | --- | --- | --- |
-| Repair Unit / 修复单位 | 1 HP, normal armor, movement 1, `repair_frontline`, lasts 3 rounds, restores 1 defense layer to a nearby eligible frontline cell per action. | Debug/test prototype only; spawned in pairs by `debug_spawn_repair_units`. |
-| Fire-Control Beacon / 火控信标 | 5 HP, guides up to 6 standard projectiles per volley, guidance strength 0.35, radius 3 cells. | Debug/test prototype only; explicitly marked `prototype_only`. |
-| Generic summoner tower | Configurable creature ID and summon interval. | Engine capability only; no formal card, content definition, or live placement flow. |
+| Repair Unit / 修复单位 | 1 HP, normal armor, movement 1, `repair_frontline`, lasts 3 rounds, restores 1 defense layer to a nearby eligible frontline cell per action. | Formal Common card; summoned in pairs. |
+| Fire-Control Beacon / 火控信标 | 5 HP, guides 6/8/10 standard projectiles by level; level 2/3 maintains one scout with 3/2-round respawn. | Formal Uncommon building card. |
+| Scout / 侦察单位 | 1 HP; maintained by level 2/3 beacon; lightly corrects up to 3 nearby standard projectiles each volley. | Generated by the beacon, not independently draftable. |
+| Interceptor Tower / 拦截塔 | 4 HP; intercepts 2/3/3 standard projectiles by level; level 3 counterfires after exhausting quota. | Formal Uncommon building card. |
 
 Creature and defense-tower card-pool decision:
 
@@ -407,20 +406,20 @@ Creature and defense-tower card-pool decision:
   currently exists.
 - Creature summons and defense-tower construction/upgrades are confirmed as
   **future three-choice card-pool content**, not a separate out-of-pool system.
-- They are not yet offered by the current formal ten-card pool. Exact values
-  remain unlocked where the inventory below says `TBD`; those entries require
-  a dedicated content decision before implementation.
+- Repair Units, Fire-Control Beacon, and Interceptor Tower are offered by the
+  current formal pool. Later entities remain locked below and require a
+  dedicated implementation slice.
 
 Confirmed future card-pool inventory:
 
 | Card or card family | Current proposed values and behavior | Lock status |
 | --- | --- | --- |
-| Repair Unit Card / 维修单位卡 | Summon 2 friendly normal units; 1 HP each; movement 1; last 3 owner rounds; seek the nearest damaged friendly frontline cell and restore 1 defense when adjacent; each cell can receive at most one creature repair per round. | Mechanic prototype confirmed; rarity and final tuning TBD. |
+| Repair Unit Card / 维修单位卡 | Summon 2 friendly normal units; 1 HP each; movement 1; last 3 owner rounds; seek the nearest damaged friendly frontline cell and restore 1 defense when adjacent; each cell can receive at most one creature repair per round. | Implemented; Common. |
 | Armored Guard Card / 装甲护卫卡 | Summon 1 friendly armored unit; 4 HP; movement 1; move toward the nearest gate entrance or contested frontline and physically block projectiles; grants no extra territory damage reduction. | Future card concept; rarity and duration TBD. |
 | Sapper Unit Card / 掘城单位卡 | Summon 1 armored unit; 3 HP; movement 1; prioritize enemy towers, then the highest-defense enemy cell; deals 3 structure damage to a tower and self-destructs, or removes up to 2 defense from a cell and self-destructs; deals only 1 chamber damage. | Future card concept; rarity and duration TBD. |
 | Neutral Creature Summon / 中立生物召唤 | Introduces a strong third-party battlefield presence that can affect both factions. | Card-pool direction confirmed; catalog, count, HP, movement, AI, duration, rarity, and art TBD. |
-| Fire-Control Beacon Card / 火控信标卡 | Builds in a fixed tower slot. Level 1: 5 HP and guides the first 6 standard projectiles each volley. Level 2: guides 8, maintains 1 scout creature, respawns it after 3 owner rounds, and the scout gives a second light correction to up to 3 nearby standard projectiles. Level 3: guides 10 and reduces scout respawn to 2 rounds. Duplicate cards upgrade the existing tower instead of creating unlimited copies. | Level structure confirmed; rarity and final guidance strength/radius tuning TBD. |
-| Interceptor Tower Card / 拦截塔卡 | Builds in a fixed tower slot; 4 HP. Level 1 intercepts the first 2 enemy standard projectiles per volley; level 2 intercepts 3; level 3 still intercepts 3 and fires 1 standard counter-projectile after using the full quota. Does not intercept siege or suppression projectiles. | Level structure confirmed; rarity TBD. |
+| Fire-Control Beacon Card / 火控信标卡 | Builds in a fixed tower slot. Level 1: 5 HP and guides the first 6 standard projectiles each volley. Level 2: guides 8, maintains 1 scout creature, respawns it after 3 owner rounds, and the scout gives a second light correction to up to 3 nearby standard projectiles. Level 3: guides 10 and reduces scout respawn to 2 rounds. Duplicate cards upgrade the existing tower instead of creating unlimited copies. | Implemented; Uncommon. |
+| Interceptor Tower Card / 拦截塔卡 | Builds in a fixed tower slot; 4 HP. Level 1 intercepts the first 2 enemy standard projectiles per volley; level 2 intercepts 3; level 3 still intercepts 3 and fires 1 standard counter-projectile after using the full quota. Does not intercept siege or suppression projectiles. | Implemented; Uncommon. |
 | One-shot Chamber Facility / 一次性控制舱设施 | On the first chamber-HP threshold crossing, resolves current damage, grants brief invulnerability, consumes subsequent enemy projectiles, emits a radial standard-projectile counterattack, then disappears after the enemy volley or a time limit. | Card-family concept confirmed; threshold, duration, counter-shot count, name, and rarity TBD. |
 | Generic Summoner Tower / 通用召唤塔 | Fixed-slot tower that summons a configured creature on a round interval. | Engine capability and future card family confirmed; no formal card definition or values yet. |
 
@@ -438,24 +437,25 @@ targets**:
 | --- | --- | --- |
 | Vanguard Warhead / 先锋弹头 | Common | First 4 projectiles continue after their first capture and may capture one additional cell |
 | Gate Breach Round / 破门弹 | Uncommon | First 4 rejected gate crossings become valid bridge passages; off-bridge river crossing remains blocked |
-| Bridgehead Fortification / 桥头筑垒 | Uncommon | First 6 newly captured cells inside gate-control zones gain 1 current defense |
-| Building Volley / 建筑齐射 | Rare | Permanent building-offense upgrade. The command chamber keeps its normal volley. Each powered friendly defense tower fires 2 standard projectiles from its own route slot every volley; duplicate picks raise this to 3, then 4 per tower, capped at level 3. Disabled or unpowered towers do not fire. Tower projectiles follow their tower lane, are not copied by `x2` or `+5`, and the combined command-chamber plus building volley remains capped at 32 projectiles. This card becomes offer-eligible only after the owner has at least one defense tower. |
-
-`Building Volley` replaces the earlier split-direction concept. It must ship
-with at least one construction card so it can never be offered as an empty
-effect.
+Bridgehead Construction and Bridgehead Fortification are removed. Their
+defensive role overlaps Frontline Repair and they are not reserved for a later
+pool.
 
 #### Approved Next Card Slice / 已确认下一批卡牌
 
 Implementation order:
 
-1. Promote Siege Formation and Suppression Formation into the live default pool.
-2. Add Repair Unit, Fire-Control Beacon, and Interceptor Tower as the first
-   player-facing creature/tower cards.
-3. Add Building Volley after construction is available.
-4. Add Heavy Charge with authoritative first-building-contact explosion logic.
-5. Add Armored Guard, Sapper Unit, and the first neutral creature only after the
-   initial entity cards are playable and readable.
+Completed in the current slice:
+
+1. Repair Units.
+2. Fire-Control Beacon.
+3. Interceptor Tower.
+4. Building Volley.
+5. Heavy Charge.
+
+Next entity-content order is fixed: Armored Guard, Sapper Unit, then the first
+neutral creature. They must not enter the manifest until their runtime behavior,
+AI value, visual readability, and native tests land together.
 
 Heavy Charge / 重型装药 is locked as a Rare next-volley combo card:
 
@@ -835,13 +835,18 @@ A new effect or AI score is incomplete until live runtime, simulation, player-fa
 - Headless coverage for selection flow, runtime map propagation, hero plates,
   and environment-theme separation.
 
-### Active Next: v0.3.3b1 — Upgrade Effect Registry
+### Completed Current Slice: First Entity And Building Cards
 
-- Keep current B1 balance ranges diagnostic while content architecture settles.
-- Consolidate route/capture/defense/draft/delayed upgrade effect registration.
-- Preserve live/simulation contract tests for every promoted effect.
-- Do not start the paused four-card route module or 108,000-match audit as part
-  of this registry work.
+- Removed the redundant Bridgehead Construction/Bridgehead Fortification path.
+- Promoted Repair Units, Fire-Control Beacon, Interceptor Tower, Building
+  Volley, and Heavy Charge into the formal `core_tactics` pool.
+- Connected entity creation/upgrades to round resolution and synchronized live
+  entity summaries before offer eligibility is evaluated.
+- Kept building shots independent from command-chamber `+5`/`x2`.
+- Added shared one-use Heavy Charge contact state across all sources in a
+  volley.
+- Added native runtime, content, deck, AI-value, and simulation-contract
+  coverage.
 
 ### Completed: v0.3.3a6 — Strategic Map Schema And Preview
 
@@ -880,6 +885,8 @@ Candidate order after B1:
 
 ### Later
 
+- Next gameplay implementation order: Armored Guard, Sapper Unit, then the
+  first neutral creature.
 - `v0.3.4`: complete the `default_duel` formal-art benchmark, then expand the
   approved environment language to Cross Strongholds and Central Lab.
 - `v0.3.3b2` and `v0.3.3b3` remain paused and are not implied by completing

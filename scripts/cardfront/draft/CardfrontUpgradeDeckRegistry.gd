@@ -9,7 +9,7 @@ const DECK_BARRAGE_CONTROL: String = "barrage_control"
 
 const DEFAULT_DECK_ID: String = DECK_CORE_TACTICS
 const MIN_DECK_SIZE: int = 8
-const MAX_DECK_SIZE: int = 12
+const MAX_DECK_SIZE: int = 16
 
 const DEFINITIONS: Dictionary = {
 	DECK_CORE_TACTICS: {
@@ -27,12 +27,17 @@ const DEFINITIONS: Dictionary = {
 			"echo_next_choice",
 			"siege_calibration",
 			"suppression_screen",
+			"repair_units",
+			"fire_control_beacon",
+			"interceptor_tower",
+			"building_volley",
+			"heavy_charge",
 		],
 	},
 	DECK_FORTIFICATION_CORPS: {
 		"id": DECK_FORTIFICATION_CORPS,
 		"name": "筑垒工兵",
-		"description": "围绕攻城弹、桥头工事、修复、防御上限和长期选品成长形成阵地构筑。",
+		"description": "围绕攻城弹、维修单位、防御塔、建筑齐射和重装药形成阵地构筑。",
 		"upgrade_ids": [
 			"volley_plus_5",
 			"volley_x2",
@@ -41,7 +46,11 @@ const DEFINITIONS: Dictionary = {
 			"frontline_repair",
 			"rarity_plus_1",
 			"siege_calibration",
-			"bridgehead_prefabs",
+			"repair_units",
+			"fire_control_beacon",
+			"interceptor_tower",
+			"building_volley",
+			"heavy_charge",
 		],
 	},
 	DECK_BARRAGE_CONTROL: {

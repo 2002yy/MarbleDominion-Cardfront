@@ -68,8 +68,6 @@ func _test_upgrade_contract(simulator, upgrade_id: String) -> void:
 		"echo_next_choice_armed",
 		"queued_echo_upgrade_id",
 		"next_volley_conversions",
-		"bridgehead_prefab_charges",
-		"bridgehead_prefab_defense_bonus",
 	]:
 		_assert.eq(simulated_state.get(key), live_state.get(key), "state parity %s after %s" % [key, upgrade_id])
 

@@ -76,6 +76,17 @@ func is_upgrade_eligible(definition: Dictionary, run_state = null) -> bool:
 		return int(run_state.get("territory_defense_cap")) < RunStateScript.MAX_TERRITORY_DEFENSE_CAP
 	if upgrade_id == UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE:
 		return not bool(run_state.get("echo_next_choice_armed"))
+	if upgrade_id == UpgradeManifestScript.UPGRADE_REPAIR_UNITS:
+		return int(run_state.get("owned_creature_count")) <= 1
+	if upgrade_id == UpgradeManifestScript.UPGRADE_FIRE_CONTROL_BEACON:
+		return int(run_state.call("get_tower_level", "fire_control_beacon")) < 3
+	if upgrade_id == UpgradeManifestScript.UPGRADE_INTERCEPTOR_TOWER:
+		return int(run_state.call("get_tower_level", "interceptor_tower")) < 3
+	if upgrade_id == UpgradeManifestScript.UPGRADE_BUILDING_VOLLEY:
+		return (
+			int(run_state.get("owned_defense_tower_count")) > 0
+			and int(run_state.get("building_volley_level")) < RunStateScript.MAX_BUILDING_VOLLEY_LEVEL
+		)
 	return true
 
 

@@ -47,4 +47,10 @@ func build_and_consume(run_state):
 	plan.territory_defense_cap = maxi(1, int(run_state.territory_defense_cap))
 	plan.applied_bonus = bonus
 	plan.applied_multiplier = multiplier
+	plan.building_volley_level = clampi(
+		int(run_state.building_volley_level),
+		0,
+		int(run_state.MAX_BUILDING_VOLLEY_LEVEL)
+	)
+	plan.heavy_charge_spec = (modifiers.get("heavy_charge_spec", {}) as Dictionary).duplicate(true)
 	return plan

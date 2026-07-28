@@ -7,6 +7,8 @@ signal entity_contact_resolved(result)
 signal creature_repaired(entity_id, cell, restored_points)
 signal tower_power_changed(entity_id, powered)
 signal projectile_guided(tower_entity_id, owner_id, projectile_type)
+signal building_volley_fired(owner_id, tower_entity_id, shot_count)
+signal heavy_charge_exploded(owner_id, cell, center_target_id)
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
@@ -18,11 +20,15 @@ const InteractionScript = preload("res://scripts/cardfront/entities/CardfrontPro
 const DebugLayerScript = preload("res://scripts/cardfront/entities/CardfrontEntityDebugLayer.gd")
 
 const CREATURE_REPAIR_UNIT: String = "repair_unit"
+const CREATURE_SCOUT_UNIT: String = "scout_unit"
 const TOWER_FIRE_CONTROL_BEACON: String = "fire_control_beacon"
+const TOWER_INTERCEPTOR: String = "interceptor_tower"
 const DEFAULT_FIRE_CONTROL_HP: int = 5
 const DEFAULT_GUIDANCE_CAPACITY: int = 6
 const DEFAULT_GUIDANCE_STRENGTH: float = 0.35
 const DEFAULT_GUIDANCE_RADIUS_CELLS: int = 3
+const DEFAULT_INTERCEPTOR_HP: int = 4
+const BUILDING_VOLLEY_TOTAL_CAP: int = 32
 
 var battlefield = null
 var round_director = null
@@ -71,12 +77,11 @@ func configure_dependencies(new_round_director, new_territory_defense_system) ->
 	_resolve_bullet_pool()
 	if round_director == null or not is_instance_valid(round_director):
 		return
+	if round_director.has_method("set_battlefield_entity_runtime"):
+		round_director.set_battlefield_entity_runtime(self)
 	var volley_callable := Callable(self, "_on_volley_launched")
 	if round_director.has_signal("volley_launched") and not round_director.volley_launched.is_connected(volley_callable):
 		round_director.volley_launched.connect(volley_callable)
-	var draft_callable := Callable(self, "_on_draft_opened")
-	if round_director.has_signal("draft_opened") and not round_director.draft_opened.is_connected(draft_callable):
-		round_director.draft_opened.connect(draft_callable)
 
 
 func resolve_capture_contact(cell: Vector2i, incoming_owner_id: int, capture_context: Dictionary) -> Dictionary:
@@ -128,8 +133,14 @@ func resolve_capture_contact(cell: Vector2i, incoming_owner_id: int, capture_con
 		var direction: Vector2 = capture_context.get("projectile_direction", Vector2.ZERO) as Vector2
 		result["pushed"] = _push_creature(target, direction, push_cells)
 
-	if not target.is_alive():
-		_remove_entity(str(target.entity_id))
+	if str(target.entity_kind) == BattlefieldEntityScript.KIND_DEFENSE_TOWER:
+		if bool(result.get("intercepted", false)) and int(target.tower_level) >= 3 and int(target.intercepts_remaining) <= 0:
+			var incoming_direction: Vector2 = capture_context.get("projectile_direction", Vector2.RIGHT) as Vector2
+			_spawn_counter_projectile(target, -incoming_direction)
+		if not bool(result.get("intercepted", false)):
+			_try_apply_heavy_charge(cell, incoming_owner_id, target, capture_context, result)
+
+	_cleanup_dead_entities()
 
 	capture_context["entity_contact_target_id"] = str(result.get("target_id", ""))
 	capture_context["entity_consume_projectile"] = bool(result.get("consume_projectile", false))
@@ -156,7 +167,88 @@ func advance_round() -> void:
 	_mark_visuals_dirty()
 
 
+func prepare_draft(run_states: Dictionary) -> void:
+	advance_round()
+	sync_run_state_entity_summaries(run_states)
+
+
+func apply_pending_upgrade_actions(owner_id: int, run_state) -> Array:
+	var results: Array = []
+	if run_state == null or not run_state.has_method("consume_pending_entity_actions"):
+		return results
+	for raw_action in run_state.consume_pending_entity_actions():
+		if not (raw_action is Dictionary):
+			continue
+		var action: Dictionary = raw_action as Dictionary
+		match str(action.get("action", "")):
+			"summon_repair_units":
+				var spawned: Array = spawn_repair_units(owner_id, int(action.get("amount", 2)))
+				results.append({"action": "summon_repair_units", "spawned": spawned.size()})
+			"build_or_upgrade_tower":
+				var tower_result: Dictionary = build_or_upgrade_tower(owner_id, str(action.get("tower_id", "")))
+				results.append(tower_result)
+	sync_run_state_entity_summary(run_state)
+	return results
+
+
+func sync_run_state_entity_summaries(run_states: Dictionary) -> void:
+	for owner_id in run_states.keys():
+		var run_state = run_states[owner_id]
+		if run_state != null:
+			sync_run_state_entity_summary(run_state)
+
+
+func sync_run_state_entity_summary(run_state) -> void:
+	if run_state == null or not run_state.has_method("sync_entity_summary"):
+		return
+	var owner_id: int = int(run_state.owner_id)
+	var levels: Dictionary = {}
+	for entity in registry.entities_by_id.values():
+		if (
+			entity != null
+			and entity.is_alive()
+			and int(entity.owner_id) == owner_id
+			and str(entity.entity_kind) == BattlefieldEntityScript.KIND_DEFENSE_TOWER
+		):
+			levels[str(entity.tower_id)] = int(entity.tower_level)
+	run_state.sync_entity_summary(
+		registry.count_owner_entities(owner_id, BattlefieldEntityScript.KIND_CREATURE),
+		registry.count_owner_entities(owner_id, BattlefieldEntityScript.KIND_DEFENSE_TOWER),
+		levels
+	)
+
+
+func decorate_volley_plan(owner_id: int, plan) -> void:
+	if plan == null:
+		return
+	plan.building_sources.clear()
+	plan.building_shot_count = 0
+	var level: int = clampi(int(plan.building_volley_level), 0, 3)
+	if level <= 0:
+		return
+	var shots_per_tower: int = level + 1
+	var remaining_budget: int = maxi(0, BUILDING_VOLLEY_TOTAL_CAP - int(plan.shot_count))
+	var towers: Array = _owner_towers(owner_id)
+	for tower in towers:
+		if remaining_budget <= 0:
+			break
+		if tower == null or not tower.can_act():
+			continue
+		var source_shots: int = mini(shots_per_tower, remaining_budget)
+		plan.building_sources.append({
+			"entity_id": str(tower.entity_id),
+			"cell": tower.cell,
+			"shot_count": source_shots,
+		})
+		plan.building_shot_count += source_shots
+		remaining_budget -= source_shots
+
+
 func debug_spawn_repair_units(owner_id: int, amount: int = 2) -> Array:
+	return spawn_repair_units(owner_id, amount)
+
+
+func spawn_repair_units(owner_id: int, amount: int = 2) -> Array:
 	var spawned: Array = []
 	for index in range(maxi(0, int(amount))):
 		var spawn_cell: Vector2i = _find_owner_spawn_cell(owner_id, index)
@@ -181,30 +273,257 @@ func debug_spawn_repair_units(owner_id: int, amount: int = 2) -> Array:
 
 
 func debug_spawn_fire_control_beacon(owner_id: int, lane_index: int = 0):
+	return _spawn_tower(owner_id, TOWER_FIRE_CONTROL_BEACON, lane_index)
+
+
+func build_or_upgrade_tower(owner_id: int, tower_id: String) -> Dictionary:
+	var safe_tower_id: String = str(tower_id)
+	if safe_tower_id not in [TOWER_FIRE_CONTROL_BEACON, TOWER_INTERCEPTOR]:
+		return {"action": "build_or_upgrade_tower", "success": false, "reason": "unknown_tower"}
+	var existing = _find_owner_tower(owner_id, safe_tower_id)
+	if existing != null:
+		if int(existing.tower_level) >= 3:
+			return {"action": "build_or_upgrade_tower", "success": false, "reason": "tower_max_level"}
+		_configure_tower_level(existing, int(existing.tower_level) + 1)
+		_mark_visuals_dirty()
+		return {
+			"action": "build_or_upgrade_tower",
+			"success": true,
+			"built": false,
+			"tower_id": safe_tower_id,
+			"level": int(existing.tower_level),
+		}
+	var lane_index: int = _first_free_lane(owner_id)
+	if lane_index < 0:
+		return {"action": "build_or_upgrade_tower", "success": false, "reason": "no_free_tower_slot"}
+	var tower = _spawn_tower(owner_id, safe_tower_id, lane_index)
+	return {
+		"action": "build_or_upgrade_tower",
+		"success": tower != null,
+		"built": tower != null,
+		"tower_id": safe_tower_id,
+		"level": 1 if tower != null else 0,
+		"reason": "" if tower != null else "spawn_failed",
+	}
+
+
+func _spawn_tower(owner_id: int, tower_id: String, lane_index: int):
 	var safe_lane: int = clampi(int(lane_index), 0, 1)
 	var slot_id: String = _route_slot_id(owner_id, safe_lane)
-	var entity_id: String = _next_entity_id("fire_control")
+	var entity_id: String = _next_entity_id(str(tower_id))
+	var tower_hp: int = DEFAULT_FIRE_CONTROL_HP if tower_id == TOWER_FIRE_CONTROL_BEACON else DEFAULT_INTERCEPTOR_HP
 	var tower = registry.spawn_defense_tower(
 		entity_id,
-		TOWER_FIRE_CONTROL_BEACON,
+		tower_id,
 		owner_id,
 		slot_id,
-		DEFAULT_FIRE_CONTROL_HP
+		tower_hp
 	)
 	if tower == null:
 		return null
-	var lane_ratio: float = _lane_center_ratio(safe_lane)
-	tower.configure_guidance(
-		DEFAULT_GUIDANCE_CAPACITY,
-		lane_ratio,
-		DEFAULT_GUIDANCE_STRENGTH,
-		DEFAULT_GUIDANCE_RADIUS_CELLS
-	)
-	tower.metadata["prototype_only"] = true
 	tower.metadata["lane_index"] = safe_lane
+	tower.metadata["prototype_only"] = false
+	_configure_tower_level(tower, 1)
 	entity_spawned.emit(tower.entity_id, tower.entity_kind, tower.owner_id, tower.cell)
 	_mark_visuals_dirty()
 	return tower
+
+
+func _configure_tower_level(tower, level: int) -> void:
+	if tower == null:
+		return
+	var safe_level: int = clampi(int(level), 1, 3)
+	tower.set_tower_level(safe_level)
+	match str(tower.tower_id):
+		TOWER_FIRE_CONTROL_BEACON:
+			var guidance_by_level: Array = [6, 8, 10]
+			tower.configure_guidance(
+				int(guidance_by_level[safe_level - 1]),
+				_lane_center_ratio(int(tower.metadata.get("lane_index", 0))),
+				DEFAULT_GUIDANCE_STRENGTH,
+				DEFAULT_GUIDANCE_RADIUS_CELLS
+			)
+			if safe_level >= 2:
+				tower.configure_summoner(CREATURE_SCOUT_UNIT, 3 if safe_level == 2 else 2)
+			else:
+				tower.configure_summoner("", 0)
+		TOWER_INTERCEPTOR:
+			var intercepts_by_level: Array = [2, 3, 3]
+			tower.configure_interceptor(int(intercepts_by_level[safe_level - 1]))
+
+
+func _owner_towers(owner_id: int) -> Array:
+	var towers: Array = []
+	for entity in registry.entities_by_id.values():
+		if (
+			entity != null
+			and entity.is_alive()
+			and int(entity.owner_id) == int(owner_id)
+			and str(entity.entity_kind) == BattlefieldEntityScript.KIND_DEFENSE_TOWER
+		):
+			towers.append(entity)
+	towers.sort_custom(func(a, b): return str(a.entity_id) < str(b.entity_id))
+	return towers
+
+
+func _find_owner_tower(owner_id: int, tower_id: String):
+	for tower in _owner_towers(owner_id):
+		if str(tower.tower_id) == str(tower_id):
+			return tower
+	return null
+
+
+func _first_free_lane(owner_id: int) -> int:
+	for lane_index in range(2):
+		var slot: Dictionary = registry.building_slots.get(
+			_route_slot_id(owner_id, lane_index),
+			{}
+		) as Dictionary
+		if not slot.is_empty() and str(slot.get("entity_id", "")) == "":
+			return lane_index
+	return -1
+
+
+func _spawn_building_volley(owner_id: int, plan) -> void:
+	if plan == null or bullet_pool == null or not is_instance_valid(bullet_pool):
+		return
+	var target_turrets: Dictionary = {}
+	if round_director != null and is_instance_valid(round_director):
+		var raw_turrets = round_director.get("turrets")
+		if raw_turrets is Dictionary:
+			target_turrets = raw_turrets as Dictionary
+	var heavy_pool: Dictionary = plan.heavy_charge_pool
+	for raw_source in plan.building_sources:
+		if not (raw_source is Dictionary):
+			continue
+		var source: Dictionary = raw_source as Dictionary
+		var tower = registry.get_entity(str(source.get("entity_id", "")))
+		if tower == null or not tower.can_act():
+			continue
+		var shot_count: int = maxi(0, int(source.get("shot_count", 0)))
+		var base_direction := Vector2.UP if int(owner_id) == RulesScript.PLAYER_FACTION else Vector2.DOWN
+		var source_position: Vector2 = battlefield.to_global(
+			(Vector2(tower.cell) + Vector2(0.5, 0.5)) * float(battlefield.cell_size)
+		)
+		for shot_index in range(shot_count):
+			var spread_index: float = float(shot_index) - float(shot_count - 1) * 0.5
+			var direction: Vector2 = base_direction.rotated(spread_index * 0.035)
+			bullet_pool.spawn_bullet(
+				owner_id,
+				source_position + direction * maxf(4.0, float(battlefield.cell_size) * 0.38),
+				direction,
+				battlefield,
+				target_turrets,
+				int(plan.projectile_power),
+				int(plan.chamber_damage_quarters),
+				{
+					"projectile_type": ProjectileTypeScript.STANDARD,
+					"projectile_defense_pierce_remaining": 0,
+					"armor_pierce_pool": {"remaining": 0},
+					"heavy_charge_pool": heavy_pool,
+					"building_source_id": str(tower.entity_id),
+				}
+			)
+		if shot_count > 0:
+			building_volley_fired.emit(owner_id, tower.entity_id, shot_count)
+
+
+func _spawn_counter_projectile(tower, incoming_direction: Vector2) -> void:
+	if tower == null or bullet_pool == null or not is_instance_valid(bullet_pool):
+		return
+	var direction: Vector2 = incoming_direction.normalized()
+	if direction.length() <= 0.001:
+		direction = Vector2.UP if int(tower.owner_id) == RulesScript.PLAYER_FACTION else Vector2.DOWN
+	var target_turrets: Dictionary = {}
+	if round_director != null and is_instance_valid(round_director):
+		var raw_turrets = round_director.get("turrets")
+		if raw_turrets is Dictionary:
+			target_turrets = raw_turrets as Dictionary
+	var source_position: Vector2 = battlefield.to_global(
+		(Vector2(tower.cell) + Vector2(0.5, 0.5)) * float(battlefield.cell_size)
+	)
+	bullet_pool.spawn_bullet(
+		int(tower.owner_id),
+		source_position + direction * maxf(4.0, float(battlefield.cell_size) * 0.38),
+		direction,
+		battlefield,
+		target_turrets,
+		1,
+		4,
+		{
+			"projectile_type": ProjectileTypeScript.STANDARD,
+			"projectile_defense_pierce_remaining": 0,
+			"armor_pierce_pool": {"remaining": 0},
+		}
+	)
+
+
+func _try_apply_heavy_charge(
+	cell: Vector2i,
+	incoming_owner_id: int,
+	center_target,
+	capture_context: Dictionary,
+	result: Dictionary
+) -> void:
+	var raw_pool = capture_context.get("heavy_charge_pool", null)
+	if not (raw_pool is Dictionary):
+		return
+	var pool: Dictionary = raw_pool as Dictionary
+	if int(pool.get("remaining", 0)) <= 0:
+		return
+	var spec: Dictionary = pool.get("spec", {}) as Dictionary
+	if spec.is_empty():
+		return
+	pool["remaining"] = 0
+	var center_damage: int = center_target.apply_damage(maxi(0, int(spec.get("center_bonus", 1))))
+	var entity_radius: int = maxi(0, int(spec.get("entity_radius", 2)))
+	var entity_damage: int = maxi(0, int(spec.get("entity_damage", 1)))
+	var splash_hits: Array = []
+	for entity in registry.entities_by_id.values():
+		if (
+			entity == null
+			or entity == center_target
+			or not entity.is_alive()
+			or int(entity.owner_id) == int(incoming_owner_id)
+			or _manhattan_distance(cell, entity.cell) > entity_radius
+		):
+			continue
+		var applied: int = entity.apply_damage(entity_damage)
+		if applied > 0:
+			splash_hits.append({"entity_id": str(entity.entity_id), "damage": applied})
+	var defense_hits: Array = []
+	var defense_radius: int = maxi(0, int(spec.get("defense_radius", 1)))
+	var defense_damage: int = maxi(0, int(spec.get("defense_damage", 1)))
+	if (
+		defense_damage > 0
+		and territory_defense_system != null
+		and is_instance_valid(territory_defense_system)
+		and territory_defense_system.fortify_layer != null
+	):
+		for x in range(cell.x - defense_radius, cell.x + defense_radius + 1):
+			for y in range(cell.y - defense_radius, cell.y + defense_radius + 1):
+				var target_cell := Vector2i(x, y)
+				if (
+					not battlefield.is_inside(target_cell)
+					or _manhattan_distance(cell, target_cell) > defense_radius
+					or int(battlefield.owners[x][y]) == int(incoming_owner_id)
+					or int(battlefield.owners[x][y]) == RulesScript.NEUTRAL_OWNER
+				):
+					continue
+				var removed: int = 0
+				for _damage_index in range(defense_damage):
+					if territory_defense_system.fortify_layer.get_fortify_stack(target_cell) <= 0:
+						break
+					territory_defense_system.fortify_layer.consume_hit(target_cell)
+					removed += 1
+				if removed > 0:
+					defense_hits.append({"cell": target_cell, "damage": removed})
+	result["heavy_charge"] = {
+		"center_damage": center_damage,
+		"splash_hits": splash_hits,
+		"defense_hits": defense_hits,
+	}
+	heavy_charge_exploded.emit(incoming_owner_id, cell, str(center_target.entity_id))
 
 
 func snapshot() -> Dictionary:
@@ -238,19 +557,19 @@ func _physics_process(_delta: float) -> void:
 		context["projectile_direction"] = bullet.direction
 
 
-func _on_volley_launched(_plans: Dictionary, _issued_intents: Dictionary) -> void:
+func _on_volley_launched(plans: Dictionary, _issued_intents: Dictionary) -> void:
 	registry.begin_volley()
+	for entity in registry.entities_by_id.values():
+		if (
+			entity != null
+			and entity.is_alive()
+			and str(entity.entity_kind) == BattlefieldEntityScript.KIND_CREATURE
+			and str(entity.creature_id) == CREATURE_SCOUT_UNIT
+		):
+			entity.metadata["guidance_remaining"] = 3
+	for owner_id in plans.keys():
+		_spawn_building_volley(int(owner_id), plans[owner_id])
 	_mark_visuals_dirty()
-
-
-func _on_draft_opened(
-	_player_offer: Array,
-	_ai_offer: Array,
-	_timeout_seconds: float,
-	_round_number: int,
-	_signal_round_number: int
-) -> void:
-	advance_round()
 
 
 func _resolve_bullet_pool() -> void:
@@ -302,6 +621,36 @@ func _apply_fire_control_guidance(bullet) -> void:
 			continue
 		bullet.direction = current_direction.lerp(desired_direction, float(entity.guidance_strength)).normalized()
 		entity.consume_guidance()
+		guided_ids.append(str(entity.entity_id))
+		context["guided_by_tower_ids"] = guided_ids
+		projectile_guided.emit(entity.entity_id, entity.owner_id, bullet.projectile_type)
+		_mark_visuals_dirty()
+		return
+	for entity in registry.entities_by_id.values():
+		if (
+			entity == null
+			or not entity.can_act()
+			or str(entity.entity_kind) != BattlefieldEntityScript.KIND_CREATURE
+			or str(entity.creature_id) != CREATURE_SCOUT_UNIT
+			or int(entity.owner_id) != int(bullet.faction_id)
+			or str(entity.entity_id) in guided_ids
+			or int(entity.metadata.get("guidance_remaining", 0)) <= 0
+			or _manhattan_distance(cell, entity.cell) > 2
+		):
+			continue
+		var lane_x: float = float(entity.metadata.get("lane_center_ratio", 0.5)) * float(
+			maxi(1, int(battlefield.grid_size) - 1)
+		)
+		var horizontal_error: float = clampf((lane_x - float(cell.x)) / 4.0, -1.0, 1.0)
+		var current_direction: Vector2 = bullet.direction.normalized()
+		var desired_direction := Vector2(
+			current_direction.x + horizontal_error * 0.45,
+			current_direction.y
+		).normalized()
+		if desired_direction.length() <= 0.001:
+			continue
+		bullet.direction = current_direction.lerp(desired_direction, 0.18).normalized()
+		entity.metadata["guidance_remaining"] = int(entity.metadata.get("guidance_remaining", 0)) - 1
 		guided_ids.append(str(entity.entity_id))
 		context["guided_by_tower_ids"] = guided_ids
 		projectile_guided.emit(entity.entity_id, entity.owner_id, bullet.projectile_type)
@@ -374,7 +723,14 @@ func _process_tower_summons() -> void:
 			continue
 		if not entity.should_summon():
 			continue
+		if (
+			str(entity.summon_creature_id) == CREATURE_SCOUT_UNIT
+			and _has_owner_creature_id(entity.owner_id, CREATURE_SCOUT_UNIT)
+		):
+			entity.acknowledge_summon()
+			continue
 		var spawn_cell: Vector2i = _find_adjacent_spawn_cell(entity.owner_id, entity.cell)
+		var is_scout: bool = str(entity.summon_creature_id) == CREATURE_SCOUT_UNIT
 		var creature = registry.spawn_creature(
 			_next_entity_id("summoned"),
 			str(entity.summon_creature_id),
@@ -383,12 +739,28 @@ func _process_tower_summons() -> void:
 			1,
 			CreatureStateScript.ARMOR_NORMAL,
 			1,
-			"hold_frontline",
+			"scout_guidance" if is_scout else "hold_frontline",
 			-1
 		)
 		if creature != null:
+			if is_scout:
+				creature.metadata["lane_center_ratio"] = float(entity.guidance_lane_center_ratio)
+				creature.metadata["guidance_remaining"] = 3
 			entity.acknowledge_summon()
 			entity_spawned.emit(creature.entity_id, creature.entity_kind, creature.owner_id, creature.cell)
+
+
+func _has_owner_creature_id(owner_id: int, creature_id: String) -> bool:
+	for entity in registry.entities_by_id.values():
+		if (
+			entity != null
+			and entity.is_alive()
+			and str(entity.entity_kind) == BattlefieldEntityScript.KIND_CREATURE
+			and int(entity.owner_id) == int(owner_id)
+			and str(entity.creature_id) == str(creature_id)
+		):
+			return true
+	return false
 
 
 func _push_creature(creature, projectile_direction: Vector2, distance: int) -> bool:

@@ -14,6 +14,7 @@ const MAX_ATTACK_LEVEL: int = 3
 const MAX_RESOLVED_ATTACK_LEVEL: int = 4
 const MAX_RARITY_LEVEL: int = 3
 const MAX_NEXT_VOLLEY_MULTIPLIER: int = 2
+const MAX_BUILDING_VOLLEY_LEVEL: int = 3
 
 var owner_id: int = -1
 var hero_id: String = HeroRegistryScript.DEFAULT_PLAYER_HERO_ID
@@ -38,8 +39,12 @@ var next_volley_armor_pierce_contacts: int = 0
 var next_volley_conversions: Dictionary = {}
 var pending_repair_points: int = 0
 var pending_repair_zone: String = "frontline"
-var bridgehead_prefab_charges: int = 0
-var bridgehead_prefab_defense_bonus: int = 0
+var pending_entity_actions: Array = []
+var building_volley_level: int = 0
+var heavy_charge_spec: Dictionary = {}
+var owned_creature_count: int = 0
+var owned_defense_tower_count: int = 0
+var tower_levels: Dictionary = {}
 var first_capture_fortified_cells: Dictionary = {}
 var applied_upgrade_counts: Dictionary = {}
 
@@ -72,8 +77,12 @@ func setup(new_owner_id: int, new_base_volley_count: int = DEFAULT_BASE_VOLLEY_C
 	next_volley_conversions = {}
 	pending_repair_points = 0
 	pending_repair_zone = "frontline"
-	bridgehead_prefab_charges = 0
-	bridgehead_prefab_defense_bonus = 0
+	pending_entity_actions.clear()
+	building_volley_level = 0
+	heavy_charge_spec.clear()
+	owned_creature_count = 0
+	owned_defense_tower_count = 0
+	tower_levels.clear()
 	first_capture_fortified_cells.clear()
 	applied_upgrade_counts.clear()
 
@@ -197,19 +206,39 @@ func consume_pending_repair() -> Dictionary:
 	return request
 
 
-func arm_bridgehead_prefabs(charges: int, defense_bonus: int) -> void:
-	bridgehead_prefab_charges += maxi(0, int(charges))
-	bridgehead_prefab_defense_bonus = maxi(bridgehead_prefab_defense_bonus, maxi(0, int(defense_bonus)))
+func queue_entity_action(params: Dictionary) -> void:
+	var action: Dictionary = params.duplicate(true)
+	if str(action.get("action", "")) == "":
+		return
+	pending_entity_actions.append(action)
 
 
-func consume_bridgehead_prefab_bonus() -> int:
-	if bridgehead_prefab_charges <= 0 or bridgehead_prefab_defense_bonus <= 0:
-		return 0
-	bridgehead_prefab_charges -= 1
-	var result: int = bridgehead_prefab_defense_bonus
-	if bridgehead_prefab_charges <= 0:
-		bridgehead_prefab_defense_bonus = 0
+func consume_pending_entity_actions() -> Array:
+	var result: Array = pending_entity_actions.duplicate(true)
+	pending_entity_actions.clear()
 	return result
+
+
+func increase_building_volley_level(amount: int) -> void:
+	building_volley_level = clampi(
+		building_volley_level + maxi(0, int(amount)),
+		0,
+		MAX_BUILDING_VOLLEY_LEVEL
+	)
+
+
+func arm_heavy_charge(spec: Dictionary) -> void:
+	heavy_charge_spec = spec.duplicate(true)
+
+
+func sync_entity_summary(creature_count: int, tower_count: int, levels: Dictionary) -> void:
+	owned_creature_count = maxi(0, int(creature_count))
+	owned_defense_tower_count = maxi(0, int(tower_count))
+	tower_levels = levels.duplicate(true)
+
+
+func get_tower_level(tower_id: String) -> int:
+	return clampi(int(tower_levels.get(str(tower_id), 0)), 0, 3)
 
 
 func has_first_capture_fortified(cell: Vector2i) -> bool:
@@ -234,11 +263,13 @@ func consume_next_volley_modifiers() -> Dictionary:
 		"multiplier": next_volley_multiplier,
 		"armor_pierce_contacts": next_volley_armor_pierce_contacts,
 		"projectile_conversions": next_volley_conversions.duplicate(true),
+		"heavy_charge_spec": heavy_charge_spec.duplicate(true),
 	}
 	next_volley_bonus = 0
 	next_volley_multiplier = 1
 	next_volley_armor_pierce_contacts = 0
 	next_volley_conversions.clear()
+	heavy_charge_spec.clear()
 	return modifiers
 
 
@@ -274,8 +305,12 @@ func snapshot() -> Dictionary:
 		"next_volley_conversions": next_volley_conversions.duplicate(true),
 		"pending_repair_points": pending_repair_points,
 		"pending_repair_zone": pending_repair_zone,
-		"bridgehead_prefab_charges": bridgehead_prefab_charges,
-		"bridgehead_prefab_defense_bonus": bridgehead_prefab_defense_bonus,
+		"pending_entity_actions": pending_entity_actions.duplicate(true),
+		"building_volley_level": building_volley_level,
+		"heavy_charge_spec": heavy_charge_spec.duplicate(true),
+		"owned_creature_count": owned_creature_count,
+		"owned_defense_tower_count": owned_defense_tower_count,
+		"tower_levels": tower_levels.duplicate(true),
 		"first_capture_fortified_cells": first_capture_fortified_cells.duplicate(true),
 		"applied_upgrade_counts": applied_upgrade_counts.duplicate(),
 	}

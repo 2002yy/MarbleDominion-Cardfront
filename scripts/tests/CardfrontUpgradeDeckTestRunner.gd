@@ -27,7 +27,7 @@ func _run() -> void:
 	_test_default_pool_exposes_formal_conversions()
 	_test_candidate_decks_filter_offers()
 	_test_typed_conversion_effects()
-	_test_bridgehead_state()
+	_test_entity_upgrade_state()
 	_test_deck_aware_ai_values()
 	_test_candidate_simulator_uses_decks()
 	_assert.report("[CardfrontUpgradeDeckTest]")
@@ -35,11 +35,11 @@ func _run() -> void:
 
 
 func _test_deck_contracts() -> void:
-	_assert.eq(ManifestScript.validate_all(), [], "decks: all eleven card definitions should validate")
+	_assert.eq(ManifestScript.validate_all(), [], "decks: all fifteen card definitions should validate")
 	_assert.eq(DeckRegistryScript.validate_all(), [], "decks: all three bounded decks should validate")
 	_assert.eq(ManifestScript.CORE_UPGRADE_IDS.size(), 8, "decks: historical audit baseline should contain eight cards")
-	_assert.eq(ManifestScript.get_upgrade_ids().size(), 10, "decks: formal live pool should contain ten cards")
-	_assert.eq(ManifestScript.get_all_upgrade_ids().size(), 11, "decks: candidate catalog should contain eleven cards")
+	_assert.eq(ManifestScript.get_upgrade_ids().size(), 15, "decks: formal live pool should contain fifteen cards")
+	_assert.eq(ManifestScript.get_all_upgrade_ids().size(), 15, "decks: catalog should contain only implemented cards")
 	for deck_id in DeckRegistryScript.get_deck_ids():
 		var deck_size: int = DeckRegistryScript.get_upgrade_ids(str(deck_id)).size()
 		_assert.that(deck_size >= DeckRegistryScript.MIN_DECK_SIZE and deck_size <= DeckRegistryScript.MAX_DECK_SIZE, "decks: every deck should stay inside the supported size range")
@@ -56,7 +56,8 @@ func _test_default_pool_exposes_formal_conversions() -> void:
 			_assert.that(upgrade_id in ManifestScript.get_upgrade_ids(), "decks: default state must stay inside the formal live pool")
 	_assert.that(seen.has(ManifestScript.UPGRADE_SIEGE_CALIBRATION), "decks: default live pool should expose siege formation")
 	_assert.that(seen.has(ManifestScript.UPGRADE_SUPPRESSION_SCREEN), "decks: default live pool should expose suppression formation")
-	_assert.that(not seen.has(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS), "decks: bridgehead construction should remain candidate-only")
+	_assert.that(seen.has(ManifestScript.UPGRADE_REPAIR_UNITS), "decks: default live pool should expose repair units")
+	_assert.that(seen.has(ManifestScript.UPGRADE_FIRE_CONTROL_BEACON), "decks: default live pool should expose fire-control beacon")
 
 
 func _test_candidate_decks_filter_offers() -> void:
@@ -70,7 +71,8 @@ func _test_candidate_decks_filter_offers() -> void:
 			fortification_seen[upgrade_id] = true
 			_assert.that(upgrade_id in DeckRegistryScript.get_upgrade_ids(state.deck_id), "decks: fortification offer must stay inside its deck")
 	_assert.that(fortification_seen.has(ManifestScript.UPGRADE_SIEGE_CALIBRATION), "decks: fortification deck should expose siege grouping")
-	_assert.that(fortification_seen.has(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS), "decks: fortification deck should expose bridgehead construction")
+	_assert.that(fortification_seen.has(ManifestScript.UPGRADE_HEAVY_CHARGE), "decks: fortification deck should expose heavy charge")
+	_assert.that(fortification_seen.has(ManifestScript.UPGRADE_INTERCEPTOR_TOWER), "decks: fortification deck should expose interceptor tower")
 
 	state.set_deck_id(DeckRegistryScript.DECK_BARRAGE_CONTROL)
 	var barrage_seen: Dictionary = {}
@@ -106,14 +108,15 @@ func _test_typed_conversion_effects() -> void:
 	_assert.gt(ProjectileTypeScript.territory_pressure_for_sequence(gunner_plan.projectile_sequence), 7.0, "decks: suppression formation should create visible route pressure")
 
 
-func _test_bridgehead_state() -> void:
+func _test_entity_upgrade_state() -> void:
 	var state = _hero_state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
 	var resolver = ResolverScript.new()
-	_assert.that(bool(resolver.resolve(state, ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS).get("success", false)), "decks: bridgehead construction should resolve")
-	_assert.eq(state.bridgehead_prefab_charges, 6, "decks: bridgehead card should arm six charges")
-	for charge_index in range(6):
-		_assert.eq(state.consume_bridgehead_prefab_bonus(), 1, "decks: bridgehead charge %d should add one defense layer" % (charge_index + 1))
-	_assert.eq(state.consume_bridgehead_prefab_bonus(), 0, "decks: bridgehead charges should not persist after six captures")
+	_assert.that(bool(resolver.resolve(state, ManifestScript.UPGRADE_REPAIR_UNITS).get("success", false)), "decks: repair units should resolve")
+	_assert.eq(state.pending_entity_actions.size(), 1, "decks: repair units should queue one summon action")
+	_assert.that(bool(resolver.resolve(state, ManifestScript.UPGRADE_BUILDING_VOLLEY).get("success", false)), "decks: building volley should resolve")
+	_assert.eq(state.building_volley_level, 1, "decks: building volley should gain one permanent level")
+	_assert.that(bool(resolver.resolve(state, ManifestScript.UPGRADE_HEAVY_CHARGE).get("success", false)), "decks: heavy charge should resolve")
+	_assert.that(not state.heavy_charge_spec.is_empty(), "decks: heavy charge should arm the next volley")
 
 
 func _test_deck_aware_ai_values() -> void:
@@ -130,11 +133,12 @@ func _test_deck_aware_ai_values() -> void:
 	defended_route["repairable_frontline_cells"] = 6
 	defended_route["route_pressure"] = 2.5
 	var siege: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended_route)
-	var bridgehead: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, engineer, defended_route)
+	defended_route["enemy_defense_tower_count"] = 2
+	var heavy_charge: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_HEAVY_CHARGE, engineer, defended_route)
 	var plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, defended_route)
 	_assert.gt(float(siege.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: targeted siege should beat flat shots at a high-confidence defended bottleneck")
 	_assert.gt(float(siege.get("expected_pierced_contacts", 0.0)), 0.0, "decks AI: siege conversion should expose expected pierced contacts")
-	_assert.gt(float(bridgehead.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: bridgehead should beat flat shots during a three-capture window")
+	_assert.gt(float(heavy_charge.get("score", 0.0)), 0.0, "decks AI: heavy charge should gain value against enemy towers")
 
 	var dense_random_defense: Dictionary = defended_route.duplicate(true)
 	dense_random_defense["enemy_defense_contact_chance"] = 0.65
@@ -150,10 +154,10 @@ func _test_deck_aware_ai_values() -> void:
 	var saturated_plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, saturated)
 	_assert.gt(float(defense_cap.get("score", 0.0)), float(saturated_plus_five.get("score", 0.0)), "decks AI: defense cap should become rational when a complete line is already saturated")
 
-	var no_capture: Dictionary = defended_route.duplicate(true)
-	no_capture["expected_frontline_captures"] = 0.0
-	var empty_bridgehead: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, engineer, no_capture)
-	_assert.eq(float(empty_bridgehead.get("score", -1.0)), 0.0, "decks AI: bridgehead should have zero value without expected captures")
+	var no_towers: Dictionary = defended_route.duplicate(true)
+	no_towers["enemy_defense_tower_count"] = 0
+	var untargeted_heavy: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_HEAVY_CHARGE, engineer, no_towers)
+	_assert.that(float(heavy_charge.get("score", 0.0)) > float(untargeted_heavy.get("score", 0.0)), "decks AI: heavy charge should respond to enemy tower count")
 
 	var gunner = _hero_state(HeroRegistryScript.HERO_RAPID_GUNNER)
 	gunner.set_deck_id(DeckRegistryScript.DECK_BARRAGE_CONTROL)
@@ -230,4 +234,5 @@ func _base_context() -> Dictionary:
 		"route_pressure": 1.0,
 		"future_offer_size": 3,
 		"expected_frontline_captures": 1.5,
+		"enemy_defense_tower_count": 0,
 	}

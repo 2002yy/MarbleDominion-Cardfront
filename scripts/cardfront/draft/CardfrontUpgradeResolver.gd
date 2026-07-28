@@ -2,6 +2,7 @@ extends RefCounted
 class_name CardfrontUpgradeResolver
 
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
+const EntityUpgradeResolverScript = preload("res://scripts/cardfront/draft/CardfrontEntityUpgradeResolver.gd")
 
 
 func resolve(run_state, upgrade_id: String) -> Dictionary:
@@ -64,13 +65,8 @@ func _apply_once(run_state, definition: Dictionary) -> bool:
 				str(params.get("projectile_type", "standard")),
 				int(params.get("amount", 0))
 			)
-		"arm_bridgehead_prefabs":
-			run_state.arm_bridgehead_prefabs(
-				int(params.get("charges", 0)),
-				int(params.get("defense_bonus", 0))
-			)
 		_:
-			return false
+			return EntityUpgradeResolverScript.apply(run_state, effect_id, params)
 	return true
 
 

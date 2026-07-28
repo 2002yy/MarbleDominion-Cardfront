@@ -35,6 +35,7 @@ var direction_controller = null
 var stronghold_system = null
 var territory_defense_system = null
 var gate_connectivity_system = null
+var battlefield_entity_runtime = null
 var hero_assignments: Dictionary = {}
 var phase_controller = MatchPhaseControllerScript.new()
 var run_states: Dictionary = {}
@@ -198,6 +199,8 @@ func get_upgrade_value_context(owner_id: int) -> Dictionary:
 		1.0
 	)
 	var enemy_cap: int = maxi(1, int(enemy_defense.get("cap", 1)))
+	var own_state = get_run_state(safe_owner_id)
+	var enemy_state = get_run_state(opponent_id)
 	return {
 		"source": "live",
 		"round_number": maxi(1, round_number),
@@ -219,6 +222,9 @@ func get_upgrade_value_context(owner_id: int) -> Dictionary:
 		"enemy_health_ratio": _turret_health_ratio(opponent_id),
 		"route_pressure": clampf(0.85 + enemy_defended_ratio * 0.50, 0.5, 1.5),
 		"future_offer_size": _draft_choice_count(safe_owner_id),
+		"owned_creature_count": int(own_state.owned_creature_count) if own_state != null else 0,
+		"owned_defense_tower_count": int(own_state.owned_defense_tower_count) if own_state != null else 0,
+		"enemy_defense_tower_count": int(enemy_state.owned_defense_tower_count) if enemy_state != null else 0,
 	}
 
 
@@ -232,6 +238,10 @@ func set_seed_for_tests(seed_value: int) -> void:
 
 func set_territory_defense_system(system) -> void:
 	territory_defense_system = system
+
+
+func set_battlefield_entity_runtime(runtime) -> void:
+	battlefield_entity_runtime = runtime
 
 
 func force_open_draft_for_test() -> void:
@@ -271,6 +281,8 @@ func _open_draft() -> void:
 	last_resolution_results.clear()
 	current_stronghold_bonuses = _sample_strongholds()
 	current_gate_snapshot = _sample_gates()
+	if battlefield_entity_runtime != null and is_instance_valid(battlefield_entity_runtime):
+		battlefield_entity_runtime.prepare_draft(run_states)
 	current_offers = {
 		RulesScript.PLAYER_FACTION: _draft_system.draw_offer(
 			get_run_state(RulesScript.PLAYER_FACTION),
@@ -319,9 +331,15 @@ func _begin_resolution() -> void:
 		if territory_defense_system != null and is_instance_valid(territory_defense_system):
 			var repaired_points: int = territory_defense_system.apply_pending_repair(int(owner_id), run_state)
 			last_resolution_results[int(owner_id)]["repaired_points"] = repaired_points
+		if battlefield_entity_runtime != null and is_instance_valid(battlefield_entity_runtime):
+			last_resolution_results[int(owner_id)]["entity_actions"] = (
+				battlefield_entity_runtime.apply_pending_upgrade_actions(int(owner_id), run_state)
+			)
 		var plan = _volley_resolver.build_and_consume(run_state)
 		if stronghold_system != null and is_instance_valid(stronghold_system):
 			stronghold_system.apply_to_volley_plan(int(owner_id), plan, current_stronghold_bonuses)
+		if battlefield_entity_runtime != null and is_instance_valid(battlefield_entity_runtime):
+			battlefield_entity_runtime.decorate_volley_plan(int(owner_id), plan)
 		current_plans[int(owner_id)] = plan
 	var player_definition: Dictionary = _definition_for_choice(RulesScript.PLAYER_FACTION)
 	var ai_definition: Dictionary = _definition_for_choice(RulesScript.AI_FACTION)
@@ -341,6 +359,10 @@ func _launch_resolved_volleys() -> void:
 		var plan = current_plans.get(int(owner_id), null)
 		if plan == null:
 			continue
+		plan.heavy_charge_pool = {
+			"remaining": 1 if not plan.heavy_charge_spec.is_empty() else 0,
+			"spec": plan.heavy_charge_spec.duplicate(true),
+		}
 		var intent = null
 		if fire_director.has_method("issue_volley"):
 			intent = fire_director.issue_volley(
@@ -349,7 +371,8 @@ func _launch_resolved_volleys() -> void:
 				int(plan.projectile_power),
 				int(plan.chamber_damage_quarters),
 				int(plan.armor_pierce_contacts),
-				plan.projectile_sequence
+				plan.projectile_sequence,
+				plan.heavy_charge_pool
 			)
 		issued_intents[int(owner_id)] = intent
 	volley_launched.emit(current_plans.duplicate(false), issued_intents)

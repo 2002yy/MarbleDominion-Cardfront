@@ -11,12 +11,11 @@ func configure_dependencies(new_round_director, new_territory_defense_system) ->
 	_resolve_bullet_pool()
 	if round_director == null or not is_instance_valid(round_director):
 		return
+	if round_director.has_method("set_battlefield_entity_runtime"):
+		round_director.set_battlefield_entity_runtime(self)
 	var volley_callable := Callable(self, "_on_volley_launched")
 	if round_director.has_signal("volley_launched") and not round_director.volley_launched.is_connected(volley_callable):
 		round_director.volley_launched.connect(volley_callable)
-	var draft_callable := Callable(self, "_on_live_draft_opened")
-	if round_director.has_signal("draft_opened") and not round_director.draft_opened.is_connected(draft_callable):
-		round_director.draft_opened.connect(draft_callable)
 
 
 func resolve_capture_contact(cell: Vector2i, incoming_owner_id: int, capture_context: Dictionary) -> Dictionary:
@@ -58,15 +57,6 @@ func _physics_process(_delta: float) -> void:
 				bullet.direction = bounce_direction.normalized()
 		_apply_fire_control_guidance(bullet)
 		context["projectile_direction"] = bullet.direction
-
-
-func _on_live_draft_opened(
-	_player_offer: Array,
-	_ai_offer: Array,
-	_timeout_seconds: float,
-	_round_number: int
-) -> void:
-	advance_round()
 
 
 func _resolve_bullet_pool() -> void:

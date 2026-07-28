@@ -11,6 +11,7 @@ var projectile_sequence: Array = []
 var projectile_counts: Dictionary = {}
 var chamber_damage_quarters: int = 4
 var armor_pierce_contacts: int = 0
+var heavy_charge_pool: Dictionary = {}
 var spread: float = 0.0
 var reason: String = ""
 
@@ -27,6 +28,7 @@ func snapshot() -> Dictionary:
 		"projectile_counts": projectile_counts.duplicate(true),
 		"chamber_damage_quarters": chamber_damage_quarters,
 		"armor_pierce_contacts": armor_pierce_contacts,
+		"heavy_charge_remaining": int(heavy_charge_pool.get("remaining", 0)),
 		"spread": spread,
 		"reason": reason,
 	}

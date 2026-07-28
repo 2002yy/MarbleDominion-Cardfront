@@ -43,7 +43,7 @@ func _run() -> void:
 	) as Dictionary
 	var engineer_candidates: Dictionary = engineer_health.get("candidate_card_selections", {}) as Dictionary
 	_assert.gt(int(engineer_candidates.get(ManifestScript.UPGRADE_SIEGE_CALIBRATION, 0)), 0, "deck audit should show Engineer selecting the approved siege grouping")
-	_assert.gt(int(engineer_candidates.get(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS, 0)), 0, "deck audit should show Engineer selecting the approved bridgehead construction")
+	_assert.gt(int(engineer_candidates.get(ManifestScript.UPGRADE_HEAVY_CHARGE, 0)), 0, "deck audit should show Engineer selecting heavy charge")
 
 	var core_all: Dictionary = scenarios.get("core_all", {}) as Dictionary
 	var recommended: Dictionary = scenarios.get("recommended_decks", {}) as Dictionary

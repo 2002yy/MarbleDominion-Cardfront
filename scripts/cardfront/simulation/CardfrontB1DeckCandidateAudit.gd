@@ -229,8 +229,12 @@ func _card_health(appearances: Dictionary, selections: Dictionary) -> Dictionary
 	var candidate_selections: Dictionary = {}
 	for upgrade_id in [
 		ManifestScript.UPGRADE_SIEGE_CALIBRATION,
-		ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS,
 		ManifestScript.UPGRADE_SUPPRESSION_SCREEN,
+		ManifestScript.UPGRADE_REPAIR_UNITS,
+		ManifestScript.UPGRADE_FIRE_CONTROL_BEACON,
+		ManifestScript.UPGRADE_INTERCEPTOR_TOWER,
+		ManifestScript.UPGRADE_BUILDING_VOLLEY,
+		ManifestScript.UPGRADE_HEAVY_CHARGE,
 	]:
 		candidate_selections[upgrade_id] = int(selections.get(upgrade_id, 0))
 	return {

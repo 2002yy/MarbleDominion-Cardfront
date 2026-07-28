@@ -201,7 +201,10 @@ func request_directed_burst(intent) -> bool:
 			burst_projectile_sequence.resize(burst_remaining)
 		while burst_projectile_sequence.size() < burst_remaining:
 			burst_projectile_sequence.append(CardfrontProjectileTypeScript.STANDARD)
-		burst_capture_context = {"armor_pierce_pool": {"remaining": maxi(0, int(intent.get("armor_pierce_contacts")))}}
+		burst_capture_context = {
+			"armor_pierce_pool": {"remaining": maxi(0, int(intent.get("armor_pierce_contacts")))},
+			"heavy_charge_pool": intent.get("heavy_charge_pool"),
+		}
 	return started
 
 func fire_directed(count: int, angle: float, spread: float = 0.0, projectile_power: int = 1) -> bool:
@@ -414,6 +417,7 @@ func _spawn_bullet() -> void:
 		"projectile_type": projectile_type,
 		"projectile_defense_pierce_remaining": CardfrontProjectileTypeScript.defense_pierce_layers(projectile_type),
 		"armor_pierce_pool": burst_capture_context.get("armor_pierce_pool", {"remaining": 0}),
+		"heavy_charge_pool": burst_capture_context.get("heavy_charge_pool"),
 	}
 	if _bullet_container_can_spawn:
 		bullet_container.spawn_bullet(faction_id, spawn_position, shot_direction, battlefield, all_turrets, burst_projectile_power, burst_chamber_damage_quarters, projectile_context)

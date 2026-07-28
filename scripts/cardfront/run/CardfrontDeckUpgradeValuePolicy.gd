@@ -12,7 +12,6 @@ const MODE_HISTORICAL_FIXED: String = BaseValuePolicyScript.MODE_HISTORICAL_FIXE
 
 const SHOT_VALUE: float = 9.0
 const PIERCE_CONTACT_VALUE: float = 14.0
-const BRIDGEHEAD_DEFENSE_VALUE: float = 11.0
 const ECHO_REPLAY_DISCOUNT: float = 0.68
 const BUILD_REPEAT_PENALTY: float = 0.10
 const BUILD_TAG_SYNERGY: float = 0.04
@@ -38,8 +37,8 @@ static func evaluate(
 	match effect_id:
 		"convert_next_volley":
 			result = _score_conversion(safe_id, definition, model, normalized_context)
-		"arm_bridgehead_prefabs":
-			result = _score_bridgehead(safe_id, definition, model, normalized_context)
+		"queue_entity_action", "increase_building_volley", "arm_heavy_charge":
+			result = _score_entity_upgrade(safe_id, definition, model, normalized_context)
 		"echo_next_choice":
 			result = BaseValuePolicyScript.evaluate(safe_id, state, normalized_context, valuation_mode)
 			result = _extend_echo_value(result, model, normalized_context)
@@ -107,7 +106,7 @@ static func _score_conversion(
 	return result
 
 
-static func _score_bridgehead(
+static func _score_entity_upgrade(
 	upgrade_id: String,
 	definition: Dictionary,
 	model: Dictionary,
@@ -116,26 +115,35 @@ static func _score_bridgehead(
 	var result: Dictionary = _empty_result(upgrade_id, "")
 	result["eligible"] = true
 	var params: Dictionary = definition.get("params", {}) as Dictionary
-	var added_charges: int = maxi(0, int(params.get("charges", 0)))
-	var defense_bonus: int = maxi(0, int(params.get("defense_bonus", 0)))
-	var current_charges: int = maxi(0, int(model.get("bridgehead_prefab_charges", 0)))
-	var expected_captures: float = clampf(float(context.get("expected_frontline_captures", 0.0)), 0.0, 6.0)
-	var newly_covered: float = maxf(
-		0.0,
-		minf(float(current_charges + added_charges), expected_captures)
-		- minf(float(current_charges), expected_captures)
-	)
-	var cap: int = maxi(1, int(model.get("territory_defense_cap", 1)))
-	var passive: int = clampi(int(model.get("captured_frontline_defense", 0)), 0, cap)
-	var effective_bonus: int = mini(defense_bonus, maxi(0, cap - passive))
 	var route_pressure: float = clampf(float(context.get("route_pressure", 1.0)), 0.25, 3.0)
 	var own_health_ratio: float = clampf(float(context.get("own_health_ratio", 1.0)), 0.0, 1.0)
-	var defense_factor: float = clampf(0.8 + route_pressure * 0.18 + (1.0 - own_health_ratio) * 0.25, 0.8, 1.6)
-	result["expected_bridgehead_cells"] = newly_covered
-	result["effective_bridgehead_defense"] = effective_bonus
-	result["persistent_value"] = newly_covered * float(effective_bonus) * BRIDGEHEAD_DEFENSE_VALUE * defense_factor
-	result["score"] = float(result["persistent_value"])
-	result["reason"] = "expected_frontline_capture_fortification"
+	var enemy_towers: int = maxi(0, int(context.get("enemy_defense_tower_count", 0)))
+	match str(definition.get("effect_id", "")):
+		"queue_entity_action":
+			match str(params.get("action", "")):
+				"summon_repair_units":
+					var capacity: int = maxi(0, 3 - int(model.get("owned_creature_count", 0)))
+					var spawned: int = mini(capacity, maxi(0, int(params.get("amount", 2))))
+					result["persistent_value"] = float(spawned) * (9.0 + (1.0 - own_health_ratio) * 5.0)
+					result["reason"] = "repair_unit_frontline_value"
+				"build_or_upgrade_tower":
+					var tower_id: String = str(params.get("tower_id", ""))
+					var current_level: int = int((model.get("tower_levels", {}) as Dictionary).get(tower_id, 0))
+					result["persistent_value"] = 25.0 + float(current_level) * 5.0
+					if tower_id == "interceptor_tower":
+						result["persistent_value"] += route_pressure * 7.0
+					else:
+						result["persistent_value"] += float(context.get("rounds_remaining", 8)) * 0.8
+					result["reason"] = "tower_build_or_upgrade_value"
+		"increase_building_volley":
+			var towers: int = maxi(0, int(model.get("owned_defense_tower_count", 0)))
+			var level: int = clampi(int(model.get("building_volley_level", 0)), 0, 3)
+			result["persistent_value"] = float(towers * (level + 2)) * 6.0 * minf(8.0, float(context.get("rounds_remaining", 8))) / 8.0
+			result["reason"] = "powered_tower_volley_growth"
+		"arm_heavy_charge":
+			result["immediate_value"] = 10.0 + float(enemy_towers) * 22.0
+			result["reason"] = "enemy_tower_demolition_window"
+	result["score"] = float(result["persistent_value"]) + float(result["immediate_value"])
 	return result
 
 
@@ -154,8 +162,12 @@ static func _extend_echo_value(
 		var candidate_id: String = str(raw_upgrade_id)
 		if candidate_id not in [
 			UpgradeManifestScript.UPGRADE_SIEGE_CALIBRATION,
-			UpgradeManifestScript.UPGRADE_BRIDGEHEAD_PREFABS,
 			UpgradeManifestScript.UPGRADE_SUPPRESSION_SCREEN,
+			UpgradeManifestScript.UPGRADE_REPAIR_UNITS,
+			UpgradeManifestScript.UPGRADE_FIRE_CONTROL_BEACON,
+			UpgradeManifestScript.UPGRADE_INTERCEPTOR_TOWER,
+			UpgradeManifestScript.UPGRADE_BUILDING_VOLLEY,
+			UpgradeManifestScript.UPGRADE_HEAVY_CHARGE,
 		]:
 			continue
 		var candidate: Dictionary = evaluate(candidate_id, model, future_context, MODE_MARGINAL)
@@ -216,8 +228,10 @@ static func _state_model(state) -> Dictionary:
 		"next_volley_conversions": {},
 		"attack_level": 0,
 		"territory_defense_cap": 1,
-		"bridgehead_prefab_charges": 0,
-		"bridgehead_prefab_defense_bonus": 0,
+		"owned_creature_count": 0,
+		"owned_defense_tower_count": 0,
+		"tower_levels": {},
+		"building_volley_level": 0,
 		"applied_upgrade_counts": {},
 	}
 	if state != null:
@@ -237,8 +251,10 @@ static func _state_model(state) -> Dictionary:
 	model["attack_level"] = clampi(int(model["attack_level"]), 0, 3)
 	model["territory_defense_cap"] = maxi(1, int(model["territory_defense_cap"]))
 	model["captured_frontline_defense"] = maxi(0, int(model["captured_frontline_defense"]))
-	model["bridgehead_prefab_charges"] = maxi(0, int(model["bridgehead_prefab_charges"]))
-	model["bridgehead_prefab_defense_bonus"] = maxi(0, int(model["bridgehead_prefab_defense_bonus"]))
+	model["owned_creature_count"] = maxi(0, int(model["owned_creature_count"]))
+	model["owned_defense_tower_count"] = maxi(0, int(model["owned_defense_tower_count"]))
+	model["tower_levels"] = (model["tower_levels"] as Dictionary).duplicate(true)
+	model["building_volley_level"] = clampi(int(model["building_volley_level"]), 0, 3)
 	model["applied_upgrade_counts"] = (model["applied_upgrade_counts"] as Dictionary).duplicate()
 	return model
 
@@ -256,6 +272,7 @@ static func _normalize_context(context: Dictionary) -> Dictionary:
 	result["own_health_ratio"] = clampf(float(result.get("own_health_ratio", 1.0)), 0.0, 1.0)
 	result["route_pressure"] = clampf(float(result.get("route_pressure", 1.0)), 0.25, 3.0)
 	result["expected_frontline_captures"] = clampf(float(result.get("expected_frontline_captures", 0.0)), 0.0, 6.0)
+	result["enemy_defense_tower_count"] = maxi(0, int(result.get("enemy_defense_tower_count", 0)))
 	return result
 
 

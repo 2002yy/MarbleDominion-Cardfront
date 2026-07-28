@@ -312,6 +312,11 @@ func _make_state(hero_id: String, owner_id: int) -> Dictionary:
 		"next_volley_multiplier": 1,
 		"next_volley_armor_pierce_contacts": 0,
 		"pending_repair_points": 0,
+		"owned_creature_count": 0,
+		"owned_defense_tower_count": 0,
+		"tower_levels": {},
+		"building_volley_level": 0,
+		"heavy_charge_armed": false,
 		"applied_upgrade_counts": {},
 	}
 
@@ -440,6 +445,16 @@ func _upgrade_score_fast(upgrade_id: String, state: Dictionary) -> float:
 			return 62.0 + maxf(0.0, 16.0 - float(growth) * 3.0)
 		UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE:
 			return 68.0 + float(mini(growth, 5))
+		UpgradeManifestScript.UPGRADE_REPAIR_UNITS:
+			return 66.0
+		UpgradeManifestScript.UPGRADE_FIRE_CONTROL_BEACON:
+			return 72.0 + float(int((state.get("tower_levels", {}) as Dictionary).get("fire_control_beacon", 0))) * 4.0
+		UpgradeManifestScript.UPGRADE_INTERCEPTOR_TOWER:
+			return 76.0 + float(int((state.get("tower_levels", {}) as Dictionary).get("interceptor_tower", 0))) * 4.0
+		UpgradeManifestScript.UPGRADE_BUILDING_VOLLEY:
+			return 70.0 + float(int(state.get("owned_defense_tower_count", 0))) * 9.0
+		UpgradeManifestScript.UPGRADE_HEAVY_CHARGE:
+			return 74.0
 	return 0.0
 
 
@@ -482,6 +497,33 @@ func _apply_upgrade_once_fast(state: Dictionary, upgrade_id: String) -> bool:
 			state["rarity_level"] = clampi(int(state["rarity_level"]) + int(params.get("amount", 0)), 0, RunStateScript.MAX_RARITY_LEVEL)
 		"echo_next_choice":
 			state["echo_next_choice_armed"] = true
+		"queue_entity_action":
+			match str(params.get("action", "")):
+				"summon_repair_units":
+					state["owned_creature_count"] = mini(
+						3,
+						int(state.get("owned_creature_count", 0)) + maxi(0, int(params.get("amount", 2)))
+					)
+				"build_or_upgrade_tower":
+					var tower_id: String = str(params.get("tower_id", ""))
+					var levels: Dictionary = state.get("tower_levels", {}) as Dictionary
+					var old_level: int = clampi(int(levels.get(tower_id, 0)), 0, 3)
+					levels[tower_id] = mini(3, old_level + 1)
+					state["tower_levels"] = levels
+					if old_level == 0:
+						state["owned_defense_tower_count"] = mini(
+							2,
+							int(state.get("owned_defense_tower_count", 0)) + 1
+						)
+				_:
+					return false
+		"increase_building_volley":
+			state["building_volley_level"] = mini(
+				3,
+				int(state.get("building_volley_level", 0)) + maxi(0, int(params.get("amount", 1)))
+			)
+		"arm_heavy_charge":
+			state["heavy_charge_armed"] = true
 		_:
 			return false
 	return true
@@ -495,14 +537,25 @@ func _build_and_consume_volley_fast(state: Dictionary) -> Dictionary:
 		1,
 		VolleyResolverScript.NORMAL_MAX_VOLLEY_COUNT
 	)
+	var building_level: int = clampi(int(state.get("building_volley_level", 0)), 0, 3)
+	var building_shots: int = 0
+	if building_level > 0:
+		building_shots = mini(
+			int(state.get("owned_defense_tower_count", 0)) * (building_level + 1),
+			maxi(0, 32 - shot_count)
+		)
+	shot_count += building_shots
 	var result: Dictionary = {
 		"shot_count": shot_count,
 		"attack_level": clampi(int(state["attack_level"]), 0, RunStateScript.MAX_ATTACK_LEVEL),
 		"armor_pierce_contacts": maxi(0, int(state["next_volley_armor_pierce_contacts"])),
+		"building_shot_count": building_shots,
+		"heavy_charge_armed": bool(state.get("heavy_charge_armed", false)),
 	}
 	state["next_volley_bonus"] = 0
 	state["next_volley_multiplier"] = 1
 	state["next_volley_armor_pierce_contacts"] = 0
+	state["heavy_charge_armed"] = false
 	return result
 
 
@@ -515,6 +568,17 @@ func _is_upgrade_eligible_fast(upgrade_id: String, state: Dictionary) -> bool:
 		return int(state["territory_defense_cap"]) < RunStateScript.MAX_TERRITORY_DEFENSE_CAP
 	if upgrade_id == UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE:
 		return not bool(state["echo_next_choice_armed"])
+	if upgrade_id == UpgradeManifestScript.UPGRADE_REPAIR_UNITS:
+		return int(state.get("owned_creature_count", 0)) <= 1
+	if upgrade_id == UpgradeManifestScript.UPGRADE_FIRE_CONTROL_BEACON:
+		return int((state.get("tower_levels", {}) as Dictionary).get("fire_control_beacon", 0)) < 3
+	if upgrade_id == UpgradeManifestScript.UPGRADE_INTERCEPTOR_TOWER:
+		return int((state.get("tower_levels", {}) as Dictionary).get("interceptor_tower", 0)) < 3
+	if upgrade_id == UpgradeManifestScript.UPGRADE_BUILDING_VOLLEY:
+		return (
+			int(state.get("owned_defense_tower_count", 0)) > 0
+			and int(state.get("building_volley_level", 0)) < 3
+		)
 	return true
 
 

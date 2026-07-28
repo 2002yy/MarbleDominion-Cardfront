@@ -14,8 +14,12 @@ const UPGRADE_ARMOR_PIERCING: String = "armor_piercing"
 const UPGRADE_RARITY_PLUS_1: String = "rarity_plus_1"
 const UPGRADE_ECHO_NEXT_CHOICE: String = "echo_next_choice"
 const UPGRADE_SIEGE_CALIBRATION: String = "siege_calibration"
-const UPGRADE_BRIDGEHEAD_PREFABS: String = "bridgehead_prefabs"
 const UPGRADE_SUPPRESSION_SCREEN: String = "suppression_screen"
+const UPGRADE_REPAIR_UNITS: String = "repair_units"
+const UPGRADE_FIRE_CONTROL_BEACON: String = "fire_control_beacon"
+const UPGRADE_INTERCEPTOR_TOWER: String = "interceptor_tower"
+const UPGRADE_BUILDING_VOLLEY: String = "building_volley"
+const UPGRADE_HEAVY_CHARGE: String = "heavy_charge"
 
 # Historical A/B0 baseline. Keep this list available for audit fixtures.
 const CORE_UPGRADE_IDS: Array[String] = [
@@ -40,6 +44,11 @@ const FORMAL_UPGRADE_IDS: Array[String] = [
 	UPGRADE_ECHO_NEXT_CHOICE,
 	UPGRADE_SIEGE_CALIBRATION,
 	UPGRADE_SUPPRESSION_SCREEN,
+	UPGRADE_REPAIR_UNITS,
+	UPGRADE_FIRE_CONTROL_BEACON,
+	UPGRADE_INTERCEPTOR_TOWER,
+	UPGRADE_BUILDING_VOLLEY,
+	UPGRADE_HEAVY_CHARGE,
 ]
 
 const DEFINITIONS := {
@@ -142,17 +151,6 @@ const DEFINITIONS := {
 		"params": {"projectile_type": "siege", "amount": 2},
 		"description": "下一次齐射将最多 2 发标准弹转换为攻城弹，并编入特殊弹段优先发射",
 	},
-	UPGRADE_BRIDGEHEAD_PREFABS: {
-		"id": UPGRADE_BRIDGEHEAD_PREFABS,
-		"name": "桥头施工",
-		"symbol": "FORT6",
-		"rarity": RARITY_COMMON,
-		"category": "territory",
-		"tags": ["fortify", "frontline", "capture"],
-		"effect_id": "arm_bridgehead_prefabs",
-		"params": {"charges": 6, "defense_bonus": 1},
-		"description": "接下来 6 个从中立状态夺取且夺取后仍为前线的格子额外获得 1 层防守，不超过上限",
-	},
 	UPGRADE_SUPPRESSION_SCREEN: {
 		"id": UPGRADE_SUPPRESSION_SCREEN,
 		"name": "压制编队",
@@ -163,6 +161,67 @@ const DEFINITIONS := {
 		"effect_id": "convert_next_volley",
 		"params": {"projectile_type": "suppression", "amount": 2},
 		"description": "下一次齐射将最多 2 发标准弹转换为压制弹，强化占格与路线压力但不能伤害控制舱",
+	},
+	UPGRADE_REPAIR_UNITS: {
+		"id": UPGRADE_REPAIR_UNITS,
+		"name": "维修单位",
+		"symbol": "2xBOT",
+		"rarity": RARITY_COMMON,
+		"category": "entity",
+		"tags": ["creature", "repair", "frontline", "fortify"],
+		"effect_id": "queue_entity_action",
+		"params": {"action": "summon_repair_units", "amount": 2},
+		"description": "召唤 2 只维修单位；每只持续 3 回合，移动到受损前线并修复 1 层防守",
+	},
+	UPGRADE_FIRE_CONTROL_BEACON: {
+		"id": UPGRADE_FIRE_CONTROL_BEACON,
+		"name": "火控信标",
+		"symbol": "GUIDE",
+		"rarity": RARITY_UNCOMMON,
+		"category": "building",
+		"tags": ["tower", "guidance", "route", "building"],
+		"effect_id": "queue_entity_action",
+		"params": {"action": "build_or_upgrade_tower", "tower_id": "fire_control_beacon"},
+		"description": "在路线塔位建造火控信标；重复选择升级，引导数量依次为 6、8、10 发",
+	},
+	UPGRADE_INTERCEPTOR_TOWER: {
+		"id": UPGRADE_INTERCEPTOR_TOWER,
+		"name": "拦截塔",
+		"symbol": "BLOCK",
+		"rarity": RARITY_UNCOMMON,
+		"category": "building",
+		"tags": ["tower", "intercept", "defense", "building"],
+		"effect_id": "queue_entity_action",
+		"params": {"action": "build_or_upgrade_tower", "tower_id": "interceptor_tower"},
+		"description": "在路线塔位建造拦截塔；每轮拦截标准弹数量依次为 2、3、3，三级耗尽额度后反击 1 发",
+	},
+	UPGRADE_BUILDING_VOLLEY: {
+		"id": UPGRADE_BUILDING_VOLLEY,
+		"name": "建筑齐射",
+		"symbol": "TOWER+",
+		"rarity": RARITY_RARE,
+		"category": "building_growth",
+		"tags": ["tower", "volley", "building", "growth"],
+		"effect_id": "increase_building_volley",
+		"params": {"amount": 1},
+		"description": "每座正常供电的己方塔每轮沿所在路线发射标准弹；每塔依次为 2、3、4 发",
+	},
+	UPGRADE_HEAVY_CHARGE: {
+		"id": UPGRADE_HEAVY_CHARGE,
+		"name": "重型装药",
+		"symbol": "BLAST",
+		"rarity": RARITY_RARE,
+		"category": "next_volley",
+		"tags": ["explosion", "tower", "siege", "anti_building"],
+		"effect_id": "arm_heavy_charge",
+		"params": {
+			"center_bonus": 1,
+			"entity_radius": 2,
+			"entity_damage": 1,
+			"defense_radius": 1,
+			"defense_damage": 1,
+		},
+		"description": "下一轮首次命中敌塔时爆炸：中心塔额外受 1 伤害，半径 2 内敌方实体受 1 伤害，半径 1 内敌方格失去 1 层防守",
 	},
 }
 
@@ -176,7 +235,9 @@ const REQUIRED_PARAMS := {
 	"increase_rarity": ["amount"],
 	"echo_next_choice": [],
 	"convert_next_volley": ["projectile_type", "amount"],
-	"arm_bridgehead_prefabs": ["charges", "defense_bonus"],
+	"queue_entity_action": ["action"],
+	"increase_building_volley": ["amount"],
+	"arm_heavy_charge": ["center_bonus", "entity_radius", "entity_damage", "defense_radius", "defense_damage"],
 }
 
 

@@ -33,8 +33,11 @@ func _make_state(hero_id: String, owner_id: int) -> Dictionary:
 	var state: Dictionary = super._make_state(hero_id, owner_id)
 	state["deck_id"] = str(_deck_by_owner.get(int(owner_id), DeckRegistryScript.DEFAULT_DECK_ID))
 	state["next_volley_conversions"] = {}
-	state["bridgehead_prefab_charges"] = 0
-	state["bridgehead_prefab_defense_bonus"] = 0
+	state["owned_creature_count"] = 0
+	state["owned_defense_tower_count"] = 0
+	state["tower_levels"] = {}
+	state["building_volley_level"] = 0
+	state["heavy_charge_armed"] = false
 	return state
 
 
@@ -72,12 +75,35 @@ func _apply_upgrade_once_fast(state: Dictionary, upgrade_id: String) -> bool:
 			conversions[projectile_type] = maxi(0, int(conversions.get(projectile_type, 0)) + maxi(0, int(params.get("amount", 0))))
 			state["next_volley_conversions"] = conversions
 			return true
-		"arm_bridgehead_prefabs":
-			state["bridgehead_prefab_charges"] = maxi(0, int(state.get("bridgehead_prefab_charges", 0)) + maxi(0, int(params.get("charges", 0))))
-			state["bridgehead_prefab_defense_bonus"] = maxi(
-				int(state.get("bridgehead_prefab_defense_bonus", 0)),
-				maxi(0, int(params.get("defense_bonus", 0)))
+		"queue_entity_action":
+			match str(params.get("action", "")):
+				"summon_repair_units":
+					state["owned_creature_count"] = mini(
+						3,
+						int(state.get("owned_creature_count", 0)) + maxi(0, int(params.get("amount", 2)))
+					)
+				"build_or_upgrade_tower":
+					var tower_id: String = str(params.get("tower_id", ""))
+					var levels: Dictionary = state.get("tower_levels", {}) as Dictionary
+					var old_level: int = clampi(int(levels.get(tower_id, 0)), 0, 3)
+					levels[tower_id] = mini(3, old_level + 1)
+					state["tower_levels"] = levels
+					if old_level == 0:
+						state["owned_defense_tower_count"] = mini(
+							2,
+							int(state.get("owned_defense_tower_count", 0)) + 1
+						)
+				_:
+					return false
+			return true
+		"increase_building_volley":
+			state["building_volley_level"] = mini(
+				3,
+				int(state.get("building_volley_level", 0)) + maxi(0, int(params.get("amount", 1)))
 			)
+			return true
+		"arm_heavy_charge":
+			state["heavy_charge_armed"] = true
 			return true
 	return super._apply_upgrade_once_fast(state, upgrade_id)
 
@@ -89,17 +115,44 @@ func _build_and_consume_volley_fast(state: Dictionary) -> Dictionary:
 	plan["projectile_conversions_applied"] = ProjectileTypeScript.apply_conversions(sequence, conversions)
 	plan["projectile_sequence"] = sequence
 	plan["projectile_counts"] = ProjectileTypeScript.count_types(sequence)
+	var building_shots: int = (
+		int(state.get("owned_defense_tower_count", 0))
+		* (int(state.get("building_volley_level", 0)) + 1)
+		if int(state.get("building_volley_level", 0)) > 0
+		else 0
+	)
+	building_shots = mini(building_shots, maxi(0, 32 - sequence.size()))
+	ProjectileTypeScript.append_standard(sequence, building_shots, 32)
+	plan["projectile_sequence"] = sequence
+	plan["projectile_counts"] = ProjectileTypeScript.count_types(sequence)
+	plan["building_shot_count"] = building_shots
+	plan["heavy_charge_armed"] = bool(state.get("heavy_charge_armed", false))
 	plan["shot_count"] = sequence.size()
 	state["next_volley_conversions"] = {}
+	state["heavy_charge_armed"] = false
 	return plan
+
+
+func _is_upgrade_eligible_fast(upgrade_id: String, state: Dictionary) -> bool:
+	match str(upgrade_id):
+		ManifestScript.UPGRADE_REPAIR_UNITS:
+			return int(state.get("owned_creature_count", 0)) <= 1
+		ManifestScript.UPGRADE_FIRE_CONTROL_BEACON:
+			return int((state.get("tower_levels", {}) as Dictionary).get("fire_control_beacon", 0)) < 3
+		ManifestScript.UPGRADE_INTERCEPTOR_TOWER:
+			return int((state.get("tower_levels", {}) as Dictionary).get("interceptor_tower", 0)) < 3
+		ManifestScript.UPGRADE_BUILDING_VOLLEY:
+			return (
+				int(state.get("owned_defense_tower_count", 0)) > 0
+				and int(state.get("building_volley_level", 0)) < 3
+			)
+	return super._is_upgrade_eligible_fast(upgrade_id, state)
 
 
 func _proxy_value_context(state: Dictionary) -> Dictionary:
 	var context: Dictionary = super._proxy_value_context(state)
 	var route_pressure: float = clampf(float(context.get("route_pressure", 1.0)), 0.5, 2.5)
 	var rounds_remaining: int = maxi(1, int(context.get("rounds_remaining", 12)))
-	# Bridgehead construction lasts until three qualifying captures. Over a long
-	# opening horizon, reaching all three is the normal case rather than an edge.
 	context["expected_frontline_captures"] = clampf(
 		0.75 + (route_pressure - 0.75) * 1.5 + float(mini(rounds_remaining, 10)) * 0.22,
 		0.0,
@@ -112,6 +165,7 @@ func _proxy_value_context(state: Dictionary) -> Dictionary:
 	context["siege_defense_contact_chance"] = generic_contact
 	if float(context.get("enemy_defense_points", 0.0)) > 0.0:
 		context["siege_defense_contact_chance"] = maxf(generic_contact, 0.65)
+	context["enemy_defense_tower_count"] = 1
 	return context
 
 
@@ -146,10 +200,4 @@ func _recapture_virtual_cells(state: Dictionary, amount: int, rng: RandomNumberG
 func _capture_defense_for_state(state: Dictionary) -> int:
 	var cap: int = maxi(1, int(state.get("territory_defense_cap", 1)))
 	var passive: int = clampi(int(state.get("captured_frontline_defense", 0)), 0, cap)
-	var charges: int = maxi(0, int(state.get("bridgehead_prefab_charges", 0)))
-	var bonus: int = maxi(0, int(state.get("bridgehead_prefab_defense_bonus", 0))) if charges > 0 else 0
-	if charges > 0 and bonus > 0:
-		state["bridgehead_prefab_charges"] = charges - 1
-		if int(state["bridgehead_prefab_charges"]) <= 0:
-			state["bridgehead_prefab_defense_bonus"] = 0
-	return clampi(passive + bonus, 0, cap)
+	return passive

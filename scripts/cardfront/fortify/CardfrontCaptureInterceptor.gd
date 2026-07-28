@@ -46,7 +46,7 @@ func should_block_capture(cell: Vector2i, incoming_owner: int, current_owner: in
 func on_capture_applied(cell: Vector2i, incoming_owner: int, current_owner: int, _capture_context: Dictionary = {}) -> void:
 	if fortify_layer == null or round_director == null or territory_defense_system == null or not round_director.has_method("get_run_state"):
 		return
-	# First-capture fortification and bridgehead prefabs only apply to neutral land.
+	# First-capture fortification only applies to neutral land.
 	# Enemy recaptures always begin at 0/cap after the defending layers are removed.
 	if int(current_owner) != RulesScript.NEUTRAL_OWNER:
 		return
@@ -66,10 +66,7 @@ func on_capture_applied(cell: Vector2i, incoming_owner: int, current_owner: int,
 			passive_defense = configured_passive
 			if run_state.has_method("mark_first_capture_fortified"):
 				run_state.mark_first_capture_fortified(cell)
-	var prefab_bonus: int = 0
-	if run_state.has_method("consume_bridgehead_prefab_bonus"):
-		prefab_bonus = maxi(0, int(run_state.consume_bridgehead_prefab_bonus()))
-	var resolved_defense: int = clampi(passive_defense + prefab_bonus, 0, cap)
+	var resolved_defense: int = clampi(passive_defense, 0, cap)
 	if resolved_defense > 0:
 		fortify_layer.set_fortify_stack(cell, resolved_defense)
 
@@ -91,6 +88,13 @@ func _configure_entity_runtime() -> void:
 			entity_runtime = null
 			return
 	entity_runtime.configure_dependencies(round_director, territory_defense_system)
+	var region_map = territory_defense_system.get("region_map")
+	if (
+		region_map != null
+		and region_map.get("map_definition") is Dictionary
+		and not (region_map.get("map_definition") as Dictionary).is_empty()
+	):
+		entity_runtime.configure_map_definition(region_map.get("map_definition") as Dictionary)
 
 func _is_frontline_cell(cell: Vector2i, owner_id: int) -> bool:
 	var battlefield = territory_defense_system.battlefield

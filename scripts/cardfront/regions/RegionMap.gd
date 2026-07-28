@@ -13,6 +13,7 @@ var region_ids: Array = []
 var region_types: Dictionary = {}
 var region_cells: Dictionary = {}
 var next_region_id: int = 1
+var map_definition: Dictionary = {}
 
 
 func configure(new_grid_size: int) -> void:
@@ -34,7 +35,9 @@ func generate_layout(map_id: String) -> void:
 func generate_from_definition(definition: Dictionary) -> void:
 	if grid_size <= 0:
 		configure(40)
+	map_definition = definition.duplicate(true)
 	if not CardfrontMapBuilderScript.apply_to_region_map(self, definition):
+		map_definition.clear()
 		clear_regions()
 
 
