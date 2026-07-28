@@ -394,7 +394,7 @@ Implemented prototypes:
 | Fire-Control Beacon / 火控信标 | 5 HP, guides up to 6 standard projectiles per volley, guidance strength 0.35, radius 3 cells. | Debug/test prototype only; explicitly marked `prototype_only`. |
 | Generic summoner tower | Configurable creature ID and summon interval. | Engine capability only; no formal card, content definition, or live placement flow. |
 
-Neutral and friendly creature decision:
+Creature and defense-tower card-pool decision:
 
 - **Neutral creature:** approved direction is a strong third-party battlefield
   presence that can affect both factions. No neutral creature catalog, neutral
@@ -403,11 +403,29 @@ Neutral and friendly creature decision:
   unit with construction synergy. The Repair Unit proves movement, repair, and
   collision behavior, but no player-facing summon upgrade or final unit values
   currently exists.
-- Neither neutral nor friendly creatures are currently offered in the formal
-  three-choice pool.
-- Their exact HP, lifetime, movement, spawn rules, AI priorities, and card
-  rarity remain deliberately unlocked. They require a dedicated content
-  decision before implementation.
+- Creature summons and defense-tower construction/upgrades are confirmed as
+  **future three-choice card-pool content**, not a separate out-of-pool system.
+- They are not yet offered by the current formal eight-card pool. Exact values
+  remain unlocked where the inventory below says `TBD`; those entries require
+  a dedicated content decision before implementation.
+
+Confirmed future card-pool inventory:
+
+| Card or card family | Current proposed values and behavior | Lock status |
+| --- | --- | --- |
+| Repair Unit Card / 维修单位卡 | Summon 2 friendly normal units; 1 HP each; movement 1; last 3 owner rounds; seek the nearest damaged friendly frontline cell and restore 1 defense when adjacent; each cell can receive at most one creature repair per round. | Mechanic prototype confirmed; rarity and final tuning TBD. |
+| Armored Guard Card / 装甲护卫卡 | Summon 1 friendly armored unit; 4 HP; movement 1; move toward the nearest gate entrance or contested frontline and physically block projectiles; grants no extra territory damage reduction. | Future card concept; rarity and duration TBD. |
+| Sapper Unit Card / 掘城单位卡 | Summon 1 armored unit; 3 HP; movement 1; prioritize enemy towers, then the highest-defense enemy cell; deals 3 structure damage to a tower and self-destructs, or removes up to 2 defense from a cell and self-destructs; deals only 1 chamber damage. | Future card concept; rarity and duration TBD. |
+| Neutral Creature Summon / 中立生物召唤 | Introduces a strong third-party battlefield presence that can affect both factions. | Card-pool direction confirmed; catalog, count, HP, movement, AI, duration, rarity, and art TBD. |
+| Fire-Control Beacon Card / 火控信标卡 | Builds in a fixed tower slot. Level 1: 5 HP and guides the first 6 standard projectiles each volley. Level 2: guides 8, maintains 1 scout creature, respawns it after 3 owner rounds, and the scout gives a second light correction to up to 3 nearby standard projectiles. Level 3: guides 10 and reduces scout respawn to 2 rounds. Duplicate cards upgrade the existing tower instead of creating unlimited copies. | Level structure confirmed; rarity and final guidance strength/radius tuning TBD. |
+| Interceptor Tower Card / 拦截塔卡 | Builds in a fixed tower slot; 4 HP. Level 1 intercepts the first 2 enemy standard projectiles per volley; level 2 intercepts 3; level 3 still intercepts 3 and fires 1 standard counter-projectile after using the full quota. Does not intercept siege or suppression projectiles. | Level structure confirmed; rarity TBD. |
+| One-shot Chamber Facility / 一次性控制舱设施 | On the first chamber-HP threshold crossing, resolves current damage, grants brief invulnerability, consumes subsequent enemy projectiles, emits a radial standard-projectile counterattack, then disappears after the enemy volley or a time limit. | Card-family concept confirmed; threshold, duration, counter-shot count, name, and rarity TBD. |
+| Generic Summoner Tower / 通用召唤塔 | Fixed-slot tower that summons a configured creature on a round interval. | Engine capability and future card family confirmed; no formal card definition or values yet. |
+
+All creature and tower cards obey the shared foundation unless a later card
+explicitly overrides it: maximum 3 creatures and 2 defense towers per faction,
+maximum 2 creature slots per cell, friendly projectiles pass through friendly
+entities, and an entity on enemy-held ground cannot remain normally powered.
 
 #### Explicitly Paused Content / 明确暂缓内容
 
@@ -861,6 +879,7 @@ No map is considered strategically complete until a player can describe its main
 - The four-card route module until explicitly reactivated.
 - The 108,000-match A/B audit, candidate-deck promotion, and hard balance gates
   while the core framework and art benchmark remain in progress.
-- Formal neutral/friendly creature summon content until its dedicated content
-  inventory, behavior rules, and values are approved.
+- Implementing formal neutral/friendly creature and tower cards until the `TBD`
+  fields in the authoritative inventory are explicitly approved; their place
+  in the future three-choice card pool is already confirmed.
 - Rewriting projectile simulation as true 3D physics.
