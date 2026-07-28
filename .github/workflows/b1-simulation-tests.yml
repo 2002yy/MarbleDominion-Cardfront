@@ -22,31 +22,48 @@ jobs:
             script: CardfrontB1SimulationTestRunner.gd
             seeds: 1
             deck_seeds: 1
+            opening_seeds: 1
+          - batch: B1 live simulation model contract
+            script: CardfrontB1ModelConsistencyTestRunner.gd
+            seeds: 1
+            deck_seeds: 1
+            opening_seeds: 1
           - batch: B1 typed projectile runtime
             script: CardfrontProjectileTypeCombatTestRunner.gd
             seeds: 1
             deck_seeds: 1
+            opening_seeds: 1
           - batch: B1 selectable decks and AI
             script: CardfrontUpgradeDeckTestRunner.gd
             seeds: 1
             deck_seeds: 1
+            opening_seeds: 1
           - batch: B1 selectable deck candidates
             script: CardfrontB1DeckCandidateAuditTestRunner.gd
             seeds: 1
             deck_seeds: 20
+            opening_seeds: 1
           - batch: B1 162-match matrix probe
             script: CardfrontB1BalanceAuditTestRunner.gd
             seeds: 3
             deck_seeds: 1
+            opening_seeds: 1
+          - batch: B1 opening strength framework
+            script: CardfrontB1OpeningBalanceAuditTestRunner.gd
+            seeds: 1
+            deck_seeds: 1
+            opening_seeds: 20
           - batch: B1 5400 directional audit
             script: CardfrontB1BalanceAuditTestRunner.gd
             seeds: 100
             deck_seeds: 1
+            opening_seeds: 1
     env:
       GODOT_VERSION: 4.6.2-stable
       GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
       CARDFRONT_B1_AUDIT_SEEDS: ${{ matrix.seeds }}
       CARDFRONT_B1_DECK_AUDIT_SEEDS: ${{ matrix.deck_seeds }}
+      CARDFRONT_B1_OPENING_AUDIT_SEEDS: ${{ matrix.opening_seeds }}
     steps:
       - uses: actions/checkout@v4
       - name: Cache Godot archive
@@ -105,4 +122,11 @@ jobs:
         with:
           name: cardfront-b1-deck-candidates-${{ matrix.deck_seeds }}-${{ github.run_id }}
           path: artifacts/cardfront-b1-deck-candidates.*
+          if-no-files-found: error
+      - name: Upload B1 opening balance artifact
+        if: always() && matrix.script == 'CardfrontB1OpeningBalanceAuditTestRunner.gd'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardfront-b1-opening-${{ matrix.opening_seeds }}-${{ github.run_id }}
+          path: artifacts/cardfront-b1-opening-balance.*
           if-no-files-found: error

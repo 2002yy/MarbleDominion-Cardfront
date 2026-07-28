@@ -19,9 +19,11 @@ func run(
 	var hero_stats: Dictionary = {}
 	var matchup_stats: Dictionary = {}
 	var mirror_stats: Dictionary = {}
+	var hero_performance: Dictionary = {}
 	for hero_id in hero_ids:
 		hero_stats[str(hero_id)] = _empty_score_stats()
 		mirror_stats[str(hero_id)] = _empty_score_stats()
+		hero_performance[str(hero_id)] = _empty_hero_performance()
 	for hero_a in hero_ids:
 		for hero_b in hero_ids:
 			matchup_stats[_matchup_key(str(hero_a), str(hero_b))] = _empty_score_stats()
@@ -50,6 +52,8 @@ func run(
 						_accumulate_match(result, hero_stats, matchup_stats, mirror_stats, rounds, totals)
 						_accumulate_b1(result, b1_totals)
 						_accumulate_map(result, map_accumulators[str(map_id)] as Dictionary)
+						_accumulate_hero_performance(result, str(hero_a), "a", hero_performance)
+						_accumulate_hero_performance(result, str(hero_b), "b", hero_performance)
 
 	var expected_matches: int = hero_ids.size() * hero_ids.size() * map_ids.size() * 2 * safe_seed_count
 	var expected_matches_per_map: int = hero_ids.size() * hero_ids.size() * 2 * safe_seed_count
@@ -72,6 +76,7 @@ func run(
 		"pacing": _pacing_report(rounds, totals),
 		"metrics": _metrics_report(totals),
 		"b1_metrics": b1_totals,
+		"hero_performance": _finalize_hero_performance(hero_performance),
 		"map_reports": map_reports,
 	}
 	report["passed"] = (
@@ -86,3 +91,59 @@ func run(
 		and _all_map_reports_complete(map_reports, expected_matches_per_map)
 	)
 	return report
+
+
+func _empty_hero_performance() -> Dictionary:
+	return {
+		"appearances": 0,
+		"shots_fired": 0.0,
+		"territory_contacts": 0.0,
+		"defense_absorbed": 0.0,
+		"gate_passes": 0.0,
+		"route_rejections": 0.0,
+		"virtual_captures": 0.0,
+		"virtual_recaptures": 0.0,
+		"chamber_damage_dealt_quarters": 0.0,
+	}
+
+
+func _accumulate_hero_performance(
+	result: Dictionary,
+	hero_id: String,
+	slot: String,
+	all_performance: Dictionary
+) -> void:
+	var totals: Dictionary = all_performance[hero_id] as Dictionary
+	var slot_metrics: Dictionary = (result.get("slot_metrics", {}) as Dictionary).get(slot, {}) as Dictionary
+	totals["appearances"] = int(totals["appearances"]) + 1
+	for key in [
+		"shots_fired",
+		"territory_contacts",
+		"defense_absorbed",
+		"gate_passes",
+		"route_rejections",
+		"virtual_captures",
+		"virtual_recaptures",
+		"chamber_damage_dealt_quarters",
+	]:
+		totals[key] = float(totals[key]) + float(slot_metrics.get(key, 0.0))
+
+
+func _finalize_hero_performance(raw: Dictionary) -> Dictionary:
+	var result: Dictionary = {}
+	for raw_hero_id in raw.keys():
+		var hero_id: String = str(raw_hero_id)
+		var totals: Dictionary = raw[raw_hero_id] as Dictionary
+		var appearances: float = float(maxi(1, int(totals.get("appearances", 0))))
+		result[hero_id] = {
+			"appearances": int(totals.get("appearances", 0)),
+			"shots_per_match": float(totals.get("shots_fired", 0.0)) / appearances,
+			"territory_contacts_per_match": float(totals.get("territory_contacts", 0.0)) / appearances,
+			"defense_absorbed_per_match": float(totals.get("defense_absorbed", 0.0)) / appearances,
+			"gate_passes_per_match": float(totals.get("gate_passes", 0.0)) / appearances,
+			"route_rejections_per_match": float(totals.get("route_rejections", 0.0)) / appearances,
+			"captures_per_match": float(totals.get("virtual_captures", 0.0)) / appearances,
+			"recaptures_per_match": float(totals.get("virtual_recaptures", 0.0)) / appearances,
+			"chamber_damage_per_match": float(totals.get("chamber_damage_dealt_quarters", 0.0)) / appearances / 4.0,
+		}
+	return result

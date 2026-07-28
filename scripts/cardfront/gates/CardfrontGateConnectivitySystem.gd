@@ -164,35 +164,34 @@ func _sample_lane(lane_index: int, round_number: int) -> Dictionary:
 	elif ai_count > player_count:
 		owner_id = RulesScript.AI_FACTION
 		owner_count = ai_count
-	var control_percent: int = roundi(100.0 * float(owner_count) / float(maxi(1, total)))
-	var state_id: String = GateRulesScript.STATE_OPEN
-	if owner_id != RulesScript.NEUTRAL_OWNER and control_percent >= GateRulesScript.CLOSED_CONTROL_PERCENT:
-		state_id = GateRulesScript.STATE_CLOSED
-	elif owner_id != RulesScript.NEUTRAL_OWNER and control_percent >= GateRulesScript.HALF_OPEN_CONTROL_PERCENT:
-		state_id = GateRulesScript.STATE_HALF_OPEN
-	else:
-		owner_id = RulesScript.NEUTRAL_OWNER
+	var resolved: Dictionary = GateRulesScript.state_from_control(
+		owner_id,
+		owner_count,
+		total,
+		RulesScript.NEUTRAL_OWNER
+	)
+	owner_id = int(resolved.get("owner", RulesScript.NEUTRAL_OWNER))
+	var state_id: String = str(resolved.get("state", GateRulesScript.STATE_OPEN))
+	var control_percent: int = int(resolved.get("control_percent", 0))
 	return {
 		"lane_index": lane_index,
 		"state": state_id,
 		"owner_id": owner_id,
 		"control_percent": control_percent if owner_id != RulesScript.NEUTRAL_OWNER else 0,
-		"openness": GateRulesScript.openness_for_state(state_id),
+		"openness": float(resolved.get("openness", 1.0)),
 		"sampled_round": round_number,
 		"control_counts": counts,
 	}
 
 
 func _is_allowed(faction_id: int, lane_index: int, state: Dictionary, serial: int) -> bool:
-	var state_id: String = str(state.get("state", GateRulesScript.STATE_OPEN))
-	var owner_id: int = int(state.get("owner_id", RulesScript.NEUTRAL_OWNER))
-	if state_id == GateRulesScript.STATE_OPEN or owner_id == RulesScript.NEUTRAL_OWNER:
-		return true
-	if int(faction_id) == owner_id:
-		return true
-	if state_id == GateRulesScript.STATE_HALF_OPEN:
-		return (int(serial) + int(lane_index)) % 2 == 0
-	return false
+	return GateRulesScript.is_projectile_allowed(
+		int(faction_id),
+		lane_index,
+		state,
+		serial,
+		RulesScript.NEUTRAL_OWNER
+	)
 
 
 func _lane_for_crossing_x(crossing_x: float, map_size: float) -> int:

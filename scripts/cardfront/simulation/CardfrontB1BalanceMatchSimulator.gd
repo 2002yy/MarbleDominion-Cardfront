@@ -89,6 +89,14 @@ func repair_virtual_state_for_test(state: Dictionary, amount: int) -> Dictionary
 	return {"applied": applied, "wasted": maxi(0, amount - applied)}
 
 
+func apply_upgrade_for_test(state: Dictionary, upgrade_id: String) -> bool:
+	return _resolve_upgrade_fast(state, upgrade_id)
+
+
+func build_and_consume_volley_for_test(state: Dictionary) -> Dictionary:
+	return _build_and_consume_volley_fast(state)
+
+
 func gate_snapshot_for_test(
 	map_id: String,
 	lane_index: int,
@@ -305,10 +313,13 @@ func _resolve_routes(projectile_sequence: Array, attacker_slot: String, _target_
 		var snapshot: Dictionary = _lane_gate_snapshot(lane_index, territory, round_number)
 		var state_id: String = str(snapshot.get("state", B1GateRulesScript.STATE_OPEN))
 		_increment_metric(_b1_gate_state_crossings, state_id, 1.0)
-		var owner_slot: String = str(snapshot.get("owner_slot", ""))
-		var pass_gate: bool = not (state_id == B1GateRulesScript.STATE_CLOSED and owner_slot != attacker_slot)
-		if state_id == B1GateRulesScript.STATE_HALF_OPEN and owner_slot != attacker_slot:
-			pass_gate = (serial + lane_index + round_number) % 2 == 0
+		var pass_gate: bool = B1GateRulesScript.is_projectile_allowed(
+			attacker_slot,
+			lane_index,
+			snapshot,
+			serial + round_number,
+			""
+		)
 		if pass_gate:
 			allowed_projectiles.append(projectile_type)
 			gate_passes += 1
@@ -332,16 +343,18 @@ func _lane_gate_snapshot(lane_index: int, territory: Dictionary, round_number: i
 	share_a = clampf(share_a, 0.0, 1.0)
 	var owner_slot: String = SLOT_A if share_a >= 0.5 else SLOT_B
 	var control_ratio: float = maxf(share_a, 1.0 - share_a)
-	var control_percent: int = roundi(control_ratio * 100.0)
-	var state_id: String = B1GateRulesScript.STATE_OPEN
-	if control_percent >= B1GateRulesScript.CLOSED_CONTROL_PERCENT:
-		state_id = B1GateRulesScript.STATE_CLOSED
-	elif control_percent >= B1GateRulesScript.HALF_OPEN_CONTROL_PERCENT:
-		state_id = B1GateRulesScript.STATE_HALF_OPEN
+	var resolved: Dictionary = B1GateRulesScript.state_from_control(
+		owner_slot,
+		roundi(control_ratio * 1000.0),
+		1000,
+		""
+	)
 	return {
-		"state": state_id,
-		"owner_slot": owner_slot,
-		"control_percent": control_percent,
+		"state": str(resolved.get("state", B1GateRulesScript.STATE_OPEN)),
+		"owner": str(resolved.get("owner", "")),
+		"owner_slot": str(resolved.get("owner", "")),
+		"control_percent": int(resolved.get("control_percent", 0)),
+		"openness": float(resolved.get("openness", 1.0)),
 		"lane_index": lane_index,
 	}
 
