@@ -8,7 +8,8 @@ const DECK_FORTIFICATION_CORPS: String = "fortification_corps"
 const DECK_BARRAGE_CONTROL: String = "barrage_control"
 
 const DEFAULT_DECK_ID: String = DECK_CORE_TACTICS
-const DECK_SIZE: int = 8
+const MIN_DECK_SIZE: int = 8
+const MAX_DECK_SIZE: int = 12
 
 const DEFINITIONS: Dictionary = {
 	DECK_CORE_TACTICS: {
@@ -24,6 +25,8 @@ const DEFINITIONS: Dictionary = {
 			"armor_piercing",
 			"rarity_plus_1",
 			"echo_next_choice",
+			"siege_calibration",
+			"suppression_screen",
 		],
 	},
 	DECK_FORTIFICATION_CORPS: {
@@ -105,7 +108,7 @@ static func validate_all() -> Array:
 		if str(definition.get("description", "")) == "":
 			errors.append("deck_missing_description:%s" % str(deck_id))
 		var upgrade_ids: Array = definition.get("upgrade_ids", []) as Array
-		if upgrade_ids.size() != DECK_SIZE:
+		if upgrade_ids.size() < MIN_DECK_SIZE or upgrade_ids.size() > MAX_DECK_SIZE:
 			errors.append("deck_size_mismatch:%s:%d" % [str(deck_id), upgrade_ids.size()])
 		var unique: Dictionary = {}
 		for raw_upgrade_id in upgrade_ids:

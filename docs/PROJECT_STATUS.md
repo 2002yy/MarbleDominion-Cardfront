@@ -270,6 +270,8 @@ Remaining hero work:
 | Armor-Piercing Trajectory / 穿甲轨迹 | Uncommon | Ignore the first 6 defended contacts next volley |
 | Rarity Premonition / 稀有预感 | Uncommon | Raise future high-rarity probability |
 | Delayed Echo / 延迟回响 | Rare | Replay the next selected upgrade once next round |
+| Siege Formation / 攻城编组 | Uncommon | Convert up to 2 standard projectiles next volley into siege projectiles |
+| Suppression Formation / 压制编队 | Uncommon | Convert up to 2 standard projectiles next volley into suppression projectiles |
 
 Catalog limits:
 
@@ -286,7 +288,7 @@ count as formal player-facing content unless this section says it is active.
 
 #### Active Formal Upgrade Pool / 正式启用强化池
 
-The normal player-facing run uses `core_tactics`, containing exactly eight
+The normal player-facing run uses `core_tactics`, containing exactly ten
 upgrades:
 
 | Upgrade | Rarity | Exact current behavior |
@@ -299,6 +301,8 @@ upgrades:
 | Armor-Piercing Trajectory / 穿甲轨迹 | Uncommon | The first 6 defended contacts in the next volley ignore one defense layer. |
 | Rarity Premonition / 稀有预感 | Uncommon | Permanent rarity level `+1`, capped at level 3, increasing later high-rarity offer probability. |
 | Delayed Echo / 延迟回响 | Rare | Arms the next selected upgrade; that upgrade resolves normally, then replays once in the following round. |
+| Siege Formation / 攻城编组 | Uncommon | Converts up to 2 standard projectiles in the next volley into siege projectiles; special projectiles fire before standards. |
+| Suppression Formation / 压制编队 | Uncommon | Converts up to 2 standard projectiles in the next volley into suppression projectiles; these increase route pressure but cannot damage the command chamber. |
 
 Runtime boundary:
 
@@ -311,18 +315,16 @@ Runtime boundary:
 
 #### Implemented Candidate Upgrades / 已实现候选强化
 
-Three additional upgrades exist in the manifest, resolver, AI valuation,
-simulation, and tests. They are not in the default live pool:
+One additional upgrade remains implemented in the manifest, resolver, AI
+valuation, simulation, and tests without entering the default live pool:
 
 | Upgrade | Rarity | Exact current behavior | Current status |
 | --- | --- | --- | --- |
-| Siege Formation / 攻城编组 | Uncommon | Converts up to 2 standard projectiles in the next volley into siege projectiles. | Available only through the `fortification_corps` candidate deck or injected configuration. |
 | Bridgehead Construction / 桥头施工 | Common | The next 6 first captures of neutral frontline cells gain 1 defense layer, capped by the owner's defense capacity. | Available only through the `fortification_corps` candidate deck or injected configuration. |
-| Suppression Formation / 压制编队 | Uncommon | Converts up to 2 standard projectiles in the next volley into suppression projectiles. | Available only through the `barrage_control` candidate deck or injected configuration. |
 
 Candidate deck definitions:
 
-- `core_tactics`: the active default eight-card pool.
+- `core_tactics`: the active default ten-card pool.
 - `fortification_corps`: an implemented Engineer-oriented candidate containing
   Siege Formation and Bridgehead Construction.
 - `barrage_control`: an implemented Gunner-oriented candidate containing
@@ -405,7 +407,7 @@ Creature and defense-tower card-pool decision:
   currently exists.
 - Creature summons and defense-tower construction/upgrades are confirmed as
   **future three-choice card-pool content**, not a separate out-of-pool system.
-- They are not yet offered by the current formal eight-card pool. Exact values
+- They are not yet offered by the current formal ten-card pool. Exact values
   remain unlocked where the inventory below says `TBD`; those entries require
   a dedicated content decision before implementation.
 
@@ -437,7 +439,40 @@ targets**:
 | Vanguard Warhead / 先锋弹头 | Common | First 4 projectiles continue after their first capture and may capture one additional cell |
 | Gate Breach Round / 破门弹 | Uncommon | First 4 rejected gate crossings become valid bridge passages; off-bridge river crossing remains blocked |
 | Bridgehead Fortification / 桥头筑垒 | Uncommon | First 6 newly captured cells inside gate-control zones gain 1 current defense |
-| Split-Lane Volley / 双路齐射 | Rare | Total shots unchanged; divide the volley between selected and horizontally mirrored directions |
+| Building Volley / 建筑齐射 | Rare | Permanent building-offense upgrade. The command chamber keeps its normal volley. Each powered friendly defense tower fires 2 standard projectiles from its own route slot every volley; duplicate picks raise this to 3, then 4 per tower, capped at level 3. Disabled or unpowered towers do not fire. Tower projectiles follow their tower lane, are not copied by `x2` or `+5`, and the combined command-chamber plus building volley remains capped at 32 projectiles. This card becomes offer-eligible only after the owner has at least one defense tower. |
+
+`Building Volley` replaces the earlier split-direction concept. It must ship
+with at least one construction card so it can never be offered as an empty
+effect.
+
+#### Approved Next Card Slice / 已确认下一批卡牌
+
+Implementation order:
+
+1. Promote Siege Formation and Suppression Formation into the live default pool.
+2. Add Repair Unit, Fire-Control Beacon, and Interceptor Tower as the first
+   player-facing creature/tower cards.
+3. Add Building Volley after construction is available.
+4. Add Heavy Charge with authoritative first-building-contact explosion logic.
+5. Add Armored Guard, Sapper Unit, and the first neutral creature only after the
+   initial entity cards are playable and readable.
+
+Heavy Charge / 重型装药 is locked as a Rare next-volley combo card:
+
+- It arms the first projectile in the next volley that physically contacts an
+  enemy defense tower; if no tower is hit, the charge expires with the volley.
+- Resolve the projectile's normal hit first, then explode at that tower cell.
+- The center tower receives 1 additional structure damage.
+- Other enemy creatures or defense towers within Manhattan radius 2 receive 1
+  damage.
+- Enemy territory cells within Manhattan radius 1 lose 1 current-defense layer,
+  never below zero.
+- The explosion cannot damage either command chamber.
+- A standard projectile plus Heavy Charge deals 2 total damage to its center
+  tower. A siege projectile plus Heavy Charge deals 4, so the card cannot
+  unconditionally destroy a healthy 4-HP tower but can do so through the
+  explicit Siege Formation combination; a 5-HP Fire-Control Beacon survives
+  that clean two-card combo at 1 HP.
 
 - `v0.3.3b2 Four-card Route Module` is paused until the user explicitly
   reactivates it.
@@ -548,7 +583,8 @@ Rules:
 - Simulation mode: `parity_uncompensated`.
 - Hidden hit compensation: disabled.
 - Temporary resolved attack cap: 4.
-- Current eight-card catalog.
+- Historical eight-card catalog used by that completed audit; the live catalog
+  has since promoted Siege Formation and Suppression Formation.
 - Current proxy map profiles.
 - No authoritative gate simulation yet.
 - No true second-side geometry rerun yet.
@@ -757,7 +793,9 @@ Requirements:
 
 ## 10. Upgrade And AI Architecture / 强化与 AI 架构
 
-Before the catalog grows beyond eight upgrades, replace the expanding `match effect_id` block with modular handlers:
+The live catalog has grown beyond the historical eight upgrades. Before adding
+the approved entity/building card families, replace the expanding
+`match effect_id` block with modular handlers:
 
 - `VolleyEffect`
 - `ProjectileEffect`

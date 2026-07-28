@@ -24,7 +24,7 @@ func _run() -> void:
 	print("[CardfrontUpgradeDeckTest] Starting selectable deck and tactical card tests")
 	await process_frame
 	_test_deck_contracts()
-	_test_default_pool_remains_core()
+	_test_default_pool_exposes_formal_conversions()
 	_test_candidate_decks_filter_offers()
 	_test_typed_conversion_effects()
 	_test_bridgehead_state()
@@ -36,20 +36,27 @@ func _run() -> void:
 
 func _test_deck_contracts() -> void:
 	_assert.eq(ManifestScript.validate_all(), [], "decks: all eleven card definitions should validate")
-	_assert.eq(DeckRegistryScript.validate_all(), [], "decks: all three eight-card decks should validate")
-	_assert.eq(ManifestScript.get_upgrade_ids().size(), 8, "decks: frozen core pool should contain eight cards")
+	_assert.eq(DeckRegistryScript.validate_all(), [], "decks: all three bounded decks should validate")
+	_assert.eq(ManifestScript.CORE_UPGRADE_IDS.size(), 8, "decks: historical audit baseline should contain eight cards")
+	_assert.eq(ManifestScript.get_upgrade_ids().size(), 10, "decks: formal live pool should contain ten cards")
 	_assert.eq(ManifestScript.get_all_upgrade_ids().size(), 11, "decks: candidate catalog should contain eleven cards")
 	for deck_id in DeckRegistryScript.get_deck_ids():
-		_assert.eq(DeckRegistryScript.get_upgrade_ids(str(deck_id)).size(), DeckRegistryScript.DECK_SIZE, "decks: every selectable deck should contain eight cards")
+		var deck_size: int = DeckRegistryScript.get_upgrade_ids(str(deck_id)).size()
+		_assert.that(deck_size >= DeckRegistryScript.MIN_DECK_SIZE and deck_size <= DeckRegistryScript.MAX_DECK_SIZE, "decks: every deck should stay inside the supported size range")
 
 
-func _test_default_pool_remains_core() -> void:
+func _test_default_pool_exposes_formal_conversions() -> void:
 	var state = _hero_state(HeroRegistryScript.HERO_BALANCED_COMMANDER)
 	var draft = DraftSystemScript.new()
-	for seed_value in range(1, 41):
+	var seen: Dictionary = {}
+	for seed_value in range(1, 161):
 		draft.set_seed(seed_value)
 		for upgrade_id in _offer_ids(draft.draw_three(state)):
-			_assert.that(upgrade_id in ManifestScript.get_upgrade_ids(), "decks: default state must never draw a B1 candidate card")
+			seen[str(upgrade_id)] = true
+			_assert.that(upgrade_id in ManifestScript.get_upgrade_ids(), "decks: default state must stay inside the formal live pool")
+	_assert.that(seen.has(ManifestScript.UPGRADE_SIEGE_CALIBRATION), "decks: default live pool should expose siege formation")
+	_assert.that(seen.has(ManifestScript.UPGRADE_SUPPRESSION_SCREEN), "decks: default live pool should expose suppression formation")
+	_assert.that(not seen.has(ManifestScript.UPGRADE_BRIDGEHEAD_PREFABS), "decks: bridgehead construction should remain candidate-only")
 
 
 func _test_candidate_decks_filter_offers() -> void:
