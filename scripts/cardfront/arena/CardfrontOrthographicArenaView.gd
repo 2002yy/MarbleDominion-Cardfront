@@ -21,15 +21,17 @@ const BRIDGE_COUNT: int = 2
 const COMMAND_CHAMBER_SIZE: Vector3 = Vector3(4.8, 0.72, 3.0)
 const BRIDGE_BASE_SIZE: Vector3 = Vector3(3.8, 0.38, 3.0 * ARENA_Z_SCALE)
 const EDGE_DECORATION_COUNT: int = 8
-const GRASS_LIGHT: Color = Color(0.50, 0.61, 0.27)
-const GRASS_DARK: Color = Color(0.44, 0.55, 0.23)
+const GRASS_LIGHT: Color = Color(0.49, 0.58, 0.32)
+const GRASS_DARK: Color = Color(0.45, 0.53, 0.29)
 const PLAYER_TINT: Color = Color(0.21, 0.49, 0.60)
 const AI_TINT: Color = Color(0.62, 0.30, 0.30)
 const OUTLINE_COLOR: Color = Color(0.16, 0.24, 0.17)
 const PATH_COLOR: Color = Color(0.56, 0.42, 0.25, 0.72)
-const PRESENTATION_SCALE_PRESETS: Array[float] = [0.92, 1.0, 1.08]
-const DEFAULT_PRESENTATION_SCALE: float = 1.0
+const PRESENTATION_SCALE_PRESETS: Array[float] = [1.0, 1.12, 1.20]
+const DEFAULT_PRESENTATION_SCALE: float = 1.12
 const SCALE_TWEEN_SECONDS: float = 0.18
+const COMBAT_ENTITY_VISUAL_SCALE: float = 1.24
+const PROJECTILE_VISUAL_SCALE: float = 1.22
 
 var battlefield = null
 var region_map = null
@@ -246,6 +248,21 @@ func get_entity_hp_scale_for_test(entity_id: String) -> float:
 	return fill.scale.x if fill != null and is_instance_valid(fill) else -1.0
 
 
+func get_entity_hp_visible_for_test(entity_id: String) -> bool:
+	var fill: MeshInstance3D = _entity_hp_fills.get(entity_id, null)
+	return fill != null and is_instance_valid(fill) and fill.visible
+
+
+func get_entity_visual_scale_for_test(entity_id: String) -> float:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	return proxy.scale.x if proxy != null and is_instance_valid(proxy) else -1.0
+
+
+func get_chamber_health_label_visible_for_test(owner_id: int) -> bool:
+	var label: Label3D = _chamber_labels.get(owner_id, null)
+	return label != null and is_instance_valid(label) and label.visible
+
+
 func get_camera_size_ratio_for_test() -> float:
 	return camera.size / float(battlefield.grid_size) if camera != null else INF
 
@@ -408,7 +425,7 @@ func _build_world() -> void:
 	camera.name = "OrthographicCamera"
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	_base_camera_size = grid * 1.18
-	camera.size = _base_camera_size
+	camera.size = _base_camera_size / DEFAULT_PRESENTATION_SCALE
 	camera.near = 0.1
 	camera.far = grid * 5.0
 	camera.look_at_from_position(
@@ -1141,6 +1158,7 @@ func _sync_turrets() -> void:
 		var health: int = int(turret.health)
 		var max_health: int = maxi(1, int(turret.max_health))
 		var label: Label3D = _chamber_labels[owner_id]
+		label.visible = health < max_health
 		label.text = "%s  %d/%d" % [
 			"玩家" if int(owner_id) == CardfrontRulesScript.PLAYER_FACTION else "AI",
 			health,
@@ -1174,7 +1192,7 @@ func _sync_bullets() -> void:
 			spec.get("color", faction_color) as Color,
 			float(spec.get("emission", 0.8))
 		)
-		var radius: float = float(spec.get("radius", 0.42))
+		var radius: float = float(spec.get("radius", 0.42)) * PROJECTILE_VISUAL_SCALE
 		proxy.scale = Vector3.ONE * radius
 		var direction: Vector2 = bullet.direction if bullet.get("direction") is Vector2 else Vector2.RIGHT
 		if direction.length_squared() > 0.001:
@@ -1278,6 +1296,7 @@ func _sync_entities() -> void:
 
 func _create_entity_proxy(entity) -> Node3D:
 	var proxy := Node3D.new()
+	proxy.scale = Vector3.ONE * COMBAT_ENTITY_VISUAL_SCALE
 	var owner_color: Color = (
 		Color(0.92, 0.72, 0.22)
 		if int(entity.owner_id) == CardfrontRulesScript.NEUTRAL_OWNER
@@ -1319,6 +1338,7 @@ func _build_entity_hp_bar(proxy: Node3D, entity, owner_color: Color) -> void:
 	backing.mesh = backing_mesh
 	backing.position = Vector3(0.0, 2.43, 0.0)
 	backing.material_override = _make_material(Color(0.04, 0.055, 0.06), 0.0)
+	backing.visible = false
 	proxy.add_child(backing)
 
 	var fill := MeshInstance3D.new()
@@ -1328,6 +1348,7 @@ func _build_entity_hp_bar(proxy: Node3D, entity, owner_color: Color) -> void:
 	fill.mesh = fill_mesh
 	fill.position = Vector3(0.0, 2.43, -0.02)
 	fill.material_override = _make_material(owner_color.lightened(0.18), 0.34)
+	fill.visible = false
 	proxy.add_child(fill)
 	_entity_hp_fills[str(entity.entity_id)] = fill
 
@@ -1341,6 +1362,7 @@ func _build_entity_hp_bar(proxy: Node3D, entity, owner_color: Color) -> void:
 	status.pixel_size = 0.012
 	status.position = Vector3(0.0, 2.74, 0.0)
 	status.modulate = owner_color.lightened(0.28)
+	status.visible = false
 	proxy.add_child(status)
 	_entity_status_labels[str(entity.entity_id)] = status
 
@@ -1348,13 +1370,19 @@ func _build_entity_hp_bar(proxy: Node3D, entity, owner_color: Color) -> void:
 func _sync_entity_readability(entity) -> void:
 	var entity_id: String = str(entity.entity_id)
 	var ratio: float = CombatReadabilityScript.hp_ratio(entity)
+	var show_hp: bool = ratio < 0.999
 	var fill: MeshInstance3D = _entity_hp_fills.get(entity_id, null)
 	if fill != null and is_instance_valid(fill):
+		fill.visible = show_hp
 		fill.scale.x = maxf(0.01, ratio)
 		fill.position.x = -0.78 * (1.0 - ratio)
+		var backing: MeshInstance3D = fill.get_parent().get_node_or_null("HpBacking")
+		if backing != null:
+			backing.visible = show_hp
 	var status: Label3D = _entity_status_labels.get(entity_id, null)
 	if status != null and is_instance_valid(status):
-		status.text = CombatReadabilityScript.entity_status_text(entity)
+		status.visible = not bool(entity.powered)
+		status.text = CombatReadabilityScript.entity_status_text(entity) if status.visible else ""
 		status.modulate = Color(0.58, 0.62, 0.66) if not bool(entity.powered) else Color.WHITE
 	var proxy: Node3D = _entity_proxies.get(entity_id, null)
 	if proxy != null and is_instance_valid(proxy):

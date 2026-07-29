@@ -43,7 +43,7 @@ func _capture() -> void:
 		ProjectSettings.globalize_path("res://artifacts/cardfront-full-battle.png")
 	)
 	var scale_errors: Array[int] = []
-	for scale_value in [0.92, 1.0, 1.08]:
+	for scale_value in [1.0, 1.12, 1.20]:
 		main.runtime.orthographic_arena_view.set_presentation_scale(scale_value, false)
 		await _flush(2)
 		scale_errors.append(
@@ -53,7 +53,7 @@ func _capture() -> void:
 				)
 			)
 		)
-	main.runtime.orthographic_arena_view.set_presentation_scale(1.0, false)
+	main.runtime.orthographic_arena_view.set_presentation_scale(1.12, false)
 
 	main.runtime.round_director.set_seed_for_tests(331)
 	main.runtime.round_director.force_open_draft_for_test()

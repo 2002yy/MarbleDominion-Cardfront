@@ -37,7 +37,7 @@ var _view_size: Vector2 = Vector2(1120, 720)
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	draft_root.visible = false
-	battle_status.visible = true
+	battle_status.visible = false
 	upgrade_toast.visible = false
 	dimmer.mouse_filter = Control.MOUSE_FILTER_STOP
 	choice_shell.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -127,7 +127,7 @@ func _on_countdown_updated(time_remaining: float, round_number: int, player_stat
 	if draft_root.visible:
 		return
 	_last_round_number = int(round_number)
-	battle_status.visible = true
+	battle_status.visible = false
 	var next_round: int = int(round_number) + 1
 	battle_phase_label.text = "\u7b2c%d\u8f6e  %s" % [
 		next_round,
@@ -234,7 +234,7 @@ func _on_choices_revealed(player_definition: Dictionary, ai_definition: Dictiona
 
 func _on_volley_launched(plans: Dictionary, _issued_intents: Dictionary) -> void:
 	draft_root.visible = false
-	battle_status.visible = true
+	battle_status.visible = false
 	var player_plan = plans.get(RulesScript.PLAYER_FACTION, null)
 	if player_plan != null:
 		battle_phase_label.text = "\u7b2c %d \u8f6e\u9f50\u5c04  \u00b7  %d \u53d1" % [

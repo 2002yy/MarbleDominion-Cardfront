@@ -104,19 +104,17 @@ func _layout_children() -> void:
 	$Panel/Accent.size = Vector2(width - 16.0, 3.0)
 	_title.position = Vector2(10.0, 7.0)
 	_title.size = Vector2(86.0, 18.0)
-	_title.add_theme_font_size_override("font_size", 13)
+	_title.add_theme_font_size_override("font_size", 14)
 	_angle_value.position = Vector2(width - 105.0, 6.0)
 	_angle_value.size = Vector2(94.0, 20.0)
-	_angle_value.add_theme_font_size_override("font_size", 14)
+	_angle_value.add_theme_font_size_override("font_size", 16)
 	_left_button.position = Vector2(8.0, 28.0)
 	_left_button.size = Vector2(28.0, 25.0)
 	_right_button.position = Vector2(width - 36.0, 28.0)
 	_right_button.size = Vector2(28.0, 25.0)
 	_slider.position = Vector2(41.0, 28.0)
 	_slider.size = Vector2(maxf(72.0, width - 82.0), 25.0)
-	_hint.position = Vector2(8.0, 53.0)
-	_hint.size = Vector2(width - 16.0, 14.0)
-	_hint.add_theme_font_size_override("font_size", 9)
+	_hint.visible = false
 
 
 func _apply_style() -> void:

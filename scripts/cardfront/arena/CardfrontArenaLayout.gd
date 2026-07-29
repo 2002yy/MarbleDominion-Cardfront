@@ -9,7 +9,7 @@ const ARENA_VIEW_TOP: float = 98.0
 const ARENA_VIEW_BOTTOM_MARGIN: float = 42.0
 const SIDE_GUTTER: float = 12.0
 const TURRET_OVERHANG_MIN: float = 8.0
-const AIM_PANEL_SIZE: Vector2 = Vector2(212.0, 70.0)
+const AIM_PANEL_SIZE: Vector2 = Vector2(196.0, 62.0)
 
 
 static func apply_to(base_layout: Dictionary, grid_size: int, viewport_size: Vector2) -> Dictionary:

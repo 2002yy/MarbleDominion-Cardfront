@@ -577,7 +577,7 @@ func _create_cardfront_battle_hero_hud() -> void:
 		return
 	var hero_hud = CardfrontBattleHeroHudScene.instantiate()
 	ui_canvas.add_child(hero_hud)
-	hero_hud.configure(runtime.hero_assignments)
+	hero_hud.configure(runtime.hero_assignments, runtime.turrets)
 	runtime.battle_hero_hud = hero_hud
 
 

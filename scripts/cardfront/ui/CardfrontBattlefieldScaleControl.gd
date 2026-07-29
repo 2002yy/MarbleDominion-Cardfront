@@ -8,17 +8,17 @@ var _buttons_by_scale: Dictionary = {}
 
 @onready var _panel: Panel = $Panel
 @onready var _title: Label = $Panel/Title
-@onready var _scale_92: Button = $Panel/Scale92
 @onready var _scale_100: Button = $Panel/Scale100
-@onready var _scale_108: Button = $Panel/Scale108
+@onready var _scale_112: Button = $Panel/Scale112
+@onready var _scale_120: Button = $Panel/Scale120
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_buttons_by_scale = {
-		0.92: _scale_92,
 		1.0: _scale_100,
-		1.08: _scale_108,
+		1.12: _scale_112,
+		1.20: _scale_120,
 	}
 	_connect_buttons()
 	_apply_style()
@@ -66,7 +66,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_sync_selected_state()
 		get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_0 or event.keycode == KEY_KP_0:
-		select_scale(1.0)
+		select_scale(1.12)
 		get_viewport().set_input_as_handled()
 
 

@@ -45,14 +45,14 @@ mouse_filter = 2
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.48, 0.85, 1, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 16
 text = "玩家"
 
 [node name="Stats" type="Label" parent="PlayerPlate/Row/Text"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.84, 0.88, 0.86, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 12
 text = "齐射 6  舱体 40"
 
 [node name="AiPlate" type="Panel" parent="."]
@@ -89,12 +89,12 @@ mouse_filter = 2
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.55, 0.48, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 16
 text = "AI"
 
 [node name="Stats" type="Label" parent="AiPlate/Row/Text"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.84, 0.88, 0.86, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 12
 text = "齐射 6  舱体 40"

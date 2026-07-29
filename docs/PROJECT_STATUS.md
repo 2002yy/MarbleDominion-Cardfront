@@ -36,6 +36,12 @@ Confirmed product decisions:
 - Each hero has a compact cartoon silhouette, accent color, selection card, press/reveal animation, and an in-match identity plate.
 - The orthographic arena has a first-generation environment-art pass: map-specific palettes plus green-field banners, industrial stacks, or laboratory pylons. It is no longer a single-palette graybox, though bespoke meshes, textures, and polish remain future art work.
 - `default_duel` now has the first formal readability benchmark: fixed castle-like command chambers with independent aiming pivots, modeled banks and restrained edge nature, faction HP/status presentation for entities, distinct defense-tower silhouettes, and type-specific projectile bodies, trails, contact pulses, and heavy-charge feedback.
+- The current presentation-readability pass uses `100% / 112% / 120%`
+  battlefield presets with `112%` as the default. Combat creatures, towers,
+  and projectiles receive a presentation-only readability multiplier while
+  command chambers retain their previous size. Full-health entity bars and
+  persistent role labels are suppressed, and chamber health is mirrored in
+  the top hero plates.
 - All 18 implemented upgrade cards instantiate through the formal three-choice scene and are reachable across valid run states. This is an executable content/readability gate, not a claim that human balance tuning is complete.
 - Existing legacy card illustrations and compatibility UI do not count as art completion for the new three-choice hero/run loop.
 
@@ -47,7 +53,7 @@ The approved visual target is:
 
 The authoritative screenshot set, official source links, visual hierarchy
 table, color rules, HUD placement contract, stronghold-badge contract, and
-`92% / 100% / 108%` battlefield-scale specification are stored together at:
+`100% / 112% / 120%` battlefield-scale specification are stored together at:
 
 - `美术参考_art_reference/cardfront_visual_hierarchy_v01/CARDFRONT_VISUAL_HIERARCHY_AND_SCALE_SPEC.md`
 
@@ -985,7 +991,7 @@ Candidate order after B1:
 ### Completed Current Slice: Battlefield Scale And HUD Hierarchy
 
 - Added an orthographic presentation-only battlefield scale controller with
-  deliberate `92% / 100% / 108%` presets and a short smooth transition.
+  deliberate `100% / 112% / 120%` presets and a short smooth transition.
 - Kept the authoritative 2D grid, projectile simulation, collision, gates,
   targeting and AI unchanged; HUD remains on fixed CanvasLayer coordinates.
 - Reduced the Cardfront top HUD to its two active duel factions and moved both

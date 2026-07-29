@@ -1,6 +1,6 @@
 # Cardfront Visual Hierarchy And Scale Specification / 视觉层级与缩放规范
 
-Version: v1.0
+Version: v1.1
 Approved: 2026-07-29
 Status: authoritative art-reference package for the current Cardfront presentation pass
 
@@ -19,6 +19,12 @@ Cardfront 不是皇室战争的复刻。参考作品只用于拆解成熟的信�
 - 控制舱位于战场两端，不侵占核心交战空间；
 - 据点控制度可在一眼内读出；
 - 三选一阶段完全暂停，并成为唯一视觉焦点。
+
+The approved composition is a deliberate combination:
+
+- **Minion Masters composition:** opposing bases at the two ends, combat pressure in the field, compact identity at the top edges, and card interaction centered at the bottom.
+- **Into the Breach information grammar:** routes, danger, selection and outcomes appear directly where they matter, then disappear when no longer relevant.
+- **Thronefall material hierarchy:** quiet bright ground, few materials, strong silhouettes, and restrained environment contrast.
 
 ## 2. Reference Responsibilities / 参考分工
 
@@ -85,13 +91,13 @@ shipping assets and must not be bundled into exports.
 
 ### Battlefield presentation scale
 
-The first implementation exposes three deliberate presets:
+The approved readability pass exposes three deliberate presets:
 
 | Display | Camera rule | Purpose |
 | --- | --- | --- |
-| 92% | `camera.size = base_size / 0.92` | 看全局路线、闸门和两端控制舱 |
-| 100% | `camera.size = base_size` | 默认竞技构图 |
-| 108% | `camera.size = base_size / 1.08` | 强调弹珠、实体和接触点 |
+| 100% | `camera.size = base_size` | 看全局路线、闸门和两端控制舱 |
+| 112% | `camera.size = base_size / 1.12` | 默认竞技构图，兼顾完整路线和实体可读性 |
+| 120% | `camera.size = base_size / 1.20` | 强调弹珠、实体和接触点 |
 
 Rules:
 
@@ -100,8 +106,12 @@ Rules:
 - CanvasLayer HUD never scales with the battlefield.
 - The scale is preset-based, not unrestricted mouse-wheel zoom.
 - Transition duration is `0.18s`; tests and deterministic captures may request an immediate transition.
-- Default is always `100%` at match start.
+- Default is `112%` at match start.
 - The three presets must keep both command chambers and both bridges readable.
+- Creatures, defense towers and projectiles may receive a presentation-only
+  readability multiplier in the `1.20-1.30x` range. Command chambers do not.
+- Full-health entities do not show persistent HP bars or role labels. Damage
+  and exceptional states may reveal concise local feedback.
 - Any future screen-space entity tooltip must use camera projection, not multiply the old 2D position by the scale.
 
 ### Independent UI scale
@@ -142,7 +152,7 @@ setting and must not alter battlefield framing. Do not reuse battlefield zoom as
 
 ## 9. First Slice Acceptance / 第一刀验收
 
-- The runtime exposes `92% / 100% / 108%` battlefield scale presets.
+- The runtime exposes `100% / 112% / 120%` battlefield scale presets.
 - Changing scale moves only the presentation camera and uses a short smooth transition.
 - BallWar does not create the scale control.
 - Hero plates are compact and remain outside the arena core.
