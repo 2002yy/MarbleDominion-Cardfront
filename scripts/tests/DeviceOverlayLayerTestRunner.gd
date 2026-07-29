@@ -73,7 +73,7 @@ func _test_overlay_created_in_cardfront() -> void:
 	_assert.that(main.runtime.device_layer != null, "overlay: Cardfront should have device_layer")
 	_assert.that(main.runtime.device_overlay_layer != null, "overlay: Cardfront should have device_overlay_layer")
 	if main.runtime.device_overlay_layer != null:
-		_assert.that(main.runtime.device_overlay_layer.visible, "overlay: Cardfront device_overlay_layer should be visible")
+		_assert.that(main.runtime.device_overlay_layer.visible, "overlay: legacy compatibility mode should keep its device overlay visible")
 		_assert.that(not main.runtime.device_overlay_layer.is_processing(), "overlay: device overlay should not redraw every frame")
 
 	main._cleanup_game_layer()

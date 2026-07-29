@@ -44,6 +44,7 @@ func _test_cardfront_blocks(main) -> void:
 	_assert.that(layer != null, "region blocks: Cardfront should create the control block layer")
 	if layer == null:
 		return
+	_assert.that(not layer.visible, "region blocks: legacy 2D badges should stay hidden behind the orthographic presentation")
 	_assert.eq(layer.z_index, 3, "region blocks: layer should sit above static region art and below target preview")
 	var visuals: Array = layer.get_region_visuals_for_test()
 	_assert.eq(visuals.size(), main.runtime.region_map.get_controllable_region_ids().size(), "region blocks: every controllable region needs one large block")

@@ -46,7 +46,7 @@ func get_region_visuals_for_test() -> Array:
 
 func _rebuild_visuals() -> void:
 	_visuals.clear()
-	if not visible or region_map == null or battlefield == null:
+	if region_map == null or battlefield == null:
 		return
 	for region_id_value in region_map.get_controllable_region_ids():
 		var region_id: int = int(region_id_value)

@@ -15,6 +15,7 @@ const TILE_GAP: float = 0.012
 const TILE_HEIGHT: float = 0.16
 const ARENA_X_SCALE: float = 1.18
 const ARENA_Z_SCALE: float = 1.28
+const OUTER_FLOOR_WIDTH_PADDING: float = 32.0
 const CHECKER_CELL_SPAN: int = 1
 const BRIDGE_COUNT: int = 2
 const COMMAND_CHAMBER_SIZE: Vector3 = Vector3(4.8, 0.72, 3.0)
@@ -384,7 +385,7 @@ func _build_world() -> void:
 	var outer_floor := MeshInstance3D.new()
 	outer_floor.name = "ArenaGroundBase"
 	var outer_box := BoxMesh.new()
-	outer_box.size = Vector3(arena_width + 8.0, 0.56, arena_depth + 8.0)
+	outer_box.size = Vector3(arena_width + OUTER_FLOOR_WIDTH_PADDING, 0.56, arena_depth + 8.0)
 	outer_floor.mesh = outer_box
 	outer_floor.position.y = -0.48
 	outer_floor.material_override = _make_material(_theme_color("outer"), 0.0)

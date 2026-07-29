@@ -213,7 +213,7 @@ func _test_main_region_overlay_integration() -> void:
 	await process_frame
 	_assert.that(main.runtime.region_map != null, "main integration: Cardfront should create RegionMap")
 	_assert.that(main.runtime.region_overlay != null and is_instance_valid(main.runtime.region_overlay), "main integration: Cardfront should create RegionOverlay")
-	_assert.that(main.runtime.region_overlay.visible, "main integration: Cardfront RegionOverlay should be visible")
+	_assert.that(not main.runtime.region_overlay.visible, "main integration: legacy RegionOverlay should stay hidden behind the orthographic presentation")
 
 	TestFixtures.cleanup_node(main)
 	await _flush()

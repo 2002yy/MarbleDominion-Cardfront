@@ -1005,8 +1005,8 @@ Candidate order after B1:
   overlay nodes continue to simulate, query and emit signals, but their legacy
   CanvasItem drawing is hidden while the orthographic mirror is active.
 - The 3D viewport now begins exactly below the 98 px top HUD boundary, and its
-  background shares the map-specific outer-ground color instead of exposing a
-  second gray backing plane.
+  outer-ground mesh covers the full width of all three scale presets instead
+  of exposing separate gray backing blocks behind the side controls.
 - The contextual region panel is anchored to the logical battlefield edge,
   narrowed to 188 px, and leaves a dedicated right utility rail for settings,
   pause and exit.
