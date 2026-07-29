@@ -103,7 +103,22 @@ copy. Cardfront must retain its own visual identity:
 - a visible player-versus-AI command-chamber confrontation;
 - territory state that remains readable while projectiles are moving.
 
-### Approved Asset Stack / 已批准资源组合
+### Candidate Environment Asset Stack / 候选环境资源组合
+
+> **REVIEW STATUS: CANDIDATE ONLY / 审查状态：仅为候选**
+>
+> This combination has **not passed human visual review** and has **not passed
+> AI review of screenshots captured from an integrated Cardfront runtime
+> scene**. Vendor preview images received only a preliminary AI source-image
+> review on 2026-07-29. That cannot validate in-engine scale, lighting,
+> occlusion, ownership readability, projectile contrast, or performance. No
+> model is approved for final shipping until an integrated `default_duel`
+> screenshot is reviewed by a human or by the project's AI screenshot-review
+> workflow.
+>
+> 本组合尚未通过人眼视觉审查，也尚未通过“接入 Cardfront 实机后”的
+> AI 截图审查。2026-07-29 仅完成供应商官方预览图的初步 AI 风格判断；
+> 这不能证明实机比例、光照、遮挡、占领可读性、弹道对比度或性能合格。
 
 **Primary environment skeleton: KayKit Medieval Hexagon**
 
@@ -113,7 +128,8 @@ copy. Cardfront must retain its own visual identity:
 - License: CC0.
 - Sources:
   [KayKit official page](https://www.kaylousberg.com/game-assets/medieval-hexagon),
-  [Godot package](https://godotengine.org/asset-library/asset/2900).
+  [Godot package](https://godotengine.org/asset-library/asset/2900),
+  [GitHub source](https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0).
 
 **Walls, bridges, gates, and command chambers: Kenney Castle Kit + Mini Arena**
 
@@ -146,6 +162,53 @@ copy. Cardfront must retain its own visual identity:
   its license terms.
 - Source:
   [Noto official usage and license guidance](https://notofonts.github.io/noto-docs/website/use/).
+
+### Preliminary Vendor-Image Review / 供应商预览图初审
+
+This is a source-image suitability review, not a Cardfront acceptance result:
+
+- **KayKit Medieval Hexagon: strongest candidate, modification required.**
+  Its chunky silhouettes, faction variants, compact props, walls, gates, and
+  shared gradient atlas fit the bright toy-arena target. Tall towers and dense
+  medieval buildings would compete with projectiles and combat entities, so
+  only selected low-profile modules should enter the playable composition.
+  Hexagonal ground tiles must not replace Cardfront's square ownership grid.
+- **Kenney Castle Kit: suitable as a construction kit, not as a complete
+  scene.** Walls, bridge supports, gate pieces, flags, and timber structures
+  have readable silhouettes. The original warm peach masonry and saturated
+  blue roofs do not match the current teal-sage quiet-field palette; imported
+  pieces require Cardfront materials, reduced saturation, and strict height
+  limits.
+- **Quaternius Stylized Nature MegaKit: peripheral use only.** Its preview is
+  much more saturated, detailed, organic, and foliage-heavy than Cardfront's
+  quiet-field target. Do not use its grass carpet, dense forest composition,
+  bright flowers, or wind-heavy foliage in the combat field. A small screened
+  subset of rocks, bushes, and simplified trees may be usable after
+  desaturation and silhouette testing outside the playable core.
+- **Godot Asset Placer: optional editor aid only.** It may help place outer
+  scenery, but authoritative bridges, gates, spawn zones, strongholds, and
+  routes must remain deterministic outputs of map definitions and continue to
+  pass the rectangular grid matrix.
+  [GitHub source](https://github.com/levinzonr/godot-asset-placer).
+
+### Proposed First Environment Module Batch / 首批环境模块候选
+
+Do not import whole packs. Prepare a bounded first batch:
+
+- four river-bank modules: straight bank, corner bank, bridge approach, and
+  gate foundation;
+- three rock modules: small rock, medium rock, and restrained rock cluster;
+- three vegetation modules: compact tree, bush, and low grass clump;
+- two route modules: broad dirt strip and route junction;
+- two faction markers: blue flag and red flag;
+- two map-identity landmarks: industrial stack and laboratory crystal pylon.
+
+Production should use the local `blender-superskill` for Cardfront-specific
+low-poly modules, the 3D asset-pipeline guidance for glTF/GLB cleanup and
+material reuse, and deterministic game screenshots for final hierarchy
+review. Register accepted assets through a dedicated
+`CardfrontEnvironmentAssetRegistry.gd`; do not place raw resource paths in
+`Main.gd` or gameplay systems.
 
 ### Art Integration Rules / 美术接入规则
 
@@ -207,6 +270,10 @@ Benchmark acceptance:
   and do not overlap critical HUD with the battlefield.
 - Before/after screenshots are captured from deterministic camera states and
   reviewed side by side.
+- A vendor preview or isolated model render is not acceptance evidence. The
+  review screenshot must contain both command chambers, both gates, ownership
+  boundaries, active projectiles, at least one creature, and at least one
+  defense tower.
 - The benchmark remains inside the existing arena performance budget.
 - Only after this benchmark is accepted should the same art system expand to
   Cross Strongholds and Central Lab.
