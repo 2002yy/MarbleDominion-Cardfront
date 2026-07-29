@@ -8,9 +8,9 @@ static func select_owned_border_cells(region_map, battlefield, owner_id: int, ma
 	var result: Array[Vector2i] = []
 	if battlefield == null:
 		return result
-	var bf_grid_size: int = int(battlefield.grid_size)
-	for x in range(bf_grid_size):
-		for y in range(bf_grid_size):
+	var extent: Vector2i = battlefield.grid_extent
+	for x in range(extent.x):
+		for y in range(extent.y):
 			var cell := Vector2i(x, y)
 			if not DeploymentRulesScript.is_owned_border(region_map, battlefield, cell, owner_id):
 				continue

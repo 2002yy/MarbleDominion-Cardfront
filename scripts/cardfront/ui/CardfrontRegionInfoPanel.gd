@@ -193,7 +193,7 @@ func _show_empty() -> void:
 
 func _panel_x() -> float:
 	if battlefield != null and is_instance_valid(battlefield):
-		var battlefield_right: float = battlefield.global_position.x + float(battlefield.grid_size * battlefield.cell_size)
+		var battlefield_right: float = battlefield.global_position.x + battlefield.get_pixel_extent().x
 		return battlefield_right + 10.0
 	return _view_width() - PANEL_W - RIGHT_TOOL_RAIL_W - MARGIN_RIGHT
 

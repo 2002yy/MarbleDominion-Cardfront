@@ -38,7 +38,7 @@ func _test_desktop_layout(grid_size: int) -> void:
 
 	_assert.that(CardfrontArenaLayoutScript.is_arena_layout(layout), "arena layout: Cardfront marker should be enabled")
 	_assert.eq(str(layout.get("arena_composition", "")), "open_dual_bridge", "arena layout: composition should declare the open dual-bridge direction")
-	_assert.gte(float(layout.get("arena_vertical_scale", 1.0)), 1.25, "arena layout: presentation should expose a taller vertical field")
+	_assert.eq(float(layout.get("arena_vertical_scale", 0.0)), 1.0, "arena layout: rectangular composition must not add a second vertical stretch")
 	_assert.gte(int(layout.get("battlefield_cell_size", 0)), 8, "arena layout: logical cell size should stay readable")
 	_assert.gte(battlefield_rect.position.x, 0.0, "arena layout: battlefield should stay inside left edge")
 	_assert.gte(battlefield_rect.position.y, 72.0, "arena layout: battlefield should leave room for the slim top HUD")

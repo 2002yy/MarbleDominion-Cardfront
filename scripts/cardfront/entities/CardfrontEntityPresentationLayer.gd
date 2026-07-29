@@ -220,9 +220,9 @@ func _draw_hover_tooltip(cell_size: float) -> void:
 		clampf(cell_size * 1.45, 44.0, 60.0)
 	)
 	var position := mouse + Vector2(14.0, -panel_size.y - 12.0)
-	var battlefield_extent: float = float(battlefield.grid_size) * cell_size
-	position.x = clampf(position.x, 4.0, maxf(4.0, battlefield_extent - panel_size.x - 4.0))
-	position.y = clampf(position.y, 4.0, maxf(4.0, battlefield_extent - panel_size.y - 4.0))
+	var battlefield_extent: Vector2 = battlefield.get_pixel_extent()
+	position.x = clampf(position.x, 4.0, maxf(4.0, battlefield_extent.x - panel_size.x - 4.0))
+	position.y = clampf(position.y, 4.0, maxf(4.0, battlefield_extent.y - panel_size.y - 4.0))
 	var rect := Rect2(position, panel_size)
 	draw_rect(rect, Color(0.035, 0.055, 0.075, 0.96), true)
 	draw_rect(rect, _owner_color(int(entity.owner_id)).lightened(0.15), false, 2.0)
@@ -463,7 +463,7 @@ func _update_hovered_entity() -> bool:
 		battlefield == null
 		or registry == null
 		or not battlefield.has_method("is_inside")
-		or battlefield.get("grid_size") == null
+		or battlefield.get("grid_extent") == null
 	):
 		return false
 	var mouse := get_local_mouse_position()

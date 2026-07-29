@@ -389,6 +389,8 @@ func _connect_signals() -> void:
 
 func _on_size_option_selected(index: int) -> void:
 	_owner.selected_grid_size = size_option.get_item_id(index)
+	if _owner.get("selected_grid_extent") is Vector2i:
+		_owner.selected_grid_extent = Vector2i(_owner.selected_grid_size, _owner.selected_grid_size)
 	_owner._save_menu_preferences()
 
 

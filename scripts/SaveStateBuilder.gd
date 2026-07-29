@@ -2,6 +2,7 @@ extends RefCounted
 class_name SaveStateBuilder
 
 const ChamberSaveAdapterScript = preload("res://scripts/ChamberSaveAdapter.gd")
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
 
 static func build_faction_states(chambers: Dictionary, turrets: Dictionary) -> Array:
 	var factions: Array = []
@@ -32,10 +33,15 @@ static func build_faction_states(chambers: Dictionary, turrets: Dictionary) -> A
 	return factions
 
 static func build_save_payload(chambers: Dictionary, turrets: Dictionary, battlefield, bullet_container, event_roulette_controller, game_elapsed_time: float, is_game_over: bool, selected_save_slot: int, winner_label) -> Dictionary:
+	var grid_extent: Vector2i = GridExtentScript.normalize(
+		battlefield.get("grid_extent"),
+		Vector2i(int(battlefield.grid_size), int(battlefield.grid_size))
+	)
 	var core_payload: Dictionary = {
 		"save_version": SaveGameCodec.get_current_save_version(),
 		"save_slot": selected_save_slot,
 		"grid_size": battlefield.grid_size,
+		"grid_extent": GridExtentScript.to_array(grid_extent),
 		"palette_name": GameConfig.get_palette_name(),
 		"quality_name": GameConfig.get_quality_name(),
 		"game_mode_name": GameConfig.get_game_mode_name(),

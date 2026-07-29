@@ -37,19 +37,21 @@ func mark_dirty() -> void:
 
 
 func _build_texture() -> void:
-	if region_map == null or region_map.grid_size <= 0 or cell_size <= 0:
+	if region_map == null or cell_size <= 0:
 		return
-	var gs: int = int(region_map.grid_size)
-	var img_w: int = gs * cell_size
-	var img_h: int = gs * cell_size
+	var extent: Vector2i = region_map.grid_extent
+	if extent.x <= 0 or extent.y <= 0:
+		return
+	var img_w: int = extent.x * cell_size
+	var img_h: int = extent.y * cell_size
 	var image := Image.create(img_w, img_h, false, Image.FORMAT_RGBA8)
 	image.fill(Color(0, 0, 0, 0))
 
 	var rect := Rect2i()
 	rect.size = Vector2i(cell_size, cell_size)
 
-	for x in range(gs):
-		for y in range(gs):
+	for x in range(extent.x):
+		for y in range(extent.y):
 			var region_type: String = region_map.get_region_type(Vector2i(x, y))
 			if region_type == RegionTypeScript.NORMAL:
 				continue

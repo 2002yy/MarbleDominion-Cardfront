@@ -175,7 +175,7 @@ func apply_fire_control_guidance(bullet) -> void:
 		):
 			continue
 		var lane_x: float = float(entity.guidance_lane_center_ratio) * float(
-			maxi(1, int(runtime.battlefield.grid_size) - 1)
+			maxi(1, int(runtime.battlefield.grid_extent.x) - 1)
 		)
 		var horizontal_error: float = clampf(
 			(lane_x - float(cell.x))
@@ -210,7 +210,7 @@ func apply_fire_control_guidance(bullet) -> void:
 		):
 			continue
 		var lane_x: float = float(entity.metadata.get("lane_center_ratio", 0.5)) * float(
-			maxi(1, int(runtime.battlefield.grid_size) - 1)
+			maxi(1, int(runtime.battlefield.grid_extent.x) - 1)
 		)
 		var horizontal_error: float = clampf((lane_x - float(cell.x)) / 4.0, -1.0, 1.0)
 		var current_direction: Vector2 = bullet.direction.normalized()

@@ -80,8 +80,8 @@ func _leading_faction(creature) -> int:
 		RulesScript.PLAYER_FACTION: 0,
 		RulesScript.AI_FACTION: 0,
 	}
-	for x in range(int(runtime.battlefield.grid_size)):
-		for y in range(int(runtime.battlefield.grid_size)):
+	for x in range(int(runtime.battlefield.grid_extent.x)):
+		for y in range(int(runtime.battlefield.grid_extent.y)):
 			var owner_id: int = int(runtime.battlefield.owners[x][y])
 			if owned_counts.has(owner_id):
 				owned_counts[owner_id] = int(owned_counts[owner_id]) + 1
@@ -176,8 +176,8 @@ func _find_highest_defense_cell(owner_id: int, origin: Vector2i) -> Vector2i:
 	var best := Vector2i(-1, -1)
 	var best_defense: int = 0
 	var best_distance: int = 1 << 30
-	for x in range(int(runtime.battlefield.grid_size)):
-		for y in range(int(runtime.battlefield.grid_size)):
+	for x in range(int(runtime.battlefield.grid_extent.x)):
+		for y in range(int(runtime.battlefield.grid_extent.y)):
 			if int(runtime.battlefield.owners[x][y]) != int(owner_id):
 				continue
 			var cell := Vector2i(x, y)
@@ -191,7 +191,7 @@ func _find_highest_defense_cell(owner_id: int, origin: Vector2i) -> Vector2i:
 
 
 func _spawn_candidates(summoner_owner_id: int) -> Array[Vector2i]:
-	var river_y: int = int(runtime.battlefield.grid_size) >> 1
+	var river_y: int = int(runtime.battlefield.grid_extent.y) >> 1
 	var preferred_lane: int = 0 if summoner_owner_id == RulesScript.PLAYER_FACTION else 1
 	var preferred_y: int = river_y if summoner_owner_id == RulesScript.PLAYER_FACTION else river_y - 1
 	var result: Array[Vector2i] = []

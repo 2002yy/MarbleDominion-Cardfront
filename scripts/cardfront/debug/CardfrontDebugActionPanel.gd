@@ -124,9 +124,8 @@ func _pick_default_cell() -> Vector2i:
 func _pick_default_border_cell() -> Vector2i:
 	if battlefield == null:
 		return Vector2i.ZERO
-	var gs: int = int(battlefield.grid_size)
-	var half: int = int(float(gs) / 2.0)
-	return Vector2i(half - 1, int(float(half) / 2.0))
+	var extent: Vector2i = battlefield.grid_extent
+	return Vector2i(maxi(0, int(extent.x / 2) - 1), maxi(0, int(extent.y * 0.25)))
 
 
 func get_button_count_for_test() -> int:

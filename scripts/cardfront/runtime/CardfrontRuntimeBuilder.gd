@@ -245,7 +245,7 @@ static func create_regions(game_layer: Node, battlefield, map_id: String = "defa
 		return {"configured": false, "reason": "missing_battlefield"}
 
 	var region_map = RegionMapScript.new()
-	region_map.configure(int(battlefield.grid_size))
+	region_map.configure_extent(battlefield.grid_extent)
 	region_map.generate_layout(map_id)
 
 	var overlay = RegionOverlayLayerScript.new()
@@ -341,7 +341,7 @@ static func create_fortify(game_layer: Node, battlefield, region_map) -> Diction
 		return {"configured": false, "reason": "missing_region_map"}
 
 	var fortify_layer = FortifyLayerScript.new()
-	fortify_layer.configure(int(battlefield.grid_size))
+	fortify_layer.configure_extent(battlefield.grid_extent)
 
 	var overlay = FortifyOverlayLayerScript.new()
 	overlay.setup(fortify_layer, battlefield, GameConfig.GAME_MODE_CARDFRONT)

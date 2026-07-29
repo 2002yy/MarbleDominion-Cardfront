@@ -79,8 +79,9 @@ func filter_step(
 ) -> Dictionary:
 	if battlefield == null or not is_instance_valid(battlefield):
 		return {"crossed": false, "allowed": true}
-	var map_size: float = float(battlefield.grid_size) * float(battlefield.cell_size)
-	var river_y: float = map_size * 0.5
+	var map_width: float = float(battlefield.grid_extent.x) * float(battlefield.cell_size)
+	var map_height: float = float(battlefield.grid_extent.y) * float(battlefield.cell_size)
+	var river_y: float = map_height * 0.5
 	var from_delta: float = from_local.y - river_y
 	var to_delta: float = to_local.y - river_y
 	if is_zero_approx(from_delta):
@@ -90,7 +91,7 @@ func filter_step(
 
 	var crossing_t: float = clampf((river_y - from_local.y) / (to_local.y - from_local.y), 0.0, 1.0)
 	var crossing_x: float = lerpf(from_local.x, to_local.x, crossing_t)
-	var lane_index: int = _lane_for_crossing_x(crossing_x, map_size)
+	var lane_index: int = _lane_for_crossing_x(crossing_x, map_width)
 	var state: Dictionary = {}
 	var allowed: bool = false
 	var reason: String = "river_bank"
@@ -116,7 +117,7 @@ func filter_step(
 	var source_side: float = 1.0 if from_delta > 0.0 else -1.0
 	var reflected_direction := Vector2(direction.x, absf(direction.y) * source_side).normalized()
 	var blocked_position := Vector2(
-		clampf(crossing_x, 0.0, map_size),
+		clampf(crossing_x, 0.0, map_width),
 		river_y + source_side * maxf(1.0, float(battlefield.cell_size) * 0.35)
 	)
 	var state_id: String = str(state.get("state", GateRulesScript.STATE_CLOSED))
@@ -133,23 +134,24 @@ func filter_step(
 
 
 func _sample_lane(lane_index: int, round_number: int) -> Dictionary:
-	var size: int = int(battlefield.grid_size)
+	var width: int = int(battlefield.grid_extent.x)
+	var height: int = int(battlefield.grid_extent.y)
 	var center_x: int = clampi(
-		roundi(float(size - 1) * GateRulesScript.LANE_CENTER_RATIOS[lane_index]),
+		roundi(float(width - 1) * GateRulesScript.LANE_CENTER_RATIOS[lane_index]),
 		0,
-		size - 1
+		width - 1
 	)
-	var center_y: int = size >> 1
-	var half_width: int = maxi(2, roundi(float(size) * GateRulesScript.CONTROL_ZONE_HALF_WIDTH_RATIO))
-	var half_height: int = maxi(2, roundi(float(size) * GateRulesScript.CONTROL_ZONE_HALF_HEIGHT_RATIO))
+	var center_y: int = height >> 1
+	var half_width: int = maxi(2, roundi(float(width) * GateRulesScript.CONTROL_ZONE_HALF_WIDTH_RATIO))
+	var half_height: int = maxi(2, roundi(float(height) * GateRulesScript.CONTROL_ZONE_HALF_HEIGHT_RATIO))
 	var counts: Dictionary = {
 		RulesScript.PLAYER_FACTION: 0,
 		RulesScript.AI_FACTION: 0,
 		RulesScript.NEUTRAL_OWNER: 0,
 	}
 	var total: int = 0
-	for x in range(maxi(0, center_x - half_width), mini(size, center_x + half_width + 1)):
-		for y in range(maxi(0, center_y - half_height), mini(size, center_y + half_height + 1)):
+	for x in range(maxi(0, center_x - half_width), mini(width, center_x + half_width + 1)):
+		for y in range(maxi(0, center_y - half_height), mini(height, center_y + half_height + 1)):
 			var owner_id: int = int(battlefield.owners[x][y])
 			counts[owner_id] = int(counts.get(owner_id, 0)) + 1
 			total += 1

@@ -6,36 +6,40 @@ const CardfrontMapDefinitionScript = preload("res://scripts/cardfront/maps/Cardf
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
 
 
-static func make(grid_size: int) -> Dictionary:
-	var size: int = maxi(1, int(grid_size))
-	var spawn_rows: int = BattlefieldInitializer.get_spawn_rows(size)
+static func make(grid_extent_value) -> Dictionary:
+	var extent := GridExtentScript.normalize(grid_extent_value)
+	var width: int = extent.x
+	var height: int = extent.y
+	var spawn_rows: int = BattlefieldInitializer.get_spawn_rows(height)
 	var contest_min_y: int = spawn_rows
-	var contest_max_y: int = size - spawn_rows - 1
-	var center: int = size >> 1
-	var contest_width: int = maxi(1, contest_max_y - contest_min_y + 1)
-	var stronghold_radius: int = maxi(1, floori(float(size) / 16.0))
-	var core_radius: int = maxi(2, floori(float(size) / 10.0))
-	var side_inset: int = maxi(stronghold_radius + 1, floori(float(contest_width) * 0.18))
+	var contest_max_y: int = height - spawn_rows - 1
+	var center_x: int = width >> 1
+	var center_y: int = height >> 1
+	var min_axis: int = mini(width, height)
+	var stronghold_radius: int = maxi(1, floori(float(min_axis) / 16.0))
+	var core_radius: int = maxi(2, floori(float(min_axis) / 10.0))
+	var side_inset: int = maxi(stronghold_radius + 1, floori(float(width) * 0.18))
 	var left_x: int = side_inset
-	var right_x: int = size - side_inset - 1
-	var top_y: int = clampi(floori(float(size) * 0.23), stronghold_radius, size - stronghold_radius - 1)
-	var bottom_y: int = size - top_y - 1
+	var right_x: int = width - side_inset - 1
+	var top_y: int = clampi(floori(float(height) * 0.23), stronghold_radius, height - stronghold_radius - 1)
+	var bottom_y: int = height - top_y - 1
 
 	var regions: Array = [
 		_square(left_x, top_y, stronghold_radius, RegionTypeScript.ENERGY),
 		_square(right_x, top_y, stronghold_radius, RegionTypeScript.FACTORY),
-		_rect(center - core_radius, center - core_radius, center + core_radius - 1, center + core_radius - 1, RegionTypeScript.LAB),
+		_rect(center_x - core_radius, center_y - core_radius, center_x + core_radius - 1, center_y + core_radius - 1, RegionTypeScript.LAB),
 		_square(left_x, bottom_y, stronghold_radius, RegionTypeScript.FACTORY),
 		_square(right_x, bottom_y, stronghold_radius, RegionTypeScript.ENERGY),
 	]
-	return CardfrontMapDefinitionScript.make("default_duel", size, regions, {
+	return CardfrontMapDefinitionScript.make("default_duel", extent, regions, {
 		"display_name": "Five Strongholds",
 		"layout_style": "symmetric_five_strongholds",
 		"spawn_zones": [
 			{"owner": CardfrontRulesScript.AI_FACTION, "y0": 0, "y1": spawn_rows - 1},
-			{"owner": CardfrontRulesScript.PLAYER_FACTION, "y0": size - spawn_rows, "y1": size - 1},
+			{"owner": CardfrontRulesScript.PLAYER_FACTION, "y0": height - spawn_rows, "y1": height - 1},
 		],
 		"neutral_zones": [{"y0": contest_min_y, "y1": contest_max_y}],
 		"objective_rule": CardfrontMapDefinitionScript.OBJECTIVE_DESTROY_COMMAND_CHAMBER,

@@ -18,7 +18,7 @@ func navigation_target(
 	target: Vector2i,
 	neutral_actor: bool = false
 ) -> Vector2i:
-	var river_y: int = int(runtime.battlefield.grid_size) >> 1
+	var river_y: int = int(runtime.battlefield.grid_extent.y) >> 1
 	var origin_top: bool = origin.y < river_y
 	var target_top: bool = target.y < river_y
 	if origin_top == target_top:
@@ -97,11 +97,11 @@ func gate_allows(actor_owner_id: int, lane_index: int, neutral_actor: bool = fal
 func gate_x(lane_index: int) -> int:
 	return clampi(
 		roundi(
-			float(int(runtime.battlefield.grid_size) - 1)
+			float(int(runtime.battlefield.grid_extent.x) - 1)
 			* runtime._lane_center_ratio(lane_index)
 		),
 		0,
-		int(runtime.battlefield.grid_size) - 1
+		int(runtime.battlefield.grid_extent.x) - 1
 	)
 
 
@@ -111,7 +111,7 @@ func _crossing_allowed(
 	candidate: Vector2i,
 	neutral_actor: bool
 ) -> bool:
-	var river_y: int = int(runtime.battlefield.grid_size) >> 1
+	var river_y: int = int(runtime.battlefield.grid_extent.y) >> 1
 	if not (
 		(origin.y == river_y - 1 and candidate.y == river_y)
 		or (origin.y == river_y and candidate.y == river_y - 1)

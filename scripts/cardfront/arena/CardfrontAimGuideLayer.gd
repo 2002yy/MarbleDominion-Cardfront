@@ -51,8 +51,8 @@ func _ray_endpoint() -> Vector2:
 		return Vector2.ZERO
 	var origin: Vector2 = turret.global_position
 	var direction := Vector2.RIGHT.rotated(current_angle).normalized()
-	var size: float = float(battlefield.grid_size * battlefield.cell_size)
-	var rect := Rect2(battlefield.global_position, Vector2.ONE * size)
+	var pixel_extent: Vector2 = battlefield.get_pixel_extent() if battlefield.has_method("get_pixel_extent") else Vector2.ONE * float(battlefield.grid_size * battlefield.cell_size)
+	var rect := Rect2(battlefield.global_position, pixel_extent)
 	var best_t: float = INF
 	if absf(direction.x) > 0.0001:
 		for x_value in [rect.position.x, rect.end.x]:
@@ -69,5 +69,5 @@ func _ray_endpoint() -> Vector2:
 				if x_at_y >= rect.position.x - 0.1 and x_at_y <= rect.end.x + 0.1:
 					best_t = minf(best_t, ty)
 	if is_inf(best_t):
-		return origin + direction * size
+		return origin + direction * maxf(pixel_extent.x, pixel_extent.y)
 	return origin + direction * best_t

@@ -5,18 +5,25 @@ signal stack_changed(cell, previous_value, current_value)
 signal refill_completed(owner_caps, defended_cell_count)
 
 const FortifyRulesScript = preload("res://scripts/cardfront/fortify/FortifyRules.gd")
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
 
 var grid_size: int = 0
+var grid_extent: Vector2i = Vector2i.ZERO
 var stacks: Array = []
 var overlay_dirty_callback = null
 
 
 func configure(new_grid_size: int) -> void:
-	grid_size = new_grid_size
+	configure_extent(Vector2i(new_grid_size, new_grid_size))
+
+
+func configure_extent(new_grid_extent) -> void:
+	grid_extent = GridExtentScript.normalize(new_grid_extent)
+	grid_size = grid_extent.x
 	stacks.clear()
-	for x in range(grid_size):
+	for x in range(grid_extent.x):
 		var col: Array = []
-		for y in range(grid_size):
+		for y in range(grid_extent.y):
 			col.append(0)
 		stacks.append(col)
 
@@ -73,14 +80,14 @@ func consume_hit(cell: Vector2i) -> bool:
 
 
 func refill_from_owner_caps(owner_grid: Array, owner_caps: Dictionary) -> int:
-	if owner_grid.size() != grid_size:
+	if owner_grid.size() != grid_extent.x:
 		return 0
 	var defended_cell_count: int = 0
 	var changed: bool = false
-	for x in range(grid_size):
-		if not (owner_grid[x] is Array) or (owner_grid[x] as Array).size() < grid_size:
+	for x in range(grid_extent.x):
+		if not (owner_grid[x] is Array) or (owner_grid[x] as Array).size() < grid_extent.y:
 			return 0
-		for y in range(grid_size):
+		for y in range(grid_extent.y):
 			var owner_id: int = int(owner_grid[x][y])
 			var target: int = clampi(
 				int(owner_caps.get(owner_id, 0)),
@@ -106,13 +113,14 @@ func is_fortified(cell: Vector2i) -> bool:
 
 func snapshot() -> Dictionary:
 	var data: Array = []
-	for x in range(grid_size):
+	for x in range(grid_extent.x):
 		var col: Array = []
-		for y in range(grid_size):
+		for y in range(grid_extent.y):
 			col.append(int(stacks[x][y]))
 		data.append(col)
 	return {
 		"grid_size": grid_size,
+		"grid_extent": GridExtentScript.to_array(grid_extent),
 		"stacks": data,
 	}
 
@@ -120,23 +128,24 @@ func snapshot() -> Dictionary:
 func restore(data: Dictionary) -> void:
 	if data.is_empty():
 		return
-	grid_size = int(data.get("grid_size", grid_size))
+	grid_extent = GridExtentScript.from_config(data, grid_extent if grid_extent != Vector2i.ZERO else GridExtentScript.DEFAULT)
+	grid_size = grid_extent.x
 	var source: Array = data.get("stacks", [])
-	if source.is_empty() or source.size() != grid_size:
+	if source.is_empty() or source.size() != grid_extent.x:
 		return
 	stacks.clear()
-	for x in range(grid_size):
+	for x in range(grid_extent.x):
 		var col: Array = []
 		var src_col = source[x] as Array
-		for y in range(grid_size):
+		for y in range(grid_extent.y):
 			col.append(clampi(int(src_col[y]) if y < src_col.size() else 0, 0, FortifyRulesScript.MAX_FORTIFY_STACKS))
 		stacks.append(col)
 
 
 func _is_inside(cell: Vector2i) -> bool:
-	if grid_size <= 0 or stacks.is_empty():
+	if grid_extent.x <= 0 or grid_extent.y <= 0 or stacks.is_empty():
 		return false
-	return cell.x >= 0 and cell.y >= 0 and cell.x < grid_size and cell.y < grid_size
+	return cell.x >= 0 and cell.y >= 0 and cell.x < grid_extent.x and cell.y < grid_extent.y
 
 
 func _notify_overlay() -> void:

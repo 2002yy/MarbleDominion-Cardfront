@@ -20,6 +20,7 @@ const SAVE_PATH_TEMPLATE: String = "user://ballwar_save_slot_%d.save"
 const SAVE_SLOT_COUNT: int = 5
 const MENU_PREF_PATH: String = "user://menu_preferences.json"
 const GameRuntimeContextScript = preload("res://scripts/GameRuntimeContext.gd")
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
 const StartMenuUi = preload("res://scripts/StartMenu.gd")
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
@@ -42,6 +43,7 @@ var is_mobile_layout: bool = false
 var menu_layer
 var game_layer
 var selected_grid_size: int = 40
+var selected_grid_extent: Vector2i = GridExtentScript.DEFAULT
 var selected_palette_name: String = "默认随机"
 var selected_quality_name: String = GameConfig.QUALITY_MEDIUM
 var selected_game_mode_name: String = GameConfig.GAME_MODE_BASIC
@@ -72,6 +74,12 @@ const HUD_META_UPDATE_INTERVAL: float = 0.25
 func _runtime_grid_size() -> int:
 	return int(runtime.current_config.get("grid_size", selected_grid_size))
 
+func _runtime_grid_extent() -> Vector2i:
+	return GridExtentScript.from_config(runtime.current_config, selected_grid_extent)
+
+func _runtime_cell_count() -> int:
+	return GridExtentScript.cell_count(_runtime_grid_extent())
+
 func _hud_ref(key: String, default_value = null):
 	return runtime.hud_ref(key, default_value)
 
@@ -88,17 +96,21 @@ func _ui_runtime_ref(key: String, default_value = null):
 func _set_ui_runtime_ref(key: String, value) -> void:
 	runtime.set_ui_runtime_ref(key, value)
 
-func _build_runtime_layout(grid_size: int) -> Dictionary:
-	var layout: Dictionary = LayoutProfiles.get_profile(grid_size).duplicate(true)
-	layout.merge(LayoutCoordinator.calculate_layout(grid_size, Vector2(VIEW_W, VIEW_H), is_mobile_layout), true)
+func _build_runtime_layout(grid_extent_value) -> Dictionary:
+	var extent := GridExtentScript.sanitize(grid_extent_value)
+	var profile_size: int = maxi(extent.x, extent.y)
+	var layout: Dictionary = LayoutProfiles.get_profile(profile_size).duplicate(true)
+	layout.merge(LayoutCoordinator.calculate_layout(profile_size, Vector2(VIEW_W, VIEW_H), is_mobile_layout), true)
 	if _is_cardfront_mode():
-		layout = CardfrontModeScript.configure_runtime_layout(layout, grid_size, Vector2(VIEW_W, VIEW_H))
+		layout = CardfrontModeScript.configure_runtime_layout(layout, extent, Vector2(VIEW_W, VIEW_H))
 	return layout
 
-func _sync_runtime_context(grid_size: int) -> void:
-	runtime.set_layout(_build_runtime_layout(grid_size))
+func _sync_runtime_context(grid_extent_value) -> void:
+	var extent := GridExtentScript.sanitize(grid_extent_value)
+	runtime.set_layout(_build_runtime_layout(extent))
 	runtime.set_config({
-		"grid_size": grid_size,
+		"grid_size": extent.x,
+		"grid_extent": GridExtentScript.to_array(extent),
 		"palette_name": selected_palette_name,
 		"quality_name": selected_quality_name,
 		"game_mode_name": selected_game_mode_name,
@@ -236,9 +248,13 @@ func _create_start_menu() -> void:
 		_show_menu_status(pending_menu_status_message)
 		pending_menu_status_message = ""
 
-func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool = true) -> void:
-	grid_size = LayoutProfiles.sanitize_grid_size(grid_size)
-	selected_grid_size = grid_size
+func _start_game(grid_extent_value, suppress_banner: bool = false, clear_save: bool = true) -> void:
+	var grid_extent := GridExtentScript.sanitize(grid_extent_value)
+	if not _is_cardfront_mode() and not GridExtentScript.is_square(grid_extent):
+		var legacy_side: int = LayoutProfiles.sanitize_grid_size(grid_extent.x)
+		grid_extent = Vector2i(legacy_side, legacy_side)
+	selected_grid_extent = grid_extent
+	selected_grid_size = grid_extent.x
 	game_elapsed_time = 0.0
 	is_game_over = false
 
@@ -263,7 +279,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	_cleanup_menu()
 	_cleanup_game_layer()
 	get_tree().paused = false
-	_sync_runtime_context(grid_size)
+	_sync_runtime_context(grid_extent)
 
 	game_layer = Node2D.new()
 	game_layer.name = "GameLayer"
@@ -272,7 +288,7 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 	game_layer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(game_layer)
 
-	_create_battlefield(grid_size)
+	_create_battlefield(grid_extent)
 	_create_cardfront_runtime_core()
 	_create_turrets()
 	_create_cardfront_runtime_world_layers()
@@ -287,8 +303,8 @@ func _start_game(grid_size: int, suppress_banner: bool = false, clear_save: bool
 		else:
 			_show_center_banner("领土战争", "开战！", Color(1.0, 0.94, 0.48), true)
 
-func _create_battlefield(grid_size: int) -> void:
-	var scene_nodes: Dictionary = GameSceneBuilder.create_battlefield(self, game_layer, grid_size, runtime.current_layout, Vector2(VIEW_W, VIEW_H))
+func _create_battlefield(grid_extent_value) -> void:
+	var scene_nodes: Dictionary = GameSceneBuilder.create_battlefield(self, game_layer, grid_extent_value, runtime.current_layout, Vector2(VIEW_W, VIEW_H))
 	runtime.battlefield = scene_nodes.get("battlefield", null)
 	runtime.bullet_pool = scene_nodes.get("bullet_container", null)
 	chamber_scale = float(scene_nodes.get("chamber_scale", 0.80))
@@ -556,7 +572,7 @@ func _on_cardfront_prematch_confirmed(map_id: String, player_hero_id: String, ai
 	selected_cardfront_ai_hero_id = ai_hero_id
 	_save_menu_preferences()
 	_close_cardfront_prematch()
-	_start_game(selected_grid_size)
+	_start_game(selected_grid_extent)
 
 
 func _on_cardfront_prematch_cancelled() -> void:
@@ -722,7 +738,7 @@ func _check_winner() -> void:
 
 	var time_expired: bool = (mode_name == GameConfig.GAME_MODE_TIMED and game_elapsed_time >= GameConfig.get_time_limit_seconds()) \
 		or (mode_name == GameConfig.GAME_MODE_CARDFRONT and game_elapsed_time >= CardfrontModeScript.get_match_duration_seconds())
-	var total_cells: int = _runtime_grid_size() * _runtime_grid_size()
+	var total_cells: int = _runtime_cell_count()
 	var stronghold_snapshot: Dictionary = {}
 	if mode_name == GameConfig.GAME_MODE_CARDFRONT and time_expired:
 		counts = runtime.battlefield.count_cells_by_team()
@@ -768,7 +784,7 @@ func _show_cardfront_match_result(winner_id: int, draw: bool, result: Dictionary
 		title_text,
 		str(result.get("sub_text", CardfrontMatchFlowTextScript.result_reason(time_expired))),
 		current_score_counts,
-		_runtime_grid_size() * _runtime_grid_size(),
+		_runtime_cell_count(),
 		accent,
 		result.get("score_breakdown", {}) as Dictionary
 	)
@@ -777,7 +793,7 @@ func _show_cardfront_match_result(winner_id: int, draw: bool, result: Dictionary
 func _restart_current_cardfront_match() -> void:
 	if not _is_cardfront_mode():
 		return
-	_start_game(selected_grid_size, false, true)
+	_start_game(selected_grid_extent, false, true)
 
 
 func _exit_cardfront_result_to_menu() -> void:
@@ -872,6 +888,7 @@ func _load_menu_preferences() -> void:
 	if not (data is Dictionary):
 		return
 	selected_grid_size = LayoutProfiles.sanitize_grid_size(int(data.get("grid_size", 40)))
+	selected_grid_extent = GridExtentScript.sanitize(data.get("grid_extent", selected_grid_size))
 	selected_palette_name = _sanitize_pref_palette(str(data.get("palette_name", "默认随机")))
 	selected_quality_name = _sanitize_pref_quality(str(data.get("quality_name", GameConfig.QUALITY_MEDIUM)))
 	selected_game_mode_name = _sanitize_pref_mode(str(data.get("game_mode_name", GameConfig.GAME_MODE_BASIC)))
@@ -907,6 +924,7 @@ func _sanitize_pref_mode(value: String) -> String:
 func _save_menu_preferences() -> void:
 	var data: Dictionary = {
 		"grid_size": selected_grid_size,
+		"grid_extent": GridExtentScript.to_array(selected_grid_extent),
 		"palette_name": selected_palette_name,
 		"quality_name": selected_quality_name,
 		"game_mode_name": selected_game_mode_name,
@@ -924,6 +942,7 @@ func _save_menu_preferences() -> void:
 
 func reset_menu_preferences() -> void:
 	selected_grid_size = 40
+	selected_grid_extent = GridExtentScript.DEFAULT
 	selected_palette_name = "默认随机"
 	selected_quality_name = GameConfig.QUALITY_MEDIUM
 	selected_game_mode_name = GameConfig.GAME_MODE_BASIC
@@ -1228,7 +1247,7 @@ func _apply_continue_start_plan(execution_plan: Dictionary, restore_plan: Restor
 	var execution_start_values: Dictionary = execution_plan.get("start_values", {})
 	var execution_banner: Dictionary = execution_plan.get("banner", {})
 	SaveFlowController.apply_continue_start_plan(execution_plan, self)
-	_start_game(int(execution_start_values.get("grid_size", 40)), true, false)
+	_start_game(execution_start_values.get("grid_extent", execution_start_values.get("grid_size", 40)), true, false)
 	game_elapsed_time = float(execution_start_values.get("game_elapsed_time", 0.0))
 	_sync_chamber_game_elapsed_time()
 	_apply_saved_state(restore_plan)

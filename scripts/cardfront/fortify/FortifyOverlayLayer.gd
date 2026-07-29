@@ -45,16 +45,18 @@ func _draw() -> void:
 
 
 func _build_texture() -> void:
-	if fortify_layer == null or int(fortify_layer.grid_size) <= 0 or cell_size <= 0:
+	if fortify_layer == null or cell_size <= 0:
 		return
-	var gs: int = int(fortify_layer.grid_size)
-	var img_w: int = gs * cell_size
-	var img_h: int = gs * cell_size
+	var extent: Vector2i = fortify_layer.grid_extent
+	if extent.x <= 0 or extent.y <= 0:
+		return
+	var img_w: int = extent.x * cell_size
+	var img_h: int = extent.y * cell_size
 	var image := Image.create(img_w, img_h, false, Image.FORMAT_RGBA8)
 	image.fill(Color(0, 0, 0, 0))
 
-	for x in range(gs):
-		for y in range(gs):
+	for x in range(extent.x):
+		for y in range(extent.y):
 			var cell := Vector2i(x, y)
 			var stack: int = fortify_layer.get_fortify_stack(cell)
 			if stack <= 0:

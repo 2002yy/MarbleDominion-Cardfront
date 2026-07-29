@@ -50,8 +50,13 @@ Confirmed product decisions:
   Into the Breach, and Thronefall responsibilities without copying their art.
 - The arena background now uses broad low-contrast teal-sage fields with sparse
   warm route bands. Visual checker cadence groups five simulation cells while
-  the authoritative 40x40 grid is unchanged; faction ownership, units,
-  projectiles and combat feedback retain the high-contrast budget.
+  the authoritative grid supports rectangular extents; faction ownership,
+  units, projectiles and combat feedback retain the high-contrast budget.
+- Cardfront runtime geometry now uses `grid_extent: Vector2i(width, height)`.
+  `40x40`, `50x50`, `40x50`, and `40x60` are executable CI matrix cases across
+  Battlefield ownership, regions, fortification, entities, gates, map
+  definitions, orthographic framing, and save round-trips. Legacy `grid_size`
+  saves remain readable as square maps.
 - All 18 implemented upgrade cards instantiate through the formal three-choice scene and are reachable across valid run states. This is an executable content/readability gate, not a claim that human balance tuning is complete.
 - Existing legacy card illustrations and compatibility UI do not count as art completion for the new three-choice hero/run loop.
 
@@ -1028,6 +1033,26 @@ Candidate order after B1:
   pause and exit.
 - Runtime tests now enforce mutual exclusion between legacy 2D presentation
   and the orthographic presentation, while preserving BallWar isolation.
+
+### Completed Current Slice: Rectangular Grid Extent Foundation
+
+- Replaced Cardfront's single authoritative `grid_size` dimension with
+  `grid_extent: Vector2i(width, height)` while retaining `grid_size` as a
+  square-map compatibility field.
+- Migrated Battlefield, RegionMap, fortification/territory defense, entity
+  placement and traversal, projectile bounds, gate sampling, spawn ownership,
+  routes, overlays, and map definitions to independent width/height bounds.
+- Updated the orthographic arena to build and index rectangular tile meshes,
+  frame the maximum outer dimension, and reduce the legacy `1.28` cell-depth
+  stretch as the map itself becomes taller. The 2D layout does not apply a
+  second vertical stretch.
+- Upgraded save schema to `2.1.0`. New saves store `grid_extent` and the legacy
+  width field; supported `1.9` and `2.0` saves with only `grid_size` migrate to
+  square extents during validation.
+- Added `CardfrontGridExtentMatrixTestRunner.gd` to CI for `40x40`, `50x50`,
+  `40x50`, and `40x60`. The formal menu still exposes its existing square size
+  choices; non-square player-facing presets should be enabled only after
+  screenshot and play-space review selects the preferred composition.
 
 ### Later
 

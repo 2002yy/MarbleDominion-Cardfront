@@ -4,10 +4,12 @@ class_name Battlefield
 signal scores_changed(counts)
 
 const BattlefieldDecorLayerScript = preload("res://scripts/BattlefieldDecorLayer.gd")
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
 
 const UNKNOWN_OWNER_COLOR: Color = Color(0.28, 0.31, 0.38, 0.94)
 
 var grid_size: int = GameConfig.GRID_SIZE
+var grid_extent: Vector2i = Vector2i(GameConfig.GRID_SIZE, GameConfig.GRID_SIZE)
 var cell_size: int = GameConfig.CELL_SIZE
 var owners: Array = []
 var owner_counts: Dictionary = _empty_owner_counts()
@@ -60,11 +62,16 @@ func _process(delta: float) -> void:
 		debug_elapsed = 0.0
 
 func configure(new_grid_size: int, cell_size_override: int = -1) -> void:
-	grid_size = new_grid_size
+	configure_extent(Vector2i(new_grid_size, new_grid_size), cell_size_override)
+
+
+func configure_extent(new_grid_extent, cell_size_override: int = -1) -> void:
+	grid_extent = GridExtentScript.normalize(new_grid_extent, Vector2i(grid_size, grid_size))
+	grid_size = grid_extent.x
 	if cell_size_override > 0:
 		cell_size = cell_size_override
 	else:
-		match grid_size:
+		match maxi(grid_extent.x, grid_extent.y):
 			10:
 				cell_size = 34
 			20:
@@ -80,8 +87,20 @@ func configure(new_grid_size: int, cell_size_override: int = -1) -> void:
 			_:
 				cell_size = GameConfig.CELL_SIZE
 	_ensure_decor_layer()
-	decor_layer.configure(grid_size, cell_size)
+	decor_layer.configure_extent(grid_extent, cell_size)
 	decor_layer.apply_visual_settings()
+
+
+func get_grid_width() -> int:
+	return grid_extent.x
+
+
+func get_grid_height() -> int:
+	return grid_extent.y
+
+
+func get_pixel_extent() -> Vector2:
+	return Vector2(grid_extent) * float(cell_size)
 
 func apply_quality_style() -> void:
 	_ensure_decor_layer()
@@ -94,7 +113,7 @@ func mark_decor_dirty() -> void:
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_ensure_decor_layer()
-	decor_layer.configure(grid_size, cell_size)
+	decor_layer.configure_extent(grid_extent, cell_size)
 	decor_layer.apply_visual_settings()
 	reset_quadrants()
 	queue_redraw()
@@ -103,16 +122,17 @@ func _ready() -> void:
 func reset_quadrants() -> void:
 	owners.clear()
 	owner_counts = _empty_owner_counts()
-	var half_grid: int = grid_size >> 1
-	for x in range(grid_size):
+	var half_width: int = grid_extent.x >> 1
+	var half_height: int = grid_extent.y >> 1
+	for x in range(grid_extent.x):
 		var col: Array = []
-		for y in range(grid_size):
+		for y in range(grid_extent.y):
 			var f: int = GameConfig.Faction.BLUE
-			if x >= half_grid and y < half_grid:
+			if x >= half_width and y < half_height:
 				f = GameConfig.Faction.RED
-			elif x < half_grid and y >= half_grid:
+			elif x < half_width and y >= half_height:
 				f = GameConfig.Faction.GREEN
-			elif x >= half_grid and y >= half_grid:
+			elif x >= half_width and y >= half_height:
 				f = GameConfig.Faction.YELLOW
 			col.append(f)
 			_add_owner_count(f, 1)
@@ -123,10 +143,10 @@ func replace_owners(new_owners: Array, emit_scores: bool = true) -> bool:
 	if not _owner_grid_matches_size(new_owners):
 		return false
 	owners.clear()
-	for x in range(grid_size):
+	for x in range(grid_extent.x):
 		var col: Array = []
 		var src_col: Array = new_owners[x] as Array
-		for y in range(grid_size):
+		for y in range(grid_extent.y):
 			col.append(int(src_col[y]))
 		owners.append(col)
 	rebuild_owner_counts()
@@ -137,8 +157,8 @@ func replace_owners(new_owners: Array, emit_scores: bool = true) -> bool:
 
 func rebuild_owner_counts() -> void:
 	owner_counts = _empty_owner_counts()
-	for x in range(grid_size):
-		for y in range(grid_size):
+	for x in range(grid_extent.x):
+		for y in range(grid_extent.y):
 			var cell_owner: int = int(owners[x][y])
 			owners[x][y] = cell_owner
 			_add_owner_count(cell_owner, 1)
@@ -161,7 +181,7 @@ func world_to_cell(world_position: Vector2) -> Vector2i:
 	return Vector2i(floori(lp.x / float(cell_size)), floori(lp.y / float(cell_size)))
 
 func is_inside(cell: Vector2i) -> bool:
-	return cell.x >= 0 and cell.y >= 0 and cell.x < grid_size and cell.y < grid_size
+	return cell.x >= 0 and cell.y >= 0 and cell.x < grid_extent.x and cell.y < grid_extent.y
 
 func apply_bullet(cell: Vector2i, faction_id: int, capture_context: Dictionary = {}) -> String:
 	if not is_inside(cell):
@@ -262,23 +282,23 @@ func _add_owner_count(owner_id: int, delta: int) -> void:
 	owner_counts[owner_id] = int(owner_counts.get(owner_id, 0)) + delta
 
 func _owner_grid_matches_size(candidate: Array) -> bool:
-	if candidate.size() != grid_size:
+	if candidate.size() != grid_extent.x:
 		return false
-	for x in range(grid_size):
+	for x in range(grid_extent.x):
 		if not (candidate[x] is Array):
 			return false
-		if (candidate[x] as Array).size() < grid_size:
+		if (candidate[x] as Array).size() < grid_extent.y:
 			return false
 	return true
 
 func _rebuild_cell_texture() -> void:
-	if owners.size() != grid_size:
+	if owners.size() != grid_extent.x:
 		return
-	cell_image = Image.create(grid_size, grid_size, false, Image.FORMAT_RGBA8)
-	for x in range(grid_size):
+	cell_image = Image.create(grid_extent.x, grid_extent.y, false, Image.FORMAT_RGBA8)
+	for x in range(grid_extent.x):
 		if not (owners[x] is Array):
 			continue
-		for y in range(grid_size):
+		for y in range(grid_extent.y):
 			cell_image.set_pixel(x, y, _owner_draw_color(int(owners[x][y])))
 	cell_texture = ImageTexture.create_from_image(cell_image)
 	cell_texture_dirty = false
@@ -312,14 +332,14 @@ func get_debug_metrics() -> Dictionary:
 
 func _draw() -> void:
 	redraw_calls_this_second += 1
-	var size: float = grid_size * cell_size
+	var pixel_extent := get_pixel_extent()
 
 	if cell_texture != null:
 		if cell_texture_dirty:
 			_upload_cell_texture()
-		draw_texture_rect(cell_texture, Rect2(Vector2.ZERO, Vector2(size, size)), false)
+		draw_texture_rect(cell_texture, Rect2(Vector2.ZERO, pixel_extent), false)
 	else:
-		for x in range(grid_size):
-			for y in range(grid_size):
+		for x in range(grid_extent.x):
+			for y in range(grid_extent.y):
 				var c: Color = _owner_draw_color(owners[x][y])
 				draw_rect(Rect2(x * cell_size, y * cell_size, cell_size, cell_size), c, true)

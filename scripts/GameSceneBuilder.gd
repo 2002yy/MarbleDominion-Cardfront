@@ -11,14 +11,14 @@ class_name GameSceneBuilder
 # - _on_ball_count_changed(faction_id: int, count: int)
 # Keep this list aligned with Main.gd or any alternate runtime owner.
 
-static func create_battlefield(owner, game_layer: Node, grid_size: int, current_layout: Dictionary, view_size: Vector2) -> Dictionary:
+static func create_battlefield(owner, game_layer: Node, grid_extent_value, current_layout: Dictionary, view_size: Vector2) -> Dictionary:
     var battlefield = Battlefield.new()
-    battlefield.configure(grid_size, int(current_layout.get("battlefield_cell_size", -1)))
+    battlefield.configure_extent(grid_extent_value, int(current_layout.get("battlefield_cell_size", -1)))
     var battlefield_rect: Rect2 = current_layout.get("battlefield_rect", Rect2())
-    var map_pixel_size: float = battlefield.grid_size * battlefield.cell_size
+    var map_pixel_extent: Vector2 = battlefield.get_pixel_extent()
     var origin: Vector2 = battlefield_rect.position
     if battlefield_rect.size == Vector2.ZERO:
-        origin = Vector2((view_size.x - map_pixel_size) * 0.5, current_layout.get("map_y", 96.0))
+        origin = Vector2((view_size.x - map_pixel_extent.x) * 0.5, current_layout.get("map_y", 96.0))
     battlefield.position = origin
     battlefield.scores_changed.connect(Callable(owner, "_on_scores_changed"))
     game_layer.add_child(battlefield)
@@ -46,14 +46,14 @@ static func create_turrets(owner, game_layer: Node, battlefield, bullet_containe
     var center_angles: Dictionary = current_layout.get("turret_center_angles", {})
     var sweep_amplitudes: Dictionary = current_layout.get("turret_sweep_amplitudes", {})
     if positions.is_empty():
-        var size: float = battlefield.grid_size * battlefield.cell_size
+        var map_extent: Vector2 = battlefield.get_pixel_extent()
         var margin: float = 16.0
         var origin: Vector2 = battlefield.position
         positions = {
             GameConfig.Faction.BLUE: origin + Vector2(margin, margin),
-            GameConfig.Faction.RED: origin + Vector2(size - margin, margin),
-            GameConfig.Faction.GREEN: origin + Vector2(margin, size - margin),
-            GameConfig.Faction.YELLOW: origin + Vector2(size - margin, size - margin),
+            GameConfig.Faction.RED: origin + Vector2(map_extent.x - margin, margin),
+            GameConfig.Faction.GREEN: origin + Vector2(margin, map_extent.y - margin),
+            GameConfig.Faction.YELLOW: origin + Vector2(map_extent.x - margin, map_extent.y - margin),
         }
 
     for faction_id in positions.keys():
@@ -86,7 +86,7 @@ static func create_control_chambers(owner, game_layer: Node, battlefield, turret
     var chamber_positions: Dictionary = current_layout.get("chamber_positions", {})
     if chamber_positions.is_empty():
         var map_left: float = battlefield.position.x
-        var map_size: float = battlefield.grid_size * battlefield.cell_size
+        var map_width: float = battlefield.get_pixel_extent().x
         var gap_x: float = current_layout.get("chamber_gap", 10.0)
         var top_gap_y: float = current_layout.get("chamber_top_turret_gap", 18.0)
         var bottom_gap_y: float = current_layout.get("chamber_bottom_turret_gap", 8.0)
@@ -97,7 +97,7 @@ static func create_control_chambers(owner, game_layer: Node, battlefield, turret
         var yellow_turret = turrets.get(GameConfig.Faction.YELLOW, null)
 
         var left_x: float = map_left - scaled_size.x - gap_x
-        var right_x: float = map_left + map_size + gap_x
+        var right_x: float = map_left + map_width + gap_x
         var top_y: float = current_layout.get("left_chamber_y_top", 110.0)
         var bottom_y: float = current_layout.get("left_chamber_y_bottom", 360.0)
 
@@ -116,7 +116,7 @@ static func create_control_chambers(owner, game_layer: Node, battlefield, turret
             bottom_y = yellow_turret.global_position.y - scaled_size.y - bottom_gap_y
 
         left_x = clampf(left_x, 10.0, map_left - scaled_size.x - 2.0)
-        right_x = clampf(right_x, map_left + map_size + 2.0, view_size.x - scaled_size.x - 10.0)
+        right_x = clampf(right_x, map_left + map_width + 2.0, view_size.x - scaled_size.x - 10.0)
         top_y = clampf(top_y, 58.0, view_size.y - scaled_size.y - 70.0)
         bottom_y = clampf(bottom_y, top_y + scaled_size.y + 6.0, view_size.y - scaled_size.y - 10.0)
 

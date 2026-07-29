@@ -5,19 +5,22 @@ const CardfrontMapDefinitionScript = preload("res://scripts/cardfront/maps/Cardf
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
 
 
-static func make(grid_size: int) -> Dictionary:
-	var size: int = maxi(1, int(grid_size))
-	var center: int = size >> 1
-	var radius: int = maxi(2, floori(float(size) / 14.0))
-	var arm: int = maxi(4, floori(float(size) / 6.0))
+static func make(grid_extent_value) -> Dictionary:
+	var extent := GridExtentScript.normalize(grid_extent_value)
+	var center_x: int = extent.x >> 1
+	var center_y: int = extent.y >> 1
+	var radius: int = maxi(2, floori(float(mini(extent.x, extent.y)) / 14.0))
+	var arm_x: int = maxi(4, floori(float(extent.x) / 6.0))
+	var arm_y: int = maxi(4, floori(float(extent.y) / 6.0))
 	var regions: Array = [
-		_rect(center - arm, center - radius, center + arm, center + radius, RegionTypeScript.ENERGY),
-		_rect(center - radius, center - arm, center + radius, center + arm, RegionTypeScript.FACTORY),
-		_diamond(center, center, radius, RegionTypeScript.LAB),
+		_rect(center_x - arm_x, center_y - radius, center_x + arm_x, center_y + radius, RegionTypeScript.ENERGY),
+		_rect(center_x - radius, center_y - arm_y, center_x + radius, center_y + arm_y, RegionTypeScript.FACTORY),
+		_diamond(center_x, center_y, radius, RegionTypeScript.LAB),
 	]
-	return CardfrontMapDefinitionScript.make("cross_resource", size, regions, {
+	return CardfrontMapDefinitionScript.make("cross_resource", extent, regions, {
 		"display_name": "Cross Strongholds",
 		"spawn_zones": [],
 		"neutral_zones": [],

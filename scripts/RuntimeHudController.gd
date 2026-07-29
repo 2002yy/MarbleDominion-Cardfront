@@ -68,7 +68,9 @@ static func get_perf_debug_text(bullet_container, battlefield, selected_grid_siz
 	var active_count: int = get_active_bullet_count(bullet_container)
 	var max_active: int = GameConfig.get_max_active_bullets()
 	var burst_queue: int = get_burst_queue_count(turrets)
-	var grid_value: int = battlefield.grid_size if battlefield != null and is_instance_valid(battlefield) else selected_grid_size
+	var grid_extent := Vector2i(selected_grid_size, selected_grid_size)
+	if battlefield != null and is_instance_valid(battlefield) and battlefield.get("grid_extent") is Vector2i:
+		grid_extent = battlefield.grid_extent
 	var redraw_text: String = "--/s"
 	var spawn_per_second: int = 0
 	var capture_per_second: int = 0
@@ -103,8 +105,8 @@ static func get_perf_debug_text(bullet_container, battlefield, selected_grid_siz
 		trail_segments,
 		draw_calls,
 		visible_canvas_items_estimate,
-		grid_value,
-		grid_value,
+		grid_extent.x,
+		grid_extent.y,
 		redraw_text,
 		trail_pressure_level,
 		trail_degrade_reason,

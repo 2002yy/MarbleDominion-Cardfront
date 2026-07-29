@@ -201,8 +201,8 @@ func find_nearest_repairable_frontline(owner_id: int, origin: Vector2i) -> Vecto
 	var cap: int = runtime.territory_defense_system.get_owner_cap(owner_id)
 	var best := Vector2i(-1, -1)
 	var best_distance: int = 1 << 30
-	for x in range(int(runtime.battlefield.grid_size)):
-		for y in range(int(runtime.battlefield.grid_size)):
+	for x in range(int(runtime.battlefield.grid_extent.x)):
+		for y in range(int(runtime.battlefield.grid_extent.y)):
 			var cell := Vector2i(x, y)
 			if int(runtime.battlefield.owners[x][y]) != int(owner_id):
 				continue
@@ -220,8 +220,9 @@ func find_nearest_repairable_frontline(owner_id: int, origin: Vector2i) -> Vecto
 
 func find_nearest_guard_post(owner_id: int, origin: Vector2i) -> Vector2i:
 	var candidates: Array[Vector2i] = []
-	var size: int = int(runtime.battlefield.grid_size)
-	var river_y: int = size >> 1
+	var width: int = int(runtime.battlefield.grid_extent.x)
+	var height: int = int(runtime.battlefield.grid_extent.y)
+	var river_y: int = height >> 1
 	var gate_y: int = river_y - 1 if int(owner_id) == RulesScript.AI_FACTION else river_y
 	var lanes: Array = (
 		(runtime.map_definition.get("route_layout", {}) as Dictionary).get("lanes", [])
@@ -231,9 +232,9 @@ func find_nearest_guard_post(owner_id: int, origin: Vector2i) -> Vector2i:
 		lanes = [{"center_ratio": 0.30}, {"center_ratio": 0.70}]
 	for lane in lanes:
 		var gate_x: int = clampi(
-			roundi(float(size - 1) * float((lane as Dictionary).get("center_ratio", 0.5))),
+			roundi(float(width - 1) * float((lane as Dictionary).get("center_ratio", 0.5))),
 			0,
-			size - 1
+			width - 1
 		)
 		var gate_cell := Vector2i(gate_x, gate_y)
 		if (
@@ -241,8 +242,8 @@ func find_nearest_guard_post(owner_id: int, origin: Vector2i) -> Vector2i:
 			and int(runtime.battlefield.owners[gate_cell.x][gate_cell.y]) == int(owner_id)
 		):
 			candidates.append(gate_cell)
-	for x in range(size):
-		for y in range(size):
+	for x in range(width):
+		for y in range(height):
 			var cell := Vector2i(x, y)
 			if (
 				int(runtime.battlefield.owners[x][y]) == int(owner_id)

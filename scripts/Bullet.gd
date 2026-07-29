@@ -22,7 +22,7 @@ var pool
 var trail_layer
 var route_filter = null
 var route_context: Dictionary = {}
-var _cached_map_size: float = 0.0
+var _cached_map_extent: Vector2 = Vector2.ZERO
 var is_active: bool = false
 var simple_draw: bool = false
 var reduce_visual_effects: bool = false
@@ -51,7 +51,11 @@ func setup(
 		direction = Vector2.RIGHT
 	battlefield = new_battlefield
 	if battlefield != null:
-		_cached_map_size = float(battlefield.grid_size) * float(battlefield.cell_size)
+		if battlefield.has_method("get_pixel_extent"):
+			_cached_map_extent = battlefield.get_pixel_extent()
+		else:
+			var legacy_size: float = float(battlefield.grid_size) * float(battlefield.cell_size)
+			_cached_map_extent = Vector2(legacy_size, legacy_size)
 	target_turrets = new_target_turrets
 	damage_power = clampi(int(new_damage_power), 1, 999)
 	chamber_damage_quarters = maxi(0, int(new_chamber_damage_quarters))
@@ -187,9 +191,13 @@ func _physics_process(delta: float) -> void:
 		_despawn()
 		return
 
-	var map_size: float = _cached_map_size
-	if map_size <= 0.0 and battlefield != null:
-		map_size = float(battlefield.grid_size) * float(battlefield.cell_size)
+	var map_extent: Vector2 = _cached_map_extent
+	if map_extent.x <= 0.0 or map_extent.y <= 0.0:
+		if battlefield.has_method("get_pixel_extent"):
+			map_extent = battlefield.get_pixel_extent()
+		else:
+			var legacy_size: float = float(battlefield.grid_size) * float(battlefield.cell_size)
+			map_extent = Vector2(legacy_size, legacy_size)
 	var next_position = global_position + direction * speed * delta
 	var previous_local_position: Vector2 = battlefield.to_local(global_position)
 	var local_position = battlefield.to_local(next_position)
@@ -199,8 +207,8 @@ func _physics_process(delta: float) -> void:
 		local_position.x = 0.0
 		direction.x = abs(direction.x)
 		bounced = true
-	elif local_position.x > map_size:
-		local_position.x = map_size
+	elif local_position.x > map_extent.x:
+		local_position.x = map_extent.x
 		direction.x = -abs(direction.x)
 		bounced = true
 
@@ -208,8 +216,8 @@ func _physics_process(delta: float) -> void:
 		local_position.y = 0.0
 		direction.y = abs(direction.y)
 		bounced = true
-	elif local_position.y > map_size:
-		local_position.y = map_size
+	elif local_position.y > map_extent.y:
+		local_position.y = map_extent.y
 		direction.y = -abs(direction.y)
 		bounced = true
 

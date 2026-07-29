@@ -132,8 +132,8 @@ func _find_highest_defense_cell(owner_id: int, origin: Vector2i) -> Vector2i:
 	var best := Vector2i(-1, -1)
 	var best_defense: int = 0
 	var best_distance: int = 1 << 30
-	for x in range(int(runtime.battlefield.grid_size)):
-		for y in range(int(runtime.battlefield.grid_size)):
+	for x in range(int(runtime.battlefield.grid_extent.x)):
+		for y in range(int(runtime.battlefield.grid_extent.y)):
 			if int(runtime.battlefield.owners[x][y]) != int(owner_id):
 				continue
 			var cell := Vector2i(x, y)

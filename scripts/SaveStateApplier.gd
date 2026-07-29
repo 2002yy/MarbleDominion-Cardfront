@@ -8,12 +8,13 @@ static func apply_owners(battlefield, data: Dictionary, on_scores_changed: Calla
 		return
 
 	var owners = data.get("owners", [])
-	if owners is Array and owners.size() == battlefield.grid_size:
+	var extent: Vector2i = battlefield.grid_extent
+	if owners is Array and owners.size() == extent.x:
 		var loaded_owners: Array = []
-		for x in range(battlefield.grid_size):
+		for x in range(extent.x):
 			var col: Array = []
 			var src_col = owners[x]
-			for y in range(battlefield.grid_size):
+			for y in range(extent.y):
 				var raw_owner = 0
 				if src_col is Array and y < src_col.size():
 					raw_owner = src_col[y]

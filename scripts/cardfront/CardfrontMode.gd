@@ -42,8 +42,8 @@ static func get_match_duration_seconds() -> float:
 	return Rules.MATCH_DURATION_SECONDS
 
 
-static func configure_runtime_layout(base_layout: Dictionary, grid_size: int, viewport_size: Vector2) -> Dictionary:
-	return CardfrontArenaLayoutScript.apply_to(base_layout, grid_size, viewport_size)
+static func configure_runtime_layout(base_layout: Dictionary, grid_extent_value, viewport_size: Vector2) -> Dictionary:
+	return CardfrontArenaLayoutScript.apply_to(base_layout, grid_extent_value, viewport_size)
 
 
 static func configure_battlefield(battlefield) -> Dictionary:

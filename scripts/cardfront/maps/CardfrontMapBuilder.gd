@@ -2,16 +2,17 @@ extends RefCounted
 class_name CardfrontMapBuilder
 
 const CardfrontMapDefinitionScript = preload("res://scripts/cardfront/maps/CardfrontMapDefinition.gd")
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
 
 
 static func apply_to_region_map(region_map, definition: Dictionary) -> bool:
 	if region_map == null or definition.is_empty():
 		return false
-	var map_grid_size: int = int(definition.get("grid_size", 0))
-	if map_grid_size <= 0:
+	var map_grid_extent := GridExtentScript.from_config(definition, Vector2i.ZERO)
+	if map_grid_extent.x <= 0 or map_grid_extent.y <= 0:
 		return false
-	if int(region_map.grid_size) != map_grid_size:
-		region_map.configure(map_grid_size)
+	if not (region_map.get("grid_extent") is Vector2i) or region_map.grid_extent != map_grid_extent:
+		region_map.configure_extent(map_grid_extent)
 	if not region_map.has_method("clear_regions"):
 		return false
 	region_map.clear_regions()

@@ -118,8 +118,8 @@ func get_owner_defense_snapshot(owner_id: int, zone: String = "frontline") -> Di
 	}
 	if battlefield == null or not is_instance_valid(battlefield) or fortify_layer == null:
 		return snapshot
-	for x in range(int(battlefield.grid_size)):
-		for y in range(int(battlefield.grid_size)):
+	for x in range(int(battlefield.grid_extent.x)):
+		for y in range(int(battlefield.grid_extent.y)):
 			if int(battlefield.owners[x][y]) != int(owner_id):
 				continue
 			var cell := Vector2i(x, y)
@@ -240,8 +240,8 @@ func _on_volley_launched(plans: Dictionary, _issued_intents: Dictionary) -> void
 
 func _count_current_defended_cells() -> int:
 	var defended: int = 0
-	for x in range(int(battlefield.grid_size)):
-		for y in range(int(battlefield.grid_size)):
+	for x in range(int(battlefield.grid_extent.x)):
+		for y in range(int(battlefield.grid_extent.y)):
 			if get_cell_defense(Vector2i(x, y)) > 0:
 				defended += 1
 	return defended
@@ -249,8 +249,8 @@ func _count_current_defended_cells() -> int:
 
 func _find_contact_front_cells(owner_id: int) -> Array:
 	var cells: Array = []
-	for x in range(int(battlefield.grid_size)):
-		for y in range(int(battlefield.grid_size)):
+	for x in range(int(battlefield.grid_extent.x)):
+		for y in range(int(battlefield.grid_extent.y)):
 			var cell := Vector2i(x, y)
 			if int(battlefield.owners[x][y]) != int(owner_id):
 				continue
@@ -263,8 +263,8 @@ func _find_contact_front_cells(owner_id: int) -> Array:
 func _repair_candidates(owner_id: int, zone: String, cap: int) -> Array:
 	var preferred: Array = []
 	var fallback: Array = []
-	for x in range(int(battlefield.grid_size)):
-		for y in range(int(battlefield.grid_size)):
+	for x in range(int(battlefield.grid_extent.x)):
+		for y in range(int(battlefield.grid_extent.y)):
 			var cell := Vector2i(x, y)
 			if int(battlefield.owners[x][y]) != int(owner_id):
 				continue

@@ -2,6 +2,7 @@ extends Node2D
 class_name BattlefieldDecorLayer
 
 var grid_size: int = GameConfig.GRID_SIZE
+var grid_extent: Vector2i = Vector2i(GameConfig.GRID_SIZE, GameConfig.GRID_SIZE)
 var cell_size: int = GameConfig.CELL_SIZE
 var grid_alpha: float = 0.0
 var emblem_alpha_mul: float = 0.0
@@ -37,36 +38,43 @@ func apply_visual_settings() -> void:
 
 
 func configure(new_grid_size: int, new_cell_size: int) -> void:
-	if grid_size == new_grid_size and cell_size == new_cell_size and not _decor_dirty:
+	configure_extent(Vector2i(new_grid_size, new_grid_size), new_cell_size)
+
+
+func configure_extent(new_grid_extent: Vector2i, new_cell_size: int) -> void:
+	if grid_extent == new_grid_extent and cell_size == new_cell_size and not _decor_dirty:
 		return
-	grid_size = new_grid_size
+	grid_extent = new_grid_extent
+	grid_size = new_grid_extent.x
 	cell_size = new_cell_size
 	_decor_dirty = false
 	queue_redraw()
 
 func _draw() -> void:
-	var size: float = grid_size * cell_size
-	var half_size: float = size * 0.5
+	var size := Vector2(grid_extent) * float(cell_size)
+	var half_size: Vector2 = size * 0.5
 
 	if emblem_alpha_mul > 0.01:
 		_draw_emblems(size)
 
-	draw_line(Vector2(half_size, 0), Vector2(half_size, size), Color.BLACK, 2)
-	draw_line(Vector2(0, half_size), Vector2(size, half_size), Color.BLACK, 2)
-	draw_rect(Rect2(0, 0, size, size), Color(0, 0, 0, 0.95), false, 4)
+	draw_line(Vector2(half_size.x, 0), Vector2(half_size.x, size.y), Color.BLACK, 2)
+	draw_line(Vector2(0, half_size.y), Vector2(size.x, half_size.y), Color.BLACK, 2)
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.95), false, 4)
 
-	for i in range(grid_size + 1):
+	for i in range(grid_extent.x + 1):
 		var p: float = i * cell_size
-		draw_line(Vector2(p, 0), Vector2(p, size), Color(0, 0, 0, grid_alpha), 1)
-		draw_line(Vector2(0, p), Vector2(size, p), Color(0, 0, 0, grid_alpha), 1)
+		draw_line(Vector2(p, 0), Vector2(p, size.y), Color(0, 0, 0, grid_alpha), 1)
+	for i in range(grid_extent.y + 1):
+		var p: float = i * cell_size
+		draw_line(Vector2(0, p), Vector2(size.x, p), Color(0, 0, 0, grid_alpha), 1)
 
-func _draw_emblems(size: float) -> void:
-	var q: float = size * 0.25
-	var r: float = size * 0.145
-	_draw_blue_emblem(Vector2(q, q), r)
-	_draw_red_emblem(Vector2(size - q, q), r)
-	_draw_green_emblem(Vector2(q, size - q), r)
-	_draw_yellow_emblem(Vector2(size - q, size - q), r)
+func _draw_emblems(size: Vector2) -> void:
+	var q := size * 0.25
+	var r: float = minf(size.x, size.y) * 0.145
+	_draw_blue_emblem(Vector2(q.x, q.y), r)
+	_draw_red_emblem(Vector2(size.x - q.x, q.y), r)
+	_draw_green_emblem(Vector2(q.x, size.y - q.y), r)
+	_draw_yellow_emblem(Vector2(size.x - q.x, size.y - q.y), r)
 
 func _draw_blue_emblem(center: Vector2, radius: float) -> void:
 	var c: Color = Color(1, 1, 1, 0.11 * emblem_alpha_mul)

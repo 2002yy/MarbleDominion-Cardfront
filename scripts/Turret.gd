@@ -60,7 +60,8 @@ func setup(new_faction_id: int, new_position: Vector2, new_battlefield, new_bull
 	bullet_container = new_bullet_container
 	_bullet_container_can_spawn = bullet_container != null and bullet_container.has_method("spawn_bullet")
 	if battlefield != null:
-		max_health = GameConfig.get_turret_max_health(battlefield.grid_size)
+		var extent: Vector2i = battlefield.grid_extent
+		max_health = GameConfig.get_turret_max_health(maxi(extent.x, extent.y))
 		health = max_health
 
 func set_all_turrets(turret_map: Dictionary) -> void:

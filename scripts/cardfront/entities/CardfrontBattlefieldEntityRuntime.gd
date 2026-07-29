@@ -74,7 +74,7 @@ func setup(new_battlefield, new_map_definition: Dictionary = {}) -> bool:
 	if map_definition.is_empty():
 		map_definition = MapRegistryScript.get_map_definition(
 			MapRegistryScript.DEFAULT_DUEL_MAP_ID,
-			int(battlefield.grid_size)
+			battlefield.grid_extent
 		)
 	_register_map_building_slots()
 	_ensure_visual_layers()
@@ -374,7 +374,8 @@ func _find_adjacent_spawn_cell(owner_id: int, origin: Vector2i) -> Vector2i:
 func _register_map_building_slots() -> void:
 	if battlefield == null or not is_instance_valid(battlefield):
 		return
-	var size: int = int(battlefield.grid_size)
+	var width: int = int(battlefield.grid_extent.x)
+	var height: int = int(battlefield.grid_extent.y)
 	var lanes: Array = (
 		(map_definition.get("route_layout", {}) as Dictionary).get("lanes", [])
 		as Array
@@ -382,13 +383,13 @@ func _register_map_building_slots() -> void:
 	if lanes.size() < 2:
 		lanes = [{"center_ratio": 0.30}, {"center_ratio": 0.70}]
 	for owner_id in RulesScript.get_duel_factions():
-		var y: int = 3 if int(owner_id) == RulesScript.AI_FACTION else maxi(0, size - 4)
+		var y: int = 3 if int(owner_id) == RulesScript.AI_FACTION else maxi(0, height - 4)
 		for lane_index in range(2):
 			var lane: Dictionary = lanes[lane_index] as Dictionary
 			var x: int = clampi(
-				roundi(float(size - 1) * float(lane.get("center_ratio", 0.5))),
+				roundi(float(width - 1) * float(lane.get("center_ratio", 0.5))),
 				0,
-				size - 1
+				width - 1
 			)
 			var slot_id: String = _route_slot_id(owner_id, lane_index)
 			registry.register_building_slot(slot_id, Vector2i(x, y), "defense_tower")
@@ -397,10 +398,10 @@ func _register_map_building_slots() -> void:
 			slot["lane_index"] = lane_index
 			registry.building_slots[slot_id] = slot
 		var chamber_slot_id: String = "%d_chamber_facility" % int(owner_id)
-		var chamber_y: int = 1 if int(owner_id) == RulesScript.AI_FACTION else maxi(0, size - 2)
+		var chamber_y: int = 1 if int(owner_id) == RulesScript.AI_FACTION else maxi(0, height - 2)
 		registry.register_building_slot(
 			chamber_slot_id,
-			Vector2i(size >> 1, chamber_y),
+			Vector2i(width >> 1, chamber_y),
 			"chamber_facility"
 		)
 		var chamber_slot: Dictionary = registry.building_slots[chamber_slot_id] as Dictionary

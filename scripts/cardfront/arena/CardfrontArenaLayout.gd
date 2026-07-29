@@ -1,6 +1,7 @@
 extends RefCounted
 class_name CardfrontArenaLayout
 
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
 const TARGET_MAP_PIXELS: float = 520.0
 const MIN_CELL_SIZE: int = 8
 const MAX_CELL_SIZE: int = 18
@@ -12,18 +13,24 @@ const TURRET_OVERHANG_MIN: float = 8.0
 const AIM_PANEL_SIZE: Vector2 = Vector2(196.0, 62.0)
 
 
-static func apply_to(base_layout: Dictionary, grid_size: int, viewport_size: Vector2) -> Dictionary:
+static func apply_to(base_layout: Dictionary, grid_extent_value, viewport_size: Vector2) -> Dictionary:
 	var layout: Dictionary = base_layout.duplicate(true)
-	var safe_grid_size: int = maxi(4, int(grid_size))
+	var extent := GridExtentScript.normalize(grid_extent_value)
 	var available_map_height: float = maxf(320.0, viewport_size.y - MAP_TOP - 92.0)
-	var target_map_pixels: float = minf(TARGET_MAP_PIXELS, available_map_height)
-	var cell_size: int = clampi(floori(target_map_pixels / float(safe_grid_size)), MIN_CELL_SIZE, MAX_CELL_SIZE)
-	var map_pixels: float = float(safe_grid_size * cell_size)
-	var map_position := Vector2(
-		floorf((viewport_size.x - map_pixels) * 0.5),
-		clampf(MAP_TOP, 72.0, maxf(72.0, viewport_size.y - map_pixels - 64.0))
+	var available_map_width: float = maxf(320.0, viewport_size.x - 420.0)
+	var target_map_height: float = minf(TARGET_MAP_PIXELS, available_map_height)
+	var target_map_width: float = minf(TARGET_MAP_PIXELS, available_map_width)
+	var cell_size: int = clampi(
+		floori(minf(target_map_width / float(extent.x), target_map_height / float(extent.y))),
+		MIN_CELL_SIZE,
+		MAX_CELL_SIZE
 	)
-	var battlefield_rect := Rect2(map_position, Vector2.ONE * map_pixels)
+	var map_pixels := Vector2(extent) * float(cell_size)
+	var map_position := Vector2(
+		floorf((viewport_size.x - map_pixels.x) * 0.5),
+		clampf(MAP_TOP, 72.0, maxf(72.0, viewport_size.y - map_pixels.y - 64.0))
+	)
+	var battlefield_rect := Rect2(map_position, map_pixels)
 	var arena_view_top: float = minf(ARENA_VIEW_TOP, maxf(0.0, viewport_size.y * 0.16))
 	var arena_view_rect := Rect2(
 		Vector2(0.0, arena_view_top),
@@ -40,8 +47,9 @@ static func apply_to(base_layout: Dictionary, grid_size: int, viewport_size: Vec
 	)
 
 	layout["cardfront_arena"] = true
+	layout["grid_extent"] = GridExtentScript.to_array(extent)
 	layout["arena_composition"] = "open_dual_bridge"
-	layout["arena_vertical_scale"] = 1.28
+	layout["arena_vertical_scale"] = 1.0
 	layout["turrets_outside_battlefield"] = true
 	layout["battlefield_cell_size"] = cell_size
 	layout["battlefield_rect"] = battlefield_rect

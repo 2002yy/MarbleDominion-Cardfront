@@ -1,8 +1,10 @@
 extends RefCounted
 class_name SaveGameCodec
 
-const SUPPORTED_SAVE_MAJOR_PREFIXES: Array[String] = ["1.9", "2.0"]
-const SAVE_SCHEMA_VERSION: String = "2.0.0"
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
+
+const SUPPORTED_SAVE_MAJOR_PREFIXES: Array[String] = ["1.9", "2.0", "2.1"]
+const SAVE_SCHEMA_VERSION: String = "2.1.0"
 const CURRENT_SAVE_VERSION: String = SAVE_SCHEMA_VERSION
 const MAX_RESTORE_CONTROL_BALLS: int = 8
 const PAYLOAD_HASH_KEY: String = "payload_hash"
@@ -129,7 +131,12 @@ static func collect_bullet_states(bullet_container) -> Array:
 static func validate_save_data(data: Dictionary) -> Dictionary:
 	var clean: Dictionary = extract_core_payload(data)
 
-	clean["grid_size"] = LayoutProfiles.sanitize_grid_size(clean.get("grid_size", 40))
+	var grid_extent: Vector2i = GridExtentScript.sanitize(
+		clean.get("grid_extent", clean.get("grid_size", GridExtentScript.DEFAULT)),
+		GridExtentScript.DEFAULT
+	)
+	clean["grid_extent"] = GridExtentScript.to_array(grid_extent)
+	clean["grid_size"] = grid_extent.x
 
 	var version: String = str(clean.get("save_version", ""))
 	if version == "" or not is_supported_save_version(version):
@@ -144,11 +151,10 @@ static func validate_save_data(data: Dictionary) -> Dictionary:
 	clean["time_limit_minutes"] = clampi(int(clean.get("time_limit_minutes", GameConfig.DEFAULT_TIMED_MODE_MINUTES)), GameConfig.TIMED_MODE_MIN_MINUTES, GameConfig.TIMED_MODE_MAX_MINUTES)
 
 	var owners = clean.get("owners", [])
-	var grid_size: int = int(clean["grid_size"])
-	var owners_ok: bool = owners is Array and owners.size() == grid_size
+	var owners_ok: bool = owners is Array and owners.size() == grid_extent.x
 	if owners_ok:
-		for x in range(grid_size):
-			if not (owners[x] is Array) or owners[x].size() < grid_size:
+		for x in range(grid_extent.x):
+			if not (owners[x] is Array) or owners[x].size() < grid_extent.y:
 				owners_ok = false
 				break
 	if not owners_ok:

@@ -2,6 +2,7 @@ extends RefCounted
 class_name SaveFlowController
 
 const StartMenuUi = preload("res://scripts/StartMenu.gd")
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
 
 const SAVE_INTEGRITY_STATUS_MESSAGE: String = "\u68c0\u6d4b\u5230\u5b58\u6863\u5b8c\u6574\u6027\u4e0d\u4e00\u81f4\uff0c\u5df2\u6309\u4fee\u590d\u6a21\u5f0f\u8bfb\u53d6"
 const SAVE_INTEGRITY_WARNING_MESSAGE: String = "\u5b58\u6863\u53ef\u80fd\u88ab\u4fee\u6539\u6216\u5df2\u635f\u574f\uff0c\u5f53\u524d\u4ee5\u5bb9\u9519\u6a21\u5f0f\u7ee7\u7eed"
@@ -202,7 +203,7 @@ static func prepare_continue_payload(
 			"warning_message": warning_message,
 		}
 
-	if not clean_data.has("grid_size"):
+	if not clean_data.has("grid_extent"):
 		return {
 			"ok": false,
 			"error_message": "\u5b58\u6863\u7f3a\u5c11\u5fc5\u8981\u7684\u5730\u56fe\u5c3a\u5bf8\u4fe1\u606f",
@@ -230,7 +231,12 @@ static func build_continue_runtime_state(data: Dictionary, fallback_time_limit_m
 		GameConfig.TIMED_MODE_MIN_MINUTES,
 		GameConfig.TIMED_MODE_MAX_MINUTES
 	)
-	normalized["grid_size"] = LayoutProfiles.sanitize_grid_size(normalized.get("grid_size", 40))
+	var grid_extent: Vector2i = GridExtentScript.sanitize(
+		normalized.get("grid_extent", normalized.get("grid_size", GridExtentScript.DEFAULT)),
+		GridExtentScript.DEFAULT
+	)
+	normalized["grid_extent"] = GridExtentScript.to_array(grid_extent)
+	normalized["grid_size"] = grid_extent.x
 	normalized["game_elapsed_time"] = maxf(0.0, float(normalized.get("game_elapsed_time", 0.0)))
 	return normalized
 
@@ -264,6 +270,9 @@ static func apply_continue_game_config(config_state: Dictionary) -> Dictionary:
 static func build_continue_start_values(data: Dictionary) -> Dictionary:
 	return {
 		"grid_size": int(data.get("grid_size", 40)),
+		"grid_extent": GridExtentScript.to_array(
+			GridExtentScript.from_config(data, GridExtentScript.DEFAULT)
+		),
 		"game_elapsed_time": float(data.get("game_elapsed_time", 0.0)),
 	}
 
@@ -335,18 +344,18 @@ static func build_save_slot_summaries(save_slot_count: int, loader: Callable) ->
 				state = "incompatible"
 				title = SLOT_INCOMPATIBLE_TITLE
 				detail = "\u5b58\u6863\u7248\u672c %s \u4e0e\u5f53\u524d\u7248\u672c\u4e0d\u517c\u5bb9" % version
-			elif clean.has("_invalid_reason") or not clean.has("grid_size"):
+			elif clean.has("_invalid_reason") or not clean.has("grid_extent"):
 				state = "damaged"
 				title = SLOT_DAMAGED_TITLE
 				detail = str(clean.get("_invalid_reason", "\u5b58\u6863\u7f3a\u5c11\u5fc5\u8981\u6570\u636e"))
 			else:
 				state = "valid"
-				var grid_size: int = LayoutProfiles.sanitize_grid_size(clean.get("grid_size", 40))
+				var grid_extent: Vector2i = GridExtentScript.from_config(clean, GridExtentScript.DEFAULT)
 				var mode_name: String = str(clean.get("game_mode_name", GameConfig.GAME_MODE_BASIC))
 				var quality_name: String = str(clean.get("quality_name", GameConfig.QUALITY_MEDIUM))
 				var elapsed: float = maxf(0.0, float(clean.get("game_elapsed_time", 0.0)))
 				var ver_display: String = version if version != "" else "?"
-				title = "%s\uFF5C%d\u00D7%d\uFF5C%s" % [mode_name, grid_size, grid_size, quality_name]
+				title = "%s\uFF5C%d\u00D7%d\uFF5C%s" % [mode_name, grid_extent.x, grid_extent.y, quality_name]
 				detail = "\u8fdb\u5ea6 %s\uFF5C\u7248\u672c %s" % [RuntimeHudController.format_time_text(elapsed), ver_display]
 
 		result.append({

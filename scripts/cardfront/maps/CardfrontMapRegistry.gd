@@ -14,12 +14,12 @@ static func get_registered_map_ids() -> Array:
 	return [DEFAULT_DUEL_MAP_ID, CROSS_RESOURCE_MAP_ID, CENTRAL_LAB_MAP_ID]
 
 
-static func get_map_definition(map_id: String = DEFAULT_DUEL_MAP_ID, grid_size: int = 40) -> Dictionary:
+static func get_map_definition(map_id: String = DEFAULT_DUEL_MAP_ID, grid_extent_value = 40) -> Dictionary:
 	match str(map_id):
 		DEFAULT_DUEL_MAP_ID:
-			return DefaultDuelMapScript.make(grid_size)
+			return DefaultDuelMapScript.make(grid_extent_value)
 		CROSS_RESOURCE_MAP_ID:
-			return CrossResourceMapScript.make(grid_size)
+			return CrossResourceMapScript.make(grid_extent_value)
 		CENTRAL_LAB_MAP_ID:
-			return CentralLabMapScript.make(grid_size)
+			return CentralLabMapScript.make(grid_extent_value)
 	return {}

@@ -1,15 +1,18 @@
 extends RefCounted
 class_name CardfrontMapDefinition
 
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
 const SHAPE_RECT: String = "rect"
 const SHAPE_DIAMOND: String = "diamond"
 const OBJECTIVE_DESTROY_COMMAND_CHAMBER: String = "destroy_command_chamber"
 
 
-static func make(map_id: String, grid_size: int, regions: Array, metadata: Dictionary = {}) -> Dictionary:
+static func make(map_id: String, grid_extent_value, regions: Array, metadata: Dictionary = {}) -> Dictionary:
+	var grid_extent := GridExtentScript.normalize(grid_extent_value)
 	var definition: Dictionary = metadata.duplicate(true)
 	definition["id"] = str(map_id)
-	definition["grid_size"] = int(grid_size)
+	definition["grid_extent"] = GridExtentScript.to_array(grid_extent)
+	definition["grid_size"] = grid_extent.x
 	definition["regions"] = regions.duplicate(true)
 	return definition
 
@@ -18,8 +21,9 @@ static func validate(definition: Dictionary) -> Array:
 	var errors: Array = []
 	if str(definition.get("id", "")) == "":
 		errors.append("missing_id")
-	if int(definition.get("grid_size", 0)) <= 0:
-		errors.append("invalid_grid_size")
+	var grid_extent := GridExtentScript.from_config(definition, Vector2i.ZERO)
+	if grid_extent.x <= 0 or grid_extent.y <= 0:
+		errors.append("invalid_grid_extent")
 	var regions: Array = definition.get("regions", []) as Array
 	if regions.is_empty():
 		errors.append("missing_regions")
