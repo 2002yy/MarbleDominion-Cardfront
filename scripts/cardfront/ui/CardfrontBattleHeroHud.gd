@@ -29,9 +29,18 @@ func _configure_side(icon: Control, title: Label, stats: Label, hero_id: String,
 	var presentation: Dictionary = Catalog.hero(hero_id)
 	var definition: Dictionary = HeroRegistry.get_definition(hero_id)
 	icon.configure(hero_id)
-	title.text = "%s · %s" % [side_name, str(presentation.get("short_name", ""))]
-	stats.text = "齐射 %d  舱体 %d  %s" % [
+	title.text = "%s  %s" % [side_name, str(presentation.get("short_name", ""))]
+	stats.text = "齐射%d · 舱体%d" % [
 		int(definition.get("base_volley_count", 0)),
 		int(definition.get("command_chamber_health", 0)),
-		str(presentation.get("role", "")),
 	]
+	var plate: Control = icon.get_parent().get_parent()
+	plate.tooltip_text = "%s｜%s" % [
+		str(presentation.get("role", "")),
+		str(presentation.get("description", "")),
+	]
+
+
+func get_plate_rect_for_test(owner_id: int) -> Rect2:
+	var plate: Control = $PlayerPlate if owner_id == Rules.PLAYER_FACTION else $AiPlate
+	return Rect2(plate.position, plate.size)

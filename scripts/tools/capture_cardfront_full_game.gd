@@ -42,6 +42,18 @@ func _capture() -> void:
 	var battle_error := root.get_texture().get_image().save_png(
 		ProjectSettings.globalize_path("res://artifacts/cardfront-full-battle.png")
 	)
+	var scale_errors: Array[int] = []
+	for scale_value in [0.92, 1.0, 1.08]:
+		main.runtime.orthographic_arena_view.set_presentation_scale(scale_value, false)
+		await _flush(2)
+		scale_errors.append(
+			root.get_texture().get_image().save_png(
+				ProjectSettings.globalize_path(
+					"res://artifacts/cardfront-battle-scale-%d.png" % roundi(scale_value * 100.0)
+				)
+			)
+		)
+	main.runtime.orthographic_arena_view.set_presentation_scale(1.0, false)
 
 	main.runtime.round_director.set_seed_for_tests(331)
 	main.runtime.round_director.force_open_draft_for_test()
@@ -49,7 +61,8 @@ func _capture() -> void:
 	var draft_error := root.get_texture().get_image().save_png(
 		ProjectSettings.globalize_path("res://artifacts/cardfront-full-draft.png")
 	)
-	quit(0 if battle_error == OK and draft_error == OK else 1)
+	var scale_capture_ok: bool = scale_errors.all(func(error_code: int) -> bool: return error_code == OK)
+	quit(0 if battle_error == OK and draft_error == OK and scale_capture_ok else 1)
 
 
 func _populate_entities(entity_runtime) -> void:

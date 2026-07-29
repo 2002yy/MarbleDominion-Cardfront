@@ -45,6 +45,15 @@ The approved visual target is:
 
 > **明亮玩具沙盘 + 清晰竞技路线 + 粗轮廓占领块**
 
+The authoritative screenshot set, official source links, visual hierarchy
+table, color rules, HUD placement contract, stronghold-badge contract, and
+`92% / 100% / 108%` battlefield-scale specification are stored together at:
+
+- `美术参考_art_reference/cardfront_visual_hierarchy_v01/CARDFRONT_VISUAL_HIERARCHY_AND_SCALE_SPEC.md`
+
+Official reference screenshots in that package are internal study material,
+not redistributable Cardfront assets.
+
 The arena should feel bright, open, readable, and tactile. It must not return to
 the compressed dark-gray prototype look, and it must not become a noisy
 cyberpunk HUD or a realistic military battlefield.
@@ -972,6 +981,21 @@ Candidate order after B1:
   Chinese paths without fallback warnings.
 - Added a repeatable deterministic full-battle/draft screenshot tool and an
   18-card formal-scene/reachability test in GitHub Actions.
+
+### Completed Current Slice: Battlefield Scale And HUD Hierarchy
+
+- Added an orthographic presentation-only battlefield scale controller with
+  deliberate `92% / 100% / 108%` presets and a short smooth transition.
+- Kept the authoritative 2D grid, projectile simulation, collision, gates,
+  targeting and AI unchanged; HUD remains on fixed CanvasLayer coordinates.
+- Reduced the Cardfront top HUD to its two active duel factions and moved both
+  compact hero identity plates into the top corners.
+- Replaced large two-line stronghold control text with a one-line type and
+  percentage badge on a dark in-world plate.
+- Added tests for scale presets, authority isolation, BallWar isolation,
+  compact hero plates and stronghold badge dimensions.
+- Extended deterministic capture to emit battle screenshots at all three
+  scale presets for human hierarchy review.
 
 ### Later
 

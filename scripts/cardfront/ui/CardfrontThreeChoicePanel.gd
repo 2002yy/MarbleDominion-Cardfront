@@ -54,7 +54,7 @@ func setup(new_director, view_size: Vector2 = Vector2(1120, 720)) -> bool:
 	dimmer.position = Vector2.ZERO
 	dimmer.size = view_size
 	choice_shell.position = Vector2((view_size.x - choice_shell.size.x) * 0.5, 116.0)
-	battle_status.position = Vector2(24.0, 116.0)
+	battle_status.position = Vector2(12.0, 68.0)
 	_connect_director()
 	_refresh_initial_status()
 	return true
@@ -129,15 +129,12 @@ func _on_countdown_updated(time_remaining: float, round_number: int, player_stat
 	_last_round_number = int(round_number)
 	battle_status.visible = true
 	var next_round: int = int(round_number) + 1
-	battle_phase_label.text = "\u7b2c %d \u8f6e\u5f3a\u5316  %s" % [
+	battle_phase_label.text = "\u7b2c%d\u8f6e  %s" % [
 		next_round,
 		_format_seconds(time_remaining),
 	]
 	if player_state != null:
-		var hero_name: String = str(player_state.hero_name)
-		if hero_name != "":
-			battle_phase_label.text = "%s  ·  %s" % [hero_name, battle_phase_label.text]
-		battle_stats_label.text = "\u9f50\u5c04 %d  \u00b7  \u653b\u51fb +%d%%  \u00b7  \u9632\u5b88 %d  \u00b7  \u7a00\u6709 %d" % [
+		battle_stats_label.text = "\u9f50%d  \u653b+%d%%  \u9632%d  \u7a00%d" % [
 			int(player_state.base_volley_count),
 			int(player_state.attack_level) * 25,
 			int(player_state.territory_defense_cap),
@@ -199,8 +196,8 @@ func _on_strongholds_sampled(bonuses: Dictionary) -> void:
 	var player_bonus: Dictionary = bonuses.get(RulesScript.PLAYER_FACTION, {}) as Dictionary
 	var active_types: Array = player_bonus.get("active_types", []) as Array
 	if active_types.is_empty():
-		stronghold_label.text = "据点：尚未激活（需 80%）"
-		stronghold_label.add_theme_color_override("font_color", Color(0.62, 0.68, 0.76))
+		stronghold_label.text = ""
+		stronghold_label.visible = false
 		return
 	var parts: Array[String] = []
 	for region_type in active_types:
@@ -208,6 +205,7 @@ func _on_strongholds_sampled(bonuses: Dictionary) -> void:
 		if text != "":
 			parts.append(text)
 	stronghold_label.text = "据点：%s" % " · ".join(parts)
+	stronghold_label.visible = true
 	stronghold_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.32))
 
 

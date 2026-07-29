@@ -43,6 +43,7 @@ var card_audio_feedback = null
 var tutorial_overlay = null
 var arena_presentation_layer = null
 var orthographic_arena_view = null
+var battlefield_scale_control = null
 var gate_connectivity_system = null
 var command_chambers: Dictionary = {}
 var direction_controller = null
@@ -50,6 +51,7 @@ var aim_guide_layer = null
 var aim_control = null
 var round_director = null
 var three_choice_panel = null
+var battle_hero_hud = null
 var hero_assignments: Dictionary = {}
 var faction_run_states: Dictionary = {}
 var resource_states: Dictionary = {}
@@ -100,6 +102,7 @@ func reset() -> void:
     tutorial_overlay = null
     arena_presentation_layer = null
     orthographic_arena_view = null
+    battlefield_scale_control = null
     gate_connectivity_system = null
     command_chambers.clear()
     direction_controller = null
@@ -107,6 +110,7 @@ func reset() -> void:
     aim_control = null
     round_director = null
     three_choice_panel = null
+    battle_hero_hud = null
     hero_assignments.clear()
     faction_run_states.clear()
     resource_states.clear()

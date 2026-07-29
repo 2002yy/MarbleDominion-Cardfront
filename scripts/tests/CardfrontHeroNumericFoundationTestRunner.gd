@@ -95,7 +95,9 @@ func _test_runtime_assignments_drive_health_and_defense() -> void:
 	_assert.eq(defense.get_cell_defense(player_front_cell), 2, "runtime heroes: engineer contact front should begin at two of two defense")
 	_assert.eq(defense.get_cell_defense(player_interior_cell), 1, "runtime heroes: engineer interior territory should remain one of two defense")
 	_assert.eq(defense.get_cell_defense(ai_front_cell), 1, "runtime heroes: gunner contact front should remain one of one defense")
-	_assert.that(str(main.runtime.three_choice_panel.battle_phase_label.text).contains("筑垒工程师"), "runtime heroes: formal battle HUD should name the selected player hero")
+	_assert.that(main.runtime.battle_hero_hud != null, "runtime heroes: compact battle identity HUD should exist")
+	_assert.that(str(main.runtime.battle_hero_hud.player_name.text).contains("工程师"), "runtime heroes: compact battle identity HUD should name the selected player hero")
+	_assert.that(not str(main.runtime.three_choice_panel.battle_phase_label.text).contains("工程师"), "runtime heroes: round status should not repeat the hero identity")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

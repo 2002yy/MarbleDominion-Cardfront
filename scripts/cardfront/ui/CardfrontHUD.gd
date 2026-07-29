@@ -51,9 +51,10 @@ func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary
 	var hud_positions: Dictionary = layout.get("hud_positions", {})
 	_collect_top_bar_nodes()
 
-	var top_panel_rect: Rect2 = hud_positions.get(
-		"top_panel_rect",
-		Rect2(Vector2((view_size.x - 710.0) * 0.5, 8.0), Vector2(710.0, 98.0 if mobile_mode else 90.0))
+	var top_panel_width: float = minf(620.0, view_size.x - 470.0)
+	var top_panel_rect := Rect2(
+		Vector2((view_size.x - top_panel_width) * 0.5, 6.0),
+		Vector2(top_panel_width, 58.0 if not mobile_mode else 62.0)
 	)
 	top_panel.position = top_panel_rect.position
 	top_panel.size = top_panel_rect.size
@@ -62,7 +63,7 @@ func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary
 	top_panel_accent.position = Vector2(12.0, 4.0)
 	top_panel_accent.size = Vector2(top_panel.size.x - 24.0, 2.0)
 	top_panel_header.position = Vector2(10.0, 6.0)
-	top_panel_header.size = Vector2(top_panel.size.x - 20.0, 22.0)
+	top_panel_header.size = Vector2(top_panel.size.x - 20.0, 20.0)
 
 	var leader_label_rect: Rect2 = hud_positions.get("leader_label_rect", Rect2(top_panel.position + Vector2(16.0, 4.0), Vector2(176.0, 24.0)))
 	leader_label.position = leader_label_rect.position - top_panel.position
@@ -76,9 +77,9 @@ func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary
 	stage_label.position = stage_label_rect.position - top_panel.position
 	stage_label.size = stage_label_rect.size
 
-	var bar_bg_rect: Rect2 = hud_positions.get(
-		"bar_bg_rect",
-		Rect2(top_panel.position + Vector2(18.0, 31.0), Vector2(top_panel.size.x - 36.0, float(layout.get("bar_h", 36.0))))
+	var bar_bg_rect := Rect2(
+		top_panel.position + Vector2(12.0, 28.0),
+		Vector2(top_panel.size.x - 24.0, 25.0)
 	)
 	top_bar_shell.position = bar_bg_rect.position - top_panel.position
 	top_bar_shell.size = bar_bg_rect.size
@@ -162,13 +163,17 @@ func _collect_top_bar_nodes() -> void:
 func _layout_top_bar_segments() -> void:
 	var x_offset: float = 3.0
 	var segment_height: float = top_bar_inner.size.y
-	var segment_width: float = top_bar_total_width * 0.25
+	var segment_width: float = (top_bar_total_width - 6.0) * 0.5
 	for faction_id in [GameConfig.Faction.BLUE, GameConfig.Faction.RED, GameConfig.Faction.GREEN, GameConfig.Faction.YELLOW]:
 		var segment: Panel = top_bar_segments.get(faction_id, null)
 		if segment == null:
 			continue
+		var is_duel_faction: bool = faction_id == GameConfig.Faction.BLUE or faction_id == GameConfig.Faction.RED
+		segment.visible = is_duel_faction
+		if not is_duel_faction:
+			continue
 		segment.position = Vector2(x_offset, 3.0)
-		segment.size = Vector2(segment_width, segment_height)
+		segment.size = Vector2(segment_width, maxf(18.0, segment_height - 6.0))
 
 		var fill: ColorRect = segment.get_node("Fill") as ColorRect
 		fill.position = Vector2(2.0, 2.0)

@@ -17,7 +17,7 @@ const CardfrontCardAudioFeedbackScript = preload("res://scripts/cardfront/ui/Car
 const CardfrontTutorialOverlayScene = preload("res://scenes/ui/cardfront/CardfrontTutorialOverlay.tscn")
 const CardfrontAimControlScene = preload("res://scenes/ui/cardfront/CardfrontAimControl.tscn")
 const CardfrontThreeChoicePanelScene = preload("res://scenes/ui/cardfront/CardfrontThreeChoicePanel.tscn")
-const LEGACY_SIDE_BUTTON_TOP_AFTER_REGION: float = 324.0
+const CardfrontBattlefieldScaleControlScene = preload("res://scenes/ui/cardfront/CardfrontBattlefieldScaleControl.tscn")
 const LEGACY_SIDE_BUTTON_GAP: float = 8.0
 
 const FIRE_STATUS_TEXT: String = "拖动左侧方向滑杆｜炮塔按设定方向自动射击"
@@ -203,6 +203,22 @@ static func create_three_choice_panel(ui_layer: Node, round_director, view_size:
 	}
 
 
+static func create_battlefield_scale_control(ui_layer: Node, orthographic_arena_view, view_size: Vector2) -> Dictionary:
+	if ui_layer == null or not is_instance_valid(ui_layer):
+		return {"configured": false, "reason": "missing_ui_layer"}
+	if orthographic_arena_view == null or not is_instance_valid(orthographic_arena_view):
+		return {"configured": false, "reason": "missing_orthographic_arena_view"}
+	var control = CardfrontBattlefieldScaleControlScene.instantiate()
+	ui_layer.add_child(control)
+	if not control.setup(orthographic_arena_view, view_size):
+		control.queue_free()
+		return {"configured": false, "reason": "battlefield_scale_control_setup_failed"}
+	return {
+		"configured": true,
+		"battlefield_scale_control": control,
+	}
+
+
 static func create_effect_visual_bridge(game_layer: Node, feedback_bus, vfx_layer) -> Dictionary:
 	if game_layer == null or not is_instance_valid(game_layer):
 		return {"configured": false, "reason": "missing_game_layer"}
@@ -327,15 +343,21 @@ static func _lower_legacy_side_buttons(hud_nodes: Dictionary) -> void:
 	if not is_instance_valid(settings_button) or not is_instance_valid(pause_button) or not is_instance_valid(exit_button):
 		return
 
-	var button_size: Vector2 = settings_button.size
+	var button_size := Vector2(66.0, 28.0)
 	var view_height: float = 720.0
+	var view_width: float = 1120.0
 	var viewport = settings_button.get_viewport()
 	if viewport != null:
-		view_height = viewport.get_visible_rect().size.y
+		var view_size: Vector2 = viewport.get_visible_rect().size
+		view_width = view_size.x
+		view_height = view_size.y
 	var stack_height: float = button_size.y * 3.0 + LEGACY_SIDE_BUTTON_GAP * 2.0
-	var start_y: float = clampf(LEGACY_SIDE_BUTTON_TOP_AFTER_REGION, 84.0, maxf(84.0, view_height - stack_height - 12.0))
-	var x: float = settings_button.position.x
+	var start_y: float = clampf(78.0, 72.0, maxf(72.0, view_height - stack_height - 48.0))
+	var x: float = view_width - button_size.x - 12.0
 
+	settings_button.size = button_size
+	pause_button.size = button_size
+	exit_button.size = button_size
 	settings_button.position = Vector2(x, start_y)
 	pause_button.position = Vector2(x, start_y + button_size.y + LEGACY_SIDE_BUTTON_GAP)
 	exit_button.position = Vector2(x, pause_button.position.y + button_size.y + LEGACY_SIDE_BUTTON_GAP)

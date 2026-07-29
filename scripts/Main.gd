@@ -514,6 +514,7 @@ func _create_ui() -> void:
 	if _is_cardfront_mode():
 		CardfrontModeScript.configure_runtime_hud(runtime.hud)
 		_create_cardfront_aim_control()
+		_create_cardfront_battlefield_scale_control()
 		_create_cardfront_region_info_panel()
 		if cardfront_legacy_compatibility_enabled:
 			_create_cardfront_feedback_bus()
@@ -577,6 +578,21 @@ func _create_cardfront_battle_hero_hud() -> void:
 	var hero_hud = CardfrontBattleHeroHudScene.instantiate()
 	ui_canvas.add_child(hero_hud)
 	hero_hud.configure(runtime.hero_assignments)
+	runtime.battle_hero_hud = hero_hud
+
+
+func _create_cardfront_battlefield_scale_control() -> void:
+	runtime.battlefield_scale_control = null
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var scale_setup: Dictionary = CardfrontModeScript.create_battlefield_scale_control(
+		ui_canvas,
+		runtime.orthographic_arena_view,
+		Vector2(VIEW_W, VIEW_H)
+	)
+	if bool(scale_setup.get("configured", false)):
+		runtime.battlefield_scale_control = scale_setup.get("battlefield_scale_control", null)
 
 
 func _configure_cardfront_three_choice_ui() -> void:

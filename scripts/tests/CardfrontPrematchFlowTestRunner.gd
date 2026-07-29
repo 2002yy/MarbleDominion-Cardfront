@@ -84,8 +84,13 @@ func _test_battle_identity_hud() -> void:
 	})
 	_assert.that(hud.player_name.text.contains("工程师"), "battle HUD: player plate should identify the selected hero")
 	_assert.that(hud.ai_name.text.contains("炮手"), "battle HUD: AI plate should identify the revealed hero")
-	_assert.that(hud.player_stats.text.contains("齐射 5"), "battle HUD: player plate should show base volley")
-	_assert.that(hud.ai_stats.text.contains("舱体 36"), "battle HUD: AI plate should show chamber health")
+	_assert.that(hud.player_stats.text.contains("齐射5"), "battle HUD: player plate should show base volley")
+	_assert.that(hud.ai_stats.text.contains("舱体36"), "battle HUD: AI plate should show chamber health")
+	var player_rect: Rect2 = hud.get_plate_rect_for_test(GameConfig.Faction.BLUE)
+	var ai_rect: Rect2 = hud.get_plate_rect_for_test(GameConfig.Faction.RED)
+	_assert.that(player_rect.size.x <= 200.0 and player_rect.size.y <= 56.0, "battle HUD: player identity should remain a compact top-corner plate")
+	_assert.that(ai_rect.size.x <= 200.0 and ai_rect.size.y <= 56.0, "battle HUD: AI identity should remain a compact top-corner plate")
+	_assert.that(player_rect.end.x < 230.0 and ai_rect.position.x > 890.0, "battle HUD: identity plates should leave the central arena header clear")
 	hud.queue_free()
 	await process_frame
 

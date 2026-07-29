@@ -26,6 +26,9 @@ const PLAYER_TINT: Color = Color(0.21, 0.49, 0.60)
 const AI_TINT: Color = Color(0.62, 0.30, 0.30)
 const OUTLINE_COLOR: Color = Color(0.16, 0.24, 0.17)
 const PATH_COLOR: Color = Color(0.56, 0.42, 0.25, 0.72)
+const PRESENTATION_SCALE_PRESETS: Array[float] = [0.92, 1.0, 1.08]
+const DEFAULT_PRESENTATION_SCALE: float = 1.0
+const SCALE_TWEEN_SECONDS: float = 0.18
 
 var battlefield = null
 var region_map = null
@@ -67,6 +70,9 @@ var _faction_materials: Dictionary = {}
 var _aim_mesh := ImmediateMesh.new()
 var _aim_material: StandardMaterial3D
 var _tiles_dirty: bool = true
+var _base_camera_size: float = 0.0
+var _presentation_scale: float = DEFAULT_PRESENTATION_SCALE
+var _camera_scale_tween: Tween
 
 
 func _init() -> void:
@@ -243,6 +249,55 @@ func get_camera_size_ratio_for_test() -> float:
 	return camera.size / float(battlefield.grid_size) if camera != null else INF
 
 
+func get_presentation_scale() -> float:
+	return _presentation_scale
+
+
+func get_presentation_scale_presets() -> Array[float]:
+	return PRESENTATION_SCALE_PRESETS.duplicate()
+
+
+func set_presentation_scale(requested_scale: float, animated: bool = true) -> float:
+	var resolved_scale: float = _nearest_presentation_scale(requested_scale)
+	_presentation_scale = resolved_scale
+	if camera == null or _base_camera_size <= 0.0:
+		return _presentation_scale
+	var target_size: float = _base_camera_size / _presentation_scale
+	if _camera_scale_tween != null and _camera_scale_tween.is_valid():
+		_camera_scale_tween.kill()
+	if animated and is_inside_tree():
+		_camera_scale_tween = create_tween()
+		_camera_scale_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+		_camera_scale_tween.set_trans(Tween.TRANS_QUAD)
+		_camera_scale_tween.set_ease(Tween.EASE_OUT)
+		_camera_scale_tween.tween_property(camera, "size", target_size, SCALE_TWEEN_SECONDS)
+	else:
+		camera.size = target_size
+	return _presentation_scale
+
+
+func step_presentation_scale(direction: int, animated: bool = true) -> float:
+	var current_index: int = PRESENTATION_SCALE_PRESETS.find(_nearest_presentation_scale(_presentation_scale))
+	var next_index: int = clampi(current_index + signi(direction), 0, PRESENTATION_SCALE_PRESETS.size() - 1)
+	return set_presentation_scale(PRESENTATION_SCALE_PRESETS[next_index], animated)
+
+
+func get_region_badge_text_for_test(region_id: int) -> String:
+	var label: Label3D = _region_labels.get(region_id, null)
+	return label.text if label != null and is_instance_valid(label) else ""
+
+
+func get_region_badge_metrics_for_test(region_id: int) -> Dictionary:
+	var label: Label3D = _region_labels.get(region_id, null)
+	if label == null or not is_instance_valid(label):
+		return {}
+	return {
+		"font_size": label.font_size,
+		"pixel_size": label.pixel_size,
+		"line_count": label.text.count("\n") + 1,
+	}
+
+
 func get_command_chamber_width_for_test() -> float:
 	return COMMAND_CHAMBER_SIZE.x
 
@@ -351,7 +406,8 @@ func _build_world() -> void:
 	camera = Camera3D.new()
 	camera.name = "OrthographicCamera"
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	camera.size = grid * 1.18
+	_base_camera_size = grid * 1.18
+	camera.size = _base_camera_size
 	camera.near = 0.1
 	camera.far = grid * 5.0
 	camera.look_at_from_position(
@@ -893,14 +949,32 @@ func _build_region_labels() -> void:
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.no_depth_test = true
 		label.font = ThemeDB.fallback_font
-		label.font_size = 42
-		label.outline_size = 11
-		label.pixel_size = 0.019
+		label.font_size = 30
+		label.outline_size = 8
+		label.pixel_size = 0.012
+		label.render_priority = 1
 		label.position = Vector3(
 			(center.x - float(battlefield.grid_size) * 0.5) * ARENA_X_SCALE,
-			1.18,
+			1.42,
 			(center.y - float(battlefield.grid_size) * 0.5) * ARENA_Z_SCALE
 		)
+
+		var badge_plate := MeshInstance3D.new()
+		badge_plate.name = "BadgePlate"
+		var badge_mesh := QuadMesh.new()
+		badge_mesh.size = Vector2(3.6, 0.82)
+		badge_plate.mesh = badge_mesh
+		var badge_material := StandardMaterial3D.new()
+		badge_material.albedo_color = Color(0.035, 0.055, 0.060, 0.92)
+		badge_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		badge_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		badge_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+		badge_material.no_depth_test = true
+		badge_plate.material_override = badge_material
+		badge_material.render_priority = -1
+		badge_plate.position = label.position + Vector3(0.0, 0.0, -0.06)
+		world_root.add_child(badge_plate)
+
 		world_root.add_child(label)
 		_region_labels[region_id] = label
 
@@ -911,7 +985,7 @@ func _refresh_region_labels() -> void:
 		var leader: Dictionary = _get_region_leader(control)
 		var region_type: String = str(control.get("region_type", RegionTypeScript.NORMAL))
 		var label: Label3D = _region_labels[region_id]
-		label.text = "%s\n%d%%" % [
+		label.text = "%s  %d%%" % [
 			StrongholdRulesScript.badge_name(region_type),
 			int(leader.percent),
 		]
@@ -921,6 +995,17 @@ func _refresh_region_labels() -> void:
 			if leader_id == CardfrontRulesScript.NEUTRAL_OWNER
 			else _arena_faction_color(leader_id).lightened(0.28)
 		)
+
+
+func _nearest_presentation_scale(requested_scale: float) -> float:
+	var nearest: float = PRESENTATION_SCALE_PRESETS[0]
+	var nearest_distance: float = absf(requested_scale - nearest)
+	for preset in PRESENTATION_SCALE_PRESETS:
+		var distance: float = absf(requested_scale - preset)
+		if distance < nearest_distance:
+			nearest = preset
+			nearest_distance = distance
+	return nearest
 
 
 func _get_region_leader(control: Dictionary) -> Dictionary:

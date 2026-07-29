@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/cardfront/CardfrontMatchResultPanel.tscn" id="2_result"]
 
 [node name="CardfrontHUD" type="CanvasLayer"]
+layer = 20
 process_mode = 3
 script = ExtResource("1_hud")
 
