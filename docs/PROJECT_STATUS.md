@@ -1,6 +1,6 @@
 # Project Status / 项目状态
 
-Last updated: 2026-07-28
+Last updated: 2026-07-29
 
 This is the only document that tracks the current version, completed work, active implementation slice, next step, and deferred scope.
 本文件是项目当前版本、已完成内容、正在实施内容、下一步和暂缓范围的唯一状态入口。
@@ -35,6 +35,8 @@ Confirmed product decisions:
 - The reveal screen presents both heroes' base volley, chamber health, defense capacity, and strategic trait before battle.
 - Each hero has a compact cartoon silhouette, accent color, selection card, press/reveal animation, and an in-match identity plate.
 - The orthographic arena has a first-generation environment-art pass: map-specific palettes plus green-field banners, industrial stacks, or laboratory pylons. It is no longer a single-palette graybox, though bespoke meshes, textures, and polish remain future art work.
+- `default_duel` now has the first formal readability benchmark: fixed castle-like command chambers with independent aiming pivots, modeled banks and restrained edge nature, faction HP/status presentation for entities, distinct defense-tower silhouettes, and type-specific projectile bodies, trails, contact pulses, and heavy-charge feedback.
+- All 18 implemented upgrade cards instantiate through the formal three-choice scene and are reachable across valid run states. This is an executable content/readability gate, not a claim that human balance tuning is complete.
 - Existing legacy card illustrations and compatibility UI do not count as art completion for the new three-choice hero/run loop.
 
 ### Approved Art Direction / 已批准美术方向
@@ -528,9 +530,6 @@ Heavy Charge / 重型装药 is locked as a Rare next-volley combo card:
   explicit Siege Formation combination; a 5-HP Fire-Control Beacon survives
   that clean two-card combo at 1 HP.
 
-- `v0.3.3b2 Four-card Route Module` is paused until the user explicitly
-  reactivates it.
-- `v0.3.3b3` and its expanded 108,000-match A/B audit are paused.
 - Candidate-deck promotion, hero-number changes, and hard balance gates must not
   wait on or silently trigger either paused slice.
 
@@ -954,32 +953,36 @@ Candidate order after B1:
 3. Only if still severely weak: consider another visible mechanism; do not immediately change base volley from 5.
 4. Keep Gunner at 7 volley / 36 health until the Engineer and AI corrections are represented.
 
+### Completed Current Slice: Combat Readability And Default Duel Benchmark
+
+- Replaced floating numeric entity labels with compact faction-colored HP bars
+  and direct Chinese role/status labels.
+- Gave Fire-Control Beacon and Interceptor Tower separate formal silhouettes,
+  including visible guidance, interception, and powered-state cues.
+- Added stable same-cell offsets for crowded bridge approaches.
+- Separated standard, siege, and suppression projectiles by body shape, radius,
+  color, trail width/length, and emission while preserving 2D authority.
+- Added presentation-only contact, guidance, power, and heavy-charge pulses.
+- Rebuilt command chambers as fixed compact control buildings; only the short
+  turret pivot follows aim, so the whole base no longer reads as a turning tank.
+- Added restrained low-poly bank stones and tree trunks to `default_duel`
+  without covering legal routes or ownership blocks.
+- Repaired the ten stale Godot sidecars used by
+  `CardfrontUiAssetRegistry.gd`; registered UI assets now load from their real
+  Chinese paths without fallback warnings.
+- Added a repeatable deterministic full-battle/draft screenshot tool and an
+  18-card formal-scene/reachability test in GitHub Actions.
+
 ### Later
 
-- Next batch 1: formal entity readability. Replace numeric floating labels with
-  compact faction-colored HP bars, give Fire-Control Beacon and Interceptor
-  Tower distinct silhouettes, expose powered/intercept/guidance state, and
-  improve crowded bridge-slot spacing. Do not add cards or change combat
-  values.
-- Next batch 2: projectile readability. Separate standard, siege, and
-  suppression projectiles through size, color, trail, contact flash, and impact
-  feedback while retaining authoritative 2D projectile rules.
-- Next batch 3: `v0.3.4 default_duel` formal-art benchmark. Replace the remaining
-  graybox command chambers, gates, river banks, and arena border with the
-  approved bright toy-sandbox language. Command chambers must read as compact
-  control buildings rather than tanks; background scenery must stay
-  subordinate to the combat field.
-- Next batch 4: eighteen-card live playtest and readability audit. Measure
-  whether every three-choice card, entity role, tower state, projectile type,
-  gate state, and stronghold percentage can be understood during real play.
-  Fix confusing presentation before adding new content.
-- Engineering cleanup alongside those batches: repair the stale Godot UI import
-  cache/fallback warnings and keep screenshot capture as a repeatable visual
-  acceptance tool.
-- After the `default_duel` benchmark passes human screenshot review, extend the
-  same material and lighting language to Cross Strongholds and Central Lab.
-- `v0.3.3b2` and `v0.3.3b3` remain paused and are not implied by completing
-  `v0.3.3b1`.
+- Run human screenshot review for `default_duel` at desktop and narrow
+  viewports; tune scale, lighting, and occlusion from visible evidence rather
+  than adding content.
+- After that review passes, extend the same material, projectile, tower, and
+  lighting language to Cross Strongholds and Central Lab.
+- Human playtesting still needs to judge whether every entity role, tower
+  state, gate state, stronghold percentage, and upgrade choice is understood
+  during a real match. Automated readability checks do not replace that review.
 
 ## 12. Acceptance Requirements / 验收要求
 
@@ -1010,9 +1013,6 @@ No map is considered strategically complete until a player can describe its main
 - Single-bridge and asymmetric competitive maps before true side reruns exist.
 - Moving or random bridges during combat.
 - Large bumper/obstacle catalogs before the first three route identities work.
-- The four-card route module until explicitly reactivated.
-- The 108,000-match A/B audit, candidate-deck promotion, and hard balance gates
-  while the core framework and art benchmark remain in progress.
 - Additional creature, tower, or route-card batches beyond the confirmed
   eighteen-card live pool.
 - Rewriting projectile simulation as true 3D physics.

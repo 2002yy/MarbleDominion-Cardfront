@@ -17,7 +17,7 @@ The default Cardfront runtime is now the lean 1v1 loop: manual aim, paused three
 
 The current arena is still a transitional `Node2D` presentation. `ENERGY`, `FACTORY`, and `LAB` shapes remain visible but do not yet provide live bonuses; the committed next steps are an explicit tactical-stronghold contract followed by a real orthographic `Camera3D` 2.5D arena spike.
 
-当前战场仍是过渡期 `Node2D` 表现。能源/工厂/实验室形状仍可见，但尚未接入新主循环收益；下一步先完成战术据点规则，再用真正的正交 `Camera3D` 验证 2.5D 斜视战场。
+当前玩法状态仍由 `Node2D` 权威模拟，但 Cardfront 已使用真正的正交 `Camera3D` 镜像呈现 2.5D 战场。能源/工厂/实验室据点已接入路线与强点规则；`default_duel` 已进入明亮玩具沙盘标杆阶段，后续美术替换只改表现层，不改变格子、闸门、弹体和胜负权威。
 
 ## Existing v0.2.x Baseline / 现有 v0.2.x 基线
 

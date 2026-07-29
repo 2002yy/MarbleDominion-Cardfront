@@ -34,7 +34,7 @@ Baseline subtotal: **1093 expected checks** across 10 runners.
 | Cardfront devices visuals schema | device core/effect runners, device overlay, bottom HUD status, VFX bridge, `CardfrontRuntimeSnapshotTestRunner` |
 | Cardfront performance budget | `CardfrontPerformanceSmokeTestRunner` |
 | Cardfront v0.3 core loop | `CardfrontUpgradeContentTestRunner`, `CardfrontMatchPhaseControllerTestRunner`, `CardfrontUpgradeResolverTestRunner` |
-| Cardfront v0.3 arena spike | `CardfrontArenaLayoutTestRunner`, `CardfrontDirectionControllerTestRunner`, `CardfrontArenaRuntimeTestRunner` |
+| Cardfront v0.3 arena spike | `CardfrontArenaLayoutTestRunner`, `CardfrontDirectionControllerTestRunner`, `CardfrontArenaRuntimeTestRunner`, `CardfrontOrthographicArenaTestRunner`, `CardfrontEighteenCardReadabilityTestRunner` |
 | Cardfront v0.3 three-choice slice | `CardfrontThreeChoiceRuntimeTestRunner`, `CardfrontRoundCombatTestRunner`, `CardfrontModeSmokeTestRunner` |
 | Cardfront v0.3 tactical strongholds | `CardfrontStrongholdSystemTestRunner`, `CardfrontMapDefinitionTestRunner`, `CardfrontUpgradeContentTestRunner`, `CardfrontThreeChoiceRuntimeTestRunner` |
 | Cardfront v0.3 vertical-slice closeout | `CardfrontTerritoryDefenseTestRunner`, `CardfrontVerticalSliceFeedbackTestRunner`, `CardfrontLiveRuntimeBoundaryTestRunner`, `CardfrontPerformanceSmokeTestRunner` |
@@ -75,9 +75,11 @@ Run the benchmark probes when tuning firing or pressure policies, collecting rel
 1. `CardfrontArenaLayoutTestRunner.gd`.
 2. `CardfrontDirectionControllerTestRunner.gd`.
 3. `CardfrontArenaRuntimeTestRunner.gd`.
-4. `CardfrontFireDirectorTurretIntegrationTestRunner.gd`.
-5. `CardfrontModeSmokeTestRunner.gd`.
-6. `LayoutSanityTestRunner.gd`, `SmokeTestRunner.gd`, and `IntegrationTestRunner.gd` when shared runtime surfaces change.
+4. `CardfrontOrthographicArenaTestRunner.gd`.
+5. `CardfrontEighteenCardReadabilityTestRunner.gd` when formal card or combat readability changes.
+6. `CardfrontFireDirectorTurretIntegrationTestRunner.gd`.
+7. `CardfrontModeSmokeTestRunner.gd`.
+8. `LayoutSanityTestRunner.gd`, `SmokeTestRunner.gd`, and `IntegrationTestRunner.gd` when shared runtime surfaces change.
 
 ### Editing the live three-choice loop, automatic volley, or command-chamber victory
 

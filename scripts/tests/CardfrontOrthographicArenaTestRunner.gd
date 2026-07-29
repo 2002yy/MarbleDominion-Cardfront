@@ -1,6 +1,7 @@
 extends SceneTree
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 var _assert: TestAssert
 
@@ -66,12 +67,47 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	var world_position: Vector3 = view.simulation_to_world_for_test(player_turret.global_position)
 	_assert.that(world_position.z > 20.0, "orthographic arena: bottom player turret should map beyond the positive-Z map edge")
 	_assert.eq(view.get_sparse_claim_marker_count_for_test(), 0, "orthographic arena: connected spawn territories should not be covered in sparse markers")
+	player_turret.rotation = 0.42
+	view._process(0.0)
+	_assert.eq(view.get_command_chamber_rotation_for_test(CardfrontRulesScript.PLAYER_FACTION), 0.0, "orthographic arena: command chamber body should stay fixed while aiming")
+	_assert.that(
+		absf(view.get_turret_pivot_rotation_for_test(CardfrontRulesScript.PLAYER_FACTION) + 0.42) < 0.001,
+		"orthographic arena: only the turret pivot should follow the simulation aim"
+	)
 
 	var entity_runtime = main.runtime.battlefield.capture_interceptor.entity_runtime
-	entity_runtime.debug_spawn_repair_units(CardfrontRulesScript.PLAYER_FACTION, 1)
-	entity_runtime.build_or_upgrade_tower(CardfrontRulesScript.PLAYER_FACTION, "interceptor_tower")
+	var repair_units: Array = entity_runtime.debug_spawn_repair_units(CardfrontRulesScript.PLAYER_FACTION, 1)
+	var tower_result: Dictionary = entity_runtime.build_or_upgrade_tower(CardfrontRulesScript.PLAYER_FACTION, "interceptor_tower")
 	await process_frame
 	_assert.gte(view.get_entity_proxy_count_for_test(), 2, "orthographic arena: creatures and defense towers should enter the formal 3D view")
+	var repair_id: String = str(repair_units[0].entity_id) if not repair_units.is_empty() else ""
+	var tower = entity_runtime._find_owner_tower(CardfrontRulesScript.PLAYER_FACTION, "interceptor_tower")
+	var tower_id: String = str(tower.entity_id) if tower != null else ""
+	_assert.that(bool(tower_result.get("success", false)), "orthographic arena: interceptor tower fixture should build")
+	_assert.that(view.get_entity_status_text_for_test(repair_id).contains("维修"), "orthographic arena: repair unit should expose a direct Chinese role label")
+	_assert.that(view.get_entity_status_text_for_test(tower_id).contains("拦截"), "orthographic arena: interceptor tower should expose its function and state")
+	_assert.that(view.get_entity_hp_scale_for_test(repair_id) > 0.0, "orthographic arena: entity should expose a faction-colored HP fill")
+
+	var standard_spec: Dictionary = view.get_projectile_spec_for_test(ProjectileTypeScript.STANDARD, CardfrontRulesScript.PLAYER_FACTION)
+	var siege_spec: Dictionary = view.get_projectile_spec_for_test(ProjectileTypeScript.SIEGE, CardfrontRulesScript.PLAYER_FACTION)
+	var suppression_spec: Dictionary = view.get_projectile_spec_for_test(ProjectileTypeScript.SUPPRESSION, CardfrontRulesScript.PLAYER_FACTION)
+	_assert.that(float(siege_spec.get("radius", 0.0)) > float(standard_spec.get("radius", 0.0)), "orthographic arena: siege projectile should read heavier than standard")
+	_assert.that(float(suppression_spec.get("trail_length", 0.0)) > float(standard_spec.get("trail_length", 0.0)), "orthographic arena: suppression projectile should carry the longest trail")
+	_assert.gte(
+		_color_distance(standard_spec.get("color", Color.WHITE), siege_spec.get("color", Color.WHITE)),
+		0.18,
+		"orthographic arena: standard and siege projectile colors should be distinct"
+	)
+	_assert.gte(
+		_color_distance(siege_spec.get("color", Color.WHITE), suppression_spec.get("color", Color.WHITE)),
+		0.18,
+		"orthographic arena: siege and suppression projectile colors should be distinct"
+	)
+	entity_runtime.entity_contact_resolved.emit({
+		"cell": Vector2i(20, 20),
+		"projectile_type": ProjectileTypeScript.SIEGE,
+	})
+	_assert.gte(view.get_combat_effect_count_for_test(), 1, "orthographic arena: projectile contact should create a visible battlefield pulse")
 
 	var isolated_cell := Vector2i(20, 20)
 	main.runtime.battlefield.owners[isolated_cell.x][isolated_cell.y] = CardfrontRulesScript.PLAYER_FACTION

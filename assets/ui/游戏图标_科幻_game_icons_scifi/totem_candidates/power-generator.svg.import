@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bpdukjdmj2a55"
-path="res://.godot/imported/power-generator.svg-c930f836986d490a72d046fab65114c6.ctex"
+path="res://.godot/imported/power-generator.svg-257b9a70552b282e0e6c8b8832b5161b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/game_icons_scifi/totem_candidates/power-generator.svg"
-dest_files=["res://.godot/imported/power-generator.svg-c930f836986d490a72d046fab65114c6.ctex"]
+source_file="res://assets/ui/游戏图标_科幻_game_icons_scifi/totem_candidates/power-generator.svg"
+dest_files=["res://.godot/imported/power-generator.svg-257b9a70552b282e0e6c8b8832b5161b.ctex"]
 
 [params]
 

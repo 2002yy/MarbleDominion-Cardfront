@@ -3,12 +3,12 @@
 importer="font_data_dynamic"
 type="FontFile"
 uid="uid://ba0dleytasw1c"
-path="res://.godot/imported/Kenney Future.ttf-42aa19a2ffaf44cea6c86765433903c1.fontdata"
+path="res://.godot/imported/Kenney Future.ttf-6fe3378cbef009e1606fd52d82ea5418.fontdata"
 
 [deps]
 
-source_file="res://assets/ui/kenney_scifi/font/Kenney Future.ttf"
-dest_files=["res://.godot/imported/Kenney Future.ttf-42aa19a2ffaf44cea6c86765433903c1.fontdata"]
+source_file="res://assets/ui/Kenney科幻UI_kenney_scifi/font/Kenney Future.ttf"
+dest_files=["res://.godot/imported/Kenney Future.ttf-6fe3378cbef009e1606fd52d82ea5418.fontdata"]
 
 [params]
 

@@ -220,7 +220,7 @@ The GitHub Actions workflow (`.github/workflows/headless-tests.yml`) runs parse/
 
 Total: 1093 expected checks across 10 runners.
 
-Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, performance budget, the v0.3 draft/run-state/volley contract, the arena/direction-control spike, the live three-choice/automatic-volley/command-chamber slice, and the vertical-slice defense/feedback/runtime-boundary closeout.
+Additional Cardfront CI batches now cover map/economy, cards/effects/fire, devices/visuals/schema, performance budget, the v0.3 draft/run-state/volley contract, the arena/direction-control/combat-readability slice, the live three-choice/automatic-volley/command-chamber slice, and the vertical-slice defense/feedback/runtime-boundary closeout. The arena batch includes `CardfrontEighteenCardReadabilityTestRunner.gd`, which instantiates all 18 live upgrade cards and proves that valid run-state drafts can reach the full pool.
 
 The closeout batch runs:
 

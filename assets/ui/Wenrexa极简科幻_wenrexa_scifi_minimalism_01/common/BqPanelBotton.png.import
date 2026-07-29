@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://rvqy2v22uhgr"
-path="res://.godot/imported/BqPanelBotton.png-845fb909550eebb223e9ead17e70d12e.ctex"
+path="res://.godot/imported/BqPanelBotton.png-b714d255f1f0bad828209d7ad9311f46.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/wenrexa_scifi_minimalism_01/common/BqPanelBotton.png"
-dest_files=["res://.godot/imported/BqPanelBotton.png-845fb909550eebb223e9ead17e70d12e.ctex"]
+source_file="res://assets/ui/Wenrexa极简科幻_wenrexa_scifi_minimalism_01/common/BqPanelBotton.png"
+dest_files=["res://.godot/imported/BqPanelBotton.png-b714d255f1f0bad828209d7ad9311f46.ctex"]
 
 [params]
 

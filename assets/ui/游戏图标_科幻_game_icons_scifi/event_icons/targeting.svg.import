@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bonopg8ole0tk"
-path="res://.godot/imported/targeting.svg-29990d902daf97f7dd7fda2224bc415b.ctex"
+path="res://.godot/imported/targeting.svg-7dc841cdd8690a2cb7fa0c7b08daf89e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/game_icons_scifi/event_icons/targeting.svg"
-dest_files=["res://.godot/imported/targeting.svg-29990d902daf97f7dd7fda2224bc415b.ctex"]
+source_file="res://assets/ui/游戏图标_科幻_game_icons_scifi/event_icons/targeting.svg"
+dest_files=["res://.godot/imported/targeting.svg-7dc841cdd8690a2cb7fa0c7b08daf89e.ctex"]
 
 [params]
 

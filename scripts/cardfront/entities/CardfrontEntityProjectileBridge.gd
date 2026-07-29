@@ -58,6 +58,7 @@ func resolve_capture_contact(
 		result = InteractionScript.apply(projectile_type, target)
 	if not bool(result.get("valid", false)):
 		return empty_result
+	result["cell"] = cell
 
 	var push_cells: int = maxi(0, int(result.get("push_cells", 0)))
 	if push_cells > 0 and str(target.entity_kind) == BattlefieldEntityScript.KIND_CREATURE:

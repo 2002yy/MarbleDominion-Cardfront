@@ -6,6 +6,8 @@ const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd"
 const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 const BattlefieldEntityScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntity.gd")
+const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
+const CombatReadabilityScript = preload("res://scripts/cardfront/arena/CardfrontCombatReadabilityProfile.gd")
 
 const CANVAS_LAYER: int = 4
 const MAX_BULLET_PROXIES: int = 256
@@ -44,6 +46,7 @@ var sparse_claim_multimesh: MultiMeshInstance3D
 var aim_mesh_instance: MeshInstance3D
 
 var _turret_proxies: Dictionary = {}
+var _turret_barrels: Dictionary = {}
 var _chamber_labels: Dictionary = {}
 var _region_labels: Dictionary = {}
 var _region_platforms: Dictionary = {}
@@ -55,8 +58,11 @@ var _gate_states: Array[Dictionary] = []
 var _bullet_proxies: Array[MeshInstance3D] = []
 var _entity_proxies: Dictionary = {}
 var _entity_sprites: Dictionary = {}
-var _entity_labels: Dictionary = {}
-var _bullet_mesh: SphereMesh
+var _entity_hp_fills: Dictionary = {}
+var _entity_status_labels: Dictionary = {}
+var _bullet_meshes: Dictionary = {}
+var _bullet_trails: Dictionary = {}
+var _combat_effects: Array = []
 var _faction_materials: Dictionary = {}
 var _aim_mesh := ImmediateMesh.new()
 var _aim_material: StandardMaterial3D
@@ -107,7 +113,9 @@ func mark_tiles_dirty(_counts: Dictionary = {}) -> void:
 
 
 func set_entity_runtime(new_entity_runtime) -> void:
+	_disconnect_entity_runtime()
 	entity_runtime = new_entity_runtime
+	_connect_entity_runtime()
 	_sync_entities()
 
 
@@ -200,6 +208,37 @@ func get_entity_proxy_count_for_test() -> int:
 	return _entity_proxies.size()
 
 
+func get_projectile_spec_for_test(projectile_type: String, owner_id: int) -> Dictionary:
+	return CombatReadabilityScript.projectile_spec(
+		projectile_type,
+		_arena_faction_color(owner_id)
+	).duplicate(true)
+
+
+func get_combat_effect_count_for_test() -> int:
+	return _combat_effects.size()
+
+
+func get_command_chamber_rotation_for_test(owner_id: int) -> float:
+	var proxy: Node3D = _turret_proxies.get(owner_id, null)
+	return proxy.rotation.y if proxy != null and is_instance_valid(proxy) else INF
+
+
+func get_turret_pivot_rotation_for_test(owner_id: int) -> float:
+	var pivot: Node3D = _turret_barrels.get(owner_id, null)
+	return pivot.rotation.y if pivot != null and is_instance_valid(pivot) else INF
+
+
+func get_entity_status_text_for_test(entity_id: String) -> String:
+	var status: Label3D = _entity_status_labels.get(entity_id, null)
+	return status.text if status != null and is_instance_valid(status) else ""
+
+
+func get_entity_hp_scale_for_test(entity_id: String) -> float:
+	var fill: MeshInstance3D = _entity_hp_fills.get(entity_id, null)
+	return fill.scale.x if fill != null and is_instance_valid(fill) else -1.0
+
+
 func get_camera_size_ratio_for_test() -> float:
 	return camera.size / float(battlefield.grid_size) if camera != null else INF
 
@@ -228,7 +267,7 @@ func simulation_to_world_for_test(simulation_position: Vector2, height: float = 
 	return _simulation_to_world(simulation_position, height)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if battlefield == null or not is_instance_valid(battlefield):
 		visible = false
 		set_process(false)
@@ -239,6 +278,7 @@ func _process(_delta: float) -> void:
 	_sync_turrets()
 	_sync_bullets()
 	_sync_entities()
+	_update_combat_effects(delta)
 	_sync_aim_guide()
 
 
@@ -524,6 +564,17 @@ func _build_edge_landscape(grid: float, arena_width: float) -> void:
 			var bush_color: Color = _theme_color("foliage_a") if index % 2 == 0 else _theme_color("foliage_b")
 			bush.material_override = _make_material(bush_color, 0.0)
 			world_root.add_child(bush)
+			var trunk := MeshInstance3D.new()
+			trunk.name = "EdgeTreeTrunk"
+			var trunk_mesh := CylinderMesh.new()
+			trunk_mesh.top_radius = 0.16
+			trunk_mesh.bottom_radius = 0.24
+			trunk_mesh.height = 1.02
+			trunk_mesh.radial_segments = 7
+			trunk.mesh = trunk_mesh
+			trunk.position = bush.position - Vector3(0.0, 0.62, 0.0)
+			trunk.material_override = _make_material(Color(0.38, 0.25, 0.13), 0.0)
+			world_root.add_child(trunk)
 
 
 func _build_map_landmarks(grid: float, arena_width: float) -> void:
@@ -625,6 +676,26 @@ func _build_river_and_bridges(grid: float, arena_width: float) -> void:
 		bank.position = Vector3(0.0, 0.18, bank_z)
 		bank.material_override = _make_material(Color(0.30, 0.40, 0.23), 0.0)
 		world_root.add_child(bank)
+		for stone_index in range(13):
+			var stone := MeshInstance3D.new()
+			stone.name = "RiverBankStone"
+			var stone_mesh := CylinderMesh.new()
+			stone_mesh.top_radius = 0.38 + float(stone_index % 3) * 0.05
+			stone_mesh.bottom_radius = 0.44 + float(stone_index % 2) * 0.05
+			stone_mesh.height = 0.24
+			stone_mesh.radial_segments = 7
+			stone.mesh = stone_mesh
+			stone.position = Vector3(
+				lerpf(-arena_width * 0.48, arena_width * 0.48, float(stone_index) / 12.0),
+				0.36,
+				bank_z
+			)
+			stone.rotation.y = float(stone_index % 4) * 0.31
+			stone.material_override = _make_material(
+				Color(0.54, 0.56, 0.48) if stone_index % 2 == 0 else Color(0.45, 0.49, 0.42),
+				0.0
+			)
+			world_root.add_child(stone)
 
 	var bridge_offset: float = grid * 0.235 * ARENA_X_SCALE
 	var bridge_positions: Array[float] = [-bridge_offset, bridge_offset]
@@ -873,31 +944,83 @@ func _build_combatant_proxies() -> void:
 		world_root.add_child(proxy)
 
 		var chamber := MeshInstance3D.new()
+		chamber.name = "ChamberFoundation"
 		var chamber_mesh := BoxMesh.new()
 		chamber_mesh.size = COMMAND_CHAMBER_SIZE
 		chamber.mesh = chamber_mesh
-		chamber.position.y = 0.38
-		chamber.material_override = _get_faction_material(int(owner_id), 0.10)
+		chamber.position.y = 0.30
+		chamber.material_override = _make_material(Color(0.34, 0.36, 0.31), 0.0)
 		proxy.add_child(chamber)
+
+		var keep := MeshInstance3D.new()
+		keep.name = "ChamberKeep"
+		var keep_mesh := BoxMesh.new()
+		keep_mesh.size = Vector3(3.20, 1.48, 2.28)
+		keep.mesh = keep_mesh
+		keep.position.y = 1.06
+		keep.material_override = _get_faction_material(int(owner_id), 0.14)
+		proxy.add_child(keep)
+
+		for corner in [
+			Vector3(-1.66, 1.18, -1.18),
+			Vector3(1.66, 1.18, -1.18),
+			Vector3(-1.66, 1.18, 1.18),
+			Vector3(1.66, 1.18, 1.18),
+		]:
+			var corner_tower := MeshInstance3D.new()
+			corner_tower.name = "CornerTower"
+			var corner_mesh := CylinderMesh.new()
+			corner_mesh.top_radius = 0.48
+			corner_mesh.bottom_radius = 0.58
+			corner_mesh.height = 1.72
+			corner_mesh.radial_segments = 8
+			corner_tower.mesh = corner_mesh
+			corner_tower.position = corner
+			corner_tower.material_override = _get_faction_material(int(owner_id), 0.08)
+			proxy.add_child(corner_tower)
+
+		for merlon_x in [-1.20, -0.40, 0.40, 1.20]:
+			var merlon := MeshInstance3D.new()
+			merlon.name = "Battlement"
+			var merlon_mesh := BoxMesh.new()
+			merlon_mesh.size = Vector3(0.44, 0.38, 0.46)
+			merlon.mesh = merlon_mesh
+			merlon.position = Vector3(merlon_x, 1.98, -0.92)
+			merlon.material_override = _get_faction_material(int(owner_id), 0.10)
+			proxy.add_child(merlon)
+
+		var turret_pivot := Node3D.new()
+		turret_pivot.name = "TurretPivot"
+		turret_pivot.position.y = 2.05
+		proxy.add_child(turret_pivot)
 
 		var turret_base := MeshInstance3D.new()
 		var base_mesh := CylinderMesh.new()
-		base_mesh.top_radius = 0.88
-		base_mesh.bottom_radius = 1.10
-		base_mesh.height = 1.42
+		base_mesh.top_radius = 0.66
+		base_mesh.bottom_radius = 0.82
+		base_mesh.height = 0.54
+		base_mesh.radial_segments = 10
 		turret_base.mesh = base_mesh
-		turret_base.position.y = 1.02
-		turret_base.material_override = _get_faction_material(int(owner_id), 0.24)
-		proxy.add_child(turret_base)
+		turret_base.material_override = _make_material(Color(0.22, 0.25, 0.24), 0.10)
+		turret_pivot.add_child(turret_base)
 
 		var barrel := MeshInstance3D.new()
 		barrel.name = "Barrel"
 		var barrel_mesh := BoxMesh.new()
-		barrel_mesh.size = Vector3(2.15, 0.36, 0.50)
+		barrel_mesh.size = Vector3(1.62, 0.30, 0.42)
 		barrel.mesh = barrel_mesh
-		barrel.position = Vector3(1.08, 1.42, 0.0)
+		barrel.position = Vector3(0.82, 0.08, 0.0)
 		barrel.material_override = _make_material(Color(0.95, 0.97, 0.98), 0.22)
-		proxy.add_child(barrel)
+		turret_pivot.add_child(barrel)
+
+		var faction_banner := MeshInstance3D.new()
+		faction_banner.name = "FactionBanner"
+		var banner_mesh := BoxMesh.new()
+		banner_mesh.size = Vector3(1.22, 0.62, 0.08)
+		faction_banner.mesh = banner_mesh
+		faction_banner.position = Vector3(0.0, 1.18, -1.18)
+		faction_banner.material_override = _get_faction_material(int(owner_id), 0.32)
+		proxy.add_child(faction_banner)
 
 		var label := Label3D.new()
 		label.name = "HealthLabel"
@@ -907,10 +1030,11 @@ func _build_combatant_proxies() -> void:
 		label.font_size = 36
 		label.outline_size = 9
 		label.pixel_size = 0.017
-		label.position = Vector3(0.0, 2.55, 0.0)
+		label.position = Vector3(0.0, 3.15, 0.0)
 		label.modulate = Color.WHITE
 		proxy.add_child(label)
 		_turret_proxies[int(owner_id)] = proxy
+		_turret_barrels[int(owner_id)] = turret_pivot
 		_chamber_labels[int(owner_id)] = label
 
 
@@ -923,7 +1047,11 @@ func _sync_turrets() -> void:
 			continue
 		proxy.visible = true
 		proxy.position = _simulation_to_world(turret.global_position, 0.0)
-		proxy.rotation.y = -float(turret.rotation)
+		proxy.position.z -= signf(proxy.position.z) * 2.2
+		proxy.rotation.y = 0.0
+		var turret_pivot: Node3D = _turret_barrels.get(owner_id, null)
+		if turret_pivot != null and is_instance_valid(turret_pivot):
+			turret_pivot.rotation.y = -float(turret.rotation)
 		var health: int = int(turret.health)
 		var max_health: int = maxi(1, int(turret.max_health))
 		var label: Label3D = _chamber_labels[owner_id]
@@ -950,28 +1078,82 @@ func _sync_bullets() -> void:
 		if bullet == null or not is_instance_valid(bullet):
 			proxy.visible = false
 			continue
+		var projectile_type: String = ProjectileTypeScript.sanitize(str(bullet.projectile_type))
+		var faction_color: Color = _arena_faction_color(int(bullet.faction_id))
+		var spec: Dictionary = CombatReadabilityScript.projectile_spec(projectile_type, faction_color)
 		proxy.visible = true
 		proxy.position = _simulation_to_world(bullet.global_position, 0.58)
-		proxy.material_override = _get_faction_material(int(bullet.faction_id), 0.62)
-		var radius: float = 0.24
-		if bullet.has_method("get_visual_radius"):
-			radius = clampf(float(bullet.get_visual_radius()) / maxf(1.0, float(battlefield.cell_size)), 0.34, 0.58)
+		proxy.mesh = _projectile_mesh(str(spec.get("shape", "round")))
+		proxy.material_override = _make_material(
+			spec.get("color", faction_color) as Color,
+			float(spec.get("emission", 0.8))
+		)
+		var radius: float = float(spec.get("radius", 0.42))
 		proxy.scale = Vector3.ONE * radius
+		var direction: Vector2 = bullet.direction if bullet.get("direction") is Vector2 else Vector2.RIGHT
+		if direction.length_squared() > 0.001:
+			var direction_3d := Vector3(direction.x, 0.0, direction.y).normalized()
+			proxy.look_at(proxy.position + direction_3d, Vector3.UP)
+		_sync_projectile_trail(proxy, spec, radius)
 
 
 func _ensure_bullet_proxies(required_count: int) -> void:
-	if _bullet_mesh == null:
-		_bullet_mesh = SphereMesh.new()
-		_bullet_mesh.radius = 0.82
-		_bullet_mesh.height = 1.64
-		_bullet_mesh.radial_segments = 12
-		_bullet_mesh.rings = 6
 	while _bullet_proxies.size() < required_count:
 		var proxy := MeshInstance3D.new()
 		proxy.name = "BulletProxy_%03d" % _bullet_proxies.size()
-		proxy.mesh = _bullet_mesh
+		proxy.mesh = _projectile_mesh("round")
+		var trail := MeshInstance3D.new()
+		trail.name = "Trail"
+		var trail_mesh := BoxMesh.new()
+		trail_mesh.size = Vector3.ONE
+		trail.mesh = trail_mesh
+		proxy.add_child(trail)
+		_bullet_trails[proxy.get_instance_id()] = trail
 		world_root.add_child(proxy)
 		_bullet_proxies.append(proxy)
+
+
+func _projectile_mesh(shape: String) -> PrimitiveMesh:
+	if _bullet_meshes.has(shape):
+		return _bullet_meshes[shape] as PrimitiveMesh
+	var mesh: PrimitiveMesh
+	match shape:
+		"disc":
+			var disc := CylinderMesh.new()
+			disc.top_radius = 0.94
+			disc.bottom_radius = 0.94
+			disc.height = 0.34
+			disc.radial_segments = 14
+			mesh = disc
+		"heavy":
+			var heavy := SphereMesh.new()
+			heavy.radius = 1.02
+			heavy.height = 1.62
+			heavy.radial_segments = 12
+			heavy.rings = 6
+			mesh = heavy
+		_:
+			var round_mesh := SphereMesh.new()
+			round_mesh.radius = 0.82
+			round_mesh.height = 1.64
+			round_mesh.radial_segments = 12
+			round_mesh.rings = 6
+			mesh = round_mesh
+	_bullet_meshes[shape] = mesh
+	return mesh
+
+
+func _sync_projectile_trail(proxy: MeshInstance3D, spec: Dictionary, radius: float) -> void:
+	var trail: MeshInstance3D = _bullet_trails.get(proxy.get_instance_id(), null)
+	if trail == null or not is_instance_valid(trail):
+		return
+	var length: float = float(spec.get("trail_length", 1.0))
+	var width: float = float(spec.get("trail_width", 0.12))
+	trail.position = Vector3(0.0, 0.0, length * 0.5 + radius)
+	trail.scale = Vector3(width, width, length)
+	var color: Color = spec.get("color", Color.WHITE) as Color
+	color.a = 0.52
+	trail.material_override = _make_material(color, float(spec.get("emission", 0.8)) * 0.72)
 
 
 func _sync_entities() -> void:
@@ -992,11 +1174,8 @@ func _sync_entities() -> void:
 			proxy.name = "BattlefieldEntity_%s" % entity_id
 			world_root.add_child(proxy)
 			_entity_proxies[entity_id] = proxy
-		proxy.position = _cell_to_world(entity.cell, 0.0) + _entity_visual_offset(entity_id)
-		var label: Label3D = _entity_labels.get(entity_id, null)
-		if label != null and is_instance_valid(label):
-			label.text = "%d/%d" % [int(entity.hp), int(entity.max_hp)]
-			label.modulate = Color(1.0, 0.46, 0.34) if int(entity.hp) * 3 < int(entity.max_hp) else Color.WHITE
+		proxy.position = _cell_to_world(entity.cell, 0.0) + CombatReadabilityScript.stable_slot_offset(entity_id)
+		_sync_entity_readability(entity)
 		if str(entity.entity_kind) == BattlefieldEntityScript.KIND_CREATURE:
 			_sync_creature_sprite(entity_id)
 	for entity_id in _entity_proxies.keys():
@@ -1007,7 +1186,8 @@ func _sync_entities() -> void:
 			stale_proxy.queue_free()
 		_entity_proxies.erase(entity_id)
 		_entity_sprites.erase(entity_id)
-		_entity_labels.erase(entity_id)
+		_entity_hp_fills.erase(entity_id)
+		_entity_status_labels.erase(entity_id)
 
 
 func _create_entity_proxy(entity) -> Node3D:
@@ -1041,18 +1221,60 @@ func _create_entity_proxy(entity) -> Node3D:
 	else:
 		_build_tower_proxy(proxy, entity, owner_color)
 
-	var label := Label3D.new()
-	label.name = "EntityHealth"
-	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.no_depth_test = true
-	label.font = ThemeDB.fallback_font
-	label.font_size = 24
-	label.outline_size = 7
-	label.pixel_size = 0.013
-	label.position = Vector3(0.0, 2.42, 0.0)
-	proxy.add_child(label)
-	_entity_labels[str(entity.entity_id)] = label
+	_build_entity_hp_bar(proxy, entity, owner_color)
 	return proxy
+
+
+func _build_entity_hp_bar(proxy: Node3D, entity, owner_color: Color) -> void:
+	var backing := MeshInstance3D.new()
+	backing.name = "HpBacking"
+	var backing_mesh := BoxMesh.new()
+	backing_mesh.size = Vector3(1.72, 0.18, 0.10)
+	backing.mesh = backing_mesh
+	backing.position = Vector3(0.0, 2.43, 0.0)
+	backing.material_override = _make_material(Color(0.04, 0.055, 0.06), 0.0)
+	proxy.add_child(backing)
+
+	var fill := MeshInstance3D.new()
+	fill.name = "HpFill"
+	var fill_mesh := BoxMesh.new()
+	fill_mesh.size = Vector3(1.56, 0.10, 0.12)
+	fill.mesh = fill_mesh
+	fill.position = Vector3(0.0, 2.43, -0.02)
+	fill.material_override = _make_material(owner_color.lightened(0.18), 0.34)
+	proxy.add_child(fill)
+	_entity_hp_fills[str(entity.entity_id)] = fill
+
+	var status := Label3D.new()
+	status.name = "Status"
+	status.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	status.no_depth_test = true
+	status.font = ThemeDB.fallback_font
+	status.font_size = 18
+	status.outline_size = 6
+	status.pixel_size = 0.012
+	status.position = Vector3(0.0, 2.74, 0.0)
+	status.modulate = owner_color.lightened(0.28)
+	proxy.add_child(status)
+	_entity_status_labels[str(entity.entity_id)] = status
+
+
+func _sync_entity_readability(entity) -> void:
+	var entity_id: String = str(entity.entity_id)
+	var ratio: float = CombatReadabilityScript.hp_ratio(entity)
+	var fill: MeshInstance3D = _entity_hp_fills.get(entity_id, null)
+	if fill != null and is_instance_valid(fill):
+		fill.scale.x = maxf(0.01, ratio)
+		fill.position.x = -0.78 * (1.0 - ratio)
+	var status: Label3D = _entity_status_labels.get(entity_id, null)
+	if status != null and is_instance_valid(status):
+		status.text = CombatReadabilityScript.entity_status_text(entity)
+		status.modulate = Color(0.58, 0.62, 0.66) if not bool(entity.powered) else Color.WHITE
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	if proxy != null and is_instance_valid(proxy):
+		var power_node: MeshInstance3D = proxy.get_node_or_null("PowerCore")
+		if power_node != null:
+			power_node.visible = bool(entity.powered)
 
 
 func _build_tower_proxy(proxy: Node3D, entity, owner_color: Color) -> void:
@@ -1084,11 +1306,51 @@ func _build_tower_proxy(proxy: Node3D, entity, owner_color: Color) -> void:
 	head.name = "TowerHead"
 	var head_mesh := BoxMesh.new()
 	var tower_id: String = str(entity.tower_id)
-	head_mesh.size = Vector3(1.28, 0.46, 0.72) if tower_id == "interceptor_tower" else Vector3(0.82, 0.46, 0.82)
+	var shape: String = CombatReadabilityScript.tower_shape(tower_id)
+	head_mesh.size = Vector3(1.38, 0.46, 0.74) if shape == "interceptor" else Vector3(0.76, 0.42, 0.76)
 	head.mesh = head_mesh
-	head.position = Vector3(0.18 if tower_id == "interceptor_tower" else 0.0, 2.12, 0.0)
+	head.position = Vector3(0.0, 2.12, 0.0)
 	head.material_override = _make_material(Color(0.93, 0.96, 0.90), 0.24)
 	proxy.add_child(head)
+
+	var power_core := MeshInstance3D.new()
+	power_core.name = "PowerCore"
+	if shape == "beacon":
+		var orb_mesh := SphereMesh.new()
+		orb_mesh.radius = 0.40
+		orb_mesh.height = 0.80
+		orb_mesh.radial_segments = 12
+		orb_mesh.rings = 6
+		power_core.mesh = orb_mesh
+		power_core.position = Vector3(0.0, 2.72, 0.0)
+		power_core.material_override = _make_material(Color(0.30, 0.96, 1.0), 1.15)
+		proxy.add_child(power_core)
+		for arm_rotation in [0.0, PI * 0.5]:
+			var signal_arm := MeshInstance3D.new()
+			signal_arm.name = "SignalArm"
+			var arm_mesh := BoxMesh.new()
+			arm_mesh.size = Vector3(1.52, 0.10, 0.12)
+			signal_arm.mesh = arm_mesh
+			signal_arm.position = Vector3(0.0, 2.68, 0.0)
+			signal_arm.rotation.y = arm_rotation
+			signal_arm.material_override = _make_material(Color(0.24, 0.78, 0.86), 0.52)
+			proxy.add_child(signal_arm)
+	else:
+		var shield_mesh := BoxMesh.new()
+		shield_mesh.size = Vector3(1.58, 0.60, 0.20)
+		power_core.mesh = shield_mesh
+		power_core.position = Vector3(0.0, 2.12, -0.44)
+		power_core.material_override = _make_material(owner_color.lightened(0.22), 0.64)
+		proxy.add_child(power_core)
+		for barrel_x in [-0.46, 0.46]:
+			var barrel := MeshInstance3D.new()
+			barrel.name = "InterceptorBarrel"
+			var barrel_mesh := BoxMesh.new()
+			barrel_mesh.size = Vector3(0.22, 0.22, 1.08)
+			barrel.mesh = barrel_mesh
+			barrel.position = Vector3(barrel_x, 2.22, -0.58)
+			barrel.material_override = _make_material(Color(0.18, 0.23, 0.25), 0.12)
+			proxy.add_child(barrel)
 
 
 func _sync_creature_sprite(entity_id: String) -> void:
@@ -1114,6 +1376,121 @@ func _sync_creature_sprite(entity_id: String) -> void:
 	sprite_3d.flip_h = animated_sprite.flip_h
 
 
+func _connect_entity_runtime() -> void:
+	if entity_runtime == null or not is_instance_valid(entity_runtime):
+		return
+	var bindings: Dictionary = {
+		"entity_contact_resolved": "_on_entity_contact_resolved",
+		"projectile_guided": "_on_projectile_guided",
+		"tower_power_changed": "_on_tower_power_changed",
+		"heavy_charge_exploded": "_on_heavy_charge_exploded",
+	}
+	for signal_name in bindings.keys():
+		if not entity_runtime.has_signal(signal_name):
+			continue
+		var callable := Callable(self, str(bindings[signal_name]))
+		if not entity_runtime.is_connected(signal_name, callable):
+			entity_runtime.connect(signal_name, callable)
+
+
+func _disconnect_entity_runtime() -> void:
+	if entity_runtime == null or not is_instance_valid(entity_runtime):
+		return
+	var bindings: Dictionary = {
+		"entity_contact_resolved": "_on_entity_contact_resolved",
+		"projectile_guided": "_on_projectile_guided",
+		"tower_power_changed": "_on_tower_power_changed",
+		"heavy_charge_exploded": "_on_heavy_charge_exploded",
+	}
+	for signal_name in bindings.keys():
+		if not entity_runtime.has_signal(signal_name):
+			continue
+		var callable := Callable(self, str(bindings[signal_name]))
+		if entity_runtime.is_connected(signal_name, callable):
+			entity_runtime.disconnect(signal_name, callable)
+
+
+func _on_entity_contact_resolved(result: Dictionary) -> void:
+	var cell: Vector2i = result.get("cell", Vector2i(-1, -1)) as Vector2i
+	if cell.x < 0:
+		return
+	var projectile_type: String = str(result.get("projectile_type", ProjectileTypeScript.STANDARD))
+	var spec: Dictionary = CombatReadabilityScript.projectile_spec(projectile_type, Color.WHITE)
+	_add_combat_effect(cell, spec.get("color", Color.WHITE) as Color, 0.48, 1.8)
+
+
+func _on_projectile_guided(tower_entity_id: String, owner_id: int, _projectile_type: String) -> void:
+	if entity_runtime == null:
+		return
+	var registry = entity_runtime.get("registry")
+	var tower = registry.get_entity(tower_entity_id) if registry != null else null
+	if tower != null:
+		_add_combat_effect(tower.cell, _arena_faction_color(owner_id).lightened(0.28), 0.34, 1.25)
+
+
+func _on_tower_power_changed(entity_id: String, _powered: bool) -> void:
+	if entity_runtime == null:
+		return
+	var registry = entity_runtime.get("registry")
+	var tower = registry.get_entity(entity_id) if registry != null else null
+	if tower != null:
+		_add_combat_effect(tower.cell, Color(0.82, 0.88, 0.92), 0.42, 1.35)
+
+
+func _on_heavy_charge_exploded(owner_id: int, cell: Vector2i, _center_target_id: String) -> void:
+	_add_combat_effect(cell, _arena_faction_color(owner_id).lerp(Color(1.0, 0.44, 0.08), 0.72), 0.72, 3.2)
+
+
+func _add_combat_effect(cell: Vector2i, color: Color, duration: float, max_scale: float) -> void:
+	if world_root == null:
+		return
+	var effect := MeshInstance3D.new()
+	effect.name = "CombatImpact"
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.72
+	mesh.height = 0.28
+	mesh.radial_segments = 16
+	mesh.rings = 4
+	effect.mesh = mesh
+	effect.position = _cell_to_world(cell, TILE_HEIGHT + 0.34)
+	var material := _make_material(Color(color.r, color.g, color.b, 0.82), 0.92)
+	effect.material_override = material
+	world_root.add_child(effect)
+	_combat_effects.append({
+		"node": effect,
+		"material": material,
+		"remaining": maxf(0.05, duration),
+		"total": maxf(0.05, duration),
+		"color": color,
+		"max_scale": maxf(1.0, max_scale),
+	})
+
+
+func _update_combat_effects(delta: float) -> void:
+	for index in range(_combat_effects.size() - 1, -1, -1):
+		var effect: Dictionary = _combat_effects[index] as Dictionary
+		var node: MeshInstance3D = effect.get("node", null)
+		if node == null or not is_instance_valid(node):
+			_combat_effects.remove_at(index)
+			continue
+		var remaining: float = maxf(0.0, float(effect.get("remaining", 0.0)) - maxf(0.0, delta))
+		effect["remaining"] = remaining
+		if remaining <= 0.0:
+			node.queue_free()
+			_combat_effects.remove_at(index)
+			continue
+		var total: float = maxf(0.05, float(effect.get("total", 0.05)))
+		var progress: float = 1.0 - remaining / total
+		var scale_value: float = lerpf(0.45, float(effect.get("max_scale", 1.5)), progress)
+		node.scale = Vector3(scale_value, 0.35, scale_value)
+		var color: Color = effect.get("color", Color.WHITE) as Color
+		color.a = (1.0 - progress) * 0.78
+		var material: StandardMaterial3D = effect.get("material", null)
+		if material != null:
+			material.albedo_color = color
+			material.emission = color
+
+
 func _cell_to_world(cell: Vector2i, height: float) -> Vector3:
 	var grid: float = float(battlefield.grid_size)
 	return Vector3(
@@ -1121,21 +1498,6 @@ func _cell_to_world(cell: Vector2i, height: float) -> Vector3:
 		height,
 		(float(cell.y) + 0.5 - grid * 0.5) * ARENA_Z_SCALE
 	)
-
-
-func _entity_visual_offset(entity_id: String) -> Vector3:
-	var offsets: Array[Vector2] = [
-		Vector2(-0.34, -0.22),
-		Vector2(0.34, 0.22),
-		Vector2(-0.34, 0.22),
-		Vector2(0.34, -0.22),
-		Vector2.ZERO,
-	]
-	var slot: int = absi(entity_id.hash()) % offsets.size()
-	var offset: Vector2 = offsets[slot]
-	return Vector3(offset.x, 0.0, offset.y)
-
-
 func _build_aim_guide() -> void:
 	_aim_material = StandardMaterial3D.new()
 	_aim_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
