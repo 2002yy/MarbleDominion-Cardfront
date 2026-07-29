@@ -116,6 +116,7 @@ jobs:
               CardfrontArenaRuntimeTestRunner.gd
               CardfrontOrthographicArenaTestRunner.gd
               CardfrontBattlefieldScaleTestRunner.gd
+              CardfrontEnvironmentAssetTestRunner.gd
               CardfrontEighteenCardReadabilityTestRunner.gd
               CardfrontPrematchFlowTestRunner.gd
           - batch: Cardfront v0.3 three-choice slice

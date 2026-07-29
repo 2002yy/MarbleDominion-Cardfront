@@ -8,6 +8,7 @@ const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/Cardf
 const BattlefieldEntityScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntity.gd")
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 const CombatReadabilityScript = preload("res://scripts/cardfront/arena/CardfrontCombatReadabilityProfile.gd")
+const EnvironmentBuilderScript = preload("res://scripts/cardfront/environment/CardfrontEnvironmentBuilder.gd")
 
 const CANVAS_LAYER: int = 4
 const MAX_BULLET_PROXIES: int = 256
@@ -77,6 +78,7 @@ var _base_camera_size: float = 0.0
 var _z_scale: float = ARENA_Z_SCALE
 var _presentation_scale: float = DEFAULT_PRESENTATION_SCALE
 var _camera_scale_tween: Tween
+var _environment_builder = null
 
 
 func _init() -> void:
@@ -335,6 +337,30 @@ func get_edge_decoration_count_for_test() -> int:
 	return EDGE_DECORATION_COUNT
 
 
+func get_environment_asset_count_for_test() -> int:
+	if _environment_builder == null:
+		return 0
+	return _environment_builder.get_loaded_asset_count()
+
+
+func get_environment_fallback_count_for_test() -> int:
+	if _environment_builder == null:
+		return 0
+	return _environment_builder.get_fallback_count()
+
+
+func get_environment_presentation_node_count_for_test() -> int:
+	if _environment_builder == null:
+		return 0
+	return _environment_builder.get_created_count()
+
+
+func get_environment_layout_metrics_for_test() -> Dictionary:
+	if _environment_builder == null:
+		return {}
+	return _environment_builder.get_layout_metrics()
+
+
 func get_background_color_for_test() -> Color:
 	return arena_environment.background_color if arena_environment != null else Color.BLACK
 
@@ -424,6 +450,12 @@ func _build_world() -> void:
 	floor_mesh.position.y = -0.24
 	floor_mesh.material_override = _make_material(_theme_color("ground"), 0.0)
 	world_root.add_child(floor_mesh)
+	_environment_builder = EnvironmentBuilderScript.new()
+	_environment_builder.setup(world_root, {
+		"foliage": _theme_color("foliage_a"),
+		"stone": Color(0.49, 0.50, 0.45),
+		"wood": Color(0.49, 0.35, 0.24),
+	})
 	_build_lane_paths(width, height)
 	_build_edge_landscape(height, arena_width)
 	_build_map_landmarks(height, arena_width)
@@ -626,6 +658,10 @@ func _build_lane_paths(width: float, height: float) -> void:
 
 
 func _build_edge_landscape(height: float, arena_width: float) -> void:
+	if _environment_builder != null:
+		var built_count: int = _environment_builder.build_edge_dressing(height, arena_width, _z_scale)
+		if built_count > 0:
+			return
 	var z_positions: Array[float] = [-0.28, 0.28]
 	for side in [-1.0, 1.0]:
 		for index in range(z_positions.size()):
@@ -797,6 +833,9 @@ func _build_river_and_bridges(width: float, arena_width: float) -> void:
 		bridge_top.material_override = _make_material(Color(0.62, 0.43, 0.24), 0.0)
 		world_root.add_child(bridge_top)
 		_bridge_tops.append(bridge_top)
+		if _environment_builder != null:
+			_environment_builder.build_bridge_dressing(bridge_x, _z_scale)
+			_environment_builder.build_gate_foundations(bridge_x, _z_scale)
 		_build_gate_visual(bridge_x)
 
 

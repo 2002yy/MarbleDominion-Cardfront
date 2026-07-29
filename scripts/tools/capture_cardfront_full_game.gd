@@ -13,6 +13,8 @@ func _initialize() -> void:
 
 func _capture() -> void:
 	root.size = Vector2i(1120, 720)
+	var capture_extent := _capture_extent()
+	var extent_label := "%dx%d" % [capture_extent.x, capture_extent.y]
 	GameConfig.reset_runtime_defaults()
 	paused = false
 	var scene: PackedScene = load("res://scenes/Main.tscn")
@@ -20,8 +22,9 @@ func _capture() -> void:
 	root.add_child(main)
 	await process_frame
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
-	main.selected_grid_size = 20
-	main._start_game(20, true, false)
+	main.selected_grid_extent = capture_extent
+	main._start_game(capture_extent, true, false)
+	Input.warp_mouse(Vector2(1110.0, 360.0))
 	await _flush(5)
 
 	var entity_runtime = main.runtime.battlefield.get_node_or_null(
@@ -40,7 +43,7 @@ func _capture() -> void:
 
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://artifacts"))
 	var battle_error := root.get_texture().get_image().save_png(
-		ProjectSettings.globalize_path("res://artifacts/cardfront-full-battle.png")
+		ProjectSettings.globalize_path("res://artifacts/cardfront-full-battle-%s.png" % extent_label)
 	)
 	var scale_errors: Array[int] = []
 	for scale_value in [1.0, 1.12, 1.20]:
@@ -49,7 +52,10 @@ func _capture() -> void:
 		scale_errors.append(
 			root.get_texture().get_image().save_png(
 				ProjectSettings.globalize_path(
-					"res://artifacts/cardfront-battle-scale-%d.png" % roundi(scale_value * 100.0)
+					"res://artifacts/cardfront-battle-%s-scale-%d.png" % [
+						extent_label,
+						roundi(scale_value * 100.0),
+					]
 				)
 			)
 		)
@@ -59,10 +65,23 @@ func _capture() -> void:
 	main.runtime.round_director.force_open_draft_for_test()
 	await _flush(4)
 	var draft_error := root.get_texture().get_image().save_png(
-		ProjectSettings.globalize_path("res://artifacts/cardfront-full-draft.png")
+		ProjectSettings.globalize_path("res://artifacts/cardfront-full-draft-%s.png" % extent_label)
 	)
 	var scale_capture_ok: bool = scale_errors.all(func(error_code: int) -> bool: return error_code == OK)
 	quit(0 if battle_error == OK and draft_error == OK and scale_capture_ok else 1)
+
+
+func _capture_extent() -> Vector2i:
+	var value: String = OS.get_environment("CARDFRONT_CAPTURE_EXTENT").strip_edges().to_lower()
+	if value.is_empty():
+		return Vector2i(40, 60)
+	var parts: PackedStringArray = value.split("x", false, 1)
+	if parts.size() != 2:
+		push_warning("Invalid CARDFRONT_CAPTURE_EXTENT=%s; using 40x60" % value)
+		return Vector2i(40, 60)
+	var width: int = maxi(1, int(parts[0]))
+	var height: int = maxi(1, int(parts[1]))
+	return Vector2i(width, height)
 
 
 func _populate_entities(entity_runtime) -> void:

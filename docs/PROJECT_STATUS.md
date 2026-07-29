@@ -210,6 +210,36 @@ review. Register accepted assets through a dedicated
 `CardfrontEnvironmentAssetRegistry.gd`; do not place raw resource paths in
 `Main.gd` or gameplay systems.
 
+### First Environment Runtime Pass / 2026-07-29
+
+Implementation status: **integrated, AI screenshot-reviewed, human review
+pending**.
+
+- `CardfrontEnvironmentAssetRegistry.gd` owns the selected KayKit glTF paths
+  and explicit primitive fallbacks.
+- `CardfrontEnvironmentBuilder.gd` creates presentation-only edge trees,
+  rocks, low bridge rails, and gate foundations. It creates no collision or
+  gameplay authority.
+- Seven runtime source models are registered: two compact trees, three rocks,
+  one straight wall, and one gate-wall module.
+- The covered `building_bridge_A` model was rejected during integrated
+  screenshot review because its tall roof obscured bridge combat. The runtime
+  uses low wall modules as bridge rails while the procedural bridge deck,
+  river, and authoritative gate bar remain visible.
+- The formal capture tool accepts `CARDFRONT_CAPTURE_EXTENT` and captures the
+  complete supported matrix: `40 x 40`, `50 x 50`, `40 x 50`, and `40 x 60`.
+  A single hard-coded capture is not accepted as rectangular-grid evidence.
+- Runtime tests start all four extents and verify imported edge, bridge, and
+  gate assets with zero fallback. Edge scenery must remain outside each
+  extent's playable width.
+- AI screenshot review at 112% scale confirmed that imported scenery appears
+  in all four sizes, stays outside the playable core, and does not cover bridge
+  units. The `40 x 50` and `40 x 60` full-field views intentionally retain
+  wider quiet side margins; their smaller apparent combat scale still needs
+  human approval before this pass becomes the final environment benchmark.
+- This pass deliberately does not add Kenney or Quaternius assets. Those packs
+  remain candidates until the single-pack material language is approved.
+
 ### Art Integration Rules / 美术接入规则
 
 - Do not mix the raw appearance of three asset packs in the same scene. Route

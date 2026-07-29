@@ -218,7 +218,23 @@ fallbacks, but assets are no longer disconnected from code.
 | VFX textures | `scripts/cardfront/vfx/CardfrontVfxLayer.gd` | Energy ripple, shield crack/pulse, and region pulse load from `assets/cardfront_runtime/视觉特效_vfx/128/`, with draw-circle fallback. |
 | Card audio feedback | `scripts/cardfront/ui/CardfrontCardAudioFeedback.gd` | Hover, click, success, and fail feedback use curated `assets/音效_sfx/` files when present; missing assets fail silently. |
 | Battlefield entities | `scripts/cardfront/entities/CardfrontEntityVisualRegistry.gd` and `CardfrontEntityPresentationLayer.gd` | Gate Colossus plus four friendly entity animation sets are active; two defense towers use procedural hybrid actors and all assets retain runtime fallbacks. |
+| Cardfront environment | `scripts/cardfront/environment/CardfrontEnvironmentAssetRegistry.gd` and `CardfrontEnvironmentBuilder.gd` | Selected KayKit trees, rocks, wall rails, and gate foundations are active in the orthographic arena. Imported nodes are presentation-only and retain primitive fallback. |
 | UI art registry prep | `scripts/cardfront/ui/CardfrontUiAssetRegistry.gd` | Kenney font, Kenney/Wenrexa panels, and Game-Icons paths are centralized with `ResourceLoader.exists` fallback. |
+
+### KayKit Medieval Hexagon environment subset
+
+- Source: `https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0`
+- License: CC0 1.0; local license copy:
+  `assets/cardfront_environment/source/kaykit_medieval_hexagon/LICENSE.txt`
+- Runtime subset: `wall_straight`, `wall_straight_gate`,
+  `rock_single_A/B/C`, and `tree_single_A/B`.
+- Materials are overridden by `CardfrontEnvironmentBuilder` to match the
+  quiet-field arena palette.
+- The runtime builder positions the same approved subset from each map's
+  `grid_extent`; `40 x 40`, `50 x 50`, `40 x 50`, and `40 x 60` are covered by
+  the environment integration test and screenshot matrix.
+- `building_bridge_A` was evaluated but rejected from runtime use because its
+  covered silhouette obscured bridge combat in the integrated capture.
 
 ### Current UI art state / 当前 UI 美术状态
 
