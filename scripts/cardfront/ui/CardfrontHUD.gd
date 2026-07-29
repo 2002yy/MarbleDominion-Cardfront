@@ -51,19 +51,21 @@ func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary
 	var hud_positions: Dictionary = layout.get("hud_positions", {})
 	_collect_top_bar_nodes()
 
-	var top_panel_width: float = minf(620.0, view_size.x - 470.0)
+	var top_panel_width: float = minf(560.0, view_size.x - 510.0)
 	var top_panel_rect := Rect2(
-		Vector2((view_size.x - top_panel_width) * 0.5, 6.0),
-		Vector2(top_panel_width, 58.0 if not mobile_mode else 62.0)
+		Vector2((view_size.x - top_panel_width) * 0.5, 4.0),
+		Vector2(top_panel_width, 54.0 if not mobile_mode else 58.0)
 	)
 	top_panel.position = top_panel_rect.position
 	top_panel.size = top_panel_rect.size
 	top_panel_bg.position = Vector2(4.0, 4.0)
 	top_panel_bg.size = top_panel.size - Vector2(8.0, 8.0)
+	top_panel_bg.color = Color(0.025, 0.040, 0.052, 0.90)
 	top_panel_accent.position = Vector2(12.0, 4.0)
 	top_panel_accent.size = Vector2(top_panel.size.x - 24.0, 2.0)
 	top_panel_header.position = Vector2(10.0, 6.0)
 	top_panel_header.size = Vector2(top_panel.size.x - 20.0, 20.0)
+	top_panel_header.color = Color(0.02, 0.032, 0.044, 0.86)
 
 	var leader_label_rect: Rect2 = hud_positions.get("leader_label_rect", Rect2(top_panel.position + Vector2(16.0, 4.0), Vector2(176.0, 24.0)))
 	leader_label.position = leader_label_rect.position - top_panel.position
@@ -78,8 +80,8 @@ func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary
 	stage_label.size = stage_label_rect.size
 
 	var bar_bg_rect := Rect2(
-		top_panel.position + Vector2(12.0, 28.0),
-		Vector2(top_panel.size.x - 24.0, 25.0)
+		top_panel.position + Vector2(14.0, 29.0),
+		Vector2(top_panel.size.x - 28.0, 20.0)
 	)
 	top_bar_shell.position = bar_bg_rect.position - top_panel.position
 	top_bar_shell.size = bar_bg_rect.size
@@ -207,17 +209,19 @@ func _layout_top_bar_segments() -> void:
 
 
 func _layout_side_buttons(view_size: Vector2, mobile_mode: bool, current_layout: Dictionary = {}) -> void:
-	var side_button_size: Vector2 = current_layout.get("side_button_size", Vector2(114.0, 46.0) if mobile_mode else Vector2(96.0, 42.0))
-	var side_button_positions: Dictionary = current_layout.get("side_button_positions", {})
-
-	_apply_button_layout(settings_button, side_button_positions.get("settings", Vector2(view_size.x - side_button_size.x - 18.0, 84.0)), side_button_size)
-	_apply_button_layout(pause_button, side_button_positions.get("pause", Vector2(settings_button.position.x, settings_button.position.y + side_button_size.y + 8.0)), side_button_size)
-	_apply_button_layout(exit_button, side_button_positions.get("exit", Vector2(settings_button.position.x, pause_button.position.y + side_button_size.y + 8.0)), side_button_size)
+	var side_button_size := Vector2(48.0, 28.0) if not mobile_mode else Vector2(58.0, 32.0)
+	var side_y: float = 74.0
+	_apply_button_layout(settings_button, Vector2(view_size.x - side_button_size.x * 2.0 - 16.0, side_y), side_button_size)
+	_apply_button_layout(pause_button, Vector2(view_size.x - side_button_size.x - 12.0, side_y), side_button_size)
+	exit_button.visible = false
+	settings_button.add_theme_font_size_override("font_size", 12)
+	pause_button.add_theme_font_size_override("font_size", 12)
 
 	if settings_panel != null and is_instance_valid(settings_panel):
-		var hud_positions: Dictionary = current_layout.get("hud_positions", {})
-		var default_rect := Rect2(settings_button.position, Vector2(278.0, 92.0) if mobile_mode else Vector2(286.0, 96.0))
-		var settings_panel_rect: Rect2 = hud_positions.get("settings_panel_rect", default_rect)
+		var settings_panel_rect := Rect2(
+			Vector2(view_size.x - 298.0, side_y + side_button_size.y + 8.0),
+			Vector2(286.0, 96.0)
+		)
 		settings_panel.position = settings_panel_rect.position
 		settings_panel.size = settings_panel_rect.size
 

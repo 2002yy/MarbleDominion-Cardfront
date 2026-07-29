@@ -42,6 +42,12 @@ Confirmed product decisions:
   command chambers retain their previous size. Full-health entity bars and
   persistent role labels are suppressed, and chamber health is mirrored in
   the top hero plates.
+- The reference-comparison HUD/background pass now gives the arena more
+  vertical room, compresses settings and pause into one edge row, removes the
+  permanent exit button from live combat, shortens gate labels, reduces
+  stronghold badge weight, halves repeated edge decoration, and quiets neutral
+  checker/path contrast. This directly applies the stored Minion Masters,
+  Into the Breach, and Thronefall responsibilities without copying their art.
 - All 18 implemented upgrade cards instantiate through the formal three-choice scene and are reachable across valid run states. This is an executable content/readability gate, not a claim that human balance tuning is complete.
 - Existing legacy card illustrations and compatibility UI do not count as art completion for the new three-choice hero/run loop.
 

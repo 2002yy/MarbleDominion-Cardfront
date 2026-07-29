@@ -209,22 +209,22 @@ static func update_top_bar(counts: Dictionary, top_bar_segments: Dictionary, top
 			name_label.position = Vector2(0, 1)
 			name_label.size = Vector2(segment.size.x, 12)
 			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
-			name_label.add_theme_font_size_override("font_size", 9 if is_mobile_layout else 11)
+			name_label.add_theme_font_size_override("font_size", 9 if is_mobile_layout else (10 if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT else 11))
 
 			value_label.position = Vector2(0, 10)
 			value_label.size = Vector2(segment.size.x, 20)
 			value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
-			value_label.add_theme_font_size_override("font_size", 15 if is_mobile_layout else 18)
+			value_label.add_theme_font_size_override("font_size", 15 if is_mobile_layout else (16 if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT else 18))
 		else:
 			name_label.position = Vector2(6, 2)
 			name_label.size = Vector2(segment.size.x - 12.0, 14)
 			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-			name_label.add_theme_font_size_override("font_size", 10 if is_mobile_layout else 12)
+			name_label.add_theme_font_size_override("font_size", 10 if is_mobile_layout else (10 if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT else 12))
 
 			value_label.position = Vector2(0, -1)
 			value_label.size = Vector2(segment.size.x, segment.size.y)
 			value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
-			value_label.add_theme_font_size_override("font_size", 18 if is_mobile_layout else 22)
+			value_label.add_theme_font_size_override("font_size", 18 if is_mobile_layout else (17 if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT else 22))
 
 		running_x += segment.size.x
 

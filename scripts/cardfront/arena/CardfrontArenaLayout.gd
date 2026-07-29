@@ -4,9 +4,9 @@ class_name CardfrontArenaLayout
 const TARGET_MAP_PIXELS: float = 520.0
 const MIN_CELL_SIZE: int = 8
 const MAX_CELL_SIZE: int = 18
-const MAP_TOP: float = 98.0
-const ARENA_VIEW_TOP: float = 98.0
-const ARENA_VIEW_BOTTOM_MARGIN: float = 42.0
+const MAP_TOP: float = 76.0
+const ARENA_VIEW_TOP: float = 72.0
+const ARENA_VIEW_BOTTOM_MARGIN: float = 32.0
 const SIDE_GUTTER: float = 12.0
 const TURRET_OVERHANG_MIN: float = 8.0
 const AIM_PANEL_SIZE: Vector2 = Vector2(196.0, 62.0)
@@ -21,7 +21,7 @@ static func apply_to(base_layout: Dictionary, grid_size: int, viewport_size: Vec
 	var map_pixels: float = float(safe_grid_size * cell_size)
 	var map_position := Vector2(
 		floorf((viewport_size.x - map_pixels) * 0.5),
-		clampf(MAP_TOP, 88.0, maxf(88.0, viewport_size.y - map_pixels - 72.0))
+		clampf(MAP_TOP, 72.0, maxf(72.0, viewport_size.y - map_pixels - 64.0))
 	)
 	var battlefield_rect := Rect2(map_position, Vector2.ONE * map_pixels)
 	var arena_view_top: float = minf(ARENA_VIEW_TOP, maxf(0.0, viewport_size.y * 0.16))

@@ -20,13 +20,13 @@ const CHECKER_CELL_SPAN: int = 1
 const BRIDGE_COUNT: int = 2
 const COMMAND_CHAMBER_SIZE: Vector3 = Vector3(4.8, 0.72, 3.0)
 const BRIDGE_BASE_SIZE: Vector3 = Vector3(3.8, 0.38, 3.0 * ARENA_Z_SCALE)
-const EDGE_DECORATION_COUNT: int = 8
-const GRASS_LIGHT: Color = Color(0.49, 0.58, 0.32)
-const GRASS_DARK: Color = Color(0.45, 0.53, 0.29)
+const EDGE_DECORATION_COUNT: int = 4
+const GRASS_LIGHT: Color = Color(0.49, 0.57, 0.35)
+const GRASS_DARK: Color = Color(0.46, 0.54, 0.32)
 const PLAYER_TINT: Color = Color(0.21, 0.49, 0.60)
 const AI_TINT: Color = Color(0.62, 0.30, 0.30)
 const OUTLINE_COLOR: Color = Color(0.16, 0.24, 0.17)
-const PATH_COLOR: Color = Color(0.56, 0.42, 0.25, 0.72)
+const PATH_COLOR: Color = Color(0.55, 0.46, 0.31, 0.60)
 const PRESENTATION_SCALE_PRESETS: Array[float] = [1.0, 1.12, 1.20]
 const DEFAULT_PRESENTATION_SCALE: float = 1.12
 const SCALE_TWEEN_SECONDS: float = 0.18
@@ -618,7 +618,7 @@ func _build_lane_paths(grid: float) -> void:
 
 
 func _build_edge_landscape(grid: float, arena_width: float) -> void:
-	var z_positions: Array[float] = [-0.34, -0.12, 0.12, 0.34]
+	var z_positions: Array[float] = [-0.28, 0.28]
 	for side in [-1.0, 1.0]:
 		for index in range(z_positions.size()):
 			var bush := MeshInstance3D.new()
@@ -667,11 +667,7 @@ func _build_map_landmarks(grid: float, arena_width: float) -> void:
 						Vector3(side * (arena_width * 0.5 + 2.4), 0.0, grid * z_ratio * ARENA_Z_SCALE)
 					)
 		_:
-			for side in [-1.0, 1.0]:
-				_add_banner(
-					Vector3(side * (arena_width * 0.5 + 2.0), 0.0, -grid * 0.34 * ARENA_Z_SCALE),
-					Color(0.94, 0.73, 0.22)
-				)
+			pass
 
 
 func _add_landmark_pylon(position_value: Vector3, color: Color) -> void:
@@ -750,7 +746,7 @@ func _build_river_and_bridges(grid: float, arena_width: float) -> void:
 		bank.position = Vector3(0.0, 0.18, bank_z)
 		bank.material_override = _make_material(Color(0.30, 0.40, 0.23), 0.0)
 		world_root.add_child(bank)
-		for stone_index in range(13):
+		for stone_index in range(7):
 			var stone := MeshInstance3D.new()
 			stone.name = "RiverBankStone"
 			var stone_mesh := CylinderMesh.new()
@@ -760,7 +756,7 @@ func _build_river_and_bridges(grid: float, arena_width: float) -> void:
 			stone_mesh.radial_segments = 7
 			stone.mesh = stone_mesh
 			stone.position = Vector3(
-				lerpf(-arena_width * 0.48, arena_width * 0.48, float(stone_index) / 12.0),
+				lerpf(-arena_width * 0.48, arena_width * 0.48, float(stone_index) / 6.0),
 				0.36,
 				bank_z
 			)
@@ -837,10 +833,10 @@ func _build_gate_visual(bridge_x: float) -> void:
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test = true
 	label.font = ThemeDB.fallback_font
-	label.font_size = 25
-	label.outline_size = 8
-	label.pixel_size = 0.016
-	label.position = Vector3(bridge_x, 2.50, 0.0)
+	label.font_size = 22
+	label.outline_size = 7
+	label.pixel_size = 0.014
+	label.position = Vector3(bridge_x, 2.34, 0.0)
 	label.modulate = Color(1.0, 0.92, 0.58)
 	world_root.add_child(label)
 	_gate_labels.append(label)
@@ -860,16 +856,13 @@ func _refresh_gate_visual(lane_index: int) -> void:
 	elif openness > 0.20:
 		state_text = "\u534a\u5f00"
 	var owner_id: int = int(gate_state.get("owner_id", CardfrontRulesScript.NEUTRAL_OWNER))
-	var owner_text: String = "\u4e2d\u7acb"
 	var bar_color := Color(0.95, 0.30, 0.26)
 	if owner_id == CardfrontRulesScript.PLAYER_FACTION:
-		owner_text = "\u84dd\u65b9"
 		bar_color = PLAYER_TINT.lightened(0.12)
 	elif owner_id == CardfrontRulesScript.AI_FACTION:
-		owner_text = "\u7ea2\u65b9"
 		bar_color = AI_TINT.lightened(0.12)
 	bar.material_override = _make_material(bar_color, 0.08)
-	label.text = "\u95f8\u95e8%d %s\u63a7 %s" % [lane_index + 1, owner_text, state_text]
+	label.text = "\u95f8%d \u00b7 %s" % [lane_index + 1, state_text]
 
 
 func _build_stronghold_platforms() -> void:
@@ -889,18 +882,18 @@ func _build_stronghold_platforms() -> void:
 		var platform_shadow := MeshInstance3D.new()
 		platform_shadow.name = "StrongholdShadow_%s" % region_id
 		var shadow_mesh := BoxMesh.new()
-		shadow_mesh.size = Vector3(bounds.size.x * ARENA_X_SCALE + 0.72, 0.46, bounds.size.y * ARENA_Z_SCALE + 0.72)
+		shadow_mesh.size = Vector3(bounds.size.x * ARENA_X_SCALE + 0.36, 0.34, bounds.size.y * ARENA_Z_SCALE + 0.36)
 		platform_shadow.mesh = shadow_mesh
-		platform_shadow.position = center_world + Vector3(0.0, 0.28, 0.0)
-		platform_shadow.material_override = _make_material(Color(0.16, 0.25, 0.24), 0.0)
+		platform_shadow.position = center_world + Vector3(0.0, 0.22, 0.0)
+		platform_shadow.material_override = _make_material(Color(0.20, 0.28, 0.24), 0.0)
 		world_root.add_child(platform_shadow)
 
 		var platform := MeshInstance3D.new()
 		platform.name = "StrongholdPlatform_%s" % region_id
 		var platform_mesh := BoxMesh.new()
-		platform_mesh.size = Vector3(bounds.size.x * ARENA_X_SCALE + 0.18, 0.44, bounds.size.y * ARENA_Z_SCALE + 0.18)
+		platform_mesh.size = Vector3(bounds.size.x * ARENA_X_SCALE + 0.08, 0.34, bounds.size.y * ARENA_Z_SCALE + 0.08)
 		platform.mesh = platform_mesh
-		platform.position = center_world + Vector3(0.0, 0.56, 0.0)
+		platform.position = center_world + Vector3(0.0, 0.46, 0.0)
 		platform.material_override = _make_material(_region_accent(str(region_map.get_region_type_by_id(region_id))).lightened(0.08), 0.06)
 		world_root.add_child(platform)
 		_region_platforms[region_id] = platform
@@ -967,9 +960,9 @@ func _build_region_labels() -> void:
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.no_depth_test = true
 		label.font = ThemeDB.fallback_font
-		label.font_size = 30
-		label.outline_size = 8
-		label.pixel_size = 0.012
+		label.font_size = 26
+		label.outline_size = 7
+		label.pixel_size = 0.011
 		label.render_priority = 1
 		label.position = Vector3(
 			(center.x - float(battlefield.grid_size) * 0.5) * ARENA_X_SCALE,
@@ -980,7 +973,7 @@ func _build_region_labels() -> void:
 		var badge_plate := MeshInstance3D.new()
 		badge_plate.name = "BadgePlate"
 		var badge_mesh := QuadMesh.new()
-		badge_mesh.size = Vector2(3.6, 0.82)
+		badge_mesh.size = Vector2(3.2, 0.70)
 		badge_plate.mesh = badge_mesh
 		var badge_material := StandardMaterial3D.new()
 		badge_material.albedo_color = Color(0.035, 0.055, 0.060, 0.92)

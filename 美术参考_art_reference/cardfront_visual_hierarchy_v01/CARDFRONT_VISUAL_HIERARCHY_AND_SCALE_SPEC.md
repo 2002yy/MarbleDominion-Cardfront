@@ -161,6 +161,23 @@ setting and must not alter battlefield framing. Do not reuse battlefield zoom as
 - Automated tests cover presets, authority isolation, HUD dimensions, badge dimensions and BallWar isolation.
 - Desktop screenshots are captured at all three presets and reviewed for clipping, overlap and hierarchy.
 
+## 9.1 Reference Comparison Pass / 参考对比收口
+
+The second presentation pass applies the three references as one system:
+
+- Minion Masters: the arena begins directly below a slim top combat strip;
+  hero identity remains at the two corners and live controls no longer form a
+  tall right-side stack.
+- Into the Breach: gate state and stronghold percentage use short badges;
+  persistent labels are removed when shape, color or position already carries
+  the information.
+- Thronefall: neutral ground uses closer checker values, edge decoration is
+  sparse, repeated river stones are reduced, and default-map banners no longer
+  compete with units and projectiles.
+
+The live Cardfront HUD keeps only compact settings and pause controls. Exit is
+available from the pause surface rather than as a permanent battlefield button.
+
 ## 10. Next Visual Slices / 后续画面切片
 
 1. Replace permanent entity role text with hover/damaged/selected-only presentation.

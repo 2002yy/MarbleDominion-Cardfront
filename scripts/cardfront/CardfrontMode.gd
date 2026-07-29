@@ -18,7 +18,6 @@ const CardfrontTutorialOverlayScene = preload("res://scenes/ui/cardfront/Cardfro
 const CardfrontAimControlScene = preload("res://scenes/ui/cardfront/CardfrontAimControl.tscn")
 const CardfrontThreeChoicePanelScene = preload("res://scenes/ui/cardfront/CardfrontThreeChoicePanel.tscn")
 const CardfrontBattlefieldScaleControlScene = preload("res://scenes/ui/cardfront/CardfrontBattlefieldScaleControl.tscn")
-const LEGACY_SIDE_BUTTON_GAP: float = 8.0
 
 const FIRE_STATUS_TEXT: String = "拖动左侧方向滑杆｜炮塔按设定方向自动射击"
 
@@ -311,7 +310,7 @@ static func configure_runtime_hud(hud_nodes: Dictionary) -> void:
 		event_label.text = FIRE_STATUS_TEXT
 
 	RuntimeHudController.set_performance_visible(false)
-	_lower_legacy_side_buttons(hud_nodes)
+	_compact_side_buttons(hud_nodes)
 
 
 static func restore_ballwar_hud(hud_nodes: Dictionary) -> void:
@@ -334,7 +333,7 @@ static func _show_node(node) -> void:
 		node.visible = true
 
 
-static func _lower_legacy_side_buttons(hud_nodes: Dictionary) -> void:
+static func _compact_side_buttons(hud_nodes: Dictionary) -> void:
 	var settings_button = hud_nodes.get("settings_button", null)
 	var pause_button = hud_nodes.get("pause_button", null)
 	var exit_button = hud_nodes.get("exit_button", null)
@@ -343,25 +342,24 @@ static func _lower_legacy_side_buttons(hud_nodes: Dictionary) -> void:
 	if not is_instance_valid(settings_button) or not is_instance_valid(pause_button) or not is_instance_valid(exit_button):
 		return
 
-	var button_size := Vector2(66.0, 28.0)
-	var view_height: float = 720.0
+	var button_size := Vector2(48.0, 28.0)
 	var view_width: float = 1120.0
 	var viewport = settings_button.get_viewport()
 	if viewport != null:
 		var view_size: Vector2 = viewport.get_visible_rect().size
 		view_width = view_size.x
-		view_height = view_size.y
-	var stack_height: float = button_size.y * 3.0 + LEGACY_SIDE_BUTTON_GAP * 2.0
-	var start_y: float = clampf(78.0, 72.0, maxf(72.0, view_height - stack_height - 48.0))
-	var x: float = view_width - button_size.x - 12.0
+	var start_y: float = 74.0
+	var settings_x: float = view_width - button_size.x * 2.0 - 16.0
+	var pause_x: float = view_width - button_size.x - 12.0
 
 	settings_button.size = button_size
 	pause_button.size = button_size
-	exit_button.size = button_size
-	settings_button.position = Vector2(x, start_y)
-	pause_button.position = Vector2(x, start_y + button_size.y + LEGACY_SIDE_BUTTON_GAP)
-	exit_button.position = Vector2(x, pause_button.position.y + button_size.y + LEGACY_SIDE_BUTTON_GAP)
+	settings_button.position = Vector2(settings_x, start_y)
+	pause_button.position = Vector2(pause_x, start_y)
+	settings_button.add_theme_font_size_override("font_size", 12)
+	pause_button.add_theme_font_size_override("font_size", 12)
+	exit_button.visible = false
 
 	var settings_panel = hud_nodes.get("settings_panel", null)
 	if settings_panel != null and is_instance_valid(settings_panel):
-		settings_panel.position = Vector2(settings_panel.position.x, exit_button.position.y + button_size.y + 10.0)
+		settings_panel.position = Vector2(view_width - 298.0, start_y + button_size.y + 8.0)

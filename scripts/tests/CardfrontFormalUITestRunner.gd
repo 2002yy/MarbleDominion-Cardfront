@@ -16,7 +16,7 @@ func _run() -> void:
 	_test_top_resource_bar_refreshes_on_resources_changed()
 	_test_hand_panel_visible()
 	await _test_hand_panel_has_four_cards()
-	await _test_legacy_buttons_below_region_panel()
+	await _test_compact_edge_controls()
 	_test_card_click_selection_controller()
 	_test_card_play_consumes_resources()
 	_test_ballwar_no_formal_ui()
@@ -158,7 +158,7 @@ func _test_card_click_selection_controller() -> void:
 	TestFixtures.cleanup_node(main)
 
 
-func _test_legacy_buttons_below_region_panel() -> void:
+func _test_compact_edge_controls() -> void:
 	GameConfig.reset_runtime_defaults()
 	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
 
@@ -185,10 +185,11 @@ func _test_legacy_buttons_below_region_panel() -> void:
 			var region_rect := Rect2(region_panel.global_position, region_panel.size)
 			var settings_rect := Rect2(settings_button.global_position, settings_button.size)
 			_assert.that(not settings_rect.intersects(region_rect), "settings button should not overlap the region info panel")
-			_assert.that(settings_button.size.x <= 70.0 and settings_button.size.y <= 30.0, "settings button should use the compact Cardfront edge-control size")
-			_assert.gte(settings_button.global_position.x, 1040.0, "settings button should hug the right viewport edge")
-			_assert.gt(pause_button.global_position.y, settings_button.global_position.y, "pause button should sit below settings button")
-			_assert.gt(exit_button.global_position.y, pause_button.global_position.y, "exit button should sit below pause button")
+			_assert.that(settings_button.size.x <= 58.0 and settings_button.size.y <= 32.0, "settings button should use the compact Cardfront edge-control size")
+			_assert.gte(settings_button.global_position.x, 1000.0, "settings button should hug the right viewport edge")
+			_assert.eq(pause_button.global_position.y, settings_button.global_position.y, "pause and settings should share one compact row")
+			_assert.gt(pause_button.global_position.x, settings_button.global_position.x, "pause should sit to the right of settings")
+			_assert.that(not exit_button.visible, "exit should move behind the pause surface instead of occupying the live battlefield")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
