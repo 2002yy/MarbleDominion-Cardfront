@@ -997,6 +997,22 @@ Candidate order after B1:
 - Extended deterministic capture to emit battle screenshots at all three
   scale presets for human hierarchy review.
 
+### Completed: Orthographic Presentation Ownership Hotfix
+
+- Added `CardfrontPresentationModeController.gd` as the single switch that
+  gives the formal orthographic arena exclusive visual ownership.
+- The authoritative 2D Battlefield, bullets, turrets, command chambers and
+  overlay nodes continue to simulate, query and emit signals, but their legacy
+  CanvasItem drawing is hidden while the orthographic mirror is active.
+- The 3D viewport now begins exactly below the 98 px top HUD boundary, and its
+  background shares the map-specific outer-ground color instead of exposing a
+  second gray backing plane.
+- The contextual region panel is anchored to the logical battlefield edge,
+  narrowed to 188 px, and leaves a dedicated right utility rail for settings,
+  pause and exit.
+- Runtime tests now enforce mutual exclusion between legacy 2D presentation
+  and the orthographic presentation, while preserving BallWar isolation.
+
 ### Later
 
 - Run human screenshot review for `default_duel` at desktop and narrow

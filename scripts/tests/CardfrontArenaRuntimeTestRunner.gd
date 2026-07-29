@@ -32,6 +32,8 @@ func _test_cardfront_builds_arena_runtime() -> void:
 	_assert.eq(int(main.runtime.battlefield.cell_size), int(main.runtime.current_layout.get("battlefield_cell_size", 0)), "arena runtime: Battlefield should use layout cell size")
 	_assert.that(main.runtime.arena_presentation_layer != null and is_instance_valid(main.runtime.arena_presentation_layer), "arena runtime: presentation layer should exist")
 	_assert.eq(main.runtime.arena_presentation_layer.get_floor_polygon_for_test().size(), 4, "arena runtime: perspective floor should be a readable trapezoid")
+	_assert.that(not main.runtime.arena_presentation_layer.visible, "arena runtime: legacy 2D arena presentation should be hidden behind the orthographic view")
+	_assert.that(not main.runtime.battlefield.visible, "arena runtime: authoritative Battlefield should keep simulating without drawing under the orthographic view")
 	_assert.eq(main.runtime.command_chambers.size(), 2, "arena runtime: two command chamber views should exist")
 	_assert.that(main.runtime.direction_controller != null and is_instance_valid(main.runtime.direction_controller), "arena runtime: direction controller should exist")
 	_assert.that(main.runtime.aim_guide_layer != null and is_instance_valid(main.runtime.aim_guide_layer), "arena runtime: aim guide should exist")
@@ -44,6 +46,8 @@ func _test_cardfront_builds_arena_runtime() -> void:
 
 	var player_chamber = main.runtime.command_chambers.get(CardfrontRulesScript.PLAYER_FACTION, null)
 	var ai_chamber = main.runtime.command_chambers.get(CardfrontRulesScript.AI_FACTION, null)
+	_assert.that(not player_chamber.visible and not ai_chamber.visible, "arena runtime: legacy 2D chamber views should not stack below the orthographic proxies")
+	_assert.that(not player_turret.visible and not ai_turret.visible, "arena runtime: legacy 2D turrets should not stack below the orthographic proxies")
 	var player_bounds: Rect2 = player_chamber.get_global_bounds_for_test()
 	var ai_bounds: Rect2 = ai_chamber.get_global_bounds_for_test()
 	_assert.that(player_bounds.position.y < battlefield_rect.end.y and player_bounds.end.y > battlefield_rect.end.y, "arena runtime: player chamber should straddle the lower arena edge")

@@ -363,7 +363,7 @@ func _build_world() -> void:
 	environment_node.name = "WorldEnvironment"
 	arena_environment = Environment.new()
 	arena_environment.background_mode = Environment.BG_COLOR
-	arena_environment.background_color = _theme_color("sky")
+	arena_environment.background_color = _theme_color("backdrop")
 	arena_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	arena_environment.ambient_light_color = Color(0.94, 0.95, 0.84)
 	arena_environment.ambient_light_energy = 1.02
@@ -1637,7 +1637,8 @@ func _theme_color(key: String) -> Color:
 		"cross_resource":
 			theme = {
 				"sky": Color(0.76, 0.80, 0.73),
-				"outer": Color(0.36, 0.39, 0.31),
+				"backdrop": Color(0.48, 0.50, 0.36),
+				"outer": Color(0.48, 0.50, 0.36),
 				"ground": Color(0.56, 0.57, 0.34),
 				"tile_a": Color(0.61, 0.62, 0.36),
 				"tile_b": Color(0.54, 0.56, 0.31),
@@ -1648,7 +1649,8 @@ func _theme_color(key: String) -> Color:
 		"central_lab":
 			theme = {
 				"sky": Color(0.72, 0.79, 0.82),
-				"outer": Color(0.28, 0.38, 0.40),
+				"backdrop": Color(0.42, 0.52, 0.50),
+				"outer": Color(0.42, 0.52, 0.50),
 				"ground": Color(0.43, 0.56, 0.48),
 				"tile_a": Color(0.49, 0.62, 0.51),
 				"tile_b": Color(0.43, 0.56, 0.46),
@@ -1658,8 +1660,9 @@ func _theme_color(key: String) -> Color:
 			}
 		_:
 			theme = {
-				"sky": Color(0.68, 0.73, 0.75),
-				"outer": Color(0.25, 0.39, 0.23),
+				"sky": Color(0.36, 0.49, 0.31),
+				"backdrop": Color(0.42, 0.56, 0.32),
+				"outer": Color(0.42, 0.56, 0.32),
 				"ground": Color(0.42, 0.55, 0.27),
 				"tile_a": GRASS_LIGHT,
 				"tile_b": GRASS_DARK,

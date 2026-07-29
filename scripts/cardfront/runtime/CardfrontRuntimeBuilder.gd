@@ -26,6 +26,7 @@ const CardfrontVfxLayerScript = preload("res://scripts/cardfront/vfx/CardfrontVf
 const CardfrontDebugActionPanelScript = preload("res://scripts/cardfront/debug/CardfrontDebugActionPanel.gd")
 const CardfrontTargetPreviewLayerScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
 const CardfrontArenaBuilderScript = preload("res://scripts/cardfront/arena/CardfrontArenaBuilder.gd")
+const CardfrontPresentationModeControllerScript = preload("res://scripts/cardfront/arena/CardfrontPresentationModeController.gd")
 const CardfrontRoundDirectorScript = preload("res://scripts/cardfront/run/CardfrontRoundDirector.gd")
 const CardfrontTerritoryDefenseSystemScript = preload("res://scripts/cardfront/defense/CardfrontTerritoryDefenseSystem.gd")
 const CardfrontHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
@@ -149,6 +150,7 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		and capture_interceptor.entity_runtime != null
 	):
 		runtime.orthographic_arena_view.set_entity_runtime(capture_interceptor.entity_runtime)
+	CardfrontPresentationModeControllerScript.activate_orthographic(runtime)
 	return _build_result(true)
 
 

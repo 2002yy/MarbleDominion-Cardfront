@@ -22,8 +22,9 @@ var _yield_label: Label
 var _status_label: Label
 var _no_region_label: Label
 
-const PANEL_W: float = 218.0
+const PANEL_W: float = 188.0
 const PANEL_H: float = 178.0
+const RIGHT_TOOL_RAIL_W: float = 86.0
 const MARGIN_RIGHT: float = 12.0
 const MARGIN_TOP: float = 104.0
 const CONTENT_X: float = 11.0
@@ -166,7 +167,7 @@ func _update_panel(region_id: int) -> void:
 	_status_label.add_theme_color_override("font_color", _status_color(status))
 
 	_no_region_label.text = ""
-	_panel.position = Vector2(_view_width() - PANEL_W - MARGIN_RIGHT, MARGIN_TOP)
+	_panel.position = Vector2(_panel_x(), MARGIN_TOP)
 	_panel.size = Vector2(PANEL_W, PANEL_H)
 	var bg: ColorRect = _panel.get_node("Bg") as ColorRect
 	bg.size = _panel.size
@@ -184,10 +185,17 @@ func _show_empty() -> void:
 	_yield_label.text = ""
 	_status_label.text = ""
 	_no_region_label.text = "鼠标移至区域上方"
-	_panel.position = Vector2(_view_width() - PANEL_W - MARGIN_RIGHT, MARGIN_TOP)
+	_panel.position = Vector2(_panel_x(), MARGIN_TOP)
 	_panel.size = Vector2(PANEL_W, PANEL_H)
 	var bg: ColorRect = _panel.get_node("Bg") as ColorRect
 	bg.size = _panel.size
+
+
+func _panel_x() -> float:
+	if battlefield != null and is_instance_valid(battlefield):
+		var battlefield_right: float = battlefield.global_position.x + float(battlefield.grid_size * battlefield.cell_size)
+		return battlefield_right + 10.0
+	return _view_width() - PANEL_W - RIGHT_TOOL_RAIL_W - MARGIN_RIGHT
 
 
 func _make_label(parent: Node, pos: Vector2, sz: Vector2, text: String, font_size: int, color: Color) -> Label:

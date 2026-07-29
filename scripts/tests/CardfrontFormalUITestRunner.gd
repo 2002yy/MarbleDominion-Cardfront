@@ -182,8 +182,11 @@ func _test_legacy_buttons_below_region_panel() -> void:
 		var pause_button = main.runtime.hud.get("pause_button", null)
 		var exit_button = main.runtime.hud.get("exit_button", null)
 		if region_panel != null and settings_button != null and pause_button != null and exit_button != null:
-			var region_bottom: float = region_panel.global_position.y + region_panel.size.y
-			_assert.gte(settings_button.global_position.y, region_bottom + 8.0, "settings button should sit below region info panel")
+			var region_rect := Rect2(region_panel.global_position, region_panel.size)
+			var settings_rect := Rect2(settings_button.global_position, settings_button.size)
+			_assert.that(not settings_rect.intersects(region_rect), "settings button should not overlap the region info panel")
+			_assert.that(settings_button.size.x <= 70.0 and settings_button.size.y <= 30.0, "settings button should use the compact Cardfront edge-control size")
+			_assert.gte(settings_button.global_position.x, 1040.0, "settings button should hug the right viewport edge")
 			_assert.gt(pause_button.global_position.y, settings_button.global_position.y, "pause button should sit below settings button")
 			_assert.gt(exit_button.global_position.y, pause_button.global_position.y, "exit button should sit below pause button")
 

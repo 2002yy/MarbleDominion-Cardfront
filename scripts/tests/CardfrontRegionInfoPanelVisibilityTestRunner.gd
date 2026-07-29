@@ -65,7 +65,7 @@ func _test_panel_is_bright_large_and_off_map() -> void:
 			var bg = region_panel.get_node_or_null("Bg")
 			var title_label = main.runtime.region_info_panel._title_label
 
-			_assert.that(region_panel.size.x <= 224.0 and region_panel.size.x >= 210.0, "region panel should be compact but readable")
+			_assert.that(region_panel.size.x <= 194.0 and region_panel.size.x >= 184.0, "region panel should be compact but readable")
 			_assert.that(region_panel.size.y <= 184.0 and region_panel.size.y >= 170.0, "region panel should be vertically compact")
 			_assert.gte(region_panel.self_modulate.a, 0.95, "region panel should be visually solid")
 			_assert.gte(region_panel.self_modulate.r + region_panel.self_modulate.g + region_panel.self_modulate.b, 0.60, "region panel should be brighter")
@@ -82,7 +82,9 @@ func _test_panel_is_bright_large_and_off_map() -> void:
 
 			var settings_button = main.runtime.hud.get("settings_button", null)
 			if settings_button != null:
-				_assert.gte(settings_button.global_position.y, panel_rect.position.y + panel_rect.size.y + 8.0, "settings button should remain below brighter region panel")
+				var settings_rect := Rect2(settings_button.global_position, settings_button.size)
+				_assert.that(not settings_rect.intersects(panel_rect), "compact settings button should stay beside rather than cover the region panel")
+				_assert.that(settings_button.size.x <= 70.0 and settings_button.size.y <= 30.0, "region panel: settings button should stay compact")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
