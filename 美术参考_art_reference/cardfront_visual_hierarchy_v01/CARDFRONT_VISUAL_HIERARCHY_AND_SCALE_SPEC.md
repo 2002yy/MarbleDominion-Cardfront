@@ -178,6 +178,23 @@ The second presentation pass applies the three references as one system:
 The live Cardfront HUD keeps only compact settings and pause controls. Exit is
 available from the pause surface rather than as a permanent battlefield button.
 
+## 9.2 Quiet Field Background / 安静色面背景
+
+The battlefield background follows a quiet-field rule:
+
+- neutral terrain is one broad desaturated teal-sage plane;
+- checker variation spans several simulation cells and remains low contrast;
+- routes use a small number of broad warm-earth bands;
+- map identity comes from restrained hue shifts rather than dense decoration;
+- faction ownership remains visibly blue or red without turning every cell into
+  a high-contrast tile;
+- units, projectiles, towers and short combat feedback retain the strongest
+  local contrast.
+
+This direction uses the supplied Thronefall-style reference for hierarchy, not
+for asset or composition copying. Grid authority remains 40x40 even when the
+presentation groups cells into larger visual fields.
+
 ## 10. Next Visual Slices / 后续画面切片
 
 1. Replace permanent entity role text with hover/damaged/selected-only presentation.

@@ -48,6 +48,10 @@ Confirmed product decisions:
   stronghold badge weight, halves repeated edge decoration, and quiets neutral
   checker/path contrast. This directly applies the stored Minion Masters,
   Into the Breach, and Thronefall responsibilities without copying their art.
+- The arena background now uses broad low-contrast teal-sage fields with sparse
+  warm route bands. Visual checker cadence groups five simulation cells while
+  the authoritative 40x40 grid is unchanged; faction ownership, units,
+  projectiles and combat feedback retain the high-contrast budget.
 - All 18 implemented upgrade cards instantiate through the formal three-choice scene and are reachable across valid run states. This is an executable content/readability gate, not a claim that human balance tuning is complete.
 - Existing legacy card illustrations and compatibility UI do not count as art completion for the new three-choice hero/run loop.
 

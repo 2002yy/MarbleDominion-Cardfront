@@ -16,17 +16,17 @@ const TILE_HEIGHT: float = 0.16
 const ARENA_X_SCALE: float = 1.18
 const ARENA_Z_SCALE: float = 1.28
 const OUTER_FLOOR_WIDTH_PADDING: float = 32.0
-const CHECKER_CELL_SPAN: int = 1
+const CHECKER_CELL_SPAN: int = 5
 const BRIDGE_COUNT: int = 2
 const COMMAND_CHAMBER_SIZE: Vector3 = Vector3(4.8, 0.72, 3.0)
 const BRIDGE_BASE_SIZE: Vector3 = Vector3(3.8, 0.38, 3.0 * ARENA_Z_SCALE)
 const EDGE_DECORATION_COUNT: int = 4
-const GRASS_LIGHT: Color = Color(0.49, 0.57, 0.35)
-const GRASS_DARK: Color = Color(0.46, 0.54, 0.32)
+const GRASS_LIGHT: Color = Color(0.40, 0.53, 0.46)
+const GRASS_DARK: Color = Color(0.39, 0.51, 0.44)
 const PLAYER_TINT: Color = Color(0.21, 0.49, 0.60)
 const AI_TINT: Color = Color(0.62, 0.30, 0.30)
-const OUTLINE_COLOR: Color = Color(0.16, 0.24, 0.17)
-const PATH_COLOR: Color = Color(0.55, 0.46, 0.31, 0.60)
+const OUTLINE_COLOR: Color = Color(0.12, 0.20, 0.19)
+const PATH_COLOR: Color = Color(0.54, 0.43, 0.33, 0.56)
 const PRESENTATION_SCALE_PRESETS: Array[float] = [1.0, 1.12, 1.20]
 const DEFAULT_PRESENTATION_SCALE: float = 1.12
 const SCALE_TWEEN_SECONDS: float = 0.18
@@ -384,14 +384,14 @@ func _build_world() -> void:
 	arena_environment.background_color = _theme_color("backdrop")
 	arena_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	arena_environment.ambient_light_color = Color(0.94, 0.95, 0.84)
-	arena_environment.ambient_light_energy = 1.02
+	arena_environment.ambient_light_energy = 0.94
 	environment_node.environment = arena_environment
 	world_root.add_child(environment_node)
 
 	var key_light := DirectionalLight3D.new()
 	key_light.name = "KeyLight"
 	key_light.light_color = Color(1.0, 0.96, 0.84)
-	key_light.light_energy = 1.42
+	key_light.light_energy = 1.30
 	key_light.rotation_degrees = Vector3(-58.0, -28.0, 0.0)
 	key_light.shadow_enabled = false
 	world_root.add_child(key_light)
@@ -1646,10 +1646,10 @@ func _tile_color(owner_id: int, region_type: String, cell: Vector2i) -> Color:
 	var checker_index: int = floori(float(cell.x) / float(CHECKER_CELL_SPAN)) + floori(float(cell.y) / float(CHECKER_CELL_SPAN))
 	var owner_color: Color = _theme_color("tile_a") if checker_index % 2 == 0 else _theme_color("tile_b")
 	if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
-		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.38)
+		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.44)
 	var accent: Color = _region_accent(region_type)
 	if region_type != RegionTypeScript.NORMAL:
-		owner_color = owner_color.lerp(accent, 0.18).lightened(0.04)
+		owner_color = owner_color.lerp(accent, 0.12).lightened(0.02)
 	return Color(owner_color.r, owner_color.g, owner_color.b, 1.0)
 
 
@@ -1658,39 +1658,39 @@ func _theme_color(key: String) -> Color:
 	match map_id:
 		"cross_resource":
 			theme = {
-				"sky": Color(0.76, 0.80, 0.73),
-				"backdrop": Color(0.48, 0.50, 0.36),
-				"outer": Color(0.48, 0.50, 0.36),
-				"ground": Color(0.56, 0.57, 0.34),
-				"tile_a": Color(0.61, 0.62, 0.36),
-				"tile_b": Color(0.54, 0.56, 0.31),
-				"path": Color(0.66, 0.45, 0.24, 0.76),
-				"foliage_a": Color(0.35, 0.48, 0.24),
-				"foliage_b": Color(0.43, 0.54, 0.27),
+				"sky": Color(0.67, 0.72, 0.63),
+				"backdrop": Color(0.46, 0.51, 0.39),
+				"outer": Color(0.46, 0.51, 0.39),
+				"ground": Color(0.48, 0.53, 0.39),
+				"tile_a": Color(0.50, 0.55, 0.40),
+				"tile_b": Color(0.49, 0.54, 0.39),
+				"path": Color(0.57, 0.43, 0.30, 0.58),
+				"foliage_a": Color(0.31, 0.43, 0.27),
+				"foliage_b": Color(0.36, 0.47, 0.29),
 			}
 		"central_lab":
 			theme = {
-				"sky": Color(0.72, 0.79, 0.82),
-				"backdrop": Color(0.42, 0.52, 0.50),
-				"outer": Color(0.42, 0.52, 0.50),
-				"ground": Color(0.43, 0.56, 0.48),
-				"tile_a": Color(0.49, 0.62, 0.51),
-				"tile_b": Color(0.43, 0.56, 0.46),
-				"path": Color(0.48, 0.43, 0.54, 0.72),
-				"foliage_a": Color(0.26, 0.44, 0.36),
-				"foliage_b": Color(0.32, 0.50, 0.40),
+				"sky": Color(0.68, 0.74, 0.74),
+				"backdrop": Color(0.41, 0.49, 0.48),
+				"outer": Color(0.41, 0.49, 0.48),
+				"ground": Color(0.42, 0.52, 0.50),
+				"tile_a": Color(0.44, 0.54, 0.52),
+				"tile_b": Color(0.43, 0.53, 0.51),
+				"path": Color(0.46, 0.40, 0.48, 0.56),
+				"foliage_a": Color(0.25, 0.40, 0.35),
+				"foliage_b": Color(0.30, 0.45, 0.38),
 			}
 		_:
 			theme = {
-				"sky": Color(0.36, 0.49, 0.31),
-				"backdrop": Color(0.42, 0.56, 0.32),
-				"outer": Color(0.42, 0.56, 0.32),
-				"ground": Color(0.42, 0.55, 0.27),
+				"sky": Color(0.62, 0.69, 0.62),
+				"backdrop": Color(0.38, 0.49, 0.45),
+				"outer": Color(0.38, 0.49, 0.45),
+				"ground": Color(0.39, 0.52, 0.45),
 				"tile_a": GRASS_LIGHT,
 				"tile_b": GRASS_DARK,
 				"path": PATH_COLOR,
-				"foliage_a": Color(0.27, 0.48, 0.22),
-				"foliage_b": Color(0.34, 0.55, 0.24),
+				"foliage_a": Color(0.25, 0.40, 0.31),
+				"foliage_b": Color(0.30, 0.46, 0.35),
 			}
 	return theme.get(key, Color.WHITE)
 
@@ -1698,11 +1698,11 @@ func _theme_color(key: String) -> Color:
 func _region_accent(region_type: String) -> Color:
 	match region_type:
 		RegionTypeScript.ENERGY:
-			return Color(0.27, 0.55, 0.58)
+			return Color(0.31, 0.51, 0.52)
 		RegionTypeScript.FACTORY:
-			return Color(0.68, 0.50, 0.22)
+			return Color(0.59, 0.44, 0.25)
 		RegionTypeScript.LAB:
-			return Color(0.45, 0.39, 0.54)
+			return Color(0.43, 0.39, 0.48)
 		_:
 			return GRASS_DARK
 

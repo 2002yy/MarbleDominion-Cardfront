@@ -56,7 +56,7 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.that(view.get_command_chamber_width_for_test() <= 5.0, "orthographic arena: command chambers should not dominate combat entities")
 	_assert.that(view.get_bridge_visual_width_for_test() <= 4.0, "orthographic arena: bridge gates should preserve combat space")
 	_assert.that(view.get_edge_decoration_count_for_test() <= 8, "orthographic arena: peripheral decoration should stay subordinate")
-	_assert.eq(view.get_checker_cell_span_for_test(), 1, "orthographic arena: checker detail should resolve every simulation cell")
+	_assert.gte(view.get_checker_cell_span_for_test(), 4, "orthographic arena: background checker should read as broad quiet color fields")
 	_assert.eq(view.get_turret_proxy_count_for_test(), 2, "orthographic arena: player and AI should each have one visual proxy")
 	var background: Color = view.get_background_color_for_test()
 	_assert.gte((background.r + background.g + background.b) / 3.0, 0.40, "orthographic arena: arena surround should stay bright enough for daylight readability")
