@@ -311,6 +311,8 @@ func _make_state(hero_id: String, owner_id: int) -> Dictionary:
 		"next_volley_bonus": 0,
 		"next_volley_multiplier": 1,
 		"next_volley_armor_pierce_contacts": 0,
+		"next_volley_siege_count": 0,
+		"next_volley_suppression_count": 0,
 		"pending_repair_points": 0,
 		"owned_creature_count": 0,
 		"owned_defense_tower_count": 0,
@@ -500,6 +502,15 @@ func _apply_upgrade_once_fast(state: Dictionary, upgrade_id: String) -> bool:
 			state["pending_repair_points"] = int(state["pending_repair_points"]) + maxi(0, int(params.get("amount", 0)))
 		"add_armor_pierce":
 			state["next_volley_armor_pierce_contacts"] = maxi(int(state["next_volley_armor_pierce_contacts"]), int(params.get("contacts", 0)))
+		"convert_next_volley":
+			var projectile_type: String = str(params.get("projectile_type", ""))
+			var conversion_count: int = maxi(0, int(params.get("amount", 0)))
+			if projectile_type == "siege":
+				state["next_volley_siege_count"] = maxi(int(state.get("next_volley_siege_count", 0)), conversion_count)
+			elif projectile_type == "suppression":
+				state["next_volley_suppression_count"] = maxi(int(state.get("next_volley_suppression_count", 0)), conversion_count)
+			else:
+				return false
 		"increase_rarity":
 			state["rarity_level"] = clampi(int(state["rarity_level"]) + int(params.get("amount", 0)), 0, RunStateScript.MAX_RARITY_LEVEL)
 		"echo_next_choice":
@@ -568,12 +579,16 @@ func _build_and_consume_volley_fast(state: Dictionary) -> Dictionary:
 		"shot_count": shot_count,
 		"attack_level": clampi(int(state["attack_level"]), 0, RunStateScript.MAX_ATTACK_LEVEL),
 		"armor_pierce_contacts": maxi(0, int(state["next_volley_armor_pierce_contacts"])),
+		"siege_shot_count": mini(shot_count, maxi(0, int(state.get("next_volley_siege_count", 0)))),
+		"suppression_shot_count": mini(shot_count, maxi(0, int(state.get("next_volley_suppression_count", 0)))),
 		"building_shot_count": building_shots,
 		"heavy_charge_armed": bool(state.get("heavy_charge_armed", false)),
 	}
 	state["next_volley_bonus"] = 0
 	state["next_volley_multiplier"] = 1
 	state["next_volley_armor_pierce_contacts"] = 0
+	state["next_volley_siege_count"] = 0
+	state["next_volley_suppression_count"] = 0
 	state["heavy_charge_armed"] = false
 	return result
 
