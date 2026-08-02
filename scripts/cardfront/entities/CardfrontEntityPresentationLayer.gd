@@ -365,7 +365,7 @@ func _on_entity_contact_resolved(result: Dictionary) -> void:
 	var actor = _actors_by_entity_id.get(target_id, null)
 	if actor != null and is_instance_valid(actor):
 		if (
-			actor.visual_id == CardfrontEntityVisualRegistry.ARMORED_GUARD
+			actor.visual_id == EntityVisualRegistryScript.ARMORED_GUARD
 			and bool(result.get("bounce_projectile", false))
 		):
 			actor.play_action("block")

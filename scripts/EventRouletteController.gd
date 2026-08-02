@@ -1,6 +1,8 @@
 extends Node
 class_name EventRouletteController
 
+const GridExtentScript = preload("res://scripts/GridExtent.gd")
+
 signal event_round_started(payload)
 signal event_round_finished(payload)
 signal banner_requested(title_text, sub_text, accent, auto_hide)
@@ -224,7 +226,7 @@ func _resolve_event_result() -> Dictionary:
 		"final_effect_name": _effect_display_name(final_effect),
 		"result_text": _result_display_text(faction_id, final_effect),
 		"grid_size": main_ref.selected_grid_size if main_ref != null else 40,
-		"grid_extent": GridExtent.to_array(main_ref.selected_grid_extent) if main_ref != null else [40, 40],
+		"grid_extent": GridExtentScript.to_array(main_ref.selected_grid_extent) if main_ref != null else [40, 40],
 	}
 
 func _roll_effect_sequence(out_sequence: Array) -> String:
