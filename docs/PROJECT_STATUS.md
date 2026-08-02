@@ -1240,6 +1240,11 @@ Implementation checkpoint (2026-08-03):
   rebuilding the Godot import cache. The battlefield-scale runner and capture
   script now both exit successfully; fresh desktop and narrow screenshot review
   remains the acceptance gate.
+- Follow-up readability pass: the aim surface now derives its size and position
+  from the active viewport, strongholds expose a control-strength ring in
+  addition to their badge, and tile ownership/region accents use a clearer
+  value separation. `CardfrontBattlefieldScaleTestRunner` passes all 17 checks
+  after these presentation-only changes.
 
 ### Later
 

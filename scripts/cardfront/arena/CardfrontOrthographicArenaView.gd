@@ -57,6 +57,7 @@ var _turret_barrels: Dictionary = {}
 var _chamber_labels: Dictionary = {}
 var _region_labels: Dictionary = {}
 var _region_platforms: Dictionary = {}
+var _region_control_rings: Dictionary = {}
 var _bridge_tops: Array[MeshInstance3D] = []
 var _gate_bars: Array[MeshInstance3D] = []
 var _gate_labels: Array[Label3D] = []
@@ -950,6 +951,24 @@ func _build_stronghold_platforms() -> void:
 		world_root.add_child(platform)
 		_region_platforms[region_id] = platform
 
+		var ring := MeshInstance3D.new()
+		ring.name = "StrongholdControlRing_%s" % region_id
+		var ring_mesh := TorusMesh.new()
+		ring_mesh.inner_radius = 0.84
+		ring_mesh.outer_radius = 1.0
+		ring_mesh.rings = 12
+		ring_mesh.ring_segments = 8
+		ring.mesh = ring_mesh
+		ring.position = center_world + Vector3(0.0, 0.72, 0.0)
+		ring.scale = Vector3(
+			maxf(1.0, bounds.size.x * ARENA_X_SCALE * 0.52),
+			1.0,
+			maxf(1.0, bounds.size.y * _z_scale * 0.52)
+		)
+		ring.material_override = _make_material(Color(0.82, 0.88, 0.70, 0.90), 0.16)
+		world_root.add_child(ring)
+		_region_control_rings[region_id] = ring
+
 
 func _cell_bounds(cells: Array) -> Rect2:
 	var min_cell := Vector2(INF, INF)
@@ -994,6 +1013,12 @@ func _refresh_stronghold_platforms() -> void:
 			color = accent.lerp(_arena_faction_color(leader_id).lightened(0.18), 0.38)
 		var platform: MeshInstance3D = _region_platforms[region_id]
 		platform.material_override = _make_material(color, 0.10)
+		var ring: MeshInstance3D = _region_control_rings.get(region_id, null)
+		if ring != null and is_instance_valid(ring):
+			var control_ratio: float = clampf(float(leader.percent) / 100.0, 0.0, 1.0)
+			var ring_color: Color = color.lightened(0.26)
+			ring.material_override = _make_material(ring_color, lerpf(0.08, 0.32, control_ratio))
+			ring.scale.y = 1.0 + (1.0 - control_ratio) * 0.18
 
 
 func _build_region_labels() -> void:
@@ -1763,10 +1788,10 @@ func _tile_color(owner_id: int, region_type: String, cell: Vector2i) -> Color:
 	var checker_index: int = floori(float(cell.x) / float(CHECKER_CELL_SPAN)) + floori(float(cell.y) / float(CHECKER_CELL_SPAN))
 	var owner_color: Color = _theme_color("tile_a") if checker_index % 2 == 0 else _theme_color("tile_b")
 	if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
-		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.44)
+		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.52)
 	var accent: Color = _region_accent(region_type)
 	if region_type != RegionTypeScript.NORMAL:
-		owner_color = owner_color.lerp(accent, 0.12).lightened(0.02)
+		owner_color = owner_color.lerp(accent, 0.18).lightened(0.035)
 	return Color(owner_color.r, owner_color.g, owner_color.b, 1.0)
 
 
