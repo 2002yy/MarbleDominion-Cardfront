@@ -1235,11 +1235,11 @@ Implementation checkpoint (2026-08-03):
 - The top territory HUD is shorter and its percentage strip thinner. The aim
   control is a compact bottom-edge surface, and its world guide now shows a
   direction cone plus two predicted boundary ricochet contacts.
-- `capture_cardfront_full_game.gd` still exits successfully, but the complete
-  headless test suite is blocked by pre-existing unresolved global classes
-  (`GridExtent`, `CardfrontEntityVisualRegistry`) and missing environment import
-  cache entries. A clean editor/import baseline is required for a fresh visual
-  acceptance capture.
+- The prior global-class resolution failures were removed by using explicit
+  dependencies for `GridExtent` and `CardfrontEntityVisualRegistry`, then
+  rebuilding the Godot import cache. The battlefield-scale runner and capture
+  script now both exit successfully; fresh desktop and narrow screenshot review
+  remains the acceptance gate.
 
 ### Later
 
