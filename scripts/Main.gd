@@ -598,9 +598,17 @@ func _create_cardfront_battle_hero_hud() -> void:
 
 
 func _create_cardfront_battlefield_scale_control() -> void:
-	# The 120% framing is the player-facing composition. Keep scale selection as
-	# an arena API for QA, but do not spend battle-space on a permanent debug widget.
 	runtime.battlefield_scale_control = null
+	var ui_canvas = _hud_ref("ui_canvas")
+	if ui_canvas == null:
+		return
+	var scale_setup: Dictionary = CardfrontModeScript.create_battlefield_scale_control(
+		ui_canvas,
+		runtime.orthographic_arena_view,
+		Vector2(VIEW_W, VIEW_H)
+	)
+	if bool(scale_setup.get("configured", false)):
+		runtime.battlefield_scale_control = scale_setup.get("battlefield_scale_control", null)
 
 
 func _configure_cardfront_three_choice_ui() -> void:
