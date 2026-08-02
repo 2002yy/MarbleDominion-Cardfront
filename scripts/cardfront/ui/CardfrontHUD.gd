@@ -51,10 +51,10 @@ func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary
 	var hud_positions: Dictionary = layout.get("hud_positions", {})
 	_collect_top_bar_nodes()
 
-	var top_panel_width: float = minf(560.0, view_size.x - 510.0)
+	var top_panel_width: float = minf(520.0, view_size.x - 500.0)
 	var top_panel_rect := Rect2(
-		Vector2((view_size.x - top_panel_width) * 0.5, 4.0),
-		Vector2(top_panel_width, 54.0 if not mobile_mode else 58.0)
+		Vector2((view_size.x - top_panel_width) * 0.5, 3.0),
+		Vector2(top_panel_width, 46.0 if not mobile_mode else 52.0)
 	)
 	top_panel.position = top_panel_rect.position
 	top_panel.size = top_panel_rect.size
@@ -80,8 +80,8 @@ func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary
 	stage_label.size = stage_label_rect.size
 
 	var bar_bg_rect := Rect2(
-		top_panel.position + Vector2(14.0, 29.0),
-		Vector2(top_panel.size.x - 28.0, 20.0)
+		top_panel.position + Vector2(14.0, 28.0),
+		Vector2(top_panel.size.x - 28.0, 14.0)
 	)
 	top_bar_shell.position = bar_bg_rect.position - top_panel.position
 	top_bar_shell.size = bar_bg_rect.size
