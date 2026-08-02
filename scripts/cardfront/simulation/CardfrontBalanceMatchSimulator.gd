@@ -460,7 +460,7 @@ func _upgrade_score_fast(upgrade_id: String, state: Dictionary) -> float:
 			# Heavy charge is a rare, one-volley payoff. Keep its proxy value above
 			# the repeatable tower setup so the fortification deck can exercise the
 			# approved anti-building candidate instead of permanently starving it.
-			return 80.0
+			return 90.0
 		UpgradeManifestScript.UPGRADE_ARMORED_GUARD:
 			return 77.0
 		UpgradeManifestScript.UPGRADE_SAPPER_UNIT:
