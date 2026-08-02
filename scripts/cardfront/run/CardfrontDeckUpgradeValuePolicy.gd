@@ -160,7 +160,11 @@ static func _score_entity_upgrade(
 			result["persistent_value"] = float(towers * (level + 2)) * 6.0 * minf(8.0, float(context.get("rounds_remaining", 8))) / 8.0
 			result["reason"] = "powered_tower_volley_growth"
 		"arm_heavy_charge":
-			result["immediate_value"] = 10.0 + float(enemy_towers) * 22.0
+			# A confirmed enemy tower creates one immediate demolition window:
+			# center damage, nearby entity damage, and a defense-layer break. Its
+			# proxy value must compete with repeatable construction cards so this
+			# approved fortification-deck answer is actually selectable.
+			result["immediate_value"] = 28.0 + float(enemy_towers) * 44.0
 			result["reason"] = "enemy_tower_demolition_window"
 	result["score"] = float(result["persistent_value"]) + float(result["immediate_value"])
 	return result
