@@ -29,8 +29,18 @@ func setup(new_direction_controller, layout: Dictionary, mode_name: String) -> b
 		return false
 	# Aim is contextual, so it lives on the lower edge instead of competing with
 	# the left-side battlefield and region information.
-	var panel_size := Vector2(272.0, 60.0)
-	var panel_rect := Rect2(Vector2((1152.0 - panel_size.x) * 0.5, 720.0 - panel_size.y - 12.0), panel_size)
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+	if viewport_size.x < 1.0 or viewport_size.y < 1.0:
+		viewport_size = Vector2(1152.0, 720.0)
+	var compact_mode: bool = viewport_size.x < 680.0
+	var panel_size := Vector2(
+		minf(272.0, viewport_size.x - (20.0 if compact_mode else 32.0)),
+		56.0 if compact_mode else 60.0
+	)
+	var panel_rect := Rect2(
+		Vector2((viewport_size.x - panel_size.x) * 0.5, viewport_size.y - panel_size.y - (8.0 if compact_mode else 12.0)),
+		panel_size
+	)
 	_panel.position = panel_rect.position
 	_panel.size = panel_rect.size
 	_layout_children()
