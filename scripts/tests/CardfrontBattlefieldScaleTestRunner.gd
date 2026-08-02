@@ -27,29 +27,28 @@ func _test_cardfront_scale_presets_and_authority_isolation() -> void:
 	var view = main.runtime.orthographic_arena_view
 	var control = main.runtime.battlefield_scale_control
 	_assert.that(view != null and is_instance_valid(view), "scale: Cardfront should create an orthographic view")
-	_assert.that(control != null and is_instance_valid(control), "scale: Cardfront should create the formal scale control")
-	if view == null or control == null:
+	_assert.eq(control, null, "scale: player battle should not expose a persistent scale debug control")
+	if view == null:
 		TestFixtures.cleanup_node(main)
 		await _flush()
 		return
 
-	_assert.eq(control.get_button_count_for_test(), 3, "scale: control should expose exactly three deliberate presets")
-	_assert.eq(control.get_selected_scale_for_test(), 1.12, "scale: match should begin at the readable 112 percent preset")
+	_assert.eq(view.get_presentation_scale(), 1.20, "scale: match should begin at the close 120 percent combat framing")
 	var authority_snapshot: String = JSON.stringify(main.runtime.battlefield.owners, "", true, true)
 	var base_size: float = view.get_camera_for_test().size
 
-	control.select_scale(1.0, false)
+	view.set_presentation_scale(1.0, false)
 	_assert.eq(view.get_presentation_scale(), 1.0, "scale: 100 percent overview preset should be selected")
 	_assert.that(view.get_camera_for_test().size > base_size, "scale: 100 percent should widen the default orthographic framing")
 	_assert.eq(JSON.stringify(main.runtime.battlefield.owners, "", true, true), authority_snapshot, "scale: zooming out must not mutate authoritative cells")
 
-	control.select_scale(1.20, false)
+	view.set_presentation_scale(1.20, false)
 	_assert.eq(view.get_presentation_scale(), 1.20, "scale: 120 percent detail preset should be selected")
-	_assert.that(view.get_camera_for_test().size < base_size, "scale: 120 percent should tighten the orthographic framing")
+	_assert.eq(view.get_camera_for_test().size, base_size, "scale: 120 percent should restore the close default framing")
 	_assert.eq(JSON.stringify(main.runtime.battlefield.owners, "", true, true), authority_snapshot, "scale: zooming in must not mutate authoritative cells")
 
-	_assert.eq(control.select_scale(1.14, false), 1.12, "scale: arbitrary values should snap to the nearest approved preset")
-	_assert.eq(view.get_camera_for_test().size, base_size, "scale: snapped 112 percent should restore the default camera size")
+	_assert.eq(view.set_presentation_scale(1.14, false), 1.12, "scale: arbitrary values should snap to the nearest approved preset")
+	_assert.that(view.get_camera_for_test().size > base_size, "scale: snapped 112 percent should widen the close default framing")
 	_assert.that(main.runtime.battlefield is Node2D, "scale: authoritative battlefield remains 2D")
 	_assert.that(main.runtime.bullet_pool is Node2D, "scale: authoritative projectile pool remains 2D")
 	_assert.eq(view.get_gate_count_for_test(), 2, "scale: gate presentation should remain intact")
