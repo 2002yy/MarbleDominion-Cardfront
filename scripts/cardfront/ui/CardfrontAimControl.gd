@@ -27,7 +27,26 @@ func setup(new_direction_controller, layout: Dictionary, mode_name: String) -> b
 	if not visible or direction_controller == null or not is_instance_valid(direction_controller):
 		visible = false
 		return false
-	var panel_rect: Rect2 = layout.get("aim_control_rect", Rect2(Vector2(26.0, 420.0), Vector2(292.0, 84.0)))
+	# Aim is contextual, so it lives on the lower edge instead of competing with
+	# the left-side battlefield and region information.
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+	if viewport_size.x < 1.0 or viewport_size.y < 1.0:
+		viewport_size = Vector2(1152.0, 720.0)
+	var compact_mode: bool = viewport_size.x < 680.0
+	var battlefield_rect: Rect2 = layout.get("battlefield_rect", Rect2())
+	var side_gutter_width: float = battlefield_rect.position.x - 12.0
+	var use_side_gutter: bool = battlefield_rect.has_area() and side_gutter_width >= 208.0
+	var panel_size := Vector2(
+		minf(272.0, viewport_size.x - (20.0 if compact_mode else 32.0)),
+		56.0 if compact_mode else 60.0
+	)
+	if use_side_gutter:
+		panel_size.x = clampf(side_gutter_width - 12.0, 196.0, panel_size.x)
+	var panel_x: float = 12.0 if use_side_gutter else (viewport_size.x - panel_size.x) * 0.5
+	var panel_rect := Rect2(
+		Vector2(panel_x, viewport_size.y - panel_size.y - (8.0 if compact_mode else 12.0)),
+		panel_size
+	)
 	_panel.position = panel_rect.position
 	_panel.size = panel_rect.size
 	_layout_children()
@@ -102,17 +121,17 @@ func _layout_children() -> void:
 	$Panel/Bg.size = _panel.size - Vector2(6.0, 6.0)
 	$Panel/Accent.position = Vector2(8.0, 4.0)
 	$Panel/Accent.size = Vector2(width - 16.0, 3.0)
-	_title.position = Vector2(10.0, 7.0)
+	_title.position = Vector2(10.0, 5.0)
 	_title.size = Vector2(86.0, 18.0)
 	_title.add_theme_font_size_override("font_size", 14)
-	_angle_value.position = Vector2(width - 105.0, 6.0)
+	_angle_value.position = Vector2(width - 105.0, 4.0)
 	_angle_value.size = Vector2(94.0, 20.0)
 	_angle_value.add_theme_font_size_override("font_size", 16)
-	_left_button.position = Vector2(8.0, 28.0)
+	_left_button.position = Vector2(8.0, 27.0)
 	_left_button.size = Vector2(28.0, 25.0)
-	_right_button.position = Vector2(width - 36.0, 28.0)
+	_right_button.position = Vector2(width - 36.0, 27.0)
 	_right_button.size = Vector2(28.0, 25.0)
-	_slider.position = Vector2(41.0, 28.0)
+	_slider.position = Vector2(41.0, 27.0)
 	_slider.size = Vector2(maxf(72.0, width - 82.0), 25.0)
 	_hint.visible = false
 

@@ -19,7 +19,7 @@ const ARENA_Z_SCALE: float = 1.28
 const OUTER_FLOOR_WIDTH_PADDING: float = 32.0
 const CHECKER_CELL_SPAN: int = 5
 const BRIDGE_COUNT: int = 2
-const COMMAND_CHAMBER_SIZE: Vector3 = Vector3(4.8, 0.72, 3.0)
+const COMMAND_CHAMBER_SIZE: Vector3 = Vector3(6.8, 0.84, 4.0)
 const BRIDGE_BASE_WIDTH: float = 3.8
 const EDGE_DECORATION_COUNT: int = 4
 const GRASS_LIGHT: Color = Color(0.40, 0.53, 0.46)
@@ -29,10 +29,10 @@ const AI_TINT: Color = Color(0.62, 0.30, 0.30)
 const OUTLINE_COLOR: Color = Color(0.12, 0.20, 0.19)
 const PATH_COLOR: Color = Color(0.54, 0.43, 0.33, 0.56)
 const PRESENTATION_SCALE_PRESETS: Array[float] = [1.0, 1.12, 1.20]
-const DEFAULT_PRESENTATION_SCALE: float = 1.12
+const DEFAULT_PRESENTATION_SCALE: float = 1.20
 const SCALE_TWEEN_SECONDS: float = 0.18
-const COMBAT_ENTITY_VISUAL_SCALE: float = 1.24
-const PROJECTILE_VISUAL_SCALE: float = 1.22
+const COMBAT_ENTITY_VISUAL_SCALE: float = 1.48
+const PROJECTILE_VISUAL_SCALE: float = 1.45
 
 var battlefield = null
 var region_map = null
@@ -57,6 +57,7 @@ var _turret_barrels: Dictionary = {}
 var _chamber_labels: Dictionary = {}
 var _region_labels: Dictionary = {}
 var _region_platforms: Dictionary = {}
+var _region_control_rings: Dictionary = {}
 var _bridge_tops: Array[MeshInstance3D] = []
 var _gate_bars: Array[MeshInstance3D] = []
 var _gate_labels: Array[Label3D] = []
@@ -231,6 +232,10 @@ func get_projectile_spec_for_test(projectile_type: String, owner_id: int) -> Dic
 		projectile_type,
 		_arena_faction_color(owner_id)
 	).duplicate(true)
+
+
+func get_projectile_visual_scale_for_test() -> float:
+	return PROJECTILE_VISUAL_SCALE
 
 
 func get_combat_effect_count_for_test() -> int:
@@ -880,9 +885,9 @@ func _build_gate_visual(bridge_x: float) -> void:
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test = true
 	label.font = ThemeDB.fallback_font
-	label.font_size = 22
+	label.font_size = 28
 	label.outline_size = 7
-	label.pixel_size = 0.014
+	label.pixel_size = 0.016
 	label.position = Vector3(bridge_x, 2.34, 0.0)
 	label.modulate = Color(1.0, 0.92, 0.58)
 	world_root.add_child(label)
@@ -908,8 +913,13 @@ func _refresh_gate_visual(lane_index: int) -> void:
 		bar_color = PLAYER_TINT.lightened(0.12)
 	elif owner_id == CardfrontRulesScript.AI_FACTION:
 		bar_color = AI_TINT.lightened(0.12)
-	bar.material_override = _make_material(bar_color, 0.08)
-	label.text = "\u95f8%d \u00b7 %s" % [lane_index + 1, state_text]
+	if openness >= 0.80:
+		bar_color = bar_color.lightened(0.18)
+	elif openness <= 0.20:
+		bar_color = Color(1.0, 0.26, 0.20)
+	bar.material_override = _make_material(bar_color, 0.18)
+	label.modulate = bar_color.lightened(0.32)
+	label.text = "%s  #%d" % [state_text, lane_index + 1]
 
 
 func _build_stronghold_platforms() -> void:
@@ -944,6 +954,24 @@ func _build_stronghold_platforms() -> void:
 		platform.material_override = _make_material(_region_accent(str(region_map.get_region_type_by_id(region_id))).lightened(0.08), 0.06)
 		world_root.add_child(platform)
 		_region_platforms[region_id] = platform
+
+		var ring := MeshInstance3D.new()
+		ring.name = "StrongholdControlRing_%s" % region_id
+		var ring_mesh := TorusMesh.new()
+		ring_mesh.inner_radius = 0.84
+		ring_mesh.outer_radius = 1.0
+		ring_mesh.rings = 12
+		ring_mesh.ring_segments = 8
+		ring.mesh = ring_mesh
+		ring.position = center_world + Vector3(0.0, 0.72, 0.0)
+		ring.scale = Vector3(
+			maxf(1.0, bounds.size.x * ARENA_X_SCALE * 0.52),
+			1.0,
+			maxf(1.0, bounds.size.y * _z_scale * 0.52)
+		)
+		ring.material_override = _make_material(Color(0.82, 0.88, 0.70, 0.90), 0.16)
+		world_root.add_child(ring)
+		_region_control_rings[region_id] = ring
 
 
 func _cell_bounds(cells: Array) -> Rect2:
@@ -989,6 +1017,12 @@ func _refresh_stronghold_platforms() -> void:
 			color = accent.lerp(_arena_faction_color(leader_id).lightened(0.18), 0.38)
 		var platform: MeshInstance3D = _region_platforms[region_id]
 		platform.material_override = _make_material(color, 0.10)
+		var ring: MeshInstance3D = _region_control_rings.get(region_id, null)
+		if ring != null and is_instance_valid(ring):
+			var control_ratio: float = clampf(float(leader.percent) / 100.0, 0.0, 1.0)
+			var ring_color: Color = color.lightened(0.26)
+			ring.material_override = _make_material(ring_color, lerpf(0.08, 0.32, control_ratio))
+			ring.scale.y = 1.0 + (1.0 - control_ratio) * 0.18
 
 
 func _build_region_labels() -> void:
@@ -1007,9 +1041,9 @@ func _build_region_labels() -> void:
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.no_depth_test = true
 		label.font = ThemeDB.fallback_font
-		label.font_size = 26
+		label.font_size = 30
 		label.outline_size = 7
-		label.pixel_size = 0.011
+		label.pixel_size = 0.013
 		label.render_priority = 1
 		label.position = Vector3(
 			(center.x - float(battlefield.grid_extent.x) * 0.5) * ARENA_X_SCALE,
@@ -1044,7 +1078,7 @@ func _refresh_region_labels() -> void:
 		var region_type: String = str(control.get("region_type", RegionTypeScript.NORMAL))
 		var label: Label3D = _region_labels[region_id]
 		label.text = "%s  %d%%" % [
-			StrongholdRulesScript.badge_name(region_type),
+			_region_badge_icon(region_type),
 			int(leader.percent),
 		]
 		var leader_id: int = int(leader.owner_id)
@@ -1053,6 +1087,18 @@ func _refresh_region_labels() -> void:
 			if leader_id == CardfrontRulesScript.NEUTRAL_OWNER
 			else _arena_faction_color(leader_id).lightened(0.28)
 		)
+
+
+func _region_badge_icon(region_type: String) -> String:
+	match region_type:
+		RegionTypeScript.ENERGY:
+			return "⚡"
+		RegionTypeScript.FACTORY:
+			return "◆"
+		RegionTypeScript.LAB:
+			return "✦"
+		_:
+			return "●"
 
 
 func _nearest_presentation_scale(requested_scale: float) -> float:
@@ -1098,17 +1144,17 @@ func _build_combatant_proxies() -> void:
 		var keep := MeshInstance3D.new()
 		keep.name = "ChamberKeep"
 		var keep_mesh := BoxMesh.new()
-		keep_mesh.size = Vector3(3.20, 1.48, 2.28)
+		keep_mesh.size = Vector3(3.76, 1.72, 2.54)
 		keep.mesh = keep_mesh
 		keep.position.y = 1.06
 		keep.material_override = _get_faction_material(int(owner_id), 0.14)
 		proxy.add_child(keep)
 
 		for corner in [
-			Vector3(-1.66, 1.18, -1.18),
-			Vector3(1.66, 1.18, -1.18),
-			Vector3(-1.66, 1.18, 1.18),
-			Vector3(1.66, 1.18, 1.18),
+			Vector3(-1.94, 1.34, -1.34),
+			Vector3(1.94, 1.34, -1.34),
+			Vector3(-1.94, 1.34, 1.34),
+			Vector3(1.94, 1.34, 1.34),
 		]:
 			var corner_tower := MeshInstance3D.new()
 			corner_tower.name = "CornerTower"
@@ -1670,11 +1716,57 @@ func _sync_aim_guide() -> void:
 	var origin: Vector3 = _simulation_to_world(turret.global_position, 0.72)
 	var direction_2d := Vector2.RIGHT.rotated(float(turret.rotation)).normalized()
 	var direction_3d := Vector3(direction_2d.x * ARENA_X_SCALE, 0.0, direction_2d.y * _z_scale).normalized()
-	var length: float = float(maxi(battlefield.grid_extent.x, battlefield.grid_extent.y)) * 0.42
+	var start: Vector3 = origin + direction_3d * 1.4
+	var contacts: Array[Dictionary] = []
+	var ray_origin: Vector3 = start
+	var ray_direction: Vector3 = direction_3d
+	for contact_index in range(2):
+		var contact := _get_aim_bounce_contact(ray_origin, ray_direction)
+		if contact.is_empty():
+			break
+		contacts.append(contact)
+		ray_origin = contact.point + ray_direction * 0.03
+		ray_direction = ray_direction.bounce(contact.normal).normalized()
 	_aim_mesh.surface_begin(Mesh.PRIMITIVE_LINES, _aim_material)
-	_aim_mesh.surface_add_vertex(origin + direction_3d * 1.4)
-	_aim_mesh.surface_add_vertex(origin + direction_3d * length)
+	var side: Vector3 = Vector3.UP.cross(direction_3d).normalized() * 0.48
+	var cone_tip: Vector3 = start + direction_3d * 4.2
+	_aim_mesh.surface_add_vertex(start)
+	_aim_mesh.surface_add_vertex(cone_tip + side)
+	_aim_mesh.surface_add_vertex(start)
+	_aim_mesh.surface_add_vertex(cone_tip - side)
+	var segment_start: Vector3 = start
+	for contact in contacts:
+		var point: Vector3 = contact.point
+		_aim_mesh.surface_add_vertex(segment_start)
+		_aim_mesh.surface_add_vertex(point)
+		_aim_mesh.surface_add_vertex(point - side * 0.46)
+		_aim_mesh.surface_add_vertex(point + side * 0.46)
+		_aim_mesh.surface_add_vertex(point - Vector3.UP * 0.34)
+		_aim_mesh.surface_add_vertex(point + Vector3.UP * 0.34)
+		segment_start = point
 	_aim_mesh.surface_end()
+
+
+func _get_aim_bounce_contact(ray_origin: Vector3, ray_direction: Vector3) -> Dictionary:
+	var half_width: float = float(battlefield.grid_extent.x) * ARENA_X_SCALE * 0.5 - 0.35
+	var half_depth: float = float(battlefield.grid_extent.y) * _z_scale * 0.5 - 0.35
+	var best_distance: float = INF
+	var normal := Vector3.ZERO
+	if absf(ray_direction.x) > 0.001:
+		var x_limit: float = half_width if ray_direction.x > 0.0 else -half_width
+		var x_distance: float = (x_limit - ray_origin.x) / ray_direction.x
+		if x_distance > 0.08:
+			best_distance = x_distance
+			normal = Vector3(-signf(ray_direction.x), 0.0, 0.0)
+	if absf(ray_direction.z) > 0.001:
+		var z_limit: float = half_depth if ray_direction.z > 0.0 else -half_depth
+		var z_distance: float = (z_limit - ray_origin.z) / ray_direction.z
+		if z_distance > 0.08 and z_distance < best_distance:
+			best_distance = z_distance
+			normal = Vector3(0.0, 0.0, -signf(ray_direction.z))
+	if not is_finite(best_distance):
+		return {}
+	return {"point": ray_origin + ray_direction * best_distance, "normal": normal}
 
 
 func _simulation_to_world(simulation_position: Vector2, height: float) -> Vector3:
@@ -1700,10 +1792,10 @@ func _tile_color(owner_id: int, region_type: String, cell: Vector2i) -> Color:
 	var checker_index: int = floori(float(cell.x) / float(CHECKER_CELL_SPAN)) + floori(float(cell.y) / float(CHECKER_CELL_SPAN))
 	var owner_color: Color = _theme_color("tile_a") if checker_index % 2 == 0 else _theme_color("tile_b")
 	if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
-		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.44)
+		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.52)
 	var accent: Color = _region_accent(region_type)
 	if region_type != RegionTypeScript.NORMAL:
-		owner_color = owner_color.lerp(accent, 0.12).lightened(0.02)
+		owner_color = owner_color.lerp(accent, 0.18).lightened(0.035)
 	return Color(owner_color.r, owner_color.g, owner_color.b, 1.0)
 
 

@@ -12,9 +12,18 @@ func _initialize() -> void:
 
 
 func _capture() -> void:
-	root.size = Vector2i(1120, 720)
+	if DisplayServer.get_name() == "headless":
+		push_error("Screenshot capture requires a rendering display; omit --headless")
+		quit(1)
+		return
+	var capture_viewport := _capture_viewport()
+	root.size = capture_viewport
 	var capture_extent := _capture_extent()
 	var extent_label := "%dx%d" % [capture_extent.x, capture_extent.y]
+	var viewport_label := "%dx%d" % [capture_viewport.x, capture_viewport.y]
+	var capture_label := extent_label
+	if not OS.get_environment("CARDFRONT_CAPTURE_VIEWPORT").strip_edges().is_empty():
+		capture_label = "%s-viewport-%s" % [extent_label, viewport_label]
 	GameConfig.reset_runtime_defaults()
 	paused = false
 	var scene: PackedScene = load("res://scenes/Main.tscn")
@@ -24,7 +33,9 @@ func _capture() -> void:
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_extent = capture_extent
 	main._start_game(capture_extent, true, false)
-	Input.warp_mouse(Vector2(1110.0, 360.0))
+	Input.warp_mouse(
+		Vector2(float(capture_viewport.x - 10), float(capture_viewport.y) * 0.5)
+	)
 	await _flush(5)
 
 	var entity_runtime = main.runtime.battlefield.get_node_or_null(
@@ -42,21 +53,19 @@ func _capture() -> void:
 	await _flush(4)
 
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://artifacts"))
-	var battle_error := root.get_texture().get_image().save_png(
-		ProjectSettings.globalize_path("res://artifacts/cardfront-full-battle-%s.png" % extent_label)
+	var battle_error := _save_root_png(
+		"res://artifacts/cardfront-full-battle-%s.png" % capture_label
 	)
 	var scale_errors: Array[int] = []
 	for scale_value in [1.0, 1.12, 1.20]:
 		main.runtime.orthographic_arena_view.set_presentation_scale(scale_value, false)
 		await _flush(2)
 		scale_errors.append(
-			root.get_texture().get_image().save_png(
-				ProjectSettings.globalize_path(
-					"res://artifacts/cardfront-battle-%s-scale-%d.png" % [
-						extent_label,
-						roundi(scale_value * 100.0),
-					]
-				)
+			_save_root_png(
+				"res://artifacts/cardfront-battle-%s-scale-%d.png" % [
+					capture_label,
+					roundi(scale_value * 100.0),
+				]
 			)
 		)
 	main.runtime.orthographic_arena_view.set_presentation_scale(1.12, false)
@@ -64,8 +73,8 @@ func _capture() -> void:
 	main.runtime.round_director.set_seed_for_tests(331)
 	main.runtime.round_director.force_open_draft_for_test()
 	await _flush(4)
-	var draft_error := root.get_texture().get_image().save_png(
-		ProjectSettings.globalize_path("res://artifacts/cardfront-full-draft-%s.png" % extent_label)
+	var draft_error := _save_root_png(
+		"res://artifacts/cardfront-full-draft-%s.png" % capture_label
 	)
 	var scale_capture_ok: bool = scale_errors.all(func(error_code: int) -> bool: return error_code == OK)
 	quit(0 if battle_error == OK and draft_error == OK and scale_capture_ok else 1)
@@ -82,6 +91,29 @@ func _capture_extent() -> Vector2i:
 	var width: int = maxi(1, int(parts[0]))
 	var height: int = maxi(1, int(parts[1]))
 	return Vector2i(width, height)
+
+
+func _capture_viewport() -> Vector2i:
+	var value: String = OS.get_environment("CARDFRONT_CAPTURE_VIEWPORT").strip_edges().to_lower()
+	if value.is_empty():
+		return Vector2i(1120, 720)
+	var parts: PackedStringArray = value.split("x", false, 1)
+	if parts.size() != 2:
+		push_warning("Invalid CARDFRONT_CAPTURE_VIEWPORT=%s; using 1120x720" % value)
+		return Vector2i(1120, 720)
+	var width: int = maxi(320, int(parts[0]))
+	var height: int = maxi(320, int(parts[1]))
+	return Vector2i(width, height)
+
+
+func _save_root_png(relative_path: String) -> int:
+	var image := root.get_texture().get_image()
+	if image == null:
+		push_error(
+			"Capture texture is unavailable; run this screenshot tool without --headless"
+		)
+		return ERR_UNAVAILABLE
+	return image.save_png(ProjectSettings.globalize_path(relative_path))
 
 
 func _populate_entities(entity_runtime) -> void:

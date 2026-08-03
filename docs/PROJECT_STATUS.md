@@ -1,6 +1,6 @@
 # Project Status / 项目状态
 
-Last updated: 2026-07-29
+Last updated: 2026-08-03
 
 This is the only document that tracks the current version, completed work, active implementation slice, next step, and deferred scope.
 本文件是项目当前版本、已完成内容、正在实施内容、下一步和暂缓范围的唯一状态入口。
@@ -1148,16 +1148,135 @@ Candidate order after B1:
   square extents during validation.
 - Added `CardfrontGridExtentMatrixTestRunner.gd` to CI for `40x40`, `50x50`,
   `40x50`, and `40x60`. The formal menu still exposes its existing square size
-  choices; non-square player-facing presets should be enabled only after
-  screenshot and play-space review selects the preferred composition.
+  choices. The 2026-08-03 screenshot and play-space review selected `40x50` as
+  the preferred non-square composition; player-facing preset exposure remains
+  a separate integration step.
+
+### Audited Next Slice: Battle-Screen Hierarchy Pass / 战斗画面层级优化
+
+Audit date: 2026-08-03. Status: **desktop and landscape-narrow visual acceptance passed for the `40x50` benchmark; live-match human comprehension remains pending**.
+
+Evidence reviewed:
+
+- Deterministic `default_duel` captures at `1120x720` with a `40x60` extent:
+  `cardfront-full-battle-40x60.png`, `100%`, `112%`, and `120%` scale
+  variants, plus the paused three-choice draft.
+- The current Steam reference set for Minion Masters, Into the Breach,
+  Thronefall, and Isle of Arrows.
+- The game-UI playfield-protection rules: one primary persistent HUD cluster,
+  one small secondary cluster, a clear center/lower-middle playfield, and
+  contextual rather than permanently expanded controls.
+
+Audit verdict:
+
+- The primary problem is screen-space hierarchy, not a shortage of assets.
+  The `40x60` full-field framing makes command chambers, creatures, towers,
+  projectiles, gate states, and stronghold labels too small at desktop size.
+- Command-chamber destruction is the primary win condition, but the chambers
+  currently carry less visual weight than the territory percentage strip and
+  empty field margins.
+- The river and two legal crossings are visible, but bridge pressure, gate
+  state, active route, and the current collision focus are not readable at a
+  glance.
+- Terrain, route, stronghold, and background values are too close. Weak depth,
+  edge separation, and contact feedback make the arena read as a debug board
+  rather than a tactile toy battlefield.
+- The paused three-choice draft already has a stronger hierarchy and should be
+  preserved as the quality baseline for typography and decision clarity.
+
+Locked implementation order for the next visual slice:
+
+1. Do not import another environment pack before the hierarchy pass. Test a
+   desktop `40x50` composition against `40x60`; retain `40x60` only if it can
+   meet the same screen-space readability gates without changing simulation
+   authority.
+2. Start from the current `120%` framing and tune presentation-only object
+   scale independently: command chambers approximately `2.0x..2.3x`, towers
+   and buildings `1.5x..1.7x`, creatures `1.4x..1.6x`, and projectile cores
+   and trails `1.7x..2.0x` relative to the audited capture.
+3. Compress the persistent top HUD to approximately `68..72 px`. Keep chamber
+   health and next-volley identity at the faction corners, and round phase plus
+   countdown at center. Demote territory percentage to a thin secondary strip
+   or contextual surface because it is not the primary victory condition.
+4. Hide presentation-scale debug controls in the player-facing battle view,
+   merge settings and pause into one utility entry, and make the aim control a
+   contextual bottom-edge surface instead of a permanent left-side panel.
+5. Make route state explicit: a direction cone, the first two predicted
+   ricochet contacts, active-bridge emphasis, and distinct open/half-open/closed
+   gate treatments. Replace tiny persistent stronghold text with large type
+   icons and ownership/status rings; show names and details contextually.
+6. Establish three value layers: quiet environment, readable territory/routes,
+   and highest-contrast chambers/entities/projectiles/gate feedback. Add
+   presentation-only river depth, raised bridge decks, bevels, restrained
+   shadows, projectile trails, impacts, capture pulses, and chamber danger
+   feedback without changing 2D authority.
+
+Screenshot acceptance gates for this slice:
+
+- At a `25%` thumbnail, a reviewer can still identify both command chambers,
+  both legal crossings, the current front line, the main projectile route, and
+  the most important combat cluster.
+- At `1120x720`, command chambers occupy at least `72 px` on their longest
+  readable axis, ordinary combat units at least `26 px`, and projectile cores
+  at least `6 px` before transient glow.
+- Persistent HUD chrome remains at or below roughly `15%` of the desktop
+  viewport and does not cover the central or lower-middle combat lanes.
+- Blue, red, and neutral ownership remain distinguishable in grayscale and at
+  reduced saturation through value, outline, and shape rather than hue alone.
+- Re-capture desktop and narrow viewports before extending the visual language
+  to Cross Strongholds or Central Lab.
+
+Implementation checkpoint (2026-08-03):
+
+- Player-facing `default_duel` now opens at the 120% orthographic framing; the
+  three-button presentation-scale widget was removed from the battle HUD while
+  the presentation API remains available to QA and automated tests.
+- Command chambers, gate labels, stronghold markers, and gate-state color/value
+  treatment were enlarged without changing the 2D battlefield authority.
+- The top territory HUD is shorter and its percentage strip thinner. The aim
+  control is a compact bottom-edge surface, and its world guide now shows a
+  direction cone plus two predicted boundary ricochet contacts.
+- The prior global-class resolution failures were removed by using explicit
+  dependencies for `GridExtent` and `CardfrontEntityVisualRegistry`, then
+  rebuilding the Godot import cache. The battlefield-scale runner and capture
+  script now both exit successfully; fresh desktop and narrow screenshot review
+  remains the acceptance gate.
+- Follow-up readability pass: the aim surface now derives its size and position
+  from the active viewport, strongholds expose a control-strength ring in
+  addition to their badge, and tile ownership/region accents use a clearer
+  value separation.
+- Branch reconciliation restored the three visual commits that had remained
+  absent after the earlier merge-revert topology. The clean runtime now matches
+  this status entry: 120% default framing, no player-facing scale debug widget,
+  compact HUD, bottom-edge aim surface, direction cone, and two predicted
+  ricochet contacts.
+- The accepted object pass uses a `6.8`-unit command-chamber width, `1.48`
+  creature/tower presentation scale, and `1.45` projectile presentation scale.
+  When enough side gutter exists, the aim surface uses that bottom-edge space
+  instead of covering the player command chamber.
+- The deterministic capture tool now accepts `CARDFRONT_CAPTURE_VIEWPORT`,
+  preserves the legacy output names when unset, and fails fast when invoked
+  with a headless renderer instead of hanging on an unavailable texture.
+- Fresh `40x50` captures at `1120x720` and landscape-narrow `760x540` pass the
+  25% thumbnail hierarchy gate. Command chambers measure approximately
+  `74..78 px`, ordinary units `32..43 px`, and projectile cores `9..21 px`.
+  Persistent HUD chrome remains below 15% and does not cover the battlefield or
+  player command chamber. Reduced-saturation ownership remains readable through
+  value, boundary, and ring treatment, with only modest luminance margin.
+- `CardfrontBattlefieldScaleTestRunner` now covers desktop and `760x540` bounds,
+  zero battlefield overlap, a 12% persistent-chrome ceiling, and absence of the
+  scale debug widget; it passes all 54 checks. Orthographic arena, rectangular
+  extent, formal UI, readability, performance, and runtime runners also pass.
 
 ### Later
 
-- Run human screenshot review for `default_duel` at desktop and narrow
-  viewports; tune scale, lighting, and occlusion from visible evidence rather
-  than adding content.
-- After that review passes, extend the same material, projectile, tower, and
-  lighting language to Cross Strongholds and Central Lab.
+- Use `40x50` as the formal non-square composition benchmark. Keep `40x60` as a
+  QA comparison until a mode explicitly needs the longer field.
+- Add a stable minimum grayscale-luminance separation regression check before
+  changing arena materials again; the accepted ownership values have limited
+  spare margin.
+- Extend the accepted material, projectile, tower, and lighting language to
+  Cross Strongholds and Central Lab.
 - Human playtesting still needs to judge whether every entity role, tower
   state, gate state, stronghold percentage, and upgrade choice is understood
   during a real match. Automated readability checks do not replace that review.
