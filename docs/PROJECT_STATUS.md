@@ -1148,12 +1148,13 @@ Candidate order after B1:
   square extents during validation.
 - Added `CardfrontGridExtentMatrixTestRunner.gd` to CI for `40x40`, `50x50`,
   `40x50`, and `40x60`. The formal menu still exposes its existing square size
-  choices; non-square player-facing presets should be enabled only after
-  screenshot and play-space review selects the preferred composition.
+  choices. The 2026-08-03 screenshot and play-space review selected `40x50` as
+  the preferred non-square composition; player-facing preset exposure remains
+  a separate integration step.
 
 ### Audited Next Slice: Battle-Screen Hierarchy Pass / 战斗画面层级优化
 
-Audit date: 2026-08-03. Status: **first implementation pass complete; visual acceptance remains pending a clean baseline run**.
+Audit date: 2026-08-03. Status: **desktop and landscape-narrow visual acceptance passed for the `40x50` benchmark; live-match human comprehension remains pending**.
 
 Evidence reviewed:
 
@@ -1243,15 +1244,39 @@ Implementation checkpoint (2026-08-03):
 - Follow-up readability pass: the aim surface now derives its size and position
   from the active viewport, strongholds expose a control-strength ring in
   addition to their badge, and tile ownership/region accents use a clearer
-  value separation. `CardfrontBattlefieldScaleTestRunner` passes all 17 checks
-  after these presentation-only changes.
+  value separation.
+- Branch reconciliation restored the three visual commits that had remained
+  absent after the earlier merge-revert topology. The clean runtime now matches
+  this status entry: 120% default framing, no player-facing scale debug widget,
+  compact HUD, bottom-edge aim surface, direction cone, and two predicted
+  ricochet contacts.
+- The accepted object pass uses a `6.8`-unit command-chamber width, `1.48`
+  creature/tower presentation scale, and `1.45` projectile presentation scale.
+  When enough side gutter exists, the aim surface uses that bottom-edge space
+  instead of covering the player command chamber.
+- The deterministic capture tool now accepts `CARDFRONT_CAPTURE_VIEWPORT`,
+  preserves the legacy output names when unset, and fails fast when invoked
+  with a headless renderer instead of hanging on an unavailable texture.
+- Fresh `40x50` captures at `1120x720` and landscape-narrow `760x540` pass the
+  25% thumbnail hierarchy gate. Command chambers measure approximately
+  `74..78 px`, ordinary units `32..43 px`, and projectile cores `9..21 px`.
+  Persistent HUD chrome remains below 15% and does not cover the battlefield or
+  player command chamber. Reduced-saturation ownership remains readable through
+  value, boundary, and ring treatment, with only modest luminance margin.
+- `CardfrontBattlefieldScaleTestRunner` now covers desktop and `760x540` bounds,
+  zero battlefield overlap, a 12% persistent-chrome ceiling, and absence of the
+  scale debug widget; it passes all 54 checks. Orthographic arena, rectangular
+  extent, formal UI, readability, performance, and runtime runners also pass.
 
 ### Later
 
-- Repeat human screenshot review at desktop and narrow viewports before
-  accepting scale, lighting, occlusion, and route readability.
-- After that review passes, extend the same material, projectile, tower, and
-  lighting language to Cross Strongholds and Central Lab.
+- Use `40x50` as the formal non-square composition benchmark. Keep `40x60` as a
+  QA comparison until a mode explicitly needs the longer field.
+- Add a stable minimum grayscale-luminance separation regression check before
+  changing arena materials again; the accepted ownership values have limited
+  spare margin.
+- Extend the accepted material, projectile, tower, and lighting language to
+  Cross Strongholds and Central Lab.
 - Human playtesting still needs to judge whether every entity role, tower
   state, gate state, stronghold percentage, and upgrade choice is understood
   during a real match. Automated readability checks do not replace that review.

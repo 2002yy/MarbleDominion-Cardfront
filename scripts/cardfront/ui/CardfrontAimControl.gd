@@ -33,12 +33,18 @@ func setup(new_direction_controller, layout: Dictionary, mode_name: String) -> b
 	if viewport_size.x < 1.0 or viewport_size.y < 1.0:
 		viewport_size = Vector2(1152.0, 720.0)
 	var compact_mode: bool = viewport_size.x < 680.0
+	var battlefield_rect: Rect2 = layout.get("battlefield_rect", Rect2())
+	var side_gutter_width: float = battlefield_rect.position.x - 12.0
+	var use_side_gutter: bool = battlefield_rect.has_area() and side_gutter_width >= 208.0
 	var panel_size := Vector2(
 		minf(272.0, viewport_size.x - (20.0 if compact_mode else 32.0)),
 		56.0 if compact_mode else 60.0
 	)
+	if use_side_gutter:
+		panel_size.x = clampf(side_gutter_width - 12.0, 196.0, panel_size.x)
+	var panel_x: float = 12.0 if use_side_gutter else (viewport_size.x - panel_size.x) * 0.5
 	var panel_rect := Rect2(
-		Vector2((viewport_size.x - panel_size.x) * 0.5, viewport_size.y - panel_size.y - (8.0 if compact_mode else 12.0)),
+		Vector2(panel_x, viewport_size.y - panel_size.y - (8.0 if compact_mode else 12.0)),
 		panel_size
 	)
 	_panel.position = panel_rect.position

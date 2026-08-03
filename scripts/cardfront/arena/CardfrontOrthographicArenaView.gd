@@ -19,7 +19,7 @@ const ARENA_Z_SCALE: float = 1.28
 const OUTER_FLOOR_WIDTH_PADDING: float = 32.0
 const CHECKER_CELL_SPAN: int = 5
 const BRIDGE_COUNT: int = 2
-const COMMAND_CHAMBER_SIZE: Vector3 = Vector3(5.6, 0.78, 3.4)
+const COMMAND_CHAMBER_SIZE: Vector3 = Vector3(6.8, 0.84, 4.0)
 const BRIDGE_BASE_WIDTH: float = 3.8
 const EDGE_DECORATION_COUNT: int = 4
 const GRASS_LIGHT: Color = Color(0.40, 0.53, 0.46)
@@ -31,8 +31,8 @@ const PATH_COLOR: Color = Color(0.54, 0.43, 0.33, 0.56)
 const PRESENTATION_SCALE_PRESETS: Array[float] = [1.0, 1.12, 1.20]
 const DEFAULT_PRESENTATION_SCALE: float = 1.20
 const SCALE_TWEEN_SECONDS: float = 0.18
-const COMBAT_ENTITY_VISUAL_SCALE: float = 1.24
-const PROJECTILE_VISUAL_SCALE: float = 1.22
+const COMBAT_ENTITY_VISUAL_SCALE: float = 1.48
+const PROJECTILE_VISUAL_SCALE: float = 1.45
 
 var battlefield = null
 var region_map = null
@@ -232,6 +232,10 @@ func get_projectile_spec_for_test(projectile_type: String, owner_id: int) -> Dic
 		projectile_type,
 		_arena_faction_color(owner_id)
 	).duplicate(true)
+
+
+func get_projectile_visual_scale_for_test() -> float:
+	return PROJECTILE_VISUAL_SCALE
 
 
 func get_combat_effect_count_for_test() -> int:
