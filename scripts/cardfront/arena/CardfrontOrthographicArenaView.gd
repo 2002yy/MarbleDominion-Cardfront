@@ -58,6 +58,13 @@ var _chamber_labels: Dictionary = {}
 var _region_labels: Dictionary = {}
 var _region_platforms: Dictionary = {}
 var _region_control_rings: Dictionary = {}
+var _region_badge_plates: Dictionary = {}
+var _region_label_tweens: Dictionary = {}
+var _last_region_leaders: Dictionary = {}
+var _labels_force_visible: bool = false
+const LABEL_FADE_DURATION: float = 0.35
+const LABEL_AUTO_HIDE_DELAY: float = 2.8
+const LABEL_CHANGE_THRESHOLD: int = 10
 var _bridge_tops: Array[MeshInstance3D] = []
 var _gate_bars: Array[MeshInstance3D] = []
 var _gate_labels: Array[Label3D] = []
@@ -1072,10 +1079,13 @@ func _build_region_labels() -> void:
 		badge_plate.material_override = badge_material
 		badge_material.render_priority = -1
 		badge_plate.position = label.position + Vector3(0.0, 0.0, -0.06)
+		badge_material.albedo_color.a = 0.0
 		world_root.add_child(badge_plate)
 
+		label.modulate.a = 0.0
 		world_root.add_child(label)
 		_region_labels[region_id] = label
+		_region_badge_plates[region_id] = badge_plate
 
 
 func _refresh_region_labels() -> void:
@@ -1094,6 +1104,19 @@ func _refresh_region_labels() -> void:
 			if leader_id == CardfrontRulesScript.NEUTRAL_OWNER
 			else _arena_faction_color(leader_id).lightened(0.28)
 		)
+		if _labels_force_visible:
+			continue
+		var prev: Dictionary = _last_region_leaders.get(int(region_id), {})
+		var prev_owner: int = int(prev.get("owner_id", -999))
+		var prev_percent: int = int(prev.get("percent", -1))
+		var owner_changed: bool = prev_owner != leader_id
+		var percent_shift: bool = absi(int(leader.percent) - prev_percent) >= LABEL_CHANGE_THRESHOLD
+		if owner_changed or percent_shift:
+			_fade_label(int(region_id), 1.0, LABEL_FADE_DURATION, LABEL_AUTO_HIDE_DELAY)
+		_last_region_leaders[int(region_id)] = {
+			"owner_id": leader_id,
+			"percent": int(leader.percent),
+		}
 
 
 func _region_badge_icon(region_type: String) -> String:
@@ -1106,6 +1129,36 @@ func _region_badge_icon(region_type: String) -> String:
 			return "✦"
 		_:
 			return "●"
+
+
+func set_stronghold_labels_visible(visible_flag: bool, auto_hide_delay: float = 0.0) -> void:
+	_labels_force_visible = visible_flag
+	for region_id in _region_labels.keys():
+		if visible_flag:
+			_fade_label(int(region_id), 1.0, LABEL_FADE_DURATION, auto_hide_delay)
+		else:
+			_fade_label(int(region_id), 0.0, LABEL_FADE_DURATION, 0.0)
+
+
+func _fade_label(region_id: int, target_alpha: float, duration: float, auto_hide_delay: float) -> void:
+	var label: Label3D = _region_labels.get(region_id, null)
+	if label == null or not is_instance_valid(label):
+		return
+	var badge: MeshInstance3D = _region_badge_plates.get(region_id, null)
+	var prev_tween: Tween = _region_label_tweens.get(region_id, null)
+	if prev_tween != null and is_instance_valid(prev_tween):
+		prev_tween.kill()
+	var tween: Tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "modulate:a", target_alpha, duration)
+	if badge != null and is_instance_valid(badge) and badge.material_override != null:
+		tween.tween_property(badge, "material_override:albedo_color:a", target_alpha, duration)
+	_region_label_tweens[region_id] = tween
+	if auto_hide_delay > 0.0 and target_alpha > 0.5:
+		tween.chain().tween_interval(auto_hide_delay)
+		tween.chain().tween_property(label, "modulate:a", 0.0, LABEL_FADE_DURATION)
+		if badge != null and is_instance_valid(badge) and badge.material_override != null:
+			tween.chain().tween_property(badge, "material_override:albedo_color:a", 0.0, LABEL_FADE_DURATION)
 
 
 func _nearest_presentation_scale(requested_scale: float) -> float:

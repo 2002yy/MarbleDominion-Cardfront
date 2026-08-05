@@ -543,8 +543,42 @@ func _create_ui() -> void:
 		_create_cardfront_three_choice_panel()
 		_configure_cardfront_three_choice_ui()
 		_create_cardfront_battle_hero_hud()
+	_connect_stronghold_label_signals()
 
 	_on_scores_changed(runtime.battlefield.count_cells_by_team())
+
+
+func _connect_stronghold_label_signals() -> void:
+	if runtime.round_director == null or not is_instance_valid(runtime.round_director):
+		return
+	if runtime.orthographic_arena_view == null or not is_instance_valid(runtime.orthographic_arena_view):
+		return
+	var rd = runtime.round_director
+	if rd.has_signal("draft_opened"):
+		var draft_cb := Callable(self, "_on_draft_opened_show_labels")
+		if not rd.draft_opened.is_connected(draft_cb):
+			rd.draft_opened.connect(draft_cb)
+	if rd.has_signal("volley_launched"):
+		var volley_cb := Callable(self, "_on_volley_launched_hide_labels")
+		if not rd.volley_launched.is_connected(volley_cb):
+			rd.volley_launched.connect(volley_cb)
+	if rd.has_signal("director_stopped"):
+		var stop_cb := Callable(self, "_on_director_stopped_hide_labels")
+		if not rd.director_stopped.is_connected(stop_cb):
+			rd.director_stopped.connect(stop_cb)
+
+
+func _on_draft_opened_show_labels(_a, _b, _c, _d) -> void:
+	if runtime.orthographic_arena_view != null and is_instance_valid(runtime.orthographic_arena_view):
+		runtime.orthographic_arena_view.set_stronghold_labels_visible(true)
+
+func _on_volley_launched_hide_labels(_a, _b) -> void:
+	if runtime.orthographic_arena_view != null and is_instance_valid(runtime.orthographic_arena_view):
+		runtime.orthographic_arena_view.set_stronghold_labels_visible(false)
+
+func _on_director_stopped_hide_labels() -> void:
+	if runtime.orthographic_arena_view != null and is_instance_valid(runtime.orthographic_arena_view):
+		runtime.orthographic_arena_view.set_stronghold_labels_visible(false)
 
 
 func _request_start_from_menu() -> void:
