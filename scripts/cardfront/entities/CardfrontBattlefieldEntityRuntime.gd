@@ -229,7 +229,14 @@ func snapshot() -> Dictionary:
 	return {
 		"map_id": str(map_definition.get("id", "")),
 		"registry": registry.snapshot(),
+		"entity_serial": _entity_serial,
 	}
+
+
+func restore(data: Dictionary) -> void:
+	registry.restore(data.get("registry", {}))
+	_entity_serial = maxi(0, int(data.get("entity_serial", 0)))
+	_mark_visuals_dirty()
 
 
 func _physics_process(_delta: float) -> void:

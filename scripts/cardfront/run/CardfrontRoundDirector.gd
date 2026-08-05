@@ -20,6 +20,7 @@ const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgrad
 const UpgradeResolverScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeResolver.gd")
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
 const AiUpgradePolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
+const AiCommanderScript = preload("res://scripts/cardfront/ai/CardfrontAiCommander.gd")
 const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 
@@ -51,6 +52,7 @@ var _draft_system = DraftSystemScript.new()
 var _upgrade_resolver = UpgradeResolverScript.new()
 var _volley_resolver = VolleyResolverScript.new()
 var _ai_policy = AiUpgradePolicyScript.new()
+var _ai_commander = AiCommanderScript.new()
 var _reveal_remaining: float = 0.0
 var _resolution_started: bool = false
 var _draft_pause_owned: bool = false
@@ -100,6 +102,7 @@ func setup(
 		var turret = turrets.get(int(owner_id), null)
 		if turret != null and is_instance_valid(turret) and turret.has_method("configure_health_pool"):
 			turret.configure_health_pool(int(state.command_chamber_health), true)
+	_ai_commander.set_hero(str(hero_assignments.get(RulesScript.AI_FACTION, "")))
 
 	var phase_callable := Callable(self, "_on_phase_changed")
 	if not phase_controller.phase_changed.is_connected(phase_callable):
@@ -229,7 +232,7 @@ func get_upgrade_value_context(owner_id: int) -> Dictionary:
 
 
 func get_last_ai_value_report() -> Array:
-	return _ai_policy.get_last_ranked_evaluations()
+	return _ai_commander.get_last_ranked_evaluations()
 
 
 func set_seed_for_tests(seed_value: int) -> void:
@@ -293,7 +296,7 @@ func _open_draft() -> void:
 			_draft_choice_count(RulesScript.AI_FACTION)
 		),
 	}
-	var ai_choice: Dictionary = _ai_policy.choose(
+	var ai_choice: Dictionary = _ai_commander.choose(
 		get_ai_offer(),
 		get_run_state(RulesScript.AI_FACTION),
 		get_upgrade_value_context(RulesScript.AI_FACTION)

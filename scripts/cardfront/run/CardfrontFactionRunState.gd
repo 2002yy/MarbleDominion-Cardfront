@@ -320,7 +320,45 @@ func snapshot() -> Dictionary:
 		"tower_levels": tower_levels.duplicate(true),
 		"first_capture_fortified_cells": first_capture_fortified_cells.duplicate(true),
 		"applied_upgrade_counts": applied_upgrade_counts.duplicate(),
+		"neutral_creature_summoned": neutral_creature_summoned,
 	}
+
+
+static func restore(data: Dictionary) -> RefCounted:
+	var state = load("res://scripts/cardfront/run/CardfrontFactionRunState.gd").new()
+	state.owner_id = int(data.get("owner_id", -1))
+	state.hero_id = str(data.get("hero_id", HeroRegistryScript.DEFAULT_PLAYER_HERO_ID))
+	state.hero_name = str(data.get("hero_name", ""))
+	state.deck_id = str(data.get("deck_id", DeckRegistryScript.DEFAULT_DECK_ID))
+	state.base_volley_count = maxi(1, int(data.get("base_volley_count", DEFAULT_BASE_VOLLEY_COUNT)))
+	state.base_projectile_mix = (data.get("base_projectile_mix", {}) as Dictionary).duplicate(true)
+	state.command_chamber_health = maxi(1, int(data.get("command_chamber_health", TuningScript.COMMAND_CHAMBER_HEALTH)))
+	state.starting_territory_defense = int(data.get("starting_territory_defense", 1))
+	state.starting_contact_front_defense = int(data.get("starting_contact_front_defense", 1))
+	state.captured_frontline_defense = int(data.get("captured_frontline_defense", 0))
+	state.frontline_repair_bonus = maxi(0, int(data.get("frontline_repair_bonus", 0)))
+	state.projectile_power = int(data.get("projectile_power", DEFAULT_PROJECTILE_POWER))
+	state.attack_level = clampi(int(data.get("attack_level", 0)), 0, MAX_ATTACK_LEVEL)
+	state.territory_defense_cap = clampi(int(data.get("territory_defense_cap", DEFAULT_TERRITORY_DEFENSE_CAP)), 1, TuningScript.MAX_TERRITORY_DEFENSE_CAP)
+	state.rarity_level = clampi(int(data.get("rarity_level", 0)), 0, MAX_RARITY_LEVEL)
+	state.echo_next_choice_armed = bool(data.get("echo_next_choice_armed", false))
+	state.queued_echo_upgrade_id = str(data.get("queued_echo_upgrade_id", ""))
+	state.next_volley_bonus = maxi(0, int(data.get("next_volley_bonus", 0)))
+	state.next_volley_multiplier = clampi(int(data.get("next_volley_multiplier", 1)), 1, MAX_NEXT_VOLLEY_MULTIPLIER)
+	state.next_volley_armor_pierce_contacts = maxi(0, int(data.get("next_volley_armor_pierce_contacts", 0)))
+	state.next_volley_conversions = (data.get("next_volley_conversions", {}) as Dictionary).duplicate(true)
+	state.pending_repair_points = maxi(0, int(data.get("pending_repair_points", 0)))
+	state.pending_repair_zone = str(data.get("pending_repair_zone", "frontline"))
+	state.pending_entity_actions = (data.get("pending_entity_actions", []) as Array).duplicate(true)
+	state.building_volley_level = clampi(int(data.get("building_volley_level", 0)), 0, MAX_BUILDING_VOLLEY_LEVEL)
+	state.heavy_charge_spec = (data.get("heavy_charge_spec", {}) as Dictionary).duplicate(true)
+	state.neutral_creature_summoned = bool(data.get("neutral_creature_summoned", false))
+	state.owned_creature_count = maxi(0, int(data.get("owned_creature_count", 0)))
+	state.owned_defense_tower_count = maxi(0, int(data.get("owned_defense_tower_count", 0)))
+	state.tower_levels = (data.get("tower_levels", {}) as Dictionary).duplicate(true)
+	state.first_capture_fortified_cells = (data.get("first_capture_fortified_cells", {}) as Dictionary).duplicate(true)
+	state.applied_upgrade_counts = (data.get("applied_upgrade_counts", {}) as Dictionary).duplicate()
+	return state
 
 
 func _cell_history_key(cell: Vector2i) -> String:

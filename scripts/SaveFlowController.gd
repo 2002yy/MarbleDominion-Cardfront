@@ -380,7 +380,8 @@ static func write_game_progress(
 	event_roulette_controller,
 	game_elapsed_time: float,
 	is_game_over: bool,
-	winner_label
+	winner_label,
+	cardfront_snapshot_data: Dictionary = {}
 ) -> bool:
 	return bool(write_game_progress_result(
 		selected_save_slot,
@@ -393,7 +394,8 @@ static func write_game_progress(
 		event_roulette_controller,
 		game_elapsed_time,
 		is_game_over,
-		winner_label
+		winner_label,
+		cardfront_snapshot_data
 	).get("ok", false))
 
 
@@ -408,12 +410,13 @@ static func write_game_progress_result(
 	event_roulette_controller,
 	game_elapsed_time: float,
 	is_game_over: bool,
-	winner_label
+	winner_label,
+	cardfront_snapshot_data: Dictionary = {}
 ) -> Dictionary:
 	if battlefield == null:
 		return {
 			"ok": false,
-			"error_message": "\u7f3a\u5c11\u6218\u573a\u5b9e\u4f8b\uff0c\u65e0\u6cd5\u4fdd\u5b58\u6e38\u620f\u8fdb\u5ea6",
+			"error_message": "\u7f3a\u5c11\u6218\u573a\u5b9e\u4f8b\uff0c\u65e0\u6cd5\u4fdd\u5b58\u6e38\u620e\u8fdb\u5ea6",
 		}
 
 	var save_path: String = get_save_path(selected_save_slot, save_path_template, save_slot_count)
@@ -426,7 +429,8 @@ static func write_game_progress_result(
 		game_elapsed_time,
 		is_game_over,
 		selected_save_slot,
-		winner_label
+		winner_label,
+		cardfront_snapshot_data
 	)
 	return _write_json_atomically(save_path, data)
 

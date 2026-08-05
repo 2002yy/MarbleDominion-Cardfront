@@ -22,12 +22,12 @@ const BRIDGE_COUNT: int = 2
 const COMMAND_CHAMBER_SIZE: Vector3 = Vector3(6.8, 0.84, 4.0)
 const BRIDGE_BASE_WIDTH: float = 3.8
 const EDGE_DECORATION_COUNT: int = 4
-const GRASS_LIGHT: Color = Color(0.40, 0.53, 0.46)
-const GRASS_DARK: Color = Color(0.39, 0.51, 0.44)
-const PLAYER_TINT: Color = Color(0.21, 0.49, 0.60)
-const AI_TINT: Color = Color(0.62, 0.30, 0.30)
-const OUTLINE_COLOR: Color = Color(0.12, 0.20, 0.19)
-const PATH_COLOR: Color = Color(0.54, 0.43, 0.33, 0.56)
+const GRASS_LIGHT: Color = Color(0.48, 0.60, 0.52)
+const GRASS_DARK: Color = Color(0.45, 0.56, 0.49)
+const PLAYER_TINT: Color = Color(0.18, 0.46, 0.58)
+const AI_TINT: Color = Color(0.58, 0.26, 0.26)
+const OUTLINE_COLOR: Color = Color(0.10, 0.18, 0.17)
+const PATH_COLOR: Color = Color(0.56, 0.44, 0.32, 0.62)
 const PRESENTATION_SCALE_PRESETS: Array[float] = [1.0, 1.12, 1.20]
 const DEFAULT_PRESENTATION_SCALE: float = 1.20
 const SCALE_TWEEN_SECONDS: float = 0.18
@@ -914,10 +914,17 @@ func _refresh_gate_visual(lane_index: int) -> void:
 	elif owner_id == CardfrontRulesScript.AI_FACTION:
 		bar_color = AI_TINT.lightened(0.12)
 	if openness >= 0.80:
-		bar_color = bar_color.lightened(0.18)
+		bar_color = Color(0.26, 0.74, 0.38)
+	elif openness > 0.20:
+		bar_color = Color(0.92, 0.74, 0.22)
+	else:
+		bar_color = Color(1.0, 0.22, 0.16)
+	var gate_emission: float = 0.18
+	if openness >= 0.80:
+		gate_emission = 0.42
 	elif openness <= 0.20:
-		bar_color = Color(1.0, 0.26, 0.20)
-	bar.material_override = _make_material(bar_color, 0.18)
+		gate_emission = 0.56
+	bar.material_override = _make_material(bar_color, gate_emission)
 	label.modulate = bar_color.lightened(0.32)
 	label.text = "%s  #%d" % [state_text, lane_index + 1]
 
@@ -1792,7 +1799,7 @@ func _tile_color(owner_id: int, region_type: String, cell: Vector2i) -> Color:
 	var checker_index: int = floori(float(cell.x) / float(CHECKER_CELL_SPAN)) + floori(float(cell.y) / float(CHECKER_CELL_SPAN))
 	var owner_color: Color = _theme_color("tile_a") if checker_index % 2 == 0 else _theme_color("tile_b")
 	if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
-		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.52)
+		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.60)
 	var accent: Color = _region_accent(region_type)
 	if region_type != RegionTypeScript.NORMAL:
 		owner_color = owner_color.lerp(accent, 0.18).lightened(0.035)
@@ -1828,10 +1835,10 @@ func _theme_color(key: String) -> Color:
 			}
 		_:
 			theme = {
-				"sky": Color(0.62, 0.69, 0.62),
-				"backdrop": Color(0.38, 0.49, 0.45),
-				"outer": Color(0.38, 0.49, 0.45),
-				"ground": Color(0.39, 0.52, 0.45),
+				"sky": Color(0.66, 0.74, 0.66),
+				"backdrop": Color(0.42, 0.54, 0.49),
+				"outer": Color(0.42, 0.54, 0.49),
+				"ground": Color(0.44, 0.57, 0.49),
 				"tile_a": GRASS_LIGHT,
 				"tile_b": GRASS_DARK,
 				"path": PATH_COLOR,

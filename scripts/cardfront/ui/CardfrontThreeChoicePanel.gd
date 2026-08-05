@@ -32,6 +32,11 @@ var _pending_player_upgrade_times: int = 1
 var _upgrade_toast_remaining: float = 0.0
 var _last_stronghold_bonuses: Dictionary = {}
 var _view_size: Vector2 = Vector2(1120, 720)
+var _peek_button: Button = null
+var _peeking: bool = false
+var _saved_shell_position: Vector2 = Vector2.ZERO
+const _NORMAL_DIMMER_ALPHA: float = 0.62
+const _PEEK_DIMMER_ALPHA: float = 0.12
 
 
 func _ready() -> void:
@@ -41,6 +46,32 @@ func _ready() -> void:
 	upgrade_toast.visible = false
 	dimmer.mouse_filter = Control.MOUSE_FILTER_STOP
 	choice_shell.mouse_filter = Control.MOUSE_FILTER_STOP
+	_create_peek_button()
+
+
+func _create_peek_button() -> void:
+	_peek_button = Button.new()
+	_peek_button.name = "PeekButton"
+	_peek_button.text = "查看战场"
+	_peek_button.size = Vector2(120.0, 32.0)
+	_peek_button.focus_mode = Control.FOCUS_NONE
+	_peek_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	var stylebox := StyleBoxFlat.new()
+	stylebox.bg_color = Color(0.04, 0.08, 0.12, 0.92)
+	stylebox.border_color = Color(0.30, 0.70, 0.90, 0.72)
+	stylebox.set_border_width_all(1)
+	stylebox.set_corner_radius_all(4)
+	stylebox.content_margin_left = 10.0
+	stylebox.content_margin_right = 10.0
+	stylebox.content_margin_top = 4.0
+	stylebox.content_margin_bottom = 4.0
+	_peek_button.add_theme_stylebox_override("normal", stylebox)
+	_peek_button.add_theme_stylebox_override("hover", stylebox)
+	_peek_button.add_theme_stylebox_override("pressed", stylebox)
+	_peek_button.add_theme_color_override("font_color", Color(0.70, 0.92, 1.0))
+	_peek_button.add_theme_color_override("font_hover_color", Color(0.85, 0.98, 1.0))
+	_peek_button.pressed.connect(_toggle_peek)
+	choice_shell.add_child(_peek_button)
 
 
 func setup(new_director, view_size: Vector2 = Vector2(1120, 720)) -> bool:
@@ -169,6 +200,40 @@ func _on_draft_opened(player_offer: Array, _ai_offer: Array, timeout_seconds: fl
 	timer_label.text = "%.1f" % _timeout_seconds
 	battle_status.visible = false
 	draft_root.visible = true
+	_reset_peek_state()
+
+
+func _toggle_peek() -> void:
+	if not draft_root.visible:
+		return
+	_peeking = not _peeking
+	if _peeking:
+		_saved_shell_position = choice_shell.position
+		dimmer.color.a = _PEEK_DIMMER_ALPHA
+		choice_shell.position = Vector2(
+			maxf(8.0, _view_size.x - choice_shell.size.x - 8.0),
+			_view_size.y - choice_shell.size.y - 8.0
+		)
+		_peek_button.text = "返回选择"
+	else:
+		dimmer.color.a = _NORMAL_DIMMER_ALPHA
+		choice_shell.position = _saved_shell_position
+		_peek_button.text = "查看战场"
+
+
+func _reset_peek_state() -> void:
+	_peeking = false
+	dimmer.color.a = _NORMAL_DIMMER_ALPHA
+	_peek_button.text = "查看战场"
+	_peek_button.position = Vector2(choice_shell.size.x - _peek_button.size.x - 12.0, 8.0)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not draft_root.visible:
+		return
+	if event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
+		_toggle_peek()
+		get_viewport().set_input_as_handled()
 
 
 func _layout_choice_cards(choice_count: int) -> void:

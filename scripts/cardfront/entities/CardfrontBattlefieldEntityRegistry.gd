@@ -208,6 +208,78 @@ func snapshot() -> Dictionary:
 	}
 
 
+func restore(data: Dictionary) -> void:
+	clear()
+	var saved_slots: Dictionary = data.get("building_slots", {})
+	for slot_id in saved_slots:
+		var slot: Dictionary = saved_slots[slot_id]
+		register_building_slot(
+			str(slot_id),
+			Vector2i(int(slot.get("cell", Vector2i.ZERO).x), int(slot.get("cell", Vector2i.ZERO).y)),
+			str(slot.get("slot_kind", "defense_tower"))
+		)
+	var saved_entities: Array = data.get("entities", [])
+	for entity_data in saved_entities:
+		var entity_kind: String = str(entity_data.get("entity_kind", ""))
+		var entity
+		match entity_kind:
+			BattlefieldEntityScript.KIND_CREATURE:
+				entity = CreatureStateScript.new()
+			BattlefieldEntityScript.KIND_DEFENSE_TOWER:
+				entity = DefenseTowerStateScript.new()
+			_:
+				entity = BattlefieldEntityScript.new()
+		_apply_entity_snapshot(entity, entity_data)
+		if str(entity.entity_id) != "" and not entities_by_id.has(str(entity.entity_id)):
+			_register_entity(entity)
+			if entity_kind == BattlefieldEntityScript.KIND_DEFENSE_TOWER:
+				var slot_id: String = str(entity_data.get("building_slot_id", ""))
+				if building_slots.has(slot_id):
+					var slot: Dictionary = building_slots[slot_id]
+					slot["entity_id"] = str(entity.entity_id)
+					building_slots[slot_id] = slot
+
+
+func _apply_entity_snapshot(entity, data: Dictionary) -> void:
+	entity.entity_id = str(data.get("entity_id", ""))
+	entity.entity_kind = str(data.get("entity_kind", ""))
+	entity.owner_id = int(data.get("owner_id", -1))
+	var cell_data = data.get("cell", Vector2i.ZERO)
+	if cell_data is Vector2i:
+		entity.cell = cell_data
+	elif cell_data is Array and cell_data.size() >= 2:
+		entity.cell = Vector2i(int(cell_data[0]), int(cell_data[1]))
+	else:
+		entity.cell = Vector2i.ZERO
+	entity.hp = maxi(0, int(data.get("hp", 1)))
+	entity.max_hp = maxi(1, int(data.get("max_hp", 1)))
+	entity.active = bool(data.get("active", true))
+	entity.powered = bool(data.get("powered", true))
+	entity.rounds_remaining = int(data.get("rounds_remaining", -1))
+	entity.status_effects = (data.get("status_effects", {}) as Dictionary).duplicate(true)
+	entity.metadata = (data.get("metadata", {}) as Dictionary).duplicate(true)
+	if entity is CreatureStateScript:
+		entity.creature_id = str(data.get("creature_id", ""))
+		entity.armor_type = str(data.get("armor_type", "normal"))
+		entity.movement = maxi(0, int(data.get("movement", 1)))
+		entity.behavior_type = str(data.get("behavior_type", "hold_frontline"))
+		entity.size_slots = clampi(int(data.get("size_slots", 1)), 1, MAX_CREATURE_SLOTS_PER_CELL)
+	if entity is DefenseTowerStateScript:
+		entity.tower_id = str(data.get("tower_id", ""))
+		entity.building_slot_id = str(data.get("building_slot_id", ""))
+		entity.intercept_capacity = int(data.get("intercept_capacity", 0))
+		entity.intercepts_remaining = int(data.get("intercepts_remaining", 0))
+		entity.summon_creature_id = str(data.get("summon_creature_id", ""))
+		entity.summon_interval_rounds = int(data.get("summon_interval_rounds", 0))
+		entity.summon_cooldown_rounds = int(data.get("summon_cooldown_rounds", 0))
+		entity.guidance_capacity = int(data.get("guidance_capacity", 0))
+		entity.guidance_remaining = int(data.get("guidance_remaining", 0))
+		entity.guidance_lane_center_ratio = float(data.get("guidance_lane_center_ratio", 0.5))
+		entity.guidance_strength = float(data.get("guidance_strength", 0.0))
+		entity.guidance_radius_cells = int(data.get("guidance_radius_cells", 0))
+		entity.tower_level = clampi(int(data.get("tower_level", 1)), 1, 3)
+
+
 func _can_register_entity(entity_id: String) -> bool:
 	var safe_id: String = str(entity_id)
 	return safe_id != "" and not entities_by_id.has(safe_id)

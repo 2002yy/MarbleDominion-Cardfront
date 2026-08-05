@@ -121,6 +121,23 @@ func snapshot() -> Dictionary:
 	}
 
 
+func restore(data: Dictionary) -> void:
+	phase = str(data.get("phase", MatchPhaseScript.BATTLE_COUNTDOWN))
+	battle_interval = maxf(0.01, float(data.get("battle_interval", DEFAULT_BATTLE_INTERVAL)))
+	draft_timeout = maxf(0.01, float(data.get("draft_timeout", DEFAULT_DRAFT_TIMEOUT)))
+	time_remaining = maxf(0.0, float(data.get("time_remaining", battle_interval)))
+	draft_timed_out = bool(data.get("draft_timed_out", false))
+	owner_ids.clear()
+	for raw_owner_id in data.get("owner_ids", []):
+		var owner_id: int = int(raw_owner_id)
+		if not owner_ids.has(owner_id):
+			owner_ids.append(owner_id)
+	selected_upgrade_ids.clear()
+	var saved_selections: Dictionary = data.get("selected_upgrade_ids", {})
+	for owner_id in saved_selections:
+		selected_upgrade_ids[int(owner_id)] = str(saved_selections[owner_id])
+
+
 func _set_phase(next_phase: String) -> void:
 	if phase == next_phase:
 		return

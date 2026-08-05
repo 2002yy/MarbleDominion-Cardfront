@@ -32,7 +32,7 @@ static func build_faction_states(chambers: Dictionary, turrets: Dictionary) -> A
 		factions.append(faction_state)
 	return factions
 
-static func build_save_payload(chambers: Dictionary, turrets: Dictionary, battlefield, bullet_container, event_roulette_controller, game_elapsed_time: float, is_game_over: bool, selected_save_slot: int, winner_label) -> Dictionary:
+static func build_save_payload(chambers: Dictionary, turrets: Dictionary, battlefield, bullet_container, event_roulette_controller, game_elapsed_time: float, is_game_over: bool, selected_save_slot: int, winner_label, cardfront_snapshot_data: Dictionary = {}) -> Dictionary:
 	var grid_extent: Vector2i = GridExtentScript.normalize(
 		battlefield.get("grid_extent"),
 		Vector2i(int(battlefield.grid_size), int(battlefield.grid_size))
@@ -55,4 +55,6 @@ static func build_save_payload(chambers: Dictionary, turrets: Dictionary, battle
 		"winner_text": winner_label.text if winner_label != null else "",
 		"event_state": event_roulette_controller.export_save_state() if event_roulette_controller != null else {},
 	}
+	if not cardfront_snapshot_data.is_empty():
+		core_payload["cardfront_snapshot"] = cardfront_snapshot_data
 	return SaveGameCodec.attach_payload_hash(core_payload)

@@ -18,7 +18,7 @@ config/name="领土战争"
 config/version="0.3.3a-gate-connectivity-rules"
 config/tags=PackedStringArray("正在开发中，持续迭代版", "球球领土战争")
 run/main_scene="res://scenes/Main.tscn"
-config/features=PackedStringArray("4.6")
+config/features=PackedStringArray("4.7")
 
 [display]
 
@@ -27,6 +27,10 @@ window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation="landscape"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot-mcp/plugin.cfg")
 
 [input_devices]
 

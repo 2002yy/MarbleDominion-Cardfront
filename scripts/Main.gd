@@ -25,6 +25,7 @@ const StartMenuUi = preload("res://scripts/StartMenu.gd")
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
+const CardfrontRuntimeSnapshotScript = preload("res://scripts/cardfront/save/CardfrontRuntimeSnapshot.gd")
 const CardfrontStatusFormatterScript = preload("res://scripts/cardfront/ui/CardfrontStatusFormatter.gd")
 const CardfrontMatchFlowTextScript = preload("res://scripts/cardfront/ui/CardfrontMatchFlowText.gd")
 const CardfrontHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
@@ -1107,6 +1108,11 @@ func _process_pending_bullet_restore() -> void:
 
 
 func _save_game_progress() -> Dictionary:
+	var cardfront_data: Dictionary = {}
+	if selected_game_mode_name == GameConfig.GAME_MODE_CARDFRONT and runtime != null:
+		var snapshot = CardfrontRuntimeSnapshotScript.capture(runtime)
+		if snapshot != null:
+			cardfront_data = snapshot.to_dict()
 	var result: Dictionary = SaveFlowController.write_game_progress_result(
 		selected_save_slot,
 		SAVE_PATH_TEMPLATE,
@@ -1118,7 +1124,8 @@ func _save_game_progress() -> Dictionary:
 		runtime.event_controller,
 		game_elapsed_time,
 		is_game_over,
-		_hud_ref("winner_label")
+		_hud_ref("winner_label"),
+		cardfront_data
 	)
 	if not bool(result.get("ok", false)):
 		pending_menu_status_message = str(result.get("error_message", "保存失败"))
@@ -1233,9 +1240,10 @@ func _continue_from_prepared_payload(prepared: Dictionary) -> void:
 		execution_plan["banner"] = banner
 	var execution_data: Dictionary = execution_plan.get("data", {})
 	var restore_plan: RestorePlan = RestorePlan.build_from_clean_data(execution_data)
-	_apply_continue_start_plan(execution_plan, restore_plan)
+	var cardfront_snapshot_data: Dictionary = prepared.get("data", {}).get("cardfront_snapshot", {})
+	_apply_continue_start_plan(execution_plan, restore_plan, cardfront_snapshot_data)
 
-func _apply_continue_start_plan(execution_plan: Dictionary, restore_plan: RestorePlan) -> void:
+func _apply_continue_start_plan(execution_plan: Dictionary, restore_plan: RestorePlan, cardfront_snapshot_data: Dictionary = {}) -> void:
 	var execution_start_values: Dictionary = execution_plan.get("start_values", {})
 	var execution_banner: Dictionary = execution_plan.get("banner", {})
 	SaveFlowController.apply_continue_start_plan(execution_plan, self)
@@ -1243,6 +1251,8 @@ func _apply_continue_start_plan(execution_plan: Dictionary, restore_plan: Restor
 	game_elapsed_time = float(execution_start_values.get("game_elapsed_time", 0.0))
 	_sync_chamber_game_elapsed_time()
 	_apply_saved_state(restore_plan)
+	if not cardfront_snapshot_data.is_empty() and selected_game_mode_name == GameConfig.GAME_MODE_CARDFRONT:
+		CardfrontRuntimeSnapshotScript.apply_to_runtime(runtime, cardfront_snapshot_data)
 	_show_center_banner(
 		str(execution_banner.get("title", "领土战争")),
 		str(execution_banner.get("subtitle", "继续作战")),
