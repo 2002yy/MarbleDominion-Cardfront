@@ -50,6 +50,7 @@ var direction_controller = null
 var aim_guide_layer = null
 var aim_control = null
 var round_director = null
+var command_point_system = null
 var three_choice_panel = null
 var battle_hero_hud = null
 var hero_assignments: Dictionary = {}
@@ -109,6 +110,7 @@ func reset() -> void:
     aim_guide_layer = null
     aim_control = null
     round_director = null
+    command_point_system = null
     three_choice_panel = null
     battle_hero_hud = null
     hero_assignments.clear()

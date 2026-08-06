@@ -26,6 +26,7 @@ const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
 const CardfrontRuntimeSnapshotScript = preload("res://scripts/cardfront/save/CardfrontRuntimeSnapshot.gd")
+const CardfrontMatchPhaseScript = preload("res://scripts/cardfront/run/CardfrontMatchPhase.gd")
 const CardfrontStatusFormatterScript = preload("res://scripts/cardfront/ui/CardfrontStatusFormatter.gd")
 const CardfrontMatchFlowTextScript = preload("res://scripts/cardfront/ui/CardfrontMatchFlowText.gd")
 const CardfrontHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
@@ -1021,6 +1022,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 		return
 	if runtime.selection_controller.get_selected_card_id() < 0:
+		if not _handle_priority_target_click(event):
+			_handle_fortify_click(event)
 		return
 	if runtime.battlefield == null or not is_instance_valid(runtime.battlefield):
 		return
@@ -1035,6 +1038,66 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	runtime.selection_controller.on_battlefield_clicked(cell)
 	get_viewport().set_input_as_handled()
+
+
+func _handle_priority_target_click(event: InputEvent) -> bool:
+	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		return false
+	if runtime.direction_controller == null or not is_instance_valid(runtime.direction_controller):
+		return false
+	if runtime.round_director == null or not is_instance_valid(runtime.round_director):
+		return false
+	if not runtime.round_director.active:
+		return false
+	if runtime.round_director.phase_controller.phase != CardfrontMatchPhaseScript.BATTLE_COUNTDOWN:
+		return false
+	if runtime.battlefield == null or not is_instance_valid(runtime.battlefield):
+		return false
+	if not runtime.battlefield.has_method("world_to_cell"):
+		return false
+	var canvas_transform: Transform2D = get_viewport().get_canvas_transform()
+	var world_position: Vector2 = canvas_transform.affine_inverse() * event.position
+	var cell: Vector2i = runtime.battlefield.world_to_cell(world_position)
+	if not runtime.battlefield.is_inside(cell):
+		return false
+	var owner_id: int = int(runtime.battlefield.get_cell_owner(cell))
+	if owner_id == CardfrontRulesScript.AI_FACTION or owner_id == CardfrontRulesScript.NEUTRAL_OWNER:
+		runtime.direction_controller.set_priority_target(cell)
+		get_viewport().set_input_as_handled()
+		return true
+	elif runtime.direction_controller.has_priority_target():
+		runtime.direction_controller.clear_priority_target()
+		get_viewport().set_input_as_handled()
+		return true
+	return false
+
+
+func _handle_fortify_click(event: InputEvent) -> void:
+	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		return
+	if runtime.round_director == null or not is_instance_valid(runtime.round_director):
+		return
+	if runtime.round_director.phase_controller.phase != CardfrontMatchPhaseScript.LAUNCH_VOLLEY:
+		return
+	if not runtime.round_director.command_points.has_points(CardfrontRulesScript.PLAYER_FACTION):
+		return
+	if runtime.battlefield == null or not is_instance_valid(runtime.battlefield):
+		return
+	if runtime.fortify_layer == null or not is_instance_valid(runtime.fortify_layer):
+		return
+	if not runtime.battlefield.has_method("world_to_cell"):
+		return
+	var canvas_transform: Transform2D = get_viewport().get_canvas_transform()
+	var world_position: Vector2 = canvas_transform.affine_inverse() * event.position
+	var cell: Vector2i = runtime.battlefield.world_to_cell(world_position)
+	if not runtime.battlefield.is_inside(cell):
+		return
+	var owner_id: int = int(runtime.battlefield.get_cell_owner(cell))
+	if owner_id != CardfrontRulesScript.PLAYER_FACTION:
+		return
+	if runtime.round_director.command_points.spend_point(CardfrontRulesScript.PLAYER_FACTION):
+		runtime.fortify_layer.add_fortify_stack(cell, 1)
+		get_viewport().set_input_as_handled()
 
 
 func _cancel_cardfront_selection() -> void:

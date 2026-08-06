@@ -19,6 +19,9 @@ var current_angle: float = -PI * 0.5
 var lane_split_ratio: float = 0.5
 var _lane_angles: Array[float] = []
 var _grid_extent: Vector2i = Vector2i(40, 50)
+var _priority_target_cell: Vector2i = Vector2i(-1, -1)
+var _priority_lane_index: int = -1
+signal priority_target_set(owner_id, cell, lane_index)
 
 
 func _init() -> void:
@@ -54,7 +57,65 @@ func get_lane_split() -> float:
 func get_lane_allocations(total_shots: int) -> Array:
 	if _lane_angles.size() < 2:
 		return []
-	return LaneAllocationScript.build_split(total_shots, lane_split_ratio, _lane_angles[0], _lane_angles[1])
+	var left_angle: float = _lane_angles[0]
+	var right_angle: float = _lane_angles[1]
+	if _priority_lane_index >= 0 and _priority_lane_index < _lane_angles.size():
+		var target_angle: float = _angle_to_cell(_priority_target_cell)
+		if _priority_lane_index == 0:
+			left_angle = target_angle
+		else:
+			right_angle = target_angle
+	var allocs: Array = LaneAllocationScript.build_split(total_shots, lane_split_ratio, left_angle, right_angle)
+	if _priority_lane_index >= 0 and _priority_lane_index < allocs.size():
+		allocs[_priority_lane_index].priority_target_cell = _priority_target_cell
+		allocs[_priority_lane_index].has_priority_target = true
+	return allocs
+
+
+func set_priority_target(cell: Vector2i) -> void:
+	_priority_target_cell = cell
+	_priority_lane_index = _nearest_lane_for_cell(cell)
+	priority_target_set.emit(owner_id, cell, _priority_lane_index)
+
+
+func clear_priority_target() -> void:
+	_priority_target_cell = Vector2i(-1, -1)
+	_priority_lane_index = -1
+	priority_target_set.emit(owner_id, Vector2i(-1, -1), -1)
+
+
+func get_priority_target() -> Vector2i:
+	return _priority_target_cell
+
+
+func has_priority_target() -> bool:
+	return _priority_lane_index >= 0
+
+
+func _nearest_lane_for_cell(cell: Vector2i) -> int:
+	if _lane_angles.size() < 2:
+		return -1
+	var half_w: float = float(_grid_extent.x) * 0.5
+	var cell_x: float = float(cell.x)
+	var best_lane: int = 0
+	var best_dist: float = absf(cell_x - float(GateRulesScript.LANE_CENTER_RATIOS[0]) * float(_grid_extent.x))
+	for i in range(1, GateRulesScript.LANE_COUNT):
+		var lane_center_x: float = float(GateRulesScript.LANE_CENTER_RATIOS[i]) * float(_grid_extent.x)
+		var dist: float = absf(cell_x - lane_center_x)
+		if dist < best_dist:
+			best_dist = dist
+			best_lane = i
+	return best_lane
+
+
+func _angle_to_cell(cell: Vector2i) -> float:
+	var half_w: float = float(_grid_extent.x) * 0.5
+	var half_h: float = float(_grid_extent.y) * 0.5
+	var dx: float = float(cell.x) - half_w + 0.5
+	var dy: float = float(cell.y) - half_h + 0.5
+	if dy < 0.1:
+		dy = 0.1
+	return atan2(dy, dx)
 
 
 func _recompute_lane_angles() -> void:

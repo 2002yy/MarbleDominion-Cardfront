@@ -22,6 +22,7 @@ const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVo
 const AiUpgradePolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
 const AiCommanderScript = preload("res://scripts/cardfront/ai/CardfrontAiCommander.gd")
 const LaneAllocationScript = preload("res://scripts/cardfront/volley/CardfrontLaneAllocation.gd")
+const CommandPointSystemScript = preload("res://scripts/cardfront/run/CardfrontCommandPointSystem.gd")
 const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 
@@ -54,6 +55,7 @@ var _upgrade_resolver = UpgradeResolverScript.new()
 var _volley_resolver = VolleyResolverScript.new()
 var _ai_policy = AiUpgradePolicyScript.new()
 var _ai_commander = AiCommanderScript.new()
+var command_points = CommandPointSystemScript.new()
 var _reveal_remaining: float = 0.0
 var _resolution_started: bool = false
 var _draft_pause_owned: bool = false
@@ -104,6 +106,7 @@ func setup(
 		if turret != null and is_instance_valid(turret) and turret.has_method("configure_health_pool"):
 			turret.configure_health_pool(int(state.command_chamber_health), true)
 	_ai_commander.set_hero(str(hero_assignments.get(RulesScript.AI_FACTION, "")))
+	command_points.setup(RulesScript.get_duel_factions())
 
 	var phase_callable := Callable(self, "_on_phase_changed")
 	if not phase_controller.phase_changed.is_connected(phase_callable):
