@@ -180,6 +180,48 @@ func issue_volley(
 	return intent
 
 
+func issue_lane_volley(
+	owner_id: int,
+	shot_count: int,
+	angle: float,
+	projectile_power: int = 1,
+	chamber_damage_quarters: int = 4,
+	armor_pierce_contacts: int = 0,
+	projectile_sequence: Array = [],
+	heavy_charge_pool: Dictionary = {}
+):
+	var intent = build_intent(owner_id, 1)
+	if intent == null:
+		fire_skipped.emit(int(owner_id), "no_target_lane")
+		return null
+	intent.shot_count = clampi(int(shot_count), 1, GameConfig.get_max_pending_count())
+	intent.projectile_power = clampi(int(projectile_power), 1, 999)
+	intent.chamber_damage_quarters = clampi(int(chamber_damage_quarters), 1, 9999)
+	intent.armor_pierce_contacts = maxi(0, int(armor_pierce_contacts))
+	intent.heavy_charge_pool = heavy_charge_pool
+	intent.projectile_sequence = projectile_sequence.duplicate()
+	if intent.projectile_sequence.is_empty():
+		ProjectileTypeScript.append_standard(intent.projectile_sequence, intent.shot_count)
+	if intent.projectile_sequence.size() > intent.shot_count:
+		intent.projectile_sequence.resize(intent.shot_count)
+	while intent.projectile_sequence.size() < intent.shot_count:
+		intent.projectile_sequence.append(ProjectileTypeScript.STANDARD)
+	intent.projectile_counts = ProjectileTypeScript.count_types(intent.projectile_sequence)
+	intent.spread = maxf(
+		0.0,
+		float(base_spread) * ProjectileTypeScript.volley_spread_multiplier(intent.projectile_sequence)
+	)
+	intent.angle = float(angle)
+	fire_tick.emit(int(owner_id), intent)
+	fire_requested.emit(int(owner_id), intent)
+	if not _request_fire(int(owner_id), intent):
+		fire_skipped.emit(int(owner_id), "turret_unavailable_lane")
+		return null
+	_last_intents[int(owner_id)] = intent
+	fire_issued.emit(int(owner_id), intent)
+	return intent
+
+
 func get_last_intent(owner_id: int):
 	return _last_intents.get(int(owner_id), null)
 

@@ -2,10 +2,13 @@ extends Node
 class_name CardfrontDirectionController
 
 signal angle_changed(owner_id, angle, offset_degrees)
+signal lane_split_changed(owner_id, ratio)
 
 const MIN_OFFSET_DEGREES: float = -60.0
 const MAX_OFFSET_DEGREES: float = 60.0
 const KEYBOARD_STEP_DEGREES: float = 4.0
+const LaneAllocationScript = preload("res://scripts/cardfront/volley/CardfrontLaneAllocation.gd")
+const GateRulesScript = preload("res://scripts/cardfront/gates/CardfrontGateRules.gd")
 
 var owner_id: int = -1
 var turret = null
@@ -13,6 +16,9 @@ var fire_director = null
 var center_angle: float = -PI * 0.5
 var offset_degrees: float = 0.0
 var current_angle: float = -PI * 0.5
+var lane_split_ratio: float = 0.5
+var _lane_angles: Array[float] = []
+var _grid_extent: Vector2i = Vector2i(40, 50)
 
 
 func _init() -> void:
@@ -29,6 +35,37 @@ func setup(new_owner_id: int, new_turret, new_fire_director, new_center_angle: f
 	set_process_unhandled_input(true)
 	set_offset_degrees(0.0)
 	return true
+
+
+func set_grid_extent(extent: Vector2i) -> void:
+	_grid_extent = extent
+	_recompute_lane_angles()
+
+
+func set_lane_split(ratio: float) -> void:
+	lane_split_ratio = clampf(float(ratio), 0.0, 1.0)
+	lane_split_changed.emit(owner_id, lane_split_ratio)
+
+
+func get_lane_split() -> float:
+	return lane_split_ratio
+
+
+func get_lane_allocations(total_shots: int) -> Array:
+	if _lane_angles.size() < 2:
+		return []
+	return LaneAllocationScript.build_split(total_shots, lane_split_ratio, _lane_angles[0], _lane_angles[1])
+
+
+func _recompute_lane_angles() -> void:
+	var half_w: float = float(_grid_extent.x) * 0.5
+	var half_h: float = float(_grid_extent.y) * 0.5
+	_lane_angles.clear()
+	for i in range(GateRulesScript.LANE_COUNT):
+		var lane_center_ratio: float = float(GateRulesScript.LANE_CENTER_RATIOS[i])
+		var dx: float = (lane_center_ratio * float(_grid_extent.x) - half_w)
+		var dy: float = half_h
+		_lane_angles.append(atan2(dy, dx))
 
 
 func set_offset_degrees(value: float) -> void:

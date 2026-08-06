@@ -21,6 +21,7 @@ const UpgradeResolverScript = preload("res://scripts/cardfront/draft/CardfrontUp
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
 const AiUpgradePolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
 const AiCommanderScript = preload("res://scripts/cardfront/ai/CardfrontAiCommander.gd")
+const LaneAllocationScript = preload("res://scripts/cardfront/volley/CardfrontLaneAllocation.gd")
 const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 
@@ -343,6 +344,10 @@ func _begin_resolution() -> void:
 			stronghold_system.apply_to_volley_plan(int(owner_id), plan, current_stronghold_bonuses)
 		if battlefield_entity_runtime != null and is_instance_valid(battlefield_entity_runtime):
 			battlefield_entity_runtime.decorate_volley_plan(int(owner_id), plan)
+		if int(owner_id) == RulesScript.PLAYER_FACTION and direction_controller != null and is_instance_valid(direction_controller):
+			var lane_allocs: Array = direction_controller.get_lane_allocations(int(plan.shot_count))
+			if not lane_allocs.is_empty():
+				plan.lane_allocations = lane_allocs
 		current_plans[int(owner_id)] = plan
 	var player_definition: Dictionary = _definition_for_choice(RulesScript.PLAYER_FACTION)
 	var ai_definition: Dictionary = _definition_for_choice(RulesScript.AI_FACTION)
@@ -367,7 +372,22 @@ func _launch_resolved_volleys() -> void:
 			"spec": plan.heavy_charge_spec.duplicate(true),
 		}
 		var intent = null
-		if fire_director.has_method("issue_volley"):
+		if not plan.lane_allocations.is_empty() and fire_director.has_method("issue_lane_volley"):
+			LaneAllocationScript.split_sequence(plan.projectile_sequence, plan.lane_allocations)
+			for lane_alloc in plan.lane_allocations:
+				var lane_intent = fire_director.issue_lane_volley(
+					int(owner_id),
+					int(lane_alloc.shot_count),
+					float(lane_alloc.angle),
+					int(plan.projectile_power),
+					int(plan.chamber_damage_quarters),
+					int(plan.armor_pierce_contacts),
+					lane_alloc.projectile_sequence,
+					plan.heavy_charge_pool
+				)
+				if intent == null:
+					intent = lane_intent
+		elif fire_director.has_method("issue_volley"):
 			intent = fire_director.issue_volley(
 				int(owner_id),
 				int(plan.shot_count),

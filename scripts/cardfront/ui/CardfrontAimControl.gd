@@ -6,6 +6,9 @@ const CardfrontUiAssetRegistryScript = preload("res://scripts/cardfront/ui/Cardf
 
 var direction_controller = null
 var _syncing: bool = false
+var _lane_panel: Panel = null
+var _lane_slider: HSlider = null
+var _lane_label: Label = null
 
 @onready var _panel: Panel = $Panel
 @onready var _title: Label = $Panel/Title
@@ -52,7 +55,73 @@ func setup(new_direction_controller, layout: Dictionary, mode_name: String) -> b
 	_layout_children()
 	_connect_controls()
 	_set_slider_value(float(direction_controller.get_offset_degrees()))
+	_create_lane_split_ui(panel_rect)
 	return true
+
+
+func _create_lane_split_ui(aim_panel_rect: Rect2) -> void:
+	if _lane_panel != null and is_instance_valid(_lane_panel):
+		return
+	if direction_controller == null or not direction_controller.has_method("get_lane_split"):
+		return
+	_lane_panel = Panel.new()
+	_lane_panel.name = "LaneSplitPanel"
+	var panel_size := Vector2(aim_panel_rect.size.x, 40.0)
+	_lane_panel.position = Vector2(aim_panel_rect.position.x, aim_panel_rect.position.y - panel_size.y - 4.0)
+	_lane_panel.size = panel_size
+	_lane_panel.add_theme_stylebox_override(
+		"panel",
+		CardfrontUiAssetRegistryScript.make_panel_style(
+			"resource_panel_bg",
+			Color(0.025, 0.055, 0.075, 0.96),
+			Color(0.30, 0.90, 1.0, 0.55)
+		)
+	)
+	add_child(_lane_panel)
+
+	var lane_title := Label.new()
+	lane_title.text = "分桥"
+	lane_title.position = Vector2(8.0, 3.0)
+	lane_title.size = Vector2(44.0, 16.0)
+	lane_title.add_theme_font_size_override("font_size", 13)
+	CardfrontUiAssetRegistryScript.apply_body_font(lane_title)
+	_lane_panel.add_child(lane_title)
+
+	_lane_label = Label.new()
+	_lane_label.position = Vector2(panel_size.x - 92.0, 3.0)
+	_lane_label.size = Vector2(84.0, 16.0)
+	_lane_label.add_theme_font_size_override("font_size", 13)
+	_lane_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_lane_panel.add_child(_lane_label)
+
+	_lane_slider = HSlider.new()
+	_lane_slider.position = Vector2(8.0, 21.0)
+	_lane_slider.size = Vector2(panel_size.x - 16.0, 16.0)
+	_lane_slider.min_value = 0.0
+	_lane_slider.max_value = 1.0
+	_lane_slider.step = 0.05
+	_lane_slider.value = 0.5
+	_lane_slider.focus_mode = Control.FOCUS_NONE
+	_lane_panel.add_child(_lane_slider)
+
+	_lane_slider.value_changed.connect(_on_lane_slider_changed)
+	direction_controller.set_lane_split(0.5)
+	_update_lane_label(0.5)
+
+
+func _on_lane_slider_changed(value: float) -> void:
+	if direction_controller == null or not is_instance_valid(direction_controller):
+		return
+	direction_controller.set_lane_split(value)
+	_update_lane_label(value)
+
+
+func _update_lane_label(ratio: float) -> void:
+	if _lane_label == null:
+		return
+	var left_pct: int = roundi(ratio * 100.0)
+	var right_pct: int = 100 - left_pct
+	_lane_label.text = "左%d%% 右%d%%" % [left_pct, right_pct]
 
 
 func get_slider_value_for_test() -> float:

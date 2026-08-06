@@ -25,6 +25,7 @@ var building_shot_count: int = 0
 var building_sources: Array = []
 var heavy_charge_spec: Dictionary = {}
 var heavy_charge_pool: Dictionary = {}
+var lane_allocations: Array = []
 
 
 func snapshot() -> Dictionary:
@@ -52,4 +53,5 @@ func snapshot() -> Dictionary:
 		"building_shot_count": building_shot_count,
 		"building_sources": building_sources.duplicate(true),
 		"heavy_charge_spec": heavy_charge_spec.duplicate(true),
+		"has_lane_allocations": not lane_allocations.is_empty(),
 	}

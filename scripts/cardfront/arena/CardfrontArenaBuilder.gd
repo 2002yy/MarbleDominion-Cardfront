@@ -74,6 +74,8 @@ static func create_direction_control(game_layer: Node, battlefield, turrets: Dic
 	if not controller.setup(player_id, player_turret, fire_director, center_angle):
 		controller.free()
 		return {"configured": false, "reason": "missing_player_turret"}
+	if battlefield != null and battlefield.get("grid_extent") != null:
+		controller.set_grid_extent(battlefield.grid_extent)
 	game_layer.add_child(controller)
 
 	var guide = CardfrontAimGuideLayerScript.new()
