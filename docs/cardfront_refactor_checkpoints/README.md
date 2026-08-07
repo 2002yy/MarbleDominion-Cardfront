@@ -8,10 +8,13 @@
 2. `docs/CARDFRONT_P0_EXECUTION_GUARDRAILS_2026-08-07.md`
 3. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_A_2026-08-08.md`
 4. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`
-5. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md`
-6. 本目录中**最近一个已经 GO 的 checkpoint**
+5. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_C_2026-08-08.md`
+6. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md`
+7. 本目录中**最近一个已经 GO 的 checkpoint**
 
 历史设计讨论 `docs/GRILLME_GAME_DESIGN_INTERVIEW.md` 只用于追溯理由，不得覆盖 Engineering Spec。
+
+> **测试入口修正：** Batch A 早期关于“测试入口尚未确定”的判断已由 Batch C §0 更新。当前 P0 现役测试 authority 是 `scripts/tests/*.gd` 及 `.github/workflows/` 中的 active Godot headless workflows；`tests_legacy_disabled/` 只作为历史参考。
 
 ---
 
@@ -97,6 +100,33 @@ P0-06～P0-10 期间尤其禁止：
 - 给 AIObservation 传完整 RunState/GameState/Node 作为“以后方便”的逃生口；
 - AI 输入收窄后顺手调 archetype/score 权重掩盖字段差异；
 - P0-06～P0-10 偷跑 P1 route/reroll/deep-card 内容。
+
+---
+
+## Batch C 额外硬检查
+
+P0-11 / P0 -> P1 放行期间尤其禁止：
+
+- 把 `tests_legacy_disabled/` 当现役 P0 通过证据；
+- 只跑新 P0 runner，不跑受影响的现有 `scripts/tests` / active CI；
+- 要求所有旧测试“原样不改全绿”，从而被迫保留已冻结退役的 Stronghold bonus；
+- 反过来把旧失败长期标成 expected，而不迁移对应 test contract；
+- 删除 workflow batch、加 `continue-on-error`、减少关键 audit 只为让 CI 变绿；
+- 用 `CardfrontPerformanceSmokeTestRunner` 的“能加载”冒充真实无性能回归；
+- 混用不同 commit 的 CI、截图、人工试玩、性能证据；
+- 修复 P0-11 问题后继续沿用旧 target commit 的 evidence；
+- 只有同一模块自己写的 unit test，没有 existing cross-system regression；
+- 把 Yellow 调优债务当作容纳结构性 bug 的垃圾桶；
+- 有任一 RED blocker 时宣布 conditional GO；
+- 没有 `P0-11O_P0_FINAL_GO_NO_GO.md` 就进入 P1。
+
+P0 最终唯一合法 P1 入口必须来自：
+
+```text
+docs/cardfront_refactor_checkpoints/P0-11O_P0_FINAL_GO_NO_GO.md
+Final decision: GO
+P1 allowed start commit: <sha>
+```
 
 ---
 
