@@ -7,8 +7,9 @@
 1. `docs/CARDFRONT_ENGINEERING_SPEC_2026-08-07.md`
 2. `docs/CARDFRONT_P0_EXECUTION_GUARDRAILS_2026-08-07.md`
 3. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_A_2026-08-08.md`
-4. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md`
-5. 本目录中**最近一个已经 GO 的 checkpoint**
+4. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`
+5. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md`
+6. 本目录中**最近一个已经 GO 的 checkpoint**
 
 历史设计讨论 `docs/GRILLME_GAME_DESIGN_INTERVIEW.md` 只用于追溯理由，不得覆盖 Engineering Spec。
 
@@ -79,6 +80,23 @@ P0-00～P0-05 期间尤其禁止：
 - 让旧 Factory/Energy/Lab bonus 与新 Support 同时继续影响正式 gameplay；
 - 把 `network_connected` 等 derived state 当保存档永久真相；
 - 每一步临时写自己的测试脚本自证通过。
+
+---
+
+## Batch B 额外硬检查
+
+P0-06～P0-10 期间尤其禁止：
+
+- Support visual 自己计算 ownership/connectivity/deployment legality；
+- 为了“回看战场”继续移动、保存、恢复 `ChoiceShell.position`；
+- Preview 恢复 battle simulation / Aim / CardSelection 输入；
+- 为了 Offer independence 顺手改 rarity、eligibility、reroll、route unlock 或强制双方不撞牌；
+- 把 `applied_upgrade_counts` 直接改名成 Level 而忽略 Echo 自动重复；
+- Echo effect application 偷偷提升 player-facing Selected Level；
+- 把 rarity/run rarity 当 per-card Level；
+- 给 AIObservation 传完整 RunState/GameState/Node 作为“以后方便”的逃生口；
+- AI 输入收窄后顺手调 archetype/score 权重掩盖字段差异；
+- P0-06～P0-10 偷跑 P1 route/reroll/deep-card 内容。
 
 ---
 
