@@ -51,6 +51,9 @@ var aim_guide_layer = null
 var aim_control = null
 var round_director = null
 var command_point_system = null
+var network_manager = null
+var pvp_match = null
+var pvp_enabled: bool = false
 var three_choice_panel = null
 var battle_hero_hud = null
 var hero_assignments: Dictionary = {}
@@ -111,6 +114,9 @@ func reset() -> void:
     aim_control = null
     round_director = null
     command_point_system = null
+    network_manager = null
+    pvp_match = null
+    pvp_enabled = false
     three_choice_panel = null
     battle_hero_hud = null
     hero_assignments.clear()

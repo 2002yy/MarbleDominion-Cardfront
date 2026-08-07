@@ -27,6 +27,9 @@ const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd"
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
 const CardfrontRuntimeSnapshotScript = preload("res://scripts/cardfront/save/CardfrontRuntimeSnapshot.gd")
 const CardfrontMatchPhaseScript = preload("res://scripts/cardfront/run/CardfrontMatchPhase.gd")
+const NetworkManagerScript = preload("res://scripts/cardfront/network/CardfrontNetworkManager.gd")
+const PvpMatchScript = preload("res://scripts/cardfront/network/CardfrontPvpMatch.gd")
+const NetworkProtocolScript = preload("res://scripts/cardfront/network/CardfrontNetworkProtocol.gd")
 const CardfrontStatusFormatterScript = preload("res://scripts/cardfront/ui/CardfrontStatusFormatter.gd")
 const CardfrontMatchFlowTextScript = preload("res://scripts/cardfront/ui/CardfrontMatchFlowText.gd")
 const CardfrontHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
@@ -64,6 +67,9 @@ var menu_save_slot_buttons: Dictionary = {}
 var menu_status_label
 var cardfront_prematch_screen = null
 var _command_point_label: Label = null
+var _pvp_lobby_panel: Control = null
+var _pvp_status_label: Label = null
+var _pvp_ip_input: LineEdit = null
 var pending_menu_status_message: String = ""
 var ui_time: float = 0.0
 var chamber_scale: float = 1.0
@@ -250,6 +256,7 @@ func _create_start_menu() -> void:
 	if pending_menu_status_message != "":
 		_show_menu_status(pending_menu_status_message)
 		pending_menu_status_message = ""
+	_add_pvp_menu_button()
 
 func _start_game(grid_extent_value, suppress_banner: bool = false, clear_save: bool = true) -> void:
 	var grid_extent := GridExtentScript.sanitize(grid_extent_value)
@@ -654,6 +661,143 @@ func _on_draft_hide_cp(_a, _b, _c, _d) -> void:
 func _on_director_hide_cp() -> void:
 	if _command_point_label != null and is_instance_valid(_command_point_label):
 		_command_point_label.visible = false
+
+
+func _add_pvp_menu_button() -> void:
+	if menu_layer == null or not is_instance_valid(menu_layer):
+		return
+	var existing = menu_layer.get_node_or_null("PvpMenuButton")
+	if existing != null:
+		return
+	var btn := Button.new()
+	btn.name = "PvpMenuButton"
+	btn.text = "联机对战"
+	btn.position = Vector2(VIEW_W * 0.5 - 80, VIEW_H - 130)
+	btn.size = Vector2(160, 38)
+	btn.add_theme_font_size_override("font_size", 16)
+	btn.pressed.connect(_open_pvp_lobby)
+	menu_layer.add_child(btn)
+
+
+func _open_pvp_lobby() -> void:
+
+	if _pvp_lobby_panel != null and is_instance_valid(_pvp_lobby_panel):
+		_pvp_lobby_panel.visible = true
+		return
+	var panel := Control.new()
+	panel.name = "PvpLobby"
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var bg := ColorRect.new()
+	bg.color = Color(0.02, 0.03, 0.05, 0.94)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.add_child(bg)
+	var vbox := VBoxContainer.new()
+	vbox.position = Vector2(360, 220)
+	vbox.size = Vector2(400, 280)
+	vbox.add_theme_constant_override("separation", 16)
+	panel.add_child(vbox)
+
+	var title := Label.new()
+	title.text = "联机对战"
+	title.add_theme_font_size_override("font_size", 28)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	_pvp_status_label = Label.new()
+	_pvp_status_label.text = "选择创建房间或加入房间"
+	_pvp_status_label.add_theme_font_size_override("font_size", 16)
+	_pvp_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(_pvp_status_label)
+
+	var host_btn := Button.new()
+	host_btn.text = "创建房间"
+	host_btn.custom_minimum_size = Vector2(400, 44)
+	host_btn.pressed.connect(_on_pvp_host)
+	vbox.add_child(host_btn)
+
+	var ip_row := HBoxContainer.new()
+	ip_row.add_theme_constant_override("separation", 8)
+	var ip_label := Label.new()
+	ip_label.text = "IP:"
+	ip_label.add_theme_font_size_override("font_size", 16)
+	ip_row.add_child(ip_label)
+	_pvp_ip_input = LineEdit.new()
+	_pvp_ip_input.text = "127.0.0.1"
+	_pvp_ip_input.custom_minimum_size = Vector2(240, 36)
+	_pvp_ip_input.placeholder_text = "对方 IP 地址"
+	ip_row.add_child(_pvp_ip_input)
+	vbox.add_child(ip_row)
+
+	var join_btn := Button.new()
+	join_btn.text = "加入房间"
+	join_btn.custom_minimum_size = Vector2(400, 44)
+	join_btn.pressed.connect(_on_pvp_join)
+	vbox.add_child(join_btn)
+
+	var cancel_btn := Button.new()
+	cancel_btn.text = "取消"
+	cancel_btn.custom_minimum_size = Vector2(400, 36)
+	cancel_btn.pressed.connect(func(): panel.visible = false)
+	vbox.add_child(cancel_btn)
+
+	menu_layer.add_child(panel)
+	_pvp_lobby_panel = panel
+
+
+func _on_pvp_host() -> void:
+	if runtime.network_manager == null:
+		runtime.network_manager = NetworkManagerScript.new()
+		menu_layer.add_child(runtime.network_manager)
+	if runtime.network_manager.host_game():
+		_pvp_status_label.text = "等待对手加入... 端口 %d" % NetworkManagerScript.DEFAULT_PORT
+		if not runtime.network_manager.peer_connected.is_connected(_on_pvp_peer_connected):
+			runtime.network_manager.peer_connected.connect(_on_pvp_peer_connected)
+		if not runtime.network_manager.connection_failed.is_connected(_on_pvp_connection_failed):
+			runtime.network_manager.connection_failed.connect(_on_pvp_connection_failed)
+	else:
+		_pvp_status_label.text = "创建房间失败"
+
+
+func _on_pvp_join() -> void:
+	if runtime.network_manager == null:
+		runtime.network_manager = NetworkManagerScript.new()
+		menu_layer.add_child(runtime.network_manager)
+	var ip: String = "127.0.0.1"
+	if _pvp_ip_input != null and is_instance_valid(_pvp_ip_input):
+		ip = str(_pvp_ip_input.text).strip_edges()
+		if ip.is_empty():
+			ip = "127.0.0.1"
+	if runtime.network_manager.join_game(ip):
+		_pvp_status_label.text = "正在连接 %s ..." % ip
+		if not runtime.network_manager.join_succeeded.is_connected(_on_pvp_join_succeeded):
+			runtime.network_manager.join_succeeded.connect(_on_pvp_join_succeeded)
+		if not runtime.network_manager.connection_failed.is_connected(_on_pvp_connection_failed):
+			runtime.network_manager.connection_failed.connect(_on_pvp_connection_failed)
+	else:
+		_pvp_status_label.text = "连接失败"
+
+
+func _on_pvp_peer_connected(_peer_id: int) -> void:
+	_pvp_status_label.text = "对手已连接！"
+	runtime.pvp_enabled = true
+	if _pvp_lobby_panel != null and is_instance_valid(_pvp_lobby_panel):
+		_pvp_lobby_panel.visible = false
+	selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
+	_open_cardfront_prematch()
+
+
+func _on_pvp_join_succeeded() -> void:
+	_pvp_status_label.text = "连接成功！"
+	runtime.pvp_enabled = true
+	if _pvp_lobby_panel != null and is_instance_valid(_pvp_lobby_panel):
+		_pvp_lobby_panel.visible = false
+	selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
+	_open_cardfront_prematch()
+
+
+func _on_pvp_connection_failed(reason: String) -> void:
+	_pvp_status_label.text = "连接失败: %s" % str(reason)
 
 
 func _request_start_from_menu() -> void:
