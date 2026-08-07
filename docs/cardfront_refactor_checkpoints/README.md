@@ -128,6 +128,14 @@ Final decision: GO
 P1 allowed start commit: <sha>
 ```
 
+P1 未来施工入口已经预先准备在：
+
+```text
+docs/cardfront_refactor_checkpoints/P1_README.md
+```
+
+但在上述 P0 Final GO 出现之前，`P1_README.md` 只是一份**锁定的未来入口**，不是开工许可。
+
 ---
 
 ## 统一复述
