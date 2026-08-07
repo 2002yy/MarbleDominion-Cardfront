@@ -63,6 +63,7 @@ var menu_continue_button
 var menu_save_slot_buttons: Dictionary = {}
 var menu_status_label
 var cardfront_prematch_screen = null
+var _command_point_label: Label = null
 var pending_menu_status_message: String = ""
 var ui_time: float = 0.0
 var chamber_scale: float = 1.0
@@ -545,6 +546,7 @@ func _create_ui() -> void:
 		_configure_cardfront_three_choice_ui()
 		_create_cardfront_battle_hero_hud()
 	_connect_stronghold_label_signals()
+	_setup_command_point_indicator()
 
 	_on_scores_changed(runtime.battlefield.count_cells_by_team())
 
@@ -580,6 +582,78 @@ func _on_volley_launched_hide_labels(_a, _b) -> void:
 func _on_director_stopped_hide_labels() -> void:
 	if runtime.orthographic_arena_view != null and is_instance_valid(runtime.orthographic_arena_view):
 		runtime.orthographic_arena_view.set_stronghold_labels_visible(false)
+
+
+func _setup_command_point_indicator() -> void:
+	if not _is_cardfront_mode():
+		return
+	if runtime.round_director == null or not is_instance_valid(runtime.round_director):
+		return
+	_command_point_label = Label.new()
+	_command_point_label.name = "CommandPointIndicator"
+	_command_point_label.text = ""
+	_command_point_label.visible = false
+	_command_point_label.add_theme_font_size_override("font_size", 18)
+	_command_point_label.add_theme_color_override("font_color", Color(0.95, 0.84, 0.30))
+	_command_point_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.8))
+	_command_point_label.add_theme_constant_override("shadow_offset_x", 1)
+	_command_point_label.add_theme_constant_override("shadow_offset_y", 1)
+	_command_point_label.add_theme_constant_override("shadow_outline_size", 2)
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+	_command_point_label.position = Vector2(viewport_size.x - 180.0, 78.0)
+	_command_point_label.size = Vector2(170.0, 28.0)
+	_command_point_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	if game_layer != null and is_instance_valid(game_layer):
+		game_layer.add_child(_command_point_label)
+	var cp = runtime.round_director.command_points
+	if cp != null and cp.has_signal("points_changed"):
+		var cb := Callable(self, "_on_command_points_changed")
+		if not cp.points_changed.is_connected(cb):
+			cp.points_changed.connect(cb)
+	if runtime.round_director.has_signal("volley_launched"):
+		var volley_cb := Callable(self, "_on_volley_show_cp")
+		if not runtime.round_director.volley_launched.is_connected(volley_cb):
+			runtime.round_director.volley_launched.connect(volley_cb)
+	if runtime.round_director.has_signal("draft_opened"):
+		var draft_cb := Callable(self, "_on_draft_hide_cp")
+		if not runtime.round_director.draft_opened.is_connected(draft_cb):
+			runtime.round_director.draft_opened.connect(draft_cb)
+	if runtime.round_director.has_signal("director_stopped"):
+		var stop_cb := Callable(self, "_on_director_hide_cp")
+		if not runtime.round_director.director_stopped.is_connected(stop_cb):
+			runtime.round_director.director_stopped.connect(stop_cb)
+
+
+func _update_command_point_display() -> void:
+	if _command_point_label == null or not is_instance_valid(_command_point_label):
+		return
+	if runtime.round_director == null or not is_instance_valid(runtime.round_director):
+		return
+	var points: int = runtime.round_director.command_points.get_points(CardfrontRulesScript.PLAYER_FACTION)
+	var diamonds: String = ""
+	for i in range(3):
+		diamonds += "◆" if i < points else "◇"
+	_command_point_label.text = "指挥点  %s" % diamonds
+
+
+func _on_command_points_changed(_owner_id: int, _remaining: int) -> void:
+	_update_command_point_display()
+
+
+func _on_volley_show_cp(_a, _b) -> void:
+	if _command_point_label != null and is_instance_valid(_command_point_label):
+		_command_point_label.visible = true
+	_update_command_point_display()
+
+
+func _on_draft_hide_cp(_a, _b, _c, _d) -> void:
+	if _command_point_label != null and is_instance_valid(_command_point_label):
+		_command_point_label.visible = false
+
+
+func _on_director_hide_cp() -> void:
+	if _command_point_label != null and is_instance_valid(_command_point_label):
+		_command_point_label.visible = false
 
 
 func _request_start_from_menu() -> void:

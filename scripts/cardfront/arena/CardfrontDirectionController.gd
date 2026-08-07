@@ -110,11 +110,10 @@ func _nearest_lane_for_cell(cell: Vector2i) -> int:
 
 func _angle_to_cell(cell: Vector2i) -> float:
 	var half_w: float = float(_grid_extent.x) * 0.5
-	var half_h: float = float(_grid_extent.y) * 0.5
 	var dx: float = float(cell.x) - half_w + 0.5
-	var dy: float = float(cell.y) - half_h + 0.5
-	if dy < 0.1:
-		dy = 0.1
+	var dy: float = float(cell.y) - float(_grid_extent.y) + 0.5
+	if dy > -0.1:
+		dy = -0.1
 	return atan2(dy, dx)
 
 
@@ -125,7 +124,7 @@ func _recompute_lane_angles() -> void:
 	for i in range(GateRulesScript.LANE_COUNT):
 		var lane_center_ratio: float = float(GateRulesScript.LANE_CENTER_RATIOS[i])
 		var dx: float = (lane_center_ratio * float(_grid_extent.x) - half_w)
-		var dy: float = half_h
+		var dy: float = -half_h
 		_lane_angles.append(atan2(dy, dx))
 
 
