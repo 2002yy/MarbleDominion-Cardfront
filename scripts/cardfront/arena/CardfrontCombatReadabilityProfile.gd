@@ -46,16 +46,33 @@ static func entity_status_text(entity) -> String:
 			return "断电"
 		var level_text: String = "%d级" % maxi(1, int(entity.tower_level))
 		if str(entity.tower_id) == FIRE_CONTROL_BEACON:
-			return "%s  引导%d" % [level_text, maxi(0, int(entity.guidance_remaining))]
-		return "%s  拦截%d" % [level_text, maxi(0, int(entity.intercepts_remaining))]
+			return "%s 信标·引导%d发" % [level_text, maxi(0, int(entity.guidance_remaining))]
+		return "%s 拦截·拦%d发" % [level_text, maxi(0, int(entity.intercepts_remaining))]
 	var names: Dictionary = {
-		"repair_unit": "维修",
-		"armored_guard": "护卫",
-		"sapper_unit": "掘城",
-		"scout_unit": "侦察",
-		"gate_colossus": "中立巨像",
+		"repair_unit": "维修·修复前线",
+		"armored_guard": "护卫·挡弹",
+		"sapper_unit": "掘城·爆破",
+		"scout_unit": "侦察·修正弹道",
+		"gate_colossus": "中立巨像·攻双方",
 	}
 	return str(names.get(str(entity.creature_id), "单位"))
+
+
+static func entity_description(entity) -> String:
+	if entity == null:
+		return ""
+	if str(entity.entity_kind) == "defense_tower":
+		if str(entity.tower_id) == FIRE_CONTROL_BEACON:
+			return "火控信标：引导己方标准弹飞向敌方，等级越高引导越多"
+		return "拦截塔：拦截敌方标准弹，等级越高拦截越多，3级反击1发"
+	var descs: Dictionary = {
+		"repair_unit": "修复单位：自动寻找受损前线格并修复1层防御",
+		"armored_guard": "装甲护卫：移动到前线阻挡敌方弹体，标准弹弹开",
+		"sapper_unit": "掘城单位：穿越桥门爆破敌方塔/防御/控制舱，用后自毁",
+		"scout_unit": "侦察单位：由信标维护，微调附近标准弹弹道",
+		"gate_colossus": "闸门巨像：中立单位，攻击当前领土领先方",
+	}
+	return str(descs.get(str(entity.creature_id), "战场单位"))
 
 
 static func hp_ratio(entity) -> float:

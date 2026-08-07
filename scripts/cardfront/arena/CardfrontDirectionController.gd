@@ -57,8 +57,11 @@ func get_lane_split() -> float:
 func get_lane_allocations(total_shots: int) -> Array:
 	if _lane_angles.size() < 2:
 		return []
-	var left_angle: float = _lane_angles[0]
-	var right_angle: float = _lane_angles[1]
+	if absf(lane_split_ratio - 0.5) < 0.01 and _priority_lane_index < 0:
+		return []
+	var player_offset: float = deg_to_rad(offset_degrees)
+	var left_angle: float = _lane_angles[0] + player_offset
+	var right_angle: float = _lane_angles[1] + player_offset
 	if _priority_lane_index >= 0 and _priority_lane_index < _lane_angles.size():
 		var target_angle: float = _angle_to_cell(_priority_target_cell)
 		if _priority_lane_index == 0:

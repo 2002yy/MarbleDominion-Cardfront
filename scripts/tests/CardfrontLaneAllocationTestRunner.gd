@@ -93,13 +93,16 @@ func _test_allocation_roundtrip() -> void:
 func _test_direction_controller_lane_angles() -> void:
 	var controller = DirectionControllerScript.new()
 	controller.set_grid_extent(Vector2i(40, 50))
+	var default_allocs: Array = controller.get_lane_allocations(10)
+	_assert.eq(default_allocs.size(), 0, "controller: default split=0.5 should return empty (legacy path)")
+	controller.set_lane_split(0.7)
 	var allocs: Array = controller.get_lane_allocations(10)
-	_assert.eq(allocs.size(), 2, "controller: should produce 2 lane allocations")
-	_assert.eq(int(allocs[0].shot_count), 5, "controller: default split should be even")
+	_assert.eq(allocs.size(), 2, "controller: non-0.5 split should produce 2 allocations")
+	_assert.that(int(allocs[0].shot_count) > int(allocs[1].shot_count), "controller: 0.7 ratio should give left more shots")
 	_assert.that(float(allocs[0].angle) < float(allocs[1].angle), "controller: left lane angle should be less than right (more negative = further left)")
-	controller.set_lane_split(0.8)
+	controller.set_lane_split(0.3)
 	var allocs2: Array = controller.get_lane_allocations(10)
-	_assert.that(int(allocs2[0].shot_count) > int(allocs2[1].shot_count), "controller: 0.8 ratio should give left more shots")
+	_assert.that(int(allocs2[1].shot_count) > int(allocs2[0].shot_count), "controller: 0.3 ratio should give right more shots")
 
 
 func _test_direction_controller_priority_target() -> void:

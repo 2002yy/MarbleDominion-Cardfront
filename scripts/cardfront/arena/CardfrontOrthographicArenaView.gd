@@ -1149,6 +1149,9 @@ func _fade_label(region_id: int, target_alpha: float, duration: float, auto_hide
 	if prev_tween != null and is_instance_valid(prev_tween):
 		prev_tween.kill()
 	var tween: Tween = create_tween()
+	if tween == null:
+		label.modulate.a = target_alpha
+		return
 	tween.set_parallel(true)
 	tween.tween_property(label, "modulate:a", target_alpha, duration)
 	if badge != null and is_instance_valid(badge) and badge.material_override != null:
