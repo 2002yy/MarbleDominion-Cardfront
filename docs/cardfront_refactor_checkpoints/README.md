@@ -7,12 +7,15 @@
 1. `docs/CARDFRONT_ENGINEERING_SPEC_2026-08-07.md`
 2. `docs/CARDFRONT_P0_EXECUTION_GUARDRAILS_2026-08-07.md`
 3. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_A_2026-08-08.md`
-4. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`
-5. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_C_2026-08-08.md`
-6. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md`
-7. 本目录中**最近一个已经 GO 的 checkpoint**
+4. `docs/CARDFRONT_P0_PRE_IMPLEMENTATION_FREEZE_ADDENDUM_2026-08-08.md`
+5. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`
+6. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_C_2026-08-08.md`
+7. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md`
+8. 本目录中**最近一个已经 GO 的 checkpoint**
 
 历史设计讨论 `docs/GRILLME_GAME_DESIGN_INTERVIEW.md` 只用于追溯理由，不得覆盖 Engineering Spec。
+
+> **P0 Pre-Implementation Freeze 修正：** `CARDFRONT_P0_PRE_IMPLEMENTATION_FREEZE_ADDENDUM_2026-08-08.md` 不重新设计 Cardfront；它冻结 Engineering Spec / Batch A 尚未下降到唯一实现语义的六项内容：`default_duel` Support topology、directional deployment geometry、suppression contract、capture idle policy、automatic placement resolver、deployment revision/stale-state contract。发现代码事实与该 Addendum 冲突时必须停在 `P0-00F NO-GO / AMENDMENT REQUIRED`，不得由实现 Agent自行选择另一套规则。
 
 > **测试入口修正：** Batch A 早期关于“测试入口尚未确定”的判断已由 Batch C §0 更新。当前 P0 现役测试 authority 是 `scripts/tests/*.gd` 及 `.github/workflows/` 中的 active Godot headless workflows；`tests_legacy_disabled/` 只作为历史参考。
 
@@ -27,6 +30,43 @@ NEXT = P0-00A Repository Ownership & Call-Chain Snapshot
 ```
 
 不得直接开始 P0-01 Support gameplay code。
+
+`P0-00A` ～ `P0-00E` 完成后，还必须执行：
+
+```text
+P0-00F Pre-Implementation Battle-line Freeze Verification
+```
+
+唯一合法 checkpoint：
+
+```text
+docs/cardfront_refactor_checkpoints/P0-00F_PRE_IMPLEMENTATION_BATTLELINE_FREEZE.md
+```
+
+必须存在：
+
+```text
+Decision: GO
+```
+
+之后才允许开始 `P0-01A1 Stable Support IDs`。
+
+`P0-00F` 必须验证而不是重新决定：
+
+1. `default_duel` stable Support IDs / anchors / frozen edges 可由当前地图事实无歧义 author；
+2. `DIRECTIONAL_REAR_RECT_V1` 在 `40x40 / 50x50 / 40x50 / 40x60` 都 deterministic；
+3. Support suppression 由 local territory-control evidence 驱动，但不污染 projectile territory-capture authority；
+4. takeover capture 只在敌方 Support non-operational 后推进，无人时 2 秒 grace 后回退；
+5. automatic / upgrade spawn 只能从当前 `DeploymentRules` 合法集合中 deterministic 选格；
+6. Preview revision 不能作为 Commit permission token，Commit 必须使用当前 state 重新验证。
+
+任一项无法证明：
+
+```text
+Decision: NO-GO / AMENDMENT REQUIRED
+```
+
+不得进入 P0-01。
 
 ---
 
@@ -51,6 +91,20 @@ Expected checkpoint:
 ```
 
 如果 `Old authority` 或 `Target authority` 无法回答：不得编码。
+
+P0-01 ～ P0-05 额外必须声明：
+
+```text
+Pre-Implementation Freeze reference:
+Frozen support topology affected? YES/NO
+Frozen deployment geometry affected? YES/NO
+Suppression/capture contract affected? YES/NO
+Automatic placement contract affected? YES/NO
+Deployment revision contract affected? YES/NO
+Amendment required? YES/NO
+```
+
+只要 `Amendment required = YES`，当前 gameplay step 不得继续。
 
 ---
 
@@ -82,7 +136,14 @@ P0-00～P0-05 期间尤其禁止：
 - 只接 Preview/Commit/AI，却漏掉 automatic/upgrade entity spawn；
 - 让旧 Factory/Energy/Lab bonus 与新 Support 同时继续影响正式 gameplay；
 - 把 `network_connected` 等 derived state 当保存档永久真相；
-- 每一步临时写自己的测试脚本自证通过。
+- 每一步临时写自己的测试脚本自证通过；
+- 把普通 Support 做成 360° spawn circle；
+- 根据最近敌人、graph predecessor 或当前连接路径动态旋转 `default_duel` Support deploy direction；
+- 让 Online enemy Support 在未被 suppression 打到 `operational=false` 前直接推进 takeover capture；
+- 把无人 capture progress 永久保存不回退；
+- 让 automatic spawn 在没有合法格时退回旧 route slot / origin / arbitrary owned cell；
+- 把 placement resolver 写成第二套 graph/deployment legality authority；
+- 使用 stale Preview 结果绕过 Commit 时的 current-state validation。
 
 ---
 
@@ -143,6 +204,10 @@ docs/cardfront_refactor_checkpoints/P1_README.md
 开工前：
 
 > **我是在把当前 Cardfront 定向迁移到冻结设计，不是在借这次重构重新设计 Cardfront。**
+
+P0-01 开工前额外复述：
+
+> **`default_duel` 是两条可持续纵向战线加一个中央转线节点；普通 Support 只向己方侧/侧后方提供 deterministic rectangular deployment zone；Combat/territory pressure 先把敌方 Support 打到 non-operational，Control units 再完成 Claim；无人接管会在 grace 后回退；自动出生只能从 DeploymentRules 的当前合法格里 deterministic 选择；Preview 永远不能替代 Commit 时的当前规则复核。**
 
 交付前：
 
