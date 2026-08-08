@@ -22,15 +22,16 @@ P1-00A 的 `Source commit` 必须等于该 SHA。
 
 ---
 
-# 2. P1 Batch A 必读顺序
+# 2. P1 必读顺序
 
 1. `docs/CARDFRONT_ENGINEERING_SPEC_2026-08-07.md`
 2. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_C_2026-08-08.md` 中 P0 Final Evidence / P1 Gate
 3. `docs/CARDFRONT_P1_EXECUTION_DETAIL_BATCH_A_2026-08-08.md`
-4. **`docs/CARDFRONT_P1_BATCH_A_ROUTE_CUTOVER_AMENDMENT_2026-08-08.md`**
-5. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md` 作为高层路线索引
-6. `P0-11O_P0_FINAL_GO_NO_GO.md`
-7. 最近一个 P1 GO checkpoint
+4. `docs/CARDFRONT_P1_BATCH_A_ROUTE_CUTOVER_AMENDMENT_2026-08-08.md`
+5. `docs/CARDFRONT_P1_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`（进入 P1-04 以后必读）
+6. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md` 作为高层路线索引
+7. `P0-11O_P0_FINAL_GO_NO_GO.md`
+8. 最近一个 P1 GO checkpoint
 
 如果 Roadmap 或 Batch A 早期表述与 `ROUTE_CUTOVER_AMENDMENT` 冲突，以 Engineering Spec + 最新 Mandatory Amendment 为准。
 
@@ -103,6 +104,33 @@ BASE
 - 禁止 `new pool empty -> fallback legacy deck`；
 - 必须有逐卡 old -> new source migration ledger。
 
+## 3.3 P1 Batch B
+
+P1-04～P1-06 的正式细节以：
+
+`CARDFRONT_P1_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`
+
+为准。
+
+冻结：
+
+- Offer pipeline = EligiblePool -> Weight -> Sample -> Diversity Guard -> Dominance Guard -> bounded resample；
+- Guard 不能变成当前战况 counter director；
+- 不使用综合 PowerScore；
+- route/hero 只做 soft weight，不保证固定 slot；
+- reroll 使用同一 eligibility/weight/guard，不能提高质量；
+- per-card upgrade track authored；
+- Echo replay effect step，不提升 Selected Level。
+
+仍有两个产品 Decision Gate：
+
+```text
+D1 reroll 是否重置 Draft timer
+D2 AI 是否拥有同等每 Draft 一次 reroll opportunity
+```
+
+未确认前不得写死正式 runtime。
+
 ---
 
 # 4. P1 每一步开始前模板
@@ -131,9 +159,7 @@ Expected checkpoint:
 
 ---
 
-# 5. P1 Batch A 当前合法顺序
-
-旧 Deck -> 新 EligiblePool 的正式 cutover 被提升为 P1-01 的硬主线：
+# 5. P1 当前合法顺序
 
 ```text
 P1-00A verify P0 seal
@@ -165,8 +191,44 @@ P1-03B qualification/commitment split
 P1-03C slot capacity
 P1-03D sticky commitment
 P1-03E deep pool eligibility cutover
-   ↓
 P1-A FINAL GO / NO-GO
+   ↓
+P1-04A current weight/read-path audit
+P1-04B OfferWeightBreakdown DTO
+P1-04C rarity component extraction
+P1-04D Hero/Route soft-weight components
+P1-04E OfferTrace
+P1-04F ChoiceSignature metadata
+P1-04G Diversity Guard
+P1-04H Dominance Guard
+P1-04I bounded resample
+P1-04J side-isolation regression
+P1-04K statistical smoke
+P1-04 FINAL GO / NO-GO
+   ↓
+P1-05A REROLL DECISION GATE
+P1-05B RerollState
+P1-05C exclusion-aware Offer request
+P1-05D player UI
+P1-05E RoundDirector orchestration
+P1-05F timeout interaction
+P1-05G preview regression
+P1-05H save policy audit
+P1-05I AI reroll path if confirmed
+P1-05 FINAL GO / NO-GO
+   ↓
+P1-06A current level/effect audit
+P1-06B UpgradeTrack schema
+P1-06C migration ledger
+P1-06D LevelStep resolver
+P1-06E atomic Level commit
+P1-06F Echo replay migration
+P1-06G starting-owned grant
+P1-06H max-level eligibility
+P1-06I card projection
+P1-06J save migration
+P1-06K regression tests
+P1-06 FINAL GO / NO-GO
 ```
 
 没有上一 checkpoint GO，不得进入下一步。
@@ -175,7 +237,7 @@ P1-A FINAL GO / NO-GO
 
 `P1-01 FINAL GO` 前不得进入正式 Route Signal gameplay cutover。
 
-因为如果旧 Deck authority 还活着，后面的 Route Signal 只是在旧构筑系统上叠第二层路线，会再次偏离北极星。
+如果旧 Deck authority 还活着，后面的 Route Signal 只是在旧构筑系统上叠第二层路线，会再次偏离北极星。
 
 ---
 
@@ -208,7 +270,30 @@ P1-A FINAL GO / NO-GO
 
 ---
 
-# 7. P1-01 Legacy Authority Kill Checklist
+# 7. P1 Batch B 硬禁令
+
+P1-04～P1-06 尤其禁止：
+
+- 为提高路线概率复制 card ID；
+- 固定 `Base/Hero/Route` 三个 Offer slot；
+- 固定“应急/路线/转型”三个 Offer slot；
+- 根据当前敌军配置给玩家偷偷发 counter card；
+- 使用一个综合 PowerScore 做 Dominance Guard；
+- Guard 无限重抽直到满意；
+- Guard 掩盖长期弱卡而不暴露 rejection telemetry；
+- reroll 提高 rarity/强制路线卡；
+- reroll 触发额外 Draft；
+- reroll fallback 到 legacy Deck；
+- per-card Level 与 rarity_level/effect cap 混淆；
+- Echo replay 提升 Selected Level；
+- starting-owned 伪造成真实 selection；
+- 全卡统一 `+攻击/+血量/+数量`；
+- maxed card 继续作为默认无效 Offer；
+- 为 UpgradeTrack 重新打开 P0 Deployment/Support authority。
+
+---
+
+# 8. P1-01 Legacy Authority Kill Checklist
 
 P1-01 结束必须同时证明：
 
@@ -216,9 +301,9 @@ P1-01 结束必须同时证明：
 DraftSystem candidate source = EligiblePoolSnapshot
 ```
 
-并证明以下 metamorphic invariants：
+并证明：
 
-### 7.1 deck_id neutrality
+### 8.1 deck_id neutrality
 
 只改变：
 
@@ -230,11 +315,11 @@ barrage_control
 
 正式 EligiblePool 不变。
 
-### 7.2 DeckRegistry mutation probe
+### 8.2 DeckRegistry mutation probe
 
 测试中改变某旧 DeckRegistry 列表，不得影响正式 EligiblePool。
 
-### 7.3 Hero provenance
+### 8.3 Hero provenance
 
 改变 Hero：
 
@@ -243,7 +328,7 @@ BasePool 不变
 Hero source 合法变化
 ```
 
-### 7.4 Route provenance
+### 8.4 Route provenance
 
 改变 RouteState：
 
@@ -252,7 +337,7 @@ Base/Hero 不变
 Route source 合法变化
 ```
 
-### 7.5 Save compatibility neutrality
+### 8.5 Save compatibility neutrality
 
 旧存档带 `deck_id`：
 
@@ -264,7 +349,7 @@ Route source 合法变化
 
 ---
 
-# 8. Deep Slot 特别说明
+# 9. Deep Slot 特别说明
 
 当前已冻结：
 
@@ -295,12 +380,41 @@ player explicit confirm -> DEEP_COMMITTED
 
 ---
 
-# 9. 统一复述
+# 10. Reroll Decision Gate 特别说明
+
+Batch B 当前仅有两项未最终冻结：
+
+### D1 timer
+
+reroll 是否重置 Draft 倒计时。
+
+推荐：**不重置，继续当前剩余时间。**
+
+### D2 AI fairness
+
+AI 是否同样拥有每 Draft 一次 reroll opportunity。
+
+推荐：**拥有同等机会；是否使用由 Decision Strength 决定。**
+
+在确认前：
+
+- 可做 OfferWeight/Guard；
+- 可做 UpgradeTrack；
+- 可做 pure `RerollState`；
+- 不得把 D1/D2 写死进正式 runtime。
+
+---
+
+# 11. 统一复述
 
 P1 开工前：
 
 > **我是在 P0 已冻结的战线系统上，用新的 BASE + HERO + ROUTE 构筑模型正式替换旧 exclusive Deck eligibility；不是在旧 Deck 上继续叠路线。**
 
+P1-04～P1-06 交付前：
+
+> **Offer 仍然是随机选择空间，不是导演系统；升级仍然是卡牌自己的身份成长，不是统一数值膨胀。**
+
 每步交付前：
 
-> **这一 diff 是否让旧 `deck_id` 更接近纯兼容数据、让新 EligiblePool 更接近唯一正式 authority，而没有偷偷改变 Draft 次数、部署权威、AI 信息边界或地图规则？**
+> **这一 diff 是否让新 authority 更单一、更可审计，并且没有通过“更聪明的随机/更方便的升级”偷偷重新设计 Cardfront？**
