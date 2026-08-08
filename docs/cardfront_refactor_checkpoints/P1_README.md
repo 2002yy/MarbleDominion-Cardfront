@@ -29,11 +29,12 @@ P1-00A 的 `Source commit` 必须等于该 SHA。
 3. `docs/CARDFRONT_P1_EXECUTION_DETAIL_BATCH_A_2026-08-08.md`
 4. `docs/CARDFRONT_P1_BATCH_A_ROUTE_CUTOVER_AMENDMENT_2026-08-08.md`
 5. `docs/CARDFRONT_P1_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`（进入 P1-04 以后必读）
-6. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md` 作为高层路线索引
-7. `P0-11O_P0_FINAL_GO_NO_GO.md`
-8. 最近一个 P1 GO checkpoint
+6. `docs/CARDFRONT_P1_BATCH_B_REROLL_DECISION_AMENDMENT_2026-08-08.md`（进入 P1-05 以后必读）
+7. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md` 作为高层路线索引
+8. `P0-11O_P0_FINAL_GO_NO_GO.md`
+9. 最近一个 P1 GO checkpoint
 
-如果 Roadmap 或 Batch A 早期表述与 `ROUTE_CUTOVER_AMENDMENT` 冲突，以 Engineering Spec + 最新 Mandatory Amendment 为准。
+如果 Roadmap 或 Batch A/B 早期表述与更晚的 Mandatory Amendment 冲突，以 Engineering Spec + 最新 Mandatory Amendment 为准。
 
 ---
 
@@ -108,7 +109,8 @@ BASE
 
 P1-04～P1-06 的正式细节以：
 
-`CARDFRONT_P1_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`
+- `CARDFRONT_P1_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`
+- `CARDFRONT_P1_BATCH_B_REROLL_DECISION_AMENDMENT_2026-08-08.md`
 
 为准。
 
@@ -122,14 +124,45 @@ P1-04～P1-06 的正式细节以：
 - per-card upgrade track authored；
 - Echo replay effect step，不提升 Selected Level。
 
-仍有两个产品 Decision Gate：
+原 Batch B 的两个 Reroll Decision Gate 已由 Amendment 正式解决：
+
+### D1 timer — 已冻结
 
 ```text
-D1 reroll 是否重置 Draft timer
-D2 AI 是否拥有同等每 Draft 一次 reroll opportunity
+Reroll 不重置完整 Draft timer。
+成功 Reroll 后：
+remaining_after = max(remaining_before, REROLL_MIN_REMAINING_SECONDS)
 ```
 
-未确认前不得写死正式 runtime。
+其中：
+
+```text
+0 < REROLL_MIN_REMAINING_SECONDS <= DRAFT_TIMEOUT
+```
+
+具体最小秒数仍属于 tuning，不在当前文档硬编码。
+
+只有**成功提交新 Offer**后才应用 timer floor；失败/拒绝 Reroll 不得增加时间。
+
+### D2 AI fairness — 已冻结
+
+```text
+Player: 每 Draft 1 次免费完整 Reroll
+AI:     每 Draft 1 次免费完整 Reroll
+```
+
+权限数量相同。
+
+AI 是否使用由 Decision Strength 决定，但必须：
+
+```text
+先看当前 Own Offer
+-> 决定 KEEP / REROLL
+-> 若 REROLL，旧 Offer 永久放弃
+-> 此后才生成 replacement Offer
+```
+
+禁止 AI 先看第二组牌再决定是否重抽，也禁止在旧/新两组中择优。
 
 ---
 
@@ -206,15 +239,19 @@ P1-04J side-isolation regression
 P1-04K statistical smoke
 P1-04 FINAL GO / NO-GO
    ↓
-P1-05A REROLL DECISION GATE
-P1-05B RerollState
-P1-05C exclusion-aware Offer request
-P1-05D player UI
-P1-05E RoundDirector orchestration
-P1-05F timeout interaction
-P1-05G preview regression
-P1-05H save policy audit
-P1-05I AI reroll path if confirmed
+P1-05A confirmed reroll contract checkpoint
+P1-05B per-side RerollState
+P1-05C transactional reroll request/result
+P1-05D exclusion-aware Offer request
+P1-05E timer-floor integration
+P1-05F player UI
+P1-05G RoundDirector orchestration
+P1-05H AI keep/reroll decision adapter
+P1-05I timeout + reroll edge cases
+P1-05J preview/reroll regression
+P1-05K save/restore policy audit
+P1-05L cross-side RNG metamorphic tests
+P1-05M AI no-future-peek tests
 P1-05 FINAL GO / NO-GO
    ↓
 P1-06A current level/effect audit
@@ -284,6 +321,14 @@ P1-04～P1-06 尤其禁止：
 - reroll 提高 rarity/强制路线卡；
 - reroll 触发额外 Draft；
 - reroll fallback 到 legacy Deck；
+- reroll 成功后把 Draft timer 重置为完整 `DRAFT_TIMEOUT`；
+- reroll 失败/拒绝也刷新最小时间；
+- 重复调用 reroll 无限续时；
+- Player/AI 拥有不同数量的 reroll 权限；
+- AI 先生成 replacement Offer 再决定是否 reroll；
+- AI reroll 后仍能回头选择旧 Offer；
+- AI reroll 使用更高 rarity、更多 Guard retry 或不同 exclusion；
+- 一方 reroll 扰动另一方 RNG stream；
 - per-card Level 与 rarity_level/effect cap 混淆；
 - Echo replay 提升 Selected Level；
 - starting-owned 伪造成真实 selection；
@@ -380,28 +425,78 @@ player explicit confirm -> DEEP_COMMITTED
 
 ---
 
-# 10. Reroll Decision Gate 特别说明
+# 10. Reroll 已冻结合同
 
-Batch B 当前仅有两项未最终冻结：
+P1-05 不再存在产品 Decision Gate。
 
-### D1 timer
+## 10.1 权限
 
-reroll 是否重置 Draft 倒计时。
+每方每个 Draft：
 
-推荐：**不重置，继续当前剩余时间。**
+```text
+1 次免费完整 Reroll
+```
 
-### D2 AI fairness
+不累计、不购买、不 partial、不锁牌重抽。
 
-AI 是否同样拥有每 Draft 一次 reroll opportunity。
+Player 与 AI 权限完全相同。
 
-推荐：**拥有同等机会；是否使用由 Decision Strength 决定。**
+## 10.2 Timer
 
-在确认前：
+成功 Reroll：
 
-- 可做 OfferWeight/Guard；
-- 可做 UpgradeTrack；
-- 可做 pure `RerollState`；
-- 不得把 D1/D2 写死进正式 runtime。
+```text
+remaining_after = max(
+    remaining_before,
+    REROLL_MIN_REMAINING_SECONDS
+)
+```
+
+且：
+
+```text
+remaining_after <= DRAFT_TIMEOUT
+```
+
+如果当前已经高于最低时间，时间完全不变。
+
+如果低于最低时间，只抬到最低值，不重置完整倒计时。
+
+失败/拒绝 Reroll：
+
+```text
+Offer unchanged
+RerollState unchanged
+Timer unchanged
+```
+
+## 10.3 AI
+
+AI 使用自己的：
+
+```text
+Own Offer
+Own RerollState
+legal AIObservation
+```
+
+先决定：
+
+```text
+KEEP / REROLL
+```
+
+若 REROLL：
+
+```text
+旧 Offer 永久放弃
+-> 此后才生成 replacement
+-> 从 replacement 中选择
+```
+
+不能提前看到未来随机结果。
+
+Easy/Normal 的区别只能是使用策略不同，不是权限不同。
 
 ---
 
@@ -413,7 +508,7 @@ P1 开工前：
 
 P1-04～P1-06 交付前：
 
-> **Offer 仍然是随机选择空间，不是导演系统；升级仍然是卡牌自己的身份成长，不是统一数值膨胀。**
+> **Offer 仍然是随机选择空间，不是导演系统；Reroll 是一次否决权而不是刷新完整时间/偷看未来结果；升级仍然是卡牌自己的身份成长，不是统一数值膨胀。**
 
 每步交付前：
 
