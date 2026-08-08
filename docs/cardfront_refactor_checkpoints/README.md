@@ -8,16 +8,19 @@
 2. `docs/CARDFRONT_P0_EXECUTION_GUARDRAILS_2026-08-07.md`
 3. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_A_2026-08-08.md`
 4. `docs/CARDFRONT_P0_PRE_IMPLEMENTATION_FREEZE_ADDENDUM_2026-08-08.md`
-5. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`
-6. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_C_2026-08-08.md`
-7. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md`
-8. 本目录中**最近一个已经 GO 的 checkpoint**
+5. `docs/cardfront_refactor_checkpoints/P0_MANDATORY_AUDIT_GATES.md`
+6. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`
+7. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_C_2026-08-08.md`
+8. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md`
+9. 本目录中**最近一个已经 GO 的 checkpoint**
 
 历史设计讨论 `docs/GRILLME_GAME_DESIGN_INTERVIEW.md` 只用于追溯理由，不得覆盖 Engineering Spec。
 
 > **P0 Pre-Implementation Freeze 修正：** `CARDFRONT_P0_PRE_IMPLEMENTATION_FREEZE_ADDENDUM_2026-08-08.md` 不重新设计 Cardfront；它冻结 Engineering Spec / Batch A 尚未下降到唯一实现语义的六项内容：`default_duel` Support topology、directional deployment geometry、suppression contract、capture idle policy、automatic placement resolver、deployment revision/stale-state contract。发现代码事实与该 Addendum 冲突时必须停在 `P0-00F NO-GO / AMENDMENT REQUIRED`，不得由实现 Agent自行选择另一套规则。
 
 > **测试入口修正：** Batch A 早期关于“测试入口尚未确定”的判断已由 Batch C §0 更新。当前 P0 现役测试 authority 是 `scripts/tests/*.gd` 及 `.github/workflows/` 中的 active Godot headless workflows；`tests_legacy_disabled/` 只作为历史参考。
+
+> **强制审计规则：** 从本版本起，所有会影响 gameplay authority、部署合法性、Support/Graph 真相、save/restore、AI 信息边界、Legacy Stronghold 退役或 P0 -> P1 放行的关键事项，必须满足“现在完成审计并形成证据”或“在对应 checkpoint 中明确 `AUDIT REQUIRED / BLOCKED / NO-GO`”二选一。禁止把“尚未检查”默认解释成“已确认”。完整审计门见 `P0_MANDATORY_AUDIT_GATES.md`。
 
 ---
 
@@ -67,6 +70,45 @@ Decision: NO-GO / AMENDMENT REQUIRED
 ```
 
 不得进入 P0-01。
+
+---
+
+## 强制审计落盘规则
+
+所有后续 checkpoint 必须检查 `P0_MANDATORY_AUDIT_GATES.md` 中与当前 step 有关的项目，并至少记录：
+
+```text
+Mandatory audit gates touched:
+Audit status per gate: PASS / FAIL / BLOCKED / NOT APPLICABLE
+Evidence bound to source commit: YES/NO
+Unverified assumptions remaining:
+Legacy authority still reachable:
+Second-authority risk:
+Save/restore risk:
+Cross-system regression evidence:
+Manual evidence required before GO:
+```
+
+以下类型的未验证事项不得带入 `GO`：
+
+- gameplay authority 不明确；
+- Preview / Commit / AI / Auto Spawn 任一路径可能绕过统一部署规则；
+- Support claim / operational / connectivity 存在双真相；
+- save/restore 可能恢复过期 derived state；
+- AI 可能读取 Player 私有 Offer/RNG 或未白名单 live state；
+- Legacy Factory/Energy/Lab bonus 仍可能影响正式 gameplay；
+- P1/P2 内容可能偷跑；
+- 测试或人工证据来自不同 target commit。
+
+这些情况必须明确写成：
+
+```text
+AUDIT REQUIRED
+BLOCKED
+Decision: NO-GO
+```
+
+而不是留 TODO 后继续下一步。
 
 ---
 
