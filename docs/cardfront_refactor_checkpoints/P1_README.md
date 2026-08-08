@@ -28,13 +28,15 @@ P1-00A 的 `Source commit` 必须等于该 SHA。
 2. `docs/CARDFRONT_P0_EXECUTION_DETAIL_BATCH_C_2026-08-08.md` 中 P0 Final Evidence / P1 Gate
 3. `docs/CARDFRONT_P1_EXECUTION_DETAIL_BATCH_A_2026-08-08.md`
 4. `docs/CARDFRONT_P1_BATCH_A_ROUTE_CUTOVER_AMENDMENT_2026-08-08.md`
-5. `docs/CARDFRONT_P1_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`（进入 P1-04 以后必读）
-6. `docs/CARDFRONT_P1_BATCH_B_REROLL_DECISION_AMENDMENT_2026-08-08.md`（进入 P1-05 以后必读）
-7. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md` 作为高层路线索引
-8. `P0-11O_P0_FINAL_GO_NO_GO.md`
-9. 最近一个 P1 GO checkpoint
+5. `docs/CARDFRONT_P1_BATCH_A_DEEP_COMMITMENT_AMENDMENT_2026-08-08.md`（进入 P1-03 必读）
+6. `docs/CARDFRONT_P1_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`（进入 P1-04 以后必读）
+7. `docs/CARDFRONT_P1_BATCH_B_REROLL_DECISION_AMENDMENT_2026-08-08.md`（进入 P1-05 必读）
+8. `docs/CARDFRONT_P1_EXECUTION_DETAIL_BATCH_C_2026-08-08.md`（进入 P1-07 以后必读）
+9. `docs/CARDFRONT_REFACTOR_PLAN_2026-08-07.md` 作为高层路线索引
+10. `P0-11O_P0_FINAL_GO_NO_GO.md`
+11. 最近一个 P1 GO checkpoint
 
-如果 Roadmap 或 Batch A/B 早期表述与更晚的 Mandatory Amendment 冲突，以 Engineering Spec + 最新 Mandatory Amendment 为准。
+如果 Roadmap 或 Batch A/B 早期表述与更晚的 Mandatory Amendment 冲突，以 Engineering Spec + 最新 Mandatory Amendment/Addendum 为准。
 
 ---
 
@@ -48,7 +50,7 @@ Roadmap 早期写过：
 基于 applied_upgrade_counts 提供 Level API
 ```
 
-该表述已被 P0 Batch B 的源码审计修正。
+该表述已被 P0 Batch B 源码审计修正。
 
 正式语义：
 
@@ -60,18 +62,9 @@ applied_upgrade_counts / effect application history
 
 Echo 自动重复 effect 不得提升 Selected Level。
 
+---
+
 ## 3.2 P1 Eligible Pool
-
-Roadmap 的“基础 / 英雄 / 路线三类 Eligible Pool”只是纲要。
-
-正式迁移细节以：
-
-- `CARDFRONT_P1_EXECUTION_DETAIL_BATCH_A_2026-08-08.md`
-- `CARDFRONT_P1_BATCH_A_ROUTE_CUTOVER_AMENDMENT_2026-08-08.md`
-
-为准。
-
-### 最新强制语义
 
 旧：
 
@@ -81,7 +74,7 @@ deck_id
  -> Draft eligibility
 ```
 
-必须正式切换为：
+P1-01 必须正式切换为：
 
 ```text
 BASE
@@ -91,78 +84,147 @@ BASE
  -> Draft eligibility
 ```
 
-**P1-01 结束时，这不是“双系统共存”，而是 authority 已经完成切换。**
+P1-01 结束不是“双系统并存”，而是 authority 已完成切换。
 
-尤其：
+硬规则：
 
-- 旧 `deck_id -> exclusive upgrade_ids` 必须退出正式 eligibility authority；
+- `deck_id -> exclusive upgrade_ids` 退出正式 eligibility authority；
 - `deck_id` 不得成为第四种 card source；
-- BasePool 必须 Player/AI 相同；
-- Hero 与 Route 只能在 BasePool 之上增加合法来源；
-- 旧 `core_tactics / fortification_corps / barrage_control` 不得直接重命名成新路线；
-- 正常 Prematch 旧 Deck 选择不得继续改变候选池；
-- legacy deck_id 可读旧存档，但不得恢复旧候选池；
+- Player/AI BasePool 相同；
+- Hero/Route 只是在 BasePool 上增加合法来源；
+- `core_tactics / fortification_corps / barrage_control` 不得直接改名成新路线；
+- Prematch 旧 Deck 选择不得继续改变正式候选池；
+- 旧 save 可读 `deck_id`，但不能恢复旧 exclusive pool；
 - 禁止 `new pool empty -> fallback legacy deck`；
 - 必须有逐卡 old -> new source migration ledger。
 
-## 3.3 P1 Batch B
+---
 
-P1-04～P1-06 的正式细节以：
+## 3.3 Deep Commitment — 已冻结
+
+原 P1-03A Decision Gate 已由：
+
+`CARDFRONT_P1_BATCH_A_DEEP_COMMITMENT_AMENDMENT_2026-08-08.md`
+
+正式关闭。
+
+冻结：
+
+```text
+actual battlefield behavior
+ -> DEEP_QUALIFIED
+ -> explicit Commit
+ -> consume exactly 1 Deep slot
+ -> DEEP_COMMITTED
+ -> future EligiblePool may include that route's Deep cards
+```
+
+并且：
+
+```text
+DEEP_SLOT_LIMIT = 2 per side
+```
+
+硬规则：
+
+- `DEEP_QUALIFIED` 不占槽；
+- 不自动取最高两条；
+- 不按“先到阈值先占槽”；
+- 不通过抽到 Deep card 才占槽；
+- 玩家/AI 都必须显式调用同一 Commit authority；
+- Commit 不可撤销；
+- 第三条 Qualified 路线可以保留 Tier1，但 Deep blocked；
+- Commit 不发卡；
+- Commit 不加 Draft；
+- Commit 不赠 reroll；
+- 只有 `DEEP_COMMITTED` 的路线 Deep cards 才 eligible；
+- Commit 后当前已生成 Offer 不自动变化；
+- 若当前 Draft 仍有自己的合法 reroll，reroll 可读取新的 EligiblePool。
+
+---
+
+## 3.4 P1 Batch B — Offer / Reroll / Upgrade
+
+正式细节：
 
 - `CARDFRONT_P1_EXECUTION_DETAIL_BATCH_B_2026-08-08.md`
 - `CARDFRONT_P1_BATCH_B_REROLL_DECISION_AMENDMENT_2026-08-08.md`
 
-为准。
-
-冻结：
-
-- Offer pipeline = EligiblePool -> Weight -> Sample -> Diversity Guard -> Dominance Guard -> bounded resample；
-- Guard 不能变成当前战况 counter director；
-- 不使用综合 PowerScore；
-- route/hero 只做 soft weight，不保证固定 slot；
-- reroll 使用同一 eligibility/weight/guard，不能提高质量；
-- per-card upgrade track authored；
-- Echo replay effect step，不提升 Selected Level。
-
-原 Batch B 的两个 Reroll Decision Gate 已由 Amendment 正式解决：
-
-### D1 timer — 已冻结
+Offer：
 
 ```text
-Reroll 不重置完整 Draft timer。
-成功 Reroll 后：
+EligiblePool
+ -> Weight
+ -> Sample
+ -> Diversity Guard
+ -> Dominance Guard
+ -> bounded resample
+```
+
+禁止导演式 counter 发牌和综合 PowerScore。
+
+Reroll：
+
+```text
+Player: 1 free full reroll / Draft
+AI:     1 free full reroll / Draft
+```
+
+成功后：
+
+```text
 remaining_after = max(remaining_before, REROLL_MIN_REMAINING_SECONDS)
 ```
 
-其中：
+不重置完整 Draft timer。
+
+只有成功提交新 Offer 才应用 timer floor。
+
+AI：
 
 ```text
-0 < REROLL_MIN_REMAINING_SECONDS <= DRAFT_TIMEOUT
+see own current Offer
+ -> decide KEEP/REROLL
+ -> if REROLL, old Offer permanently discarded
+ -> only then generate replacement
 ```
 
-具体最小秒数仍属于 tuning，不在当前文档硬编码。
+禁止 future peek。
 
-只有**成功提交新 Offer**后才应用 timer floor；失败/拒绝 Reroll 不得增加时间。
+Upgrade：
 
-### D2 AI fairness — 已冻结
+- per-card authored LevelTrack；
+- Selected Level 与 effect application 分权；
+- Echo replay resolved effect step，不增加 Selected Level；
+- quantity 是卡身份的一部分，不是第二套无限等级。
+
+---
+
+## 3.5 P1 Batch C — Representative Routes / Cadence / Balance / AI / Final Gate
+
+正式细节：
+
+`CARDFRONT_P1_EXECUTION_DETAIL_BATCH_C_2026-08-08.md`
+
+P1 representative validation archetypes：
 
 ```text
-Player: 每 Draft 1 次免费完整 Reroll
-AI:     每 Draft 1 次免费完整 Reroll
+Mobility / Flank
+Breakthrough / Heavy-Firepower
+Control / Engineering
 ```
 
-权限数量相同。
+它们是验证战略职责，不强制最终世界观命名。
 
-AI 是否使用由 Decision Strength 决定，但必须：
+P1 必须证明：
 
-```text
-先看当前 Own Offer
--> 决定 KEEP / REROLL
--> 若 REROLL，旧 Offer 永久放弃
--> 此后才生成 replacement Offer
-```
-
-禁止 AI 先看第二组牌再决定是否重抽，也禁止在旧/新两组中择优。
+- 三轴 Combat/Mobility/Control 真正在战场中不同；
+- Deep 强卡能显著兑现路线投入；
+- 强卡仍不能独自完成战争；
+- 基础/弱卡中后期仍有合理阶段用途；
+- Mature Build 有足够真实使用窗口；
+- Easy/Normal 信息边界完全相同，只差 Decision Strength；
+- P1 没有重写 P0 Battle-line / Deployment authority。
 
 ---
 
@@ -188,7 +250,12 @@ Test evidence authority:
 Expected checkpoint:
 ```
 
-如果 `P0 authorities touched` 非 NONE，必须说明为什么，并列出要重跑的 P0 evidence。
+如果 `P0 authorities touched` 非 NONE：
+
+1. 说明为什么；
+2. 证明不是为了路线/AI实现方便；
+3. 列出要重跑的 P0 evidence；
+4. 必要时开 Engineering Amendment。
 
 ---
 
@@ -218,12 +285,20 @@ P1-02E anti-farm contract
 P1-02F tendency bands
 P1-02G sticky Tier1 unlock
 P1-02H pool revision only
+P1-02 FINAL GO / NO-GO
    ↓
-P1-03A Deep commitment design gate
-P1-03B qualification/commitment split
-P1-03C slot capacity
-P1-03D sticky commitment
-P1-03E deep pool eligibility cutover
+P1-03A confirmed Deep commitment contract checkpoint
+P1-03B qualification/commitment state split
+P1-03C DeepCommit command/result authority
+P1-03D two-slot capacity validator
+P1-03E player Draft-window commit UI
+P1-03F AI commit adapter using same authority
+P1-03G Deep EligiblePool cutover
+P1-03H current-offer/reroll interaction regression
+P1-03I save/restore migration
+P1-03J telemetry/cadence hooks
+P1-03K deterministic tests
+P1-03 FINAL GO / NO-GO
 P1-A FINAL GO / NO-GO
    ↓
 P1-04A current weight/read-path audit
@@ -266,15 +341,77 @@ P1-06I card projection
 P1-06J save migration
 P1-06K regression tests
 P1-06 FINAL GO / NO-GO
+   ↓
+P1-07A representative-route content audit
+P1-07B route-role contracts
+P1-07C existing-card migration mapping
+P1-07D Mobility vertical slice
+P1-07E Heavy/Firepower vertical slice
+P1-07F Control/Engineering vertical slice
+P1-07G cross-route fixtures
+P1-07H route UI projection smoke
+P1-07I route regression
+P1-07 FINAL GO / NO-GO
+   ↓
+P1-08A cadence event/clock audit
+P1-08B milestone telemetry schema
+P1-08C deterministic round/time hooks
+P1-08D route unlock timing report
+P1-08E deep obtain/effective-use timing report
+P1-08F mature-window evaluator
+P1-08G no-extra-draft invariant tests
+P1-08H seed/match distribution audit
+P1-08I evidence-based tuning pass
+P1-08 FINAL GO / NO-GO
+   ↓
+P1-09A capability-profile schema
+P1-09B three-axis authored projection
+P1-09C benchmark harness audit/reuse
+P1-09D six fixed scenario fixtures
+P1-09E representative-card profile pass
+P1-09F strong-card specialty acceptance
+P1-09G weak/basic late-use acceptance
+P1-09H card UI projection
+P1-09I telemetry hook migration
+P1-09J balance artifact report
+P1-09 FINAL GO / NO-GO
+   ↓
+P1-10A AI read-set + legacy deck dependency audit
+P1-10B DecisionStrengthProfile schema
+P1-10C Easy profile
+P1-10D Normal profile
+P1-10E existing Commander adapter
+P1-10F route commitment policy
+P1-10G reroll policy
+P1-10H strategic/reactive decision windows
+P1-10I observed-enemy-history integration
+P1-10J explainability trace
+P1-10K fairness metamorphic tests
+P1-10L difficulty numerical-parity test
+P1-10M deterministic match smoke
+P1-10 FINAL GO / NO-GO
+   ↓
+P1-11A final evidence manifest + RC commit
+P1-11B parse/import/boot
+P1-11C P1 frozen-contract suite
+P1-11D legacy Deck authority kill suite
+P1-11E representative-route integration matrix
+P1-11F cadence report
+P1-11G six-scenario benchmark report
+P1-11H Offer/Guard/Reroll statistical report
+P1-11I UpgradeTrack/Echo audit
+P1-11J AI fairness + difficulty report
+P1-11K existing B1 migration audit
+P1-11L P0 full regression
+P1-11M save/restore
+P1-11N performance/log audit
+P1-11O manual playtest matrix
+P1-11P visual evidence pack
+P1-11Q frozen-spec drift re-audit
+P1-11R P1 FINAL GO / NO-GO
 ```
 
 没有上一 checkpoint GO，不得进入下一步。
-
-### 特别 Gate
-
-`P1-01 FINAL GO` 前不得进入正式 Route Signal gameplay cutover。
-
-如果旧 Deck authority 还活着，后面的 Route Signal 只是在旧构筑系统上叠第二层路线，会再次偏离北极星。
 
 ---
 
@@ -286,24 +423,24 @@ P1-06 FINAL GO / NO-GO
 - 因路线系统方便而重写 SupportGraph / DeploymentRules；
 - 把旧 `fortification_corps` / `barrage_control` 直接当新 Route；
 - 在旧 exclusive deck 上简单叠 route cards；
-- 在 P1-01 完成后让 `deck_id` 继续改变 EligiblePool；
-- 保留 Prematch 旧 Deck picker 并让它暗中映射到新 Route；
-- 新 EligiblePool 为空时 fallback 到旧 Deck；
-- 未建立 card-source migration ledger 就默认“旧卡先沿用”；
-- 让 Player/AI 拥有不同 BasePool；
-- 把 hero 做成另一套完整互斥 deck；
-- 同 card ID 因多个来源重复进入 candidate list；
-- 通过 duplicate ID 暗中提高概率；
-- Gameplay systems 直接 `route_score += ...`；
-- Card script 自己直接解锁路线；
-- 只靠选卡完成 Deep route；
-- route unlock 直接发卡；
-- route unlock 增加 Draft 次数；
-- route exact score 对 opponent AI 可见；
-- Deep qualification 与 commitment 用同一个 bool；
-- 第三条路线绕过 `DEEP_SLOT_LIMIT = 2`；
-- 在 Deep commitment 方式未确认前，让正式 Deep card 进入 pool；
-- 偷跑 reroll / full upgrade tracks / Hard AI。
+- P1-01 后仍让 `deck_id` 改变 EligiblePool；
+- 保留 Prematch 旧 Deck picker 并暗中映射到新 Route；
+- new pool empty 时 fallback 旧 Deck；
+- 未做 card-source migration ledger 就默认旧卡归属；
+- Player/AI BasePool 不同；
+- Hero 变成另一套完整互斥 deck；
+- 同 ID 因多来源重复进入 candidate；
+- Gameplay system 直接 `route_score += ...`；
+- Card script 自己解锁路线；
+- 只靠选卡完成 Deep qualification；
+- route unlock 直接发卡或增加 Draft；
+- opponent AI 读取 route exact score；
+- qualification/commitment 用同一个 bool；
+- Deep Qualified 自动占槽；
+- 自动取 tendency 最高两条占槽；
+- 第三条 route 绕过 `DEEP_SLOT_LIMIT=2`；
+- Deep Commit 可撤销换线；
+- Deep Commit 直接发卡/加 Draft/赠 reroll。
 
 ---
 
@@ -312,138 +449,119 @@ P1-06 FINAL GO / NO-GO
 P1-04～P1-06 尤其禁止：
 
 - 为提高路线概率复制 card ID；
-- 固定 `Base/Hero/Route` 三个 Offer slot；
-- 固定“应急/路线/转型”三个 Offer slot；
-- 根据当前敌军配置给玩家偷偷发 counter card；
-- 使用一个综合 PowerScore 做 Dominance Guard；
-- Guard 无限重抽直到满意；
-- Guard 掩盖长期弱卡而不暴露 rejection telemetry；
+- 固定 Base/Hero/Route 三个 Offer slot；
+- 固定“应急/路线/转型”三个 slot；
+- 当前敌军配置触发隐藏 counter 发牌；
+- 综合 PowerScore 驱动 Dominance Guard；
+- Guard 无限重抽；
+- Guard 隐藏长期弱卡；
 - reroll 提高 rarity/强制路线卡；
 - reroll 触发额外 Draft；
-- reroll fallback 到 legacy Deck；
-- reroll 成功后把 Draft timer 重置为完整 `DRAFT_TIMEOUT`；
-- reroll 失败/拒绝也刷新最小时间；
-- 重复调用 reroll 无限续时；
-- Player/AI 拥有不同数量的 reroll 权限；
-- AI 先生成 replacement Offer 再决定是否 reroll；
-- AI reroll 后仍能回头选择旧 Offer；
-- AI reroll 使用更高 rarity、更多 Guard retry 或不同 exclusion；
-- 一方 reroll 扰动另一方 RNG stream；
-- per-card Level 与 rarity_level/effect cap 混淆；
+- reroll fallback legacy Deck；
+- reroll 重置完整 DRAFT_TIMEOUT；
+- reroll 失败也刷新最低时间；
+- 重复调用无限续时；
+- Player/AI reroll 权限数量不同；
+- AI 先看 replacement 再决定 reroll；
+- AI 在 old/new Offer 中择优；
+- cross-side RNG 相互扰动；
+- per-card Level 与 rarity/effect cap 混淆；
 - Echo replay 提升 Selected Level；
-- starting-owned 伪造成真实 selection；
+- starting-owned 伪造成 selection；
 - 全卡统一 `+攻击/+血量/+数量`；
-- maxed card 继续作为默认无效 Offer；
-- 为 UpgradeTrack 重新打开 P0 Deployment/Support authority。
+- maxed card 默认继续产生无效 Offer；
+- UpgradeTrack 重开 P0 Deployment/Support authority。
 
 ---
 
-# 8. P1-01 Legacy Authority Kill Checklist
+# 8. P1 Batch C 硬禁令
 
-P1-01 结束必须同时证明：
+P1-07～P1-11 尤其禁止：
+
+- 一开始铺全路线目录；
+- 把验证路线做成封闭职业树；
+- Mobility 为了“够强”直接绕过 DeploymentRules；
+- Heavy/Firepower 因 S/S+ specialty 自动被削平；
+- Deep 卡 Combat/Mobility/Control 全部顶级；
+- Control/Engineering 复活旧 Stronghold generic bonus；
+- Engineer 成为唯一能占点的 mandatory tax；
+- 两个 Deep slot 满后删除所有其他 Tier1 路线；
+- kill/capture/support destruction 额外送 Draft；
+- 落后方获得 bonus Draft 作为 P1 默认 comeback；
+- 用 first Deep Commit 直接等价 Mature Build；
+- 用固定 round 数主观替代真实 elapsed-time telemetry；
+- 把三轴平均成 Overall Power；
+- Benchmark 只输出一个平均分；
+- 弱卡唯一价值是“还没抽到强卡”；
+- Easy/Normal 使用不同信息字段；
+- Normal 获得额外 HP/伤害/资源/reroll/Deep slot；
+- 新建第二套 RouteAICommander 复制现有 AI；
+- AI difficulty 每 physics frame 重算全局最优；
+- legacy `deck_id` 继续影响 P1 AI；
+- B1 simulation 为保留历史结果继续走旧 Deck candidate path；
+- P1 为路线/AI重新创建 Deployment authority；
+- 任一 RED blocker 下 conditional GO。
+
+---
+
+# 9. P1-01 Legacy Authority Kill Checklist
+
+P1-01 结束必须证明：
 
 ```text
 DraftSystem candidate source = EligiblePoolSnapshot
 ```
 
-并证明：
+并通过：
 
-### 8.1 deck_id neutrality
-
-只改变：
-
-```text
-core_tactics
-fortification_corps
-barrage_control
-```
-
-正式 EligiblePool 不变。
-
-### 8.2 DeckRegistry mutation probe
-
-测试中改变某旧 DeckRegistry 列表，不得影响正式 EligiblePool。
-
-### 8.3 Hero provenance
-
-改变 Hero：
-
-```text
-BasePool 不变
-Hero source 合法变化
-```
-
-### 8.4 Route provenance
-
-改变 RouteState：
-
-```text
-Base/Hero 不变
-Route source 合法变化
-```
-
-### 8.5 Save compatibility neutrality
-
-旧存档带 `deck_id`：
-
-- 可读取；
-- 不 crash；
-- 不恢复旧 exclusive pool。
+- deck_id neutrality；
+- DeckRegistry mutation probe；
+- Hero provenance；
+- Route provenance；
+- old-save compatibility neutrality。
 
 任一失败：`P1-01 = NO-GO`。
 
 ---
 
-# 9. Deep Slot 特别说明
+# 10. Deep Commitment 已冻结合同
 
-当前已冻结：
-
-```text
-最多 2 条 Deep route
-```
-
-当前仍需独立确认：
+每 side：
 
 ```text
-什么时候真正 consume slot
+DEEP_SLOT_LIMIT = 2
 ```
 
-推荐默认：
+状态：
 
 ```text
-behavior -> DEEP_QUALIFIED
-player explicit confirm -> DEEP_COMMITTED
+TIER1_UNLOCKED
+ -> DEEP_QUALIFIED
+ -> explicit Commit
+ -> DEEP_COMMITTED
 ```
 
-在该 Decision Gate 完成前：
+只有最后一步占 1 slot。
 
-- 可以实现 qualification 数据；
-- 不允许消费 slot；
-- 不允许正式 Deep cards 进入 EligiblePool。
+Commit sticky，不可撤销。
 
-实现 Agent 不得自行选择“自动最高两条”或“拿路线卡即占槽”。
+Deep cards 只有 committed route 才进入未来 EligiblePool。
+
+当前 Offer 不因 Commit 自动变化。
+
+Player / AI 使用同一 Commit authority。
 
 ---
 
-# 10. Reroll 已冻结合同
+# 11. Reroll 已冻结合同
 
-P1-05 不再存在产品 Decision Gate。
-
-## 10.1 权限
-
-每方每个 Draft：
+每 side 每 Draft：
 
 ```text
 1 次免费完整 Reroll
 ```
 
-不累计、不购买、不 partial、不锁牌重抽。
-
-Player 与 AI 权限完全相同。
-
-## 10.2 Timer
-
-成功 Reroll：
+成功后：
 
 ```text
 remaining_after = max(
@@ -452,64 +570,50 @@ remaining_after = max(
 )
 ```
 
-且：
+不重置完整 timer。
 
-```text
-remaining_after <= DRAFT_TIMEOUT
-```
+AI 必须先 KEEP/REROLL 决策，之后才能生成 replacement。
 
-如果当前已经高于最低时间，时间完全不变。
-
-如果低于最低时间，只抬到最低值，不重置完整倒计时。
-
-失败/拒绝 Reroll：
-
-```text
-Offer unchanged
-RerollState unchanged
-Timer unchanged
-```
-
-## 10.3 AI
-
-AI 使用自己的：
-
-```text
-Own Offer
-Own RerollState
-legal AIObservation
-```
-
-先决定：
-
-```text
-KEEP / REROLL
-```
-
-若 REROLL：
-
-```text
-旧 Offer 永久放弃
--> 此后才生成 replacement
--> 从 replacement 中选择
-```
-
-不能提前看到未来随机结果。
-
-Easy/Normal 的区别只能是使用策略不同，不是权限不同。
+Easy/Normal 只改变使用策略，不改变权限。
 
 ---
 
-# 11. 统一复述
+# 12. P1 Final P2 Gate
+
+P1 完成唯一合法文件：
+
+```text
+docs/cardfront_refactor_checkpoints/P1-11R_P1_FINAL_GO_NO_GO.md
+```
+
+必须包含：
+
+```text
+P1 RC commit: <sha>
+Final decision: GO
+P2 allowed start commit: <sha>
+```
+
+没有这三项：禁止进入 P2 gameplay implementation。
+
+Final Evidence 必须来自同一 RC commit。
+
+---
+
+# 13. 统一复述
 
 P1 开工前：
 
-> **我是在 P0 已冻结的战线系统上，用新的 BASE + HERO + ROUTE 构筑模型正式替换旧 exclusive Deck eligibility；不是在旧 Deck 上继续叠路线。**
+> **我是在 P0 已冻结的战线系统上，用 BASE + HERO + ROUTE 正式替换旧 exclusive Deck eligibility；路线资格由真实行为形成，Deep 由明确 Commit 决定。**
 
-P1-04～P1-06 交付前：
+P1-04～P1-06：
 
-> **Offer 仍然是随机选择空间，不是导演系统；Reroll 是一次否决权而不是刷新完整时间/偷看未来结果；升级仍然是卡牌自己的身份成长，不是统一数值膨胀。**
+> **Offer 是随机选择空间，不是导演系统；Reroll 是一次 veto，不是品质提升器；升级是卡牌自己的身份成长。**
+
+P1-07～P1-11：
+
+> **我是在证明构筑分化、强弱角色、成长窗口和 AI 公平真的成立，不是在借路线/平衡/AI 再发明第二套游戏。**
 
 每步交付前：
 
-> **这一 diff 是否让新 authority 更单一、更可审计，并且没有通过“更聪明的随机/更方便的升级”偷偷重新设计 Cardfront？**
+> **这一 diff 是否让“地图战线 + 本局行为 + 构筑选择”闭环更清楚，并且没有让单个子系统为了自洽而越权？**
