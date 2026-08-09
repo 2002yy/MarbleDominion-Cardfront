@@ -3,7 +3,9 @@ class_name CardfrontTargetPreviewLayer
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardTargetTypeScript = preload("res://scripts/cardfront/cards/CardTargetType.gd")
+const DeploymentQueryScript = preload("res://scripts/cardfront/deployment/DeploymentQuery.gd")
 const DeploymentRulesScript = preload("res://scripts/cardfront/deployment/DeploymentRules.gd")
+const DeploymentRuleTypeScript = preload("res://scripts/cardfront/deployment/DeploymentRuleType.gd")
 const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
 
 var battlefield = null
@@ -17,6 +19,9 @@ var _hint_color: Color = Color(0.90, 0.72, 0.18, 0.28)
 var _preview_type: String = ""
 var _owner_id: int = CardfrontRulesScript.PLAYER_FACTION
 var _pulse_time: float = 0.0
+var _deployment_context_provider = null
+var _deployment_revision_provider = null
+var _preview_revision: int = -1
 
 const INVALID_FLASH_DURATION: float = 0.25
 var _invalid_flash_cells: Array[Dictionary] = []
@@ -36,6 +41,11 @@ func setup(new_battlefield, new_region_map, mode_name: String) -> void:
 		position = battlefield.position
 		cell_size = int(battlefield.cell_size)
 	clear_preview()
+
+
+func configure_deployment_authority(context_provider, revision_provider = null) -> void:
+	_deployment_context_provider = context_provider
+	_deployment_revision_provider = revision_provider
 
 
 func show_for_card(card_id: int, card_data: Dictionary) -> void:
@@ -58,6 +68,9 @@ func show_for_card(card_id: int, card_data: Dictionary) -> void:
 		CardTargetTypeScript.OWNED_REGION:
 			_preview_color = Color(0.72, 0.45, 1.0, 0.30)
 			_find_owned_region_cells()
+		CardTargetTypeScript.FRONTLINE_DEPLOYMENT:
+			_preview_color = Color(0.30, 0.82, 0.52, 0.34)
+			_find_frontline_deployment_cells(card_data)
 
 	set_process(visible)
 	queue_redraw()
@@ -69,6 +82,7 @@ func clear_preview() -> void:
 	_hint_cells.clear()
 	_invalid_flash_cells.clear()
 	_preview_type = ""
+	_preview_revision = -1
 	_pulse_time = 0.0
 	set_process(false)
 	queue_redraw()
@@ -88,6 +102,10 @@ func get_target_region_id(cell: Vector2i) -> int:
 
 func get_preview_type() -> String:
 	return _preview_type
+
+
+func get_preview_revision() -> int:
+	return _preview_revision
 
 
 func get_preview_pulse_alpha_for_test() -> float:
@@ -195,6 +213,8 @@ func _invalid_reason_for_preview_type() -> String:
 			return "need_enemy_region"
 		CardTargetTypeScript.OWNED_REGION:
 			return "need_owned_region"
+		CardTargetTypeScript.FRONTLINE_DEPLOYMENT:
+			return "outside_current_deployment_authority"
 	return "invalid_target"
 
 
@@ -216,6 +236,40 @@ func _find_owned_border_cells() -> void:
 			if not DeploymentRulesScript.is_owned_border(region_map, battlefield, cell, _owner_id):
 				continue
 			_valid_cells.append(cell)
+
+
+func _find_frontline_deployment_cells(card_data: Dictionary) -> void:
+	_valid_cells.clear()
+	if battlefield == null:
+		return
+	var deployment_context: Dictionary = _current_deployment_context()
+	_preview_revision = _current_deployment_revision()
+	var params: Dictionary = card_data.get("params", {}) as Dictionary
+	var extent: Vector2i = battlefield.grid_extent
+	for x in range(extent.x):
+		for y in range(extent.y):
+			var query = DeploymentQueryScript.new()
+			query.owner_id = _owner_id
+			query.cell = Vector2i(x, y)
+			query.rule_type = DeploymentRuleTypeScript.SUPPORT_NETWORK
+			query.requested_support_id = str(params.get("requested_support_id", ""))
+			query.spawn_profile_id = str(params.get("deployment_profile_id", ""))
+			query.support_network_context = deployment_context
+			if DeploymentRulesScript.evaluate(region_map, battlefield, query).allowed:
+				_valid_cells.append(query.cell)
+
+
+func _current_deployment_context() -> Dictionary:
+	if _deployment_context_provider is Callable and (_deployment_context_provider as Callable).is_valid():
+		var value = (_deployment_context_provider as Callable).call(_owner_id)
+		return (value as Dictionary).duplicate(true) if value is Dictionary else {}
+	return {}
+
+
+func _current_deployment_revision() -> int:
+	if _deployment_revision_provider is Callable and (_deployment_revision_provider as Callable).is_valid():
+		return int((_deployment_revision_provider as Callable).call(_owner_id))
+	return -1
 
 
 func _find_enemy_region_cells() -> void:
