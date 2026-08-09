@@ -24,6 +24,12 @@ var _buffer := ""
 var _step_frames := 0  # remaining frames to run while stepping
 
 func _ready() -> void:
+	# Runtime inspection is development tooling and must not open a control port
+	# in release exports.
+	if not OS.is_debug_build():
+		set_process(false)
+		return
+
 	# Keep running even when the tree is globally paused, so frame-stepping
 	# and command polling keep working while the game is "frozen".
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -99,7 +105,7 @@ func _dispatch(method: String, params: Dictionary) -> Dictionary:
 		"emit_signal":
 			return _emit_signal(params)
 		"input":
-			return _input(params)
+			return _inject_input(params)
 		"freeze":
 			get_tree().paused = true
 			return {"ok": true, "paused": true}
@@ -134,7 +140,7 @@ func _build(node: Node, out: Array, depth: int) -> void:
 		_build(c, out, depth + 1)
 
 func _node_info(params: Dictionary) -> Dictionary:
-	var node := _resolve(params.get("path", ""))
+	var node: Node = _resolve(str(params.get("path", "")))
 	if not node:
 		return {"error": "node not found: " + str(params.get("path", ""))}
 	var props: Dictionary = {}
@@ -148,7 +154,7 @@ func _node_info(params: Dictionary) -> Dictionary:
 	return {"name": node.name, "type": node.get_class(), "path": str(node.get_path()), "properties": props}
 
 func _set_node(params: Dictionary) -> Dictionary:
-	var node := _resolve(params.get("path", ""))
+	var node: Node = _resolve(str(params.get("path", "")))
 	if not node:
 		return {"error": "node not found: " + str(params.get("path", ""))}
 	var props: Dictionary = params.get("properties", {})
@@ -159,7 +165,7 @@ func _set_node(params: Dictionary) -> Dictionary:
 	return {"ok": true, "updated": updated}
 
 func _call_method(params: Dictionary) -> Dictionary:
-	var node := _resolve(params.get("path", ""))
+	var node: Node = _resolve(str(params.get("path", "")))
 	if not node:
 		return {"error": "node not found"}
 	var method: String = params.get("method", "")
@@ -170,7 +176,7 @@ func _call_method(params: Dictionary) -> Dictionary:
 	return {"ok": true, "result": str(ret)}
 
 func _emit_signal(params: Dictionary) -> Dictionary:
-	var node := _resolve(params.get("path", ""))
+	var node: Node = _resolve(str(params.get("path", "")))
 	if not node:
 		return {"error": "node not found"}
 	var sig: String = params.get("signal", "")
@@ -185,7 +191,7 @@ func _emit_signal(params: Dictionary) -> Dictionary:
 		node.emit_signal(sig, args)
 	return {"ok": true}
 
-func _input(params: Dictionary) -> Dictionary:
+func _inject_input(params: Dictionary) -> Dictionary:
 	var keycode: int = int(params.get("keycode", 0))
 	var action: String = params.get("action", "press")
 	var ev := InputEventKey.new()
@@ -205,7 +211,7 @@ func _screenshot(params: Dictionary) -> Dictionary:
 		return {"error": "failed to save screenshot: " + str(err)}
 	return {"ok": true, "path": path}
 
-func _resolve(path: String):
+func _resolve(path: String) -> Node:
 	var root := _current_scene()
 	if not root:
 		return null

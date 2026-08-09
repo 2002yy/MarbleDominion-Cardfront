@@ -20,6 +20,10 @@ config/tags=PackedStringArray("正在开发中，持续迭代版", "球球领土
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.7")
 
+[autoload]
+
+godot_mcp_runtime="*res://addons/godot-mcp/runtime_bridge.gd"
+
 [display]
 
 window/size/viewport_width=1120
