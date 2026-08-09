@@ -33,7 +33,10 @@ const SapperSystemScript = preload("res://scripts/cardfront/entities/CardfrontSa
 const NeutralCreatureSystemScript = preload("res://scripts/cardfront/entities/CardfrontNeutralCreatureSystem.gd")
 const ProjectileBridgeScript = preload("res://scripts/cardfront/entities/CardfrontEntityProjectileBridge.gd")
 const TowerRuntimeScript = preload("res://scripts/cardfront/entities/CardfrontTowerRuntime.gd")
-const CreatureCoordinatorScript = preload("res://scripts/cardfront/entities/CardfrontCreatureActionCoordinator.gd")
+const CreatureCoordinatorScript = preload("res://scripts/cardfront/entities/CardfrontAuthoritativeCreatureActionCoordinator.gd")
+const DeploymentSupportContextScript = preload("res://scripts/cardfront/deployment/DeploymentSupportContext.gd")
+const DeploymentPlacementResolverScript = preload("res://scripts/cardfront/deployment/DeploymentPlacementResolver.gd")
+const DeploymentRulesScript = preload("res://scripts/cardfront/deployment/DeploymentRules.gd")
 
 const CREATURE_REPAIR_UNIT: String = "repair_unit"
 const CREATURE_SCOUT_UNIT: String = "scout_unit"
@@ -47,6 +50,8 @@ const DEFAULT_GUIDANCE_STRENGTH: float = 0.35
 const DEFAULT_GUIDANCE_RADIUS_CELLS: int = 3
 const DEFAULT_INTERCEPTOR_HP: int = 4
 const BUILDING_VOLLEY_TOTAL_CAP: int = 32
+const REASON_ENTITY_CAPACITY_REACHED: String = "entity_capacity_reached"
+const REASON_ENTITY_SPAWN_FAILED: String = "entity_spawn_failed"
 
 var battlefield = null
 var round_director = null
@@ -54,6 +59,7 @@ var territory_defense_system = null
 var bullet_pool = null
 var registry = RegistryScript.new()
 var map_definition: Dictionary = {}
+var deployment_context_provider = null
 var presentation_layer = null
 var debug_layer = null
 var _entity_serial: int = 0
@@ -97,6 +103,10 @@ func configure_map_definition(new_map_definition: Dictionary) -> void:
 	registry.clear()
 	_register_map_building_slots()
 	_mark_visuals_dirty()
+
+
+func configure_deployment_context_provider(new_provider) -> void:
+	deployment_context_provider = new_provider
 
 
 func configure_dependencies(new_round_director, new_territory_defense_system) -> void:
@@ -157,14 +167,29 @@ func apply_pending_upgrade_actions(owner_id: int, run_state) -> Array:
 		if not (raw_action is Dictionary):
 			continue
 		var action: Dictionary = raw_action as Dictionary
+		var placement_request: Dictionary = _placement_request_from_action(action)
 		match str(action.get("action", "")):
 			"summon_repair_units":
-				var units: Array = spawn_repair_units(owner_id, int(action.get("amount", 2)))
-				results.append({"action": "summon_repair_units", "spawned": units.size()})
+				var repair_result: Dictionary = _spawn_repair_units_authoritative(
+					owner_id,
+					int(action.get("amount", 2)),
+					placement_request
+				)
+				results.append(_public_spawn_result("summon_repair_units", repair_result))
 			"summon_armored_guard":
-				results.append(_spawn_result("summon_armored_guard", spawn_armored_guard(owner_id)))
+				var guard_result: Dictionary = _spawn_single_creature_authoritative(
+					owner_id,
+					CREATURE_ARMORED_GUARD,
+					placement_request
+				)
+				results.append(_public_spawn_result("summon_armored_guard", guard_result))
 			"summon_sapper_unit":
-				results.append(_spawn_result("summon_sapper_unit", spawn_sapper_unit(owner_id)))
+				var sapper_result: Dictionary = _spawn_single_creature_authoritative(
+					owner_id,
+					CREATURE_SAPPER_UNIT,
+					placement_request
+				)
+				results.append(_public_spawn_result("summon_sapper_unit", sapper_result))
 			"summon_gate_colossus":
 				results.append(
 					_spawn_result(
@@ -215,16 +240,42 @@ func debug_spawn_repair_units(owner_id: int, amount: int = 2) -> Array:
 	return spawn_repair_units(owner_id, amount)
 
 
-func spawn_repair_units(owner_id: int, amount: int = 2) -> Array:
-	return _creature_action_coordinator.spawn_repair_units(owner_id, amount)
+func spawn_repair_units(owner_id: int, amount: int = 2, placement_request: Dictionary = {}) -> Array:
+	var result: Dictionary = _spawn_repair_units_authoritative(owner_id, amount, placement_request)
+	return result.get("entities", []) as Array
 
 
-func spawn_armored_guard(owner_id: int):
-	return _creature_action_coordinator.spawn_armored_guard(owner_id)
+func spawn_armored_guard(owner_id: int, placement_request: Dictionary = {}):
+	var result: Dictionary = _spawn_single_creature_authoritative(
+		owner_id,
+		CREATURE_ARMORED_GUARD,
+		placement_request
+	)
+	return result.get("entity", null)
 
 
-func spawn_sapper_unit(owner_id: int):
-	return _creature_action_coordinator.spawn_sapper_unit(owner_id)
+func spawn_sapper_unit(owner_id: int, placement_request: Dictionary = {}):
+	var result: Dictionary = _spawn_single_creature_authoritative(
+		owner_id,
+		CREATURE_SAPPER_UNIT,
+		placement_request
+	)
+	return result.get("entity", null)
+
+
+func resolve_automatic_spawn_cell(
+	owner_id: int,
+	placement_request: Dictionary = {},
+	availability: Callable = Callable()
+) -> Dictionary:
+	return DeploymentPlacementResolverScript.resolve(
+		null,
+		battlefield,
+		owner_id,
+		_current_deployment_context(owner_id),
+		placement_request,
+		availability
+	)
 
 
 func debug_spawn_fire_control_beacon(owner_id: int, lane_index: int = 0):
@@ -380,8 +431,9 @@ func _is_frontline_cell(cell: Vector2i, owner_id: int) -> bool:
 	return _creature_action_coordinator.is_frontline_cell(cell, owner_id)
 
 
-func _find_owner_spawn_cell(owner_id: int, index: int) -> Vector2i:
-	return _creature_action_coordinator.find_owner_spawn_cell(owner_id, index)
+func _find_owner_spawn_cell(owner_id: int, _index: int) -> Vector2i:
+	var result: Dictionary = resolve_automatic_spawn_cell(owner_id)
+	return result.get("cell", Vector2i(-1, -1)) as Vector2i if bool(result.get("allowed", false)) else Vector2i(-1, -1)
 
 
 func _find_adjacent_spawn_cell(owner_id: int, origin: Vector2i) -> Vector2i:
@@ -485,6 +537,146 @@ func _mark_visuals_dirty() -> void:
 		presentation_layer.mark_dirty()
 	if debug_layer != null and is_instance_valid(debug_layer):
 		debug_layer.mark_dirty()
+
+
+func _current_deployment_context(owner_id: int) -> Dictionary:
+	if deployment_context_provider is Callable and (deployment_context_provider as Callable).is_valid():
+		var value = (deployment_context_provider as Callable).call(owner_id)
+		return (value as Dictionary).duplicate(true) if value is Dictionary else {}
+	return DeploymentSupportContextScript.core_only(map_definition, owner_id)
+
+
+func _placement_request_from_action(action: Dictionary) -> Dictionary:
+	return {
+		"deployment_profile_id": str(action.get("deployment_profile_id", "")),
+		"preferred_support_id": str(action.get("preferred_support_id", "")),
+		"preferred_route_role": str(action.get("preferred_route_role", "")),
+	}
+
+
+func _resolve_spawn_cells(owner_id: int, amount: int, placement_request: Dictionary) -> Dictionary:
+	var requested: int = maxi(0, int(amount))
+	if requested == 0:
+		return {
+			"allowed": true,
+			"reason": DeploymentRulesScript.REASON_ALLOWED,
+			"cells": [],
+			"placements": [],
+		}
+	var existing_count: int = registry.count_owner_entities(owner_id, BattlefieldEntityScript.KIND_CREATURE)
+	if existing_count + requested > RegistryScript.MAX_CREATURES_PER_FACTION:
+		return {
+			"allowed": false,
+			"reason": REASON_ENTITY_CAPACITY_REACHED,
+			"cells": [],
+			"placements": [],
+		}
+	var reserved_slots: Dictionary = {}
+	var resolved_cells: Array[Vector2i] = []
+	var placements: Array = []
+	for _index in range(requested):
+		var availability := func(cell: Vector2i) -> bool:
+			var key: String = _cell_key(cell)
+			return _creature_slots_at(cell) + int(reserved_slots.get(key, 0)) < RegistryScript.MAX_CREATURE_SLOTS_PER_CELL
+		var placement: Dictionary = resolve_automatic_spawn_cell(owner_id, placement_request, availability)
+		if not bool(placement.get("allowed", false)):
+			return {
+				"allowed": false,
+				"reason": str(placement.get("reason", DeploymentRulesScript.REASON_NO_VALID_DEPLOYMENT_SOURCE)),
+				"cells": [],
+				"placements": [],
+			}
+		var cell: Vector2i = placement.get("cell", Vector2i(-1, -1)) as Vector2i
+		var cell_key: String = _cell_key(cell)
+		reserved_slots[cell_key] = int(reserved_slots.get(cell_key, 0)) + 1
+		resolved_cells.append(cell)
+		placements.append(_placement_trace(placement))
+	return {
+		"allowed": true,
+		"reason": DeploymentRulesScript.REASON_ALLOWED,
+		"cells": resolved_cells,
+		"placements": placements,
+	}
+
+
+func _spawn_repair_units_authoritative(
+	owner_id: int,
+	amount: int,
+	placement_request: Dictionary
+) -> Dictionary:
+	var resolution: Dictionary = _resolve_spawn_cells(owner_id, amount, placement_request)
+	if not bool(resolution.get("allowed", false)):
+		resolution["entities"] = []
+		return resolution
+	var cells: Array = resolution.get("cells", []) as Array
+	var entities: Array = _creature_action_coordinator.spawn_repair_units_at(owner_id, cells)
+	resolution["entities"] = entities
+	if entities.size() != cells.size():
+		resolution["allowed"] = false
+		resolution["reason"] = REASON_ENTITY_SPAWN_FAILED
+	return resolution
+
+
+func _spawn_single_creature_authoritative(
+	owner_id: int,
+	creature_id: String,
+	placement_request: Dictionary
+) -> Dictionary:
+	var resolution: Dictionary = _resolve_spawn_cells(owner_id, 1, placement_request)
+	if not bool(resolution.get("allowed", false)):
+		resolution["entity"] = null
+		return resolution
+	var cells: Array = resolution.get("cells", []) as Array
+	var cell: Vector2i = cells[0] as Vector2i
+	var entity = null
+	match creature_id:
+		CREATURE_ARMORED_GUARD:
+			entity = _creature_action_coordinator.spawn_armored_guard_at(owner_id, cell)
+		CREATURE_SAPPER_UNIT:
+			entity = _creature_action_coordinator.spawn_sapper_unit_at(owner_id, cell)
+		_:
+			resolution["allowed"] = false
+			resolution["reason"] = REASON_ENTITY_SPAWN_FAILED
+	resolution["entity"] = entity
+	if entity == null:
+		resolution["allowed"] = false
+		if str(resolution.get("reason", "")) == DeploymentRulesScript.REASON_ALLOWED:
+			resolution["reason"] = REASON_ENTITY_SPAWN_FAILED
+	return resolution
+
+
+func _public_spawn_result(action: String, resolution: Dictionary) -> Dictionary:
+	var spawned: int = 0
+	if resolution.has("entities"):
+		spawned = (resolution.get("entities", []) as Array).size()
+	elif resolution.get("entity", null) != null:
+		spawned = 1
+	return {
+		"action": action,
+		"allowed": bool(resolution.get("allowed", false)),
+		"reason": str(resolution.get("reason", DeploymentRulesScript.REASON_NO_VALID_DEPLOYMENT_SOURCE)),
+		"spawned": spawned,
+		"placements": (resolution.get("placements", []) as Array).duplicate(true),
+	}
+
+
+func _placement_trace(placement: Dictionary) -> Dictionary:
+	return {
+		"cell": placement.get("cell", Vector2i(-1, -1)),
+		"resolved_support_id": str(placement.get("resolved_support_id", "")),
+		"source_kind": str(placement.get("source_kind", "")),
+		"deployment_revision": int(placement.get("deployment_revision", 0)),
+		"legal_candidate_count": int(placement.get("legal_candidate_count", 0)),
+		"reason": str(placement.get("reason", "")),
+	}
+
+
+func _creature_slots_at(cell: Vector2i) -> int:
+	var total: int = 0
+	for entity in registry.get_entities_at(cell):
+		if str(entity.entity_kind) == BattlefieldEntityScript.KIND_CREATURE:
+			total += maxi(1, int(entity.size_slots))
+	return total
 
 
 func _spawn_result(action: String, entity) -> Dictionary:
