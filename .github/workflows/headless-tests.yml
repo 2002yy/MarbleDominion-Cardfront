@@ -147,6 +147,7 @@ jobs:
               CardfrontSupportTopologyContractTestRunner.gd
               CardfrontSupportTopologyValidatorTestRunner.gd
               CardfrontSupportConnectivityResolverTestRunner.gd
+              CardfrontSupportConnectivityTruthTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
