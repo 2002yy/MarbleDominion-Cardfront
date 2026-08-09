@@ -6,6 +6,7 @@ const OWNED_BORDER: String = "owned_border"
 const OWNED_REGION_CONTROLLED: String = "owned_region_controlled"
 const CONTESTED_REGION: String = "contested_region"
 const ENEMY_REGION: String = "enemy_region"
+const SUPPORT_NETWORK: String = "support_network"
 
 
 static func all_types() -> Array[String]:
@@ -15,6 +16,7 @@ static func all_types() -> Array[String]:
 		OWNED_REGION_CONTROLLED,
 		CONTESTED_REGION,
 		ENEMY_REGION,
+		SUPPORT_NETWORK,
 	]
 
 

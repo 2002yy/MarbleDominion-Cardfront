@@ -142,6 +142,21 @@ jobs:
               CardfrontSupportCaptureOccupancyAdapterTestRunner.gd
               CardfrontSupportCaptureTerritoryPrototypeTestRunner.gd
               CardfrontSupportSnapshotContractTestRunner.gd
+          - batch: Cardfront P0 support graph pure
+            scripts: |
+              CardfrontSupportTopologyContractTestRunner.gd
+              CardfrontSupportTopologyValidatorTestRunner.gd
+              CardfrontSupportConnectivityResolverTestRunner.gd
+              CardfrontSupportConnectivityTruthTestRunner.gd
+              CardfrontSupportConnectivityCacheTestRunner.gd
+          - batch: Cardfront P0 deployment pure
+            scripts: |
+              CardfrontDeploymentContractTestRunner.gd
+              CardfrontDeploymentCoreFallbackTestRunner.gd
+              CardfrontDeploymentDirectionalZoneTestRunner.gd
+              CardfrontDeploymentPlayerCommitTestRunner.gd
+              CardfrontDeploymentPreviewParityTestRunner.gd
+              CardfrontDeploymentAiParityTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd

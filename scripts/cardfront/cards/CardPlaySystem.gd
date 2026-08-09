@@ -13,6 +13,7 @@ const PioneerBeaconLiteEffectScript = preload("res://scripts/cardfront/effects/e
 const CardTargetValidatorScript = preload("res://scripts/cardfront/targets/CardTargetValidator.gd")
 const OwnedBorderTargetRuleScript = preload("res://scripts/cardfront/targets/target_rules/OwnedBorderTargetRule.gd")
 const ExistingRegionTargetRuleScript = preload("res://scripts/cardfront/targets/target_rules/ExistingRegionTargetRule.gd")
+const FrontlineDeploymentTargetRuleScript = preload("res://scripts/cardfront/targets/target_rules/FrontlineDeploymentTargetRule.gd")
 
 var catalog = null
 var hand = null
@@ -25,6 +26,7 @@ var region_overlay = null
 var target_bias_system = null
 var effect_resolver = null
 var target_validator = null
+var deployment_context_provider = null
 
 
 func _init() -> void:
@@ -37,7 +39,7 @@ func _init() -> void:
 	_register_default_target_rules()
 
 
-func setup(new_resource_states: Dictionary, new_region_map, new_battlefield, new_fortify_layer, new_morale_system, new_region_overlay, new_target_bias_system = null) -> void:
+func setup(new_resource_states: Dictionary, new_region_map, new_battlefield, new_fortify_layer, new_morale_system, new_region_overlay, new_target_bias_system = null, new_deployment_context_provider = null) -> void:
 	resource_states = new_resource_states.duplicate(false)
 	region_map = new_region_map
 	battlefield = new_battlefield
@@ -45,6 +47,7 @@ func setup(new_resource_states: Dictionary, new_region_map, new_battlefield, new
 	morale_system = new_morale_system
 	region_overlay = new_region_overlay
 	target_bias_system = new_target_bias_system
+	deployment_context_provider = new_deployment_context_provider
 	effect_resolver.setup(_build_effect_context())
 	target_validator.setup(_build_target_context())
 
@@ -133,6 +136,7 @@ func _register_default_target_rules() -> void:
 	var region_rule = ExistingRegionTargetRuleScript.new()
 	target_validator.register(CardTargetTypeScript.ENEMY_REGION, region_rule)
 	target_validator.register(CardTargetTypeScript.OWNED_REGION, region_rule)
+	target_validator.register(CardTargetTypeScript.FRONTLINE_DEPLOYMENT, FrontlineDeploymentTargetRuleScript.new())
 
 
 func _build_effect_context() -> Dictionary:
@@ -150,6 +154,7 @@ func _build_target_context() -> Dictionary:
 	return {
 		"region_map": region_map,
 		"battlefield": battlefield,
+		"deployment_context_provider": deployment_context_provider,
 	}
 
 
