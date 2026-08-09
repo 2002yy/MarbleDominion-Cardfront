@@ -124,6 +124,12 @@ jobs:
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontModeSmokeTestRunner.gd
+          - batch: Cardfront P0 golden baseline
+            scripts: |
+              CardfrontP0GoldenBaselineTestRunner.gd
+          - batch: Cardfront P0 support identity
+            scripts: |
+              CardfrontSupportIdentityTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
@@ -217,6 +223,9 @@ jobs:
         shell: pwsh
         run: |
           $scripts = "${{ matrix.scripts }}" -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+          if ($scripts.Count -eq 0) {
+            throw "Headless test batch resolved to zero scripts."
+          }
           $artifactDir = Join-Path "${{ github.workspace }}" "artifacts\headless\${{ strategy.job-index }}"
           New-Item -ItemType Directory -Path $artifactDir -Force | Out-Null
 

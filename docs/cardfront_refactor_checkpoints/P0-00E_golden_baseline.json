@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "source_commit": "9323c9f3c9f2bf7d2d9d222731a74ca05b089290",
+  "mode": {
+    "id": "卡牌前线",
+    "main_scene": "res://scenes/Main.tscn"
+  },
+  "duel": {
+    "player_faction": 0,
+    "ai_faction": 1
+  },
+  "phase_progression": [
+    "battle_countdown",
+    "draft_paused",
+    "resolve_choices",
+    "launch_volley"
+  ],
+  "command_points": {
+    "default": 3,
+    "max": 5
+  },
+  "offer_size": {
+    "player_default": 3,
+    "ai_default": 3,
+    "legacy_lab": 4
+  },
+  "lanes": {
+    "count": 2,
+    "center_ratios": [0.265, 0.735],
+    "strategy_identity": "two_equal_routes"
+  },
+  "legacy_stronghold": {
+    "ruleset": "tactical_v1",
+    "activation_percent": 80,
+    "factory_shot_bonus": 3,
+    "energy_attack_level_bonus": 1,
+    "lab_choice_count": 4,
+    "runtime_effect_expected": true,
+    "expected_after_support_cutover": "retired"
+  },
+  "draft_peek": {
+    "runtime_evidence": "FOLLOW-UP / AUDIT REQUIRED",
+    "frozen_target": "visibility_only_no_offer_regeneration",
+    "pixel_geometry_frozen": false
+  },
+  "excluded": [
+    "random_offer_ids",
+    "visual_pixels",
+    "instantaneous_fps"
+  ]
+}
