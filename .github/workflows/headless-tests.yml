@@ -152,6 +152,7 @@ jobs:
           - batch: Cardfront P0 deployment pure
             scripts: |
               CardfrontDeploymentContractTestRunner.gd
+              CardfrontDeploymentCoreFallbackTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd

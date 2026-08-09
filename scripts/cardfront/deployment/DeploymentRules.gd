@@ -42,7 +42,7 @@ static func evaluate(region_map, battlefield, query):
 		DeploymentRuleTypeScript.ENEMY_REGION:
 			return _evaluate_enemy_region(region_map, battlefield, query, resolved_region_id)
 		DeploymentRuleTypeScript.SUPPORT_NETWORK:
-			return _make_result(false, REASON_NO_VALID_DEPLOYMENT_SOURCE, resolved_region_id, 0)
+			return _evaluate_support_network(region_map, battlefield, query, resolved_region_id)
 		_:
 			return _make_result(false, REASON_INVALID_RULE_TYPE, resolved_region_id, 0)
 
@@ -129,6 +129,33 @@ static func _evaluate_enemy_region(region_map, battlefield, query, region_id: in
 	if not _has_enemy_control(region_map, battlefield, region_id, query.owner_id, query.min_region_control_percent):
 		return _make_result(false, REASON_NOT_ENEMY_REGION, region_id, owner_percent)
 	return _make_result(true, REASON_ALLOWED, region_id, owner_percent)
+
+
+static func _evaluate_support_network(region_map, battlefield, query, region_id: int):
+	if not _is_inside_map(region_map, battlefield, query.cell):
+		return _make_result(false, REASON_OUTSIDE_MAP, region_id, 0)
+	var context: Dictionary = query.support_network_context
+	if context.is_empty() or int(context.get("side", -1)) != int(query.owner_id):
+		return _make_result(false, REASON_NO_VALID_DEPLOYMENT_SOURCE, region_id, 0)
+	var core_source: Dictionary = context.get("core_source", {}) as Dictionary
+	var core_support_id: String = str(core_source.get("support_id", ""))
+	if core_support_id == "":
+		return _make_result(false, REASON_NO_VALID_DEPLOYMENT_SOURCE, region_id, 0)
+	if str(query.requested_support_id) != "" and str(query.requested_support_id) != core_support_id:
+		return _make_result(false, REASON_NO_VALID_DEPLOYMENT_SOURCE, region_id, 0)
+	if query.cell not in (core_source.get("candidate_cells", []) as Array):
+		return _make_result(false, REASON_OUTSIDE_DEPLOYMENT_ZONE, region_id, 0)
+	if not is_owned_cell(battlefield, query.cell, query.owner_id):
+		return _make_result(false, REASON_NOT_OWNED_CELL, region_id, 0)
+	return _make_result(
+		true,
+		REASON_ALLOWED,
+		region_id,
+		100,
+		core_support_id,
+		DeploymentResultScript.SOURCE_CORE,
+		"core:%s" % core_support_id
+	)
 
 
 static func _owner_percent(region_map, battlefield, region_id: int, owner_id: int) -> int:
