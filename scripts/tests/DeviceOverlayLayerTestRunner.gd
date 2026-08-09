@@ -237,3 +237,4 @@ func _test_missing_texture_falls_back_to_color() -> void:
 	var fallback: Color = overlay.device_visual_registry.get_fallback_color(DeviceTypeScript.ABSORBER_CORE)
 	_assert.that(fallback.a == 1.0 or fallback != Color.GRAY, "overlay: fallback color should be registered")
 	_assert.that(fallback.r > 0.0 or fallback.g > 0.0 or fallback.b > 0.0, "overlay: fallback should not be pure black")
+	overlay.free()

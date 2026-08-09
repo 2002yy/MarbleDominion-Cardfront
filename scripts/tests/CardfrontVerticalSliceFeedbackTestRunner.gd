@@ -2,6 +2,7 @@ extends SceneTree
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
+const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 
 var _assert: TestAssert
 
@@ -103,6 +104,10 @@ func _start_main():
 	await process_frame
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
+	# Main loads persisted menu preferences during _ready(). Pin the baseline hero so
+	# this regression test cannot inherit a developer's last local hero selection.
+	main.selected_cardfront_player_hero_id = HeroRegistryScript.DEFAULT_PLAYER_HERO_ID
+	main.selected_cardfront_ai_hero_id = HeroRegistryScript.DEFAULT_AI_HERO_ID
 	main._start_game(20, true, false)
 	await _flush()
 	return main

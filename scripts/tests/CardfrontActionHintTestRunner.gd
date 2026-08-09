@@ -51,6 +51,18 @@ func _make_main():
 	return main
 
 
+func _cleanup_main(main) -> void:
+	# These tests exercise selection state, not audio lifetime. Stop the short WAV
+	# feedback players before freeing Main so Godot can release their playbacks.
+	var audio_feedback = main.runtime.card_audio_feedback
+	if audio_feedback != null and is_instance_valid(audio_feedback):
+		for player in audio_feedback._players.values():
+			if player != null and is_instance_valid(player):
+				player.stop()
+	main._cleanup_game_layer()
+	TestFixtures.cleanup_node(main)
+
+
 func _add_resources(main, energy: int = 999, parts: int = 999) -> void:
 	var state = main.runtime.resource_states.get(CardfrontRulesScript.PLAYER_FACTION, null)
 	if state != null:
@@ -97,8 +109,7 @@ func _test_each_card_shows_distinct_action_hint() -> void:
 		seen[hint] = true
 		main.runtime.selection_controller.clear_selection()
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_tutorial_copy_matches_current_ui() -> void:
@@ -121,8 +132,7 @@ func _test_preview_pulse_is_active() -> void:
 	var alpha_after: float = preview.get_preview_pulse_alpha_for_test()
 	_assert.that(not is_equal_approx(alpha_before, alpha_after), "hint preview: pulse alpha should breathe over time")
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_valid_target_hides_hint_after_play() -> void:
@@ -136,8 +146,7 @@ func _test_valid_target_hides_hint_after_play() -> void:
 	_assert.that(not main.runtime.hand_panel.is_action_hint_visible(), "hint: successful play should hide action hint")
 	_assert.eq(main.runtime.selection_controller.get_selected_card_id(), -1, "hint: successful play should clear selection")
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_failed_play_hides_hint() -> void:
@@ -150,8 +159,7 @@ func _test_failed_play_hides_hint() -> void:
 	_assert.that(not main.runtime.hand_panel.is_action_hint_visible(), "hint: failed play should hide action hint")
 	_assert.eq(main.runtime.selection_controller.get_selected_card_id(), -1, "hint: failed play should clear selection")
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_invalid_target_keeps_hint_and_selection() -> void:
@@ -165,8 +173,7 @@ func _test_invalid_target_keeps_hint_and_selection() -> void:
 	_assert.that(main.runtime.hand_panel.is_action_hint_visible(), "hint: invalid target should keep action hint visible")
 	_assert.eq(main.runtime.selection_controller.get_selected_card_id(), int(card_data.id), "hint: invalid target should keep current selection")
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_right_click_cancels_selection() -> void:
@@ -182,8 +189,7 @@ func _test_right_click_cancels_selection() -> void:
 	_assert.that(not main.runtime.hand_panel.is_action_hint_visible(), "hint: right click should hide action hint")
 	_assert.eq(main.runtime.target_preview_layer._valid_cells.size(), 0, "hint: right click should clear preview cells")
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_escape_cancels_selection() -> void:
@@ -199,5 +205,4 @@ func _test_escape_cancels_selection() -> void:
 	_assert.that(not main.runtime.hand_panel.is_action_hint_visible(), "hint: escape should hide action hint")
 	_assert.eq(main.runtime.target_preview_layer._valid_cells.size(), 0, "hint: escape should clear preview cells")
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)

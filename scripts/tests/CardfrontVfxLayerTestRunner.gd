@@ -75,6 +75,7 @@ func _test_vfx_texture_paths_exist() -> void:
 	for path in paths:
 		_assert.that(path != "", "vfx: texture path should not be empty")
 		_assert.that(ResourceLoader.exists(path), "vfx: texture should exist: %s" % path)
+	vfx.free()
 
 
 func _test_vfx_layer_created_in_cardfront() -> void:
@@ -143,6 +144,7 @@ func _test_effect_visual_metrics_expand_and_fade() -> void:
 	_assert.gt(float(end.get("size", 0.0)), float(mid.get("size", 0.0)), "vfx visual: late effect should be largest")
 	_assert.gt(float(start.get("alpha", 0.0)), float(mid.get("alpha", 0.0)), "vfx visual: alpha should fade after start")
 	_assert.gt(float(mid.get("alpha", 0.0)), float(end.get("alpha", 0.0)), "vfx visual: alpha should keep fading")
+	vfx.free()
 
 
 func _test_effect_expires_and_removed() -> void:

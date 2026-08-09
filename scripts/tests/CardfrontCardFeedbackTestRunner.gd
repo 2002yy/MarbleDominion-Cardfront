@@ -49,6 +49,18 @@ func _make_main():
 	return main
 
 
+func _cleanup_main(main) -> void:
+	# Signal tests trigger the success/fail WAV players. Stop them before freeing
+	# Main so their AudioStreamPlayback objects do not outlive the fixture.
+	var audio_feedback = main.runtime.card_audio_feedback
+	if audio_feedback != null and is_instance_valid(audio_feedback):
+		for player in audio_feedback._players.values():
+			if player != null and is_instance_valid(player):
+				player.stop()
+	main._cleanup_game_layer()
+	TestFixtures.cleanup_node(main)
+
+
 func _add_resources(main, energy: int = 999, parts: int = 999) -> void:
 	var state = main.runtime.resource_states.get(CardfrontRulesScript.PLAYER_FACTION, null)
 	if state != null:
@@ -88,8 +100,7 @@ func _test_selected_signal() -> void:
 	var card: Dictionary = _first_card(main)
 	main.runtime.selection_controller.on_card_clicked(int(card.id), card)
 	_assert.eq(signal_counts.selected, 1, "feedback: card_selected should fire once")
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_invalid_target_signal() -> void:
@@ -103,8 +114,7 @@ func _test_invalid_target_signal() -> void:
 	main.runtime.selection_controller.on_card_clicked(int(card.id), card)
 	main.runtime.selection_controller.on_battlefield_clicked(Vector2i(-5, -5))
 	_assert.eq(signal_counts.invalid, 1, "feedback: target_invalid should fire for invalid click")
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_success_signal() -> void:
@@ -120,8 +130,7 @@ func _test_success_signal() -> void:
 	var result: Dictionary = main.runtime.selection_controller.on_battlefield_clicked(_first_valid_cell(main))
 	_assert.that(result.success, "feedback: valid card play should succeed")
 	_assert.eq(signal_counts.success, 1, "feedback: card_play_succeeded should fire once")
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_fail_signal() -> void:
@@ -136,8 +145,7 @@ func _test_fail_signal() -> void:
 	var result: Dictionary = main.runtime.selection_controller.on_battlefield_clicked(_first_valid_cell(main))
 	_assert.that(not result.success, "feedback: resource-poor card play should fail")
 	_assert.eq(signal_counts.fail, 1, "feedback: card_play_failed should fire once")
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_card_view_scene_input_routes_to_feedback_bus() -> void:
