@@ -5,6 +5,7 @@ const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd"
 const DeploymentResultScript = preload("res://scripts/cardfront/deployment/DeploymentResult.gd")
 const DeploymentRuleTypeScript = preload("res://scripts/cardfront/deployment/DeploymentRuleType.gd")
 const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
+const DeploymentGeometryScript = preload("res://scripts/cardfront/deployment/DeploymentGeometry.gd")
 
 const REASON_ALLOWED: String = "allowed"
 const REASON_OUTSIDE_MAP: String = "outside_map"
@@ -132,30 +133,77 @@ static func _evaluate_enemy_region(region_map, battlefield, query, region_id: in
 
 
 static func _evaluate_support_network(region_map, battlefield, query, region_id: int):
-	if not _is_inside_map(region_map, battlefield, query.cell):
-		return _make_result(false, REASON_OUTSIDE_MAP, region_id, 0)
 	var context: Dictionary = query.support_network_context
 	if context.is_empty() or int(context.get("side", -1)) != int(query.owner_id):
 		return _make_result(false, REASON_NO_VALID_DEPLOYMENT_SOURCE, region_id, 0)
+	if not _is_inside_map(region_map, battlefield, query.cell):
+		return _make_result(false, REASON_OUTSIDE_MAP, region_id, 0)
 	var core_source: Dictionary = context.get("core_source", {}) as Dictionary
 	var core_support_id: String = str(core_source.get("support_id", ""))
 	if core_support_id == "":
 		return _make_result(false, REASON_NO_VALID_DEPLOYMENT_SOURCE, region_id, 0)
-	if str(query.requested_support_id) != "" and str(query.requested_support_id) != core_support_id:
-		return _make_result(false, REASON_NO_VALID_DEPLOYMENT_SOURCE, region_id, 0)
-	if query.cell not in (core_source.get("candidate_cells", []) as Array):
-		return _make_result(false, REASON_OUTSIDE_DEPLOYMENT_ZONE, region_id, 0)
-	if not is_owned_cell(battlefield, query.cell, query.owner_id):
-		return _make_result(false, REASON_NOT_OWNED_CELL, region_id, 0)
-	return _make_result(
-		true,
-		REASON_ALLOWED,
-		region_id,
-		100,
-		core_support_id,
-		DeploymentResultScript.SOURCE_CORE,
-		"core:%s" % core_support_id
-	)
+	var requested_id: String = str(query.requested_support_id)
+	var known_support_ids: Array = context.get("known_support_ids", []) as Array
+	var online_support_ids: Array = context.get("online_support_ids", []) as Array
+	if requested_id != "" and requested_id not in known_support_ids:
+		return _make_result(false, REASON_SUPPORT_NOT_CLAIMED, region_id, 0)
+	if requested_id != "" and requested_id != core_support_id and requested_id not in online_support_ids:
+		return _make_result(false, REASON_SUPPORT_OFFLINE, region_id, 0)
+
+	var extent: Vector2i = _battlefield_extent(battlefield)
+	var matching_sources: Array = []
+	var requested_classification: String = DeploymentGeometryScript.CLASS_OUTSIDE
+	for raw_source in context.get("support_sources", []) as Array:
+		var source: Dictionary = raw_source as Dictionary
+		if requested_id != "" and str(source.get("support_id", "")) != requested_id:
+			continue
+		if str(query.spawn_profile_id) != "" and str(source.get("profile_id", "")) != str(query.spawn_profile_id):
+			continue
+		var classification: String = DeploymentGeometryScript.classify(
+			str(source.get("profile_id", "")),
+			source.get("anchor_cell", Vector2i.ZERO) as Vector2i,
+			source.get("forward", Vector2i.ZERO) as Vector2i,
+			query.cell,
+			extent
+		)
+		if requested_id != "":
+			requested_classification = classification
+		if classification == DeploymentGeometryScript.CLASS_INSIDE:
+			matching_sources.append(source)
+	if not matching_sources.is_empty():
+		matching_sources.sort_custom(func(left, right): return _source_precedes(left, right, query.cell))
+		var resolved_source: Dictionary = matching_sources[0] as Dictionary
+		if not is_owned_cell(battlefield, query.cell, query.owner_id):
+			return _make_result(false, REASON_NOT_OWNED_CELL, region_id, 0)
+		return _make_result(true, REASON_ALLOWED, region_id, 100, str(resolved_source.support_id), DeploymentResultScript.SOURCE_SUPPORT, "support:%s" % str(resolved_source.support_id))
+	if requested_id != "" and requested_id != core_support_id:
+		var reason: String = REASON_WRONG_DEPLOY_DIRECTION if requested_classification == DeploymentGeometryScript.CLASS_WRONG_DIRECTION else REASON_OUTSIDE_DEPLOYMENT_ZONE
+		return _make_result(false, reason, region_id, 0)
+
+	if requested_id == "" or requested_id == core_support_id:
+		if query.cell in (core_source.get("candidate_cells", []) as Array):
+			if not is_owned_cell(battlefield, query.cell, query.owner_id):
+				return _make_result(false, REASON_NOT_OWNED_CELL, region_id, 0)
+			return _make_result(true, REASON_ALLOWED, region_id, 100, core_support_id, DeploymentResultScript.SOURCE_CORE, "core:%s" % core_support_id)
+	return _make_result(false, REASON_OUTSIDE_DEPLOYMENT_ZONE, region_id, 0)
+
+
+static func _source_precedes(left: Dictionary, right: Dictionary, target: Vector2i) -> bool:
+	var left_distance: int = (left.get("anchor_cell", Vector2i.ZERO) as Vector2i).distance_squared_to(target)
+	var right_distance: int = (right.get("anchor_cell", Vector2i.ZERO) as Vector2i).distance_squared_to(target)
+	if left_distance != right_distance:
+		return left_distance < right_distance
+	return str(left.get("support_id", "")) < str(right.get("support_id", ""))
+
+
+static func _battlefield_extent(battlefield) -> Vector2i:
+	if battlefield == null:
+		return Vector2i.ZERO
+	var extent = battlefield.get("grid_extent")
+	if extent is Vector2i:
+		return extent as Vector2i
+	var size: int = int(battlefield.get("grid_size"))
+	return Vector2i(size, size)
 
 
 static func _owner_percent(region_map, battlefield, region_id: int, owner_id: int) -> int:

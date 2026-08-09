@@ -153,6 +153,7 @@ jobs:
             scripts: |
               CardfrontDeploymentContractTestRunner.gd
               CardfrontDeploymentCoreFallbackTestRunner.gd
+              CardfrontDeploymentDirectionalZoneTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd

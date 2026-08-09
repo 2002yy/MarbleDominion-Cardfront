@@ -21,6 +21,10 @@ static func core_only(map_definition: Dictionary, side: int) -> Dictionary:
 		for x in range(mini(x0, x1), maxi(x0, x1) + 1):
 			for y in range(mini(y0, y1), maxi(y0, y1) + 1):
 				candidate_cells.append(Vector2i(x, y))
+	var known_support_ids: Array[String] = []
+	for definition in map_definition.get("deployment_supports", []) as Array:
+		known_support_ids.append(str((definition as Dictionary).get("support_id", "")))
+	known_support_ids.sort()
 	return {
 		"side": side,
 		"core_source": {
@@ -28,7 +32,33 @@ static func core_only(map_definition: Dictionary, side: int) -> Dictionary:
 			"candidate_cells": candidate_cells,
 		},
 		"support_sources": [],
+		"known_support_ids": known_support_ids,
+		"online_support_ids": [],
 	}
+
+
+static func with_online_supports(map_definition: Dictionary, side: int, online_support_ids: Array) -> Dictionary:
+	var context: Dictionary = core_only(map_definition, side)
+	var requested_online: Dictionary = {}
+	for support_id in online_support_ids:
+		requested_online[str(support_id)] = true
+	var sources: Array = []
+	for raw_definition in map_definition.get("deployment_supports", []) as Array:
+		var definition: Dictionary = raw_definition as Dictionary
+		var support_id: String = str(definition.get("support_id", ""))
+		if bool(definition.get("is_core", false)) or not requested_online.has(support_id):
+			continue
+		var direction_key: String = "player_deploy_direction" if side == RulesScript.PLAYER_FACTION else "ai_deploy_direction"
+		sources.append({
+			"support_id": support_id,
+			"anchor_cell": definition.get("anchor_cell", Vector2i.ZERO),
+			"forward": definition.get(direction_key, Vector2i.ZERO),
+			"profile_id": str(definition.get("deployment_profile_id", "")),
+		})
+	sources.sort_custom(func(left, right): return str(left.support_id) < str(right.support_id))
+	context["support_sources"] = sources
+	context["online_support_ids"] = sources.map(func(source): return str(source.support_id))
+	return context
 
 
 static func _core_support_id(side: int) -> String:
