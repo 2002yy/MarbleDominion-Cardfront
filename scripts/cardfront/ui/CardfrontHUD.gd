@@ -208,7 +208,7 @@ func _layout_top_bar_segments() -> void:
 		x_offset += segment.size.x
 
 
-func _layout_side_buttons(view_size: Vector2, mobile_mode: bool, current_layout: Dictionary = {}) -> void:
+func _layout_side_buttons(view_size: Vector2, mobile_mode: bool, _current_layout: Dictionary = {}) -> void:
 	var side_button_size := Vector2(48.0, 28.0) if not mobile_mode else Vector2(58.0, 32.0)
 	var side_y: float = 74.0
 	_apply_button_layout(settings_button, Vector2(view_size.x - side_button_size.x * 2.0 - 16.0, side_y), side_button_size)

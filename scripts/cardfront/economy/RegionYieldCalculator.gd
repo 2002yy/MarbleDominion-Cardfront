@@ -37,7 +37,7 @@ static func calculate_normal_territory_yield(region_map, battlefield, owner_id: 
 				owned_cells += 1
 	var supply_units: int = 0
 	if owned_cells > 0:
-		supply_units = maxi(1, owned_cells / NORMAL_CELLS_PER_SUPPLY_UNIT)
+		supply_units = maxi(1, floori(float(owned_cells) / float(NORMAL_CELLS_PER_SUPPLY_UNIT)))
 	return {
 		"owner_id": int(owner_id),
 		"owned_normal_cells": owned_cells,

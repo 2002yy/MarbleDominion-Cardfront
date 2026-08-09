@@ -512,12 +512,12 @@ func _build_tiles() -> void:
 	for x in range(extent.x):
 		for y in range(extent.y):
 			var index: int = x * extent.y + y
-			var transform := Transform3D(Basis.IDENTITY, Vector3(
+			var instance_transform := Transform3D(Basis.IDENTITY, Vector3(
 				(float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE,
 				TILE_HEIGHT * 0.5,
 				(float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
 			))
-			multimesh.set_instance_transform(index, transform)
+			multimesh.set_instance_transform(index, instance_transform)
 
 
 func _build_territory_boundaries() -> void:
@@ -651,8 +651,8 @@ func _same_owner_neighbor_count(cell: Vector2i, owner_id: int, extent: Vector2i)
 
 
 func _set_boundary_instance(index: int, center: Vector3, size: Vector3) -> int:
-	var transform := Transform3D(Basis.IDENTITY.scaled(size), center)
-	territory_boundary_multimesh.multimesh.set_instance_transform(index, transform)
+	var boundary_transform := Transform3D(Basis.IDENTITY.scaled(size), center)
+	territory_boundary_multimesh.multimesh.set_instance_transform(index, boundary_transform)
 	return index + 1
 
 
@@ -749,16 +749,16 @@ func _add_landmark_pylon(position_value: Vector3, color: Color) -> void:
 
 
 func _add_factory_stack(position_value: Vector3) -> void:
-	for offset in [-0.75, 0.75]:
+	for stack_offset in [-0.75, 0.75]:
 		var stack := MeshInstance3D.new()
 		stack.name = "FactoryStack"
 		var mesh := CylinderMesh.new()
 		mesh.top_radius = 0.46
 		mesh.bottom_radius = 0.72
-		mesh.height = 4.6 if offset < 0.0 else 3.7
+		mesh.height = 4.6 if stack_offset < 0.0 else 3.7
 		mesh.radial_segments = 8
 		stack.mesh = mesh
-		stack.position = position_value + Vector3(offset, mesh.height * 0.5, 0.0)
+		stack.position = position_value + Vector3(stack_offset, mesh.height * 0.5, 0.0)
 		stack.material_override = _make_material(Color(0.37, 0.40, 0.38), 0.0)
 		world_root.add_child(stack)
 

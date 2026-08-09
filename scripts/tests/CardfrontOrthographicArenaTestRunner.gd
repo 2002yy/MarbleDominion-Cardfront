@@ -2,6 +2,7 @@ extends SceneTree
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
+const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 
 var _assert: TestAssert
 
@@ -158,6 +159,9 @@ func _start_main(mode_name: String, grid_size: int):
 	await process_frame
 	main.selected_game_mode_name = mode_name
 	main.selected_grid_size = grid_size
+	# Main loads persisted menu preferences in _ready(); this runner asserts the
+	# frozen default arena and must not inherit the developer's last map choice.
+	main.selected_cardfront_map_id = MapRegistryScript.DEFAULT_DUEL_MAP_ID
 	main._start_game(grid_size, true, false)
 	await _flush()
 	return main

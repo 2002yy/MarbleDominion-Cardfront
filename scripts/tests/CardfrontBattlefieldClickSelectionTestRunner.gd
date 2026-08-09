@@ -35,6 +35,16 @@ func _flush() -> void:
 	await process_frame
 
 
+func _cleanup_main(main) -> void:
+	var audio_feedback = main.runtime.card_audio_feedback
+	if audio_feedback != null and is_instance_valid(audio_feedback):
+		for player in audio_feedback._players.values():
+			if player != null and is_instance_valid(player):
+				player.stop()
+	main._cleanup_game_layer()
+	TestFixtures.cleanup_node(main)
+
+
 func _test_select_card_shows_preview() -> void:
 	GameConfig.reset_runtime_defaults()
 	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
@@ -57,8 +67,7 @@ func _test_select_card_shows_preview() -> void:
 		_assert.eq(main.runtime.selection_controller.get_selected_card_id(), card_id, "card should be selected")
 		_assert.that(main.runtime.target_preview_layer._valid_cells.size() > 0, "preview should show valid cells")
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_click_valid_cell_plays_card() -> void:
@@ -90,8 +99,7 @@ func _test_click_valid_cell_plays_card() -> void:
 		var result: Dictionary = main.runtime.selection_controller.on_battlefield_clicked(target_cell)
 		_assert.that(result.success, "click valid target should succeed (reason: %s)" % str(result.get("reason", "")))
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_click_invalid_cell_does_not_consume_resources() -> void:
@@ -121,8 +129,7 @@ func _test_click_invalid_cell_does_not_consume_resources() -> void:
 	var energy_after: int = int(state.energy)
 	_assert.eq(energy_after, energy_before, "resources should not be consumed on invalid click")
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_deselect_clears_preview() -> void:
@@ -144,8 +151,7 @@ func _test_deselect_clears_preview() -> void:
 	_assert.eq(main.runtime.selection_controller.get_selected_card_id(), -1, "should be deselected")
 	_assert.eq(main.runtime.target_preview_layer._valid_cells.size(), 0, "preview should be cleared")
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)
 
 
 func _test_ballwar_mode_does_not_intercept_clicks() -> void:
@@ -162,5 +168,4 @@ func _test_ballwar_mode_does_not_intercept_clicks() -> void:
 	_assert.eq(main.runtime.selection_controller, null, "BallWar should have no selection controller")
 	_assert.eq(main.runtime.target_preview_layer, null, "BallWar should have no target preview")
 
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
+	_cleanup_main(main)

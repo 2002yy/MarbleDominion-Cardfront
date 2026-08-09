@@ -70,12 +70,12 @@ func record_result(stage: String, result: Dictionary) -> bool:
 func apply_to(runtime) -> void:
 	if runtime == null:
 		return
-	var snapshot: Dictionary = refs.snapshot()
-	for key in snapshot.keys():
+	var refs_snapshot: Dictionary = refs.snapshot()
+	for key in refs_snapshot.keys():
 		var runtime_field: String = str(RUNTIME_FIELD_BY_RESULT_KEY.get(str(key), ""))
 		if runtime_field == "":
 			continue
-		runtime.set(runtime_field, snapshot[key])
+		runtime.set(runtime_field, refs_snapshot[key])
 
 
 func snapshot() -> Dictionary:

@@ -466,7 +466,7 @@ func take_damage_quarters(amount_quarters: int) -> void:
 	if is_destroyed or amount_quarters <= 0:
 		return
 	var accumulated: int = health_damage_remainder_quarters + int(amount_quarters)
-	var whole_damage: int = accumulated / 4
+	var whole_damage: int = accumulated >> 2
 	health_damage_remainder_quarters = accumulated % 4
 	if whole_damage > 0:
 		take_damage(whole_damage)

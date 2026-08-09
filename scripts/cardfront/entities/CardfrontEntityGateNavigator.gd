@@ -30,9 +30,9 @@ func navigation_target(
 	var best_lane_index: int = -1
 	var best_distance: int = 1 << 30
 	for lane_index in range(2):
-		var gate_x: int = gate_x(lane_index)
-		var source := Vector2i(gate_x, source_y)
-		var destination := Vector2i(gate_x, destination_y)
+		var lane_gate_x: int = gate_x(lane_index)
+		var source := Vector2i(lane_gate_x, source_y)
+		var destination := Vector2i(lane_gate_x, destination_y)
 		var distance: int = _distance(origin, source) + _distance(destination, target)
 		if distance < best_distance:
 			best_source = source

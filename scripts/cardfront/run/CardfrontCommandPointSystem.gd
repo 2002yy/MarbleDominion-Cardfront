@@ -2,6 +2,7 @@ extends RefCounted
 class_name CardfrontCommandPointSystem
 
 signal points_changed(owner_id, remaining)
+@warning_ignore("unused_signal")
 signal fortify_used(owner_id, cell)
 
 const DEFAULT_POINTS: int = 3

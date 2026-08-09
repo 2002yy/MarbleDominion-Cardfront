@@ -152,8 +152,8 @@ func _sample_lane(lane_index: int, round_number: int) -> Dictionary:
 	var total: int = 0
 	for x in range(maxi(0, center_x - half_width), mini(width, center_x + half_width + 1)):
 		for y in range(maxi(0, center_y - half_height), mini(height, center_y + half_height + 1)):
-			var owner_id: int = int(battlefield.owners[x][y])
-			counts[owner_id] = int(counts.get(owner_id, 0)) + 1
+			var cell_owner_id: int = int(battlefield.owners[x][y])
+			counts[cell_owner_id] = int(counts.get(cell_owner_id, 0)) + 1
 			total += 1
 
 	var player_count: int = int(counts[RulesScript.PLAYER_FACTION])

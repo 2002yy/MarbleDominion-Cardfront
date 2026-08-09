@@ -219,17 +219,17 @@ func _draw_hover_tooltip(cell_size: float) -> void:
 		clampf(cell_size * 5.6, 148.0, 240.0),
 		clampf(cell_size * 1.45, 44.0, 60.0)
 	)
-	var position := mouse + Vector2(14.0, -panel_size.y - 12.0)
+	var tooltip_position := mouse + Vector2(14.0, -panel_size.y - 12.0)
 	var battlefield_extent: Vector2 = battlefield.get_pixel_extent()
-	position.x = clampf(position.x, 4.0, maxf(4.0, battlefield_extent.x - panel_size.x - 4.0))
-	position.y = clampf(position.y, 4.0, maxf(4.0, battlefield_extent.y - panel_size.y - 4.0))
-	var rect := Rect2(position, panel_size)
+	tooltip_position.x = clampf(tooltip_position.x, 4.0, maxf(4.0, battlefield_extent.x - panel_size.x - 4.0))
+	tooltip_position.y = clampf(tooltip_position.y, 4.0, maxf(4.0, battlefield_extent.y - panel_size.y - 4.0))
+	var rect := Rect2(tooltip_position, panel_size)
 	draw_rect(rect, Color(0.035, 0.055, 0.075, 0.96), true)
 	draw_rect(rect, _owner_color(int(entity.owner_id)).lightened(0.15), false, 2.0)
 	var font := ThemeDB.fallback_font
 	draw_string(
 		font,
-		position + Vector2(9.0, 17.0),
+		tooltip_position + Vector2(9.0, 17.0),
 		_entity_name(entity),
 		HORIZONTAL_ALIGNMENT_LEFT,
 		panel_size.x - 18.0,
@@ -238,7 +238,7 @@ func _draw_hover_tooltip(cell_size: float) -> void:
 	)
 	draw_string(
 		font,
-		position + Vector2(9.0, 35.0),
+		tooltip_position + Vector2(9.0, 35.0),
 		_entity_detail(entity),
 		HORIZONTAL_ALIGNMENT_LEFT,
 		panel_size.x - 18.0,

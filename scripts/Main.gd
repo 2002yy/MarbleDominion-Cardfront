@@ -1019,13 +1019,13 @@ func _finish_as_draw(sub_text: String, result: Dictionary = {}) -> void:
 		_show_cardfront_match_result(-1, true, result)
 
 
-func _show_cardfront_match_result(winner_id: int, draw: bool, result: Dictionary = {}) -> void:
+func _show_cardfront_match_result(winner_id: int, is_draw: bool, result: Dictionary = {}) -> void:
 	var result_panel = _hud_ref("match_result_panel")
 	if result_panel == null or not is_instance_valid(result_panel) or not result_panel.has_method("show_result"):
 		return
 	var time_expired: bool = game_elapsed_time >= CardfrontModeScript.get_match_duration_seconds()
-	var title_text: String = "\u5e73\u5c40" if draw else "%s\u80dc\u5229\uff01" % CardfrontRulesScript.owner_display_name(winner_id)
-	var accent: Color = Color(0.92, 0.94, 1.0) if draw else CardfrontRulesScript.owner_color(winner_id)
+	var title_text: String = "\u5e73\u5c40" if is_draw else "%s\u80dc\u5229\uff01" % CardfrontRulesScript.owner_display_name(winner_id)
+	var accent: Color = Color(0.92, 0.94, 1.0) if is_draw else CardfrontRulesScript.owner_color(winner_id)
 	result_panel.show_result(
 		title_text,
 		str(result.get("sub_text", CardfrontMatchFlowTextScript.result_reason(time_expired))),

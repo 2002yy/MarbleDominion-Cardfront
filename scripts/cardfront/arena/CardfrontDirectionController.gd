@@ -98,7 +98,6 @@ func has_priority_target() -> bool:
 func _nearest_lane_for_cell(cell: Vector2i) -> int:
 	if _lane_angles.size() < 2:
 		return -1
-	var half_w: float = float(_grid_extent.x) * 0.5
 	var cell_x: float = float(cell.x)
 	var best_lane: int = 0
 	var best_dist: float = absf(cell_x - float(GateRulesScript.LANE_CENTER_RATIOS[0]) * float(_grid_extent.x))

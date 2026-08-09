@@ -1,16 +1,26 @@
 extends Node2D
 class_name CardfrontBattlefieldEntityRuntime
 
+@warning_ignore("unused_signal")
 signal entity_spawned(entity_id, entity_kind, owner_id, cell)
 signal entity_removed(entity_id, entity_kind, owner_id, cell)
+@warning_ignore("unused_signal")
 signal entity_contact_resolved(result)
+@warning_ignore("unused_signal")
 signal creature_repaired(entity_id, cell, restored_points)
+@warning_ignore("unused_signal")
 signal tower_power_changed(entity_id, powered)
+@warning_ignore("unused_signal")
 signal projectile_guided(tower_entity_id, owner_id, projectile_type)
+@warning_ignore("unused_signal")
 signal building_volley_fired(owner_id, tower_entity_id, shot_count)
+@warning_ignore("unused_signal")
 signal tower_counter_fired(tower_entity_id, owner_id)
+@warning_ignore("unused_signal")
 signal heavy_charge_exploded(owner_id, cell, center_target_id)
+@warning_ignore("unused_signal")
 signal sapper_detonated(owner_id, target_kind, cell, damage)
+@warning_ignore("unused_signal")
 signal neutral_creature_attacked(result)
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
