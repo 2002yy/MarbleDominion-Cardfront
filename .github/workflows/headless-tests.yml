@@ -124,6 +124,9 @@ jobs:
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontModeSmokeTestRunner.gd
+          - batch: Cardfront P0 golden baseline
+            scripts: |
+              CardfrontP0GoldenBaselineTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
