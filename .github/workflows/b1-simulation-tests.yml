@@ -59,8 +59,8 @@ jobs:
             deck_seeds: 1
             opening_seeds: 1
     env:
-      GODOT_VERSION: 4.6.2-stable
-      GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
+      GODOT_VERSION: 4.7.1-stable
+      GODOT_ARCHIVE: Godot_v4.7.1-stable_win64.exe.zip
       CARDFRONT_B1_AUDIT_SEEDS: ${{ matrix.seeds }}
       CARDFRONT_B1_DECK_AUDIT_SEEDS: ${{ matrix.deck_seeds }}
       CARDFRONT_B1_OPENING_AUDIT_SEEDS: ${{ matrix.opening_seeds }}

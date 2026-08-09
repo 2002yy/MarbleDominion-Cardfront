@@ -44,7 +44,7 @@ scripts/tests/*.gd
 其中 `headless-tests.yml` 在 GitHub Actions 上使用：
 
 ```text
-Godot 4.6.2-stable
+Godot 4.7.1-stable
 --headless
 --audio-driver Dummy
 --script res://scripts/tests/<Runner>.gd
@@ -585,7 +585,7 @@ known Yellow tuning debt
 
 ## 必须通过
 
-1. Godot 4.6.2-stable headless parse；
+1. Godot 4.7.1-stable headless parse；
 2. project import；
 3. Cardfront mode boot；
 4. 基础 scene instantiate；

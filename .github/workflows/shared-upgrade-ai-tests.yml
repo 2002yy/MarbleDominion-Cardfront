@@ -25,8 +25,8 @@ jobs:
             script: CardfrontSharedAiParityAuditTestRunner.gd
             audit_seeds: 100
     env:
-      GODOT_VERSION: 4.6.2-stable
-      GODOT_ARCHIVE: Godot_v4.6.2-stable_win64.exe.zip
+      GODOT_VERSION: 4.7.1-stable
+      GODOT_ARCHIVE: Godot_v4.7.1-stable_win64.exe.zip
       CARDFRONT_SHARED_AI_AUDIT_SEEDS: ${{ matrix.audit_seeds }}
     steps:
       - uses: actions/checkout@v4
