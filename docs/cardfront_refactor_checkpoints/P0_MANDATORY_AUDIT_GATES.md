@@ -1,6 +1,6 @@
 # Cardfront P0 Mandatory Audit Gates
 
-状态：**MANDATORY AUDIT CONTRACT / DO NOT SKIP**  
+状态：**MANUAL-ACCEPTANCE CONTRACT / MILESTONE AUDIT**
 适用范围：P0-00 ～ P0-11，以及 P0 -> P1 放行。
 
 本文不增加任何玩法，也不替代 Engineering Spec / Guardrails / Batch A-C / Pre-Implementation Freeze Addendum。
@@ -9,14 +9,16 @@
 
 > **凡是当前不能立即证明的关键事实，要么现在审计并形成证据，要么在对应规划/Checkpoint 中明确标成 `AUDIT REQUIRED`；禁止靠聊天记忆、Agent 推测或“应该没问题”继续推进。**
 
+2026-08-09 起，`AUDIT REQUIRED` 默认表示“记录为待验收/待复核”，不自动阻断每个 micro-step。人工产品负责人可以在已知 follow-up 明确落盘后批准继续施工。完整矩阵只在 batch、milestone、release candidate 或人工点名时执行；普通实现循环使用与改动直接相关的 focused checks。不得把未检查项写成通过，但不得为了凑齐非关键证据而反复中断开发。
+
 ---
 
 # 1. 总规则
 
-每个涉及下表内容的 micro-step，在 `GO` 前必须满足二选一：
+每个涉及下表内容的 batch / milestone，在最终 `GO` 前必须满足二选一：
 
 1. **AUDITED**：已有同一 Source commit 的代码/测试/运行证据；
-2. **BLOCKED / AUDIT REQUIRED**：尚不能验证，Checkpoint 必须明确阻断下一步。
+2. **FOLLOW-UP / AUDIT REQUIRED**：尚不能验证，Checkpoint 明确记录，并由人工决定继续施工或阻断。
 
 禁止第三种状态：
 
@@ -34,7 +36,7 @@ Evidence source:
 Decision: PASS / FAIL / BLOCKED
 ```
 
-不同 commit 的测试、截图、人工试玩、性能数据不得拼成一个 GO。
+不同 commit 的测试、截图、人工试玩、性能数据不得拼成最终质量 `GO`；人工推进验收可以引用最近有效证据并明确其 commit 与剩余 follow-up。
 
 ---
 
@@ -66,11 +68,11 @@ Decision: NO-GO
 
 ## P0-00B — Baseline Regression Capture
 
-**RUNTIME AUDIT REQUIRED**
+**MANUAL BASELINE ACCEPTANCE**
 
-静态源码不能替代本项。
+静态源码不能替代人工对核心体验的判断，但下列各项不再要求在进入下一施工 step 前全部形成连续录像。
 
-至少记录：
+验收时优先观察：
 
 - mode boot / enter duel；
 - Draft -> Aim -> Volley/Execution；
@@ -84,7 +86,9 @@ Decision: NO-GO
 - 当前 warning / error / log noise；
 - 当前性能只作为 baseline observation，不得用“能启动”冒充 FPS benchmark。
 
-缺运行证据：`BLOCKED`。
+未观察到的项目必须记录为 follow-up，不得伪写成 PASS。若游戏可启动、核心循环可操作、没有数据损坏/解析失败，人工可以批准 P0-00B 继续推进；其余细项在后续相关功能施工或 milestone 回归时补验。完整 headless regression 不在每个修复后重复运行。
+
+缺运行证据：记录为 `FOLLOW-UP / AUDIT REQUIRED`；只有人工拒绝验收或触发总规则中的硬阻断条件时才标记 `BLOCKED`。
 
 ## P0-00C — Frozen Delta Ledger
 

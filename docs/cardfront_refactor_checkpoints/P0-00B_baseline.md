@@ -1,13 +1,13 @@
 # P0-00B Baseline Regression Capture
 
-Status: **BLOCKED / AUDIT REQUIRED**
-Decision: **NO-GO**
+Status: **MANUALLY ACCEPTED WITH FOLLOW-UPS**
+Decision: **GO (MANUAL PROGRESS ACCEPTANCE)**
 
 ## Step contract
 
 ```text
 Step: P0-00B Baseline Regression Capture
-Source commit: 87024a3b75b43dbba621287b857ed1bd3a13b136
+Source commit: 616cce19b7fd9ac5d1ae07764ebe5302f81169e4
 Parent audit commit: ece2ed374544d7a70b443d3ac374d1950d0a3d35
 Original upstream source commit: fc56e21e0cf7ad8c79eaf9659afbda3e1f89e487
 Target step: P0-00B
@@ -18,7 +18,11 @@ Forbidden changes: gameplay behavior, Support implementation, map changes, refac
 Expected checkpoint: docs/cardfront_refactor_checkpoints/P0-00B_baseline.md
 ```
 
-The user changed the machine and repository engine authority during this step from the old CI pin to Godot `4.7.1-stable`. Commit `2f2f754` contains that non-gameplay authority update, the official Godot MCP `1.9.0` editor addon, and the Godot 4.7 UID metadata. Commit `8ba5103` contains regression-fixture determinism and teardown fixes found by this audit. Commit `9faf518` makes the packaged runtime bridge Godot 4.7.1-compatible and enables it as debug-only audit tooling. Commit `87024a3` removes the 20 warnings observed during a real `Main.tscn` launch and fixes two test-only sources of nondeterminism/teardown leakage; it does not change gameplay authority. The current evidence is bound to `87024a3b75b43dbba621287b857ed1bd3a13b136`. Evidence collected against the earlier 4.6.2 pin is not used for this decision.
+The user changed the machine and repository engine authority during this step from the old CI pin to Godot `4.7.1-stable`. Commit `2f2f754` contains that non-gameplay authority update, the official Godot MCP `1.9.0` editor addon, and the Godot 4.7 UID metadata. Commit `8ba5103` contains regression-fixture determinism and teardown fixes found by this audit. Commit `9faf518` makes the packaged runtime bridge Godot 4.7.1-compatible and enables it as debug-only audit tooling. Commit `87024a3` removes the 20 warnings observed during a real `Main.tscn` launch and fixes two test-only sources of nondeterminism/teardown leakage; it does not change gameplay authority. Commit `616cce1` stabilizes the two shared 3D atlas imports. The current evidence is bound to `616cce19b7fd9ac5d1ae07764ebe5302f81169e4`. Evidence collected against the earlier 4.6.2 pin is not used for this decision.
+
+## 2026-08-09 manual acceptance amendment
+
+The product owner accepted this baseline for continued development with the gaps below retained as explicit follow-ups. This is a progress decision, not a claim that every baseline item passed or that the game reached final quality. P0 work must use focused checks during implementation and defer full regression/manual matrices to batch, milestone, release-candidate, or explicitly requested acceptance points.
 
 ## Environment and repository evidence
 
@@ -54,7 +58,7 @@ runtime bridge parse errors: 0
 
 The screenshot shows an active Cardfront battle with the two-lane/bridge arena, HUD, Rapid Gunner player at 36/36 and volley 7, Balanced Commander AI at 40/40 and volley 6, 20/20/60 control, and 07:58 remaining. This is live runtime evidence but not proof of the missing player-operated menu and phase chain.
 
-The warning-remediation launch against `87024a3` reached the StartMenu with the runtime bridge listening and reported `warning_count=0` and `error_count=0`. The 20 GDScript warnings (unused parameters/signals, intentional integer division, and local/property shadowing) are therefore closed. A full editor import/source scan also reported `WARNINGS=0`, but still produced an intermittent `get_multiple_md5` file-access error. That separate editor error and the absent continuous played-session log keep the overall warning/error/log baseline blocked.
+The warning-remediation launch against `87024a3` reached the StartMenu with the runtime bridge listening and reported `warning_count=0` and `error_count=0`. The 20 GDScript warnings (unused parameters/signals, intentional integer division, and local/property shadowing) are therefore closed. The two intermittent `get_multiple_md5` file-access errors occurred while Godot auto-detected two shared atlases as 3D textures. Their import settings are now explicitly VRAM Compressed with mipmaps and a clean editor import no longer reproduces either the file-access errors or the two auto-detection notices. The absent continuous played-session log remains a manual follow-up.
 
 ## Rendered runtime capture
 
@@ -178,36 +182,36 @@ An earlier local trial deleted generated `.import` sidecars before running tests
 
 | Required baseline | Evidence obtained | Status |
 | --- | --- | --- |
-| Game boot and enter duel | Main/Cardfront runtime rendered after direct `_start_game()`; menu-to-prematch player path not operated | **BLOCKED** |
-| Draft -> Aim -> Volley/Execution | Draft and battle states rendered separately; phase/round tests pass; no contiguous player-operated cycle | **BLOCKED** |
-| Command Point | Automated runtime tests cover the current system; no live visible gain/spend observation captured | **BLOCKED** |
-| Legacy Stronghold bonus | Stronghold rules and timeout runners pass; no live Factory/Energy/Lab trigger was observed in a played duel | **BLOCKED** |
-| 3/4-choice behavior | Three-choice rendered; automated 3/4-choice checks pass; no live Lab-driven four-choice capture | **BLOCKED** |
-| Peek bug | Source path known from P0-00A; no real pointer/peek reproduction recording | **BLOCKED** |
-| Creature normal action | Creature runners pass and entities rendered; capture helper directly spawned entities and did not prove a normal round action | **BLOCKED** |
-| Automatic/upgrade spawn | Entity runners pass; capture helper uses direct spawn APIs, not an earned automatic/upgrade spawn | **BLOCKED** |
+| Game boot and enter duel | Main/Cardfront runtime rendered after direct `_start_game()`; menu-to-prematch player path not operated | **FOLLOW-UP** |
+| Draft -> Aim -> Volley/Execution | Draft and battle states rendered separately; phase/round tests pass; no contiguous player-operated cycle | **FOLLOW-UP** |
+| Command Point | Automated runtime tests cover the current system; no live visible gain/spend observation captured | **FOLLOW-UP** |
+| Legacy Stronghold bonus | Stronghold rules and timeout runners pass; no live Factory/Energy/Lab trigger was observed in a played duel | **FOLLOW-UP** |
+| 3/4-choice behavior | Three-choice rendered; automated 3/4-choice checks pass; no live Lab-driven four-choice capture | **FOLLOW-UP** |
+| Peek bug | Source path known from P0-00A; no real pointer/peek reproduction recording | **FOLLOW-UP** |
+| Creature normal action | Creature runners pass and entities rendered; capture helper directly spawned entities and did not prove a normal round action | **FOLLOW-UP** |
+| Automatic/upgrade spawn | Entity runners pass; capture helper uses direct spawn APIs, not an earned automatic/upgrade spawn | **FOLLOW-UP** |
 | Two-lane / bridge baseline | Actual rendered battle capture visibly contains both bridge/lane presentations | **PASS** |
-| Loadout/Draft key show/hide | Draft visible and battle view visible in separate captures; Loadout and interactive hide/restore sequence absent | **BLOCKED** |
-| Warning/error/log baseline | Real Main boot now has 0 GDScript warnings and 0 errors; 98/98 active runners exit 0 and the remediated outlier has a clean verbose rerun. Editor import still has an intermittent `get_multiple_md5` file-access error and the continuous played-session log remains incomplete | **FAIL / BLOCKED** |
-| Performance observation | Rendering device recorded; no valid FPS/frame-time sampling was taken | **BLOCKED** |
+| Loadout/Draft key show/hide | Draft visible and battle view visible in separate captures; Loadout and interactive hide/restore sequence absent | **FOLLOW-UP** |
+| Warning/error/log baseline | Real Main boot now has 0 GDScript warnings and 0 errors; 98/98 active runners exit 0 and the remediated outlier has a clean verbose rerun. Explicit 3D atlas import settings eliminate the reproduced `get_multiple_md5`/auto-detection startup messages; the continuous played-session log remains incomplete | **FOLLOW-UP** |
+| Performance observation | Rendering device recorded; no valid FPS/frame-time sampling was taken | **FOLLOW-UP** |
 
 ## Mandatory audit fields
 
 ```text
 Mandatory audit gates touched: P0-00B Baseline Regression Capture
-Audit status per gate: FAIL / BLOCKED
+Audit status per gate: MANUALLY ACCEPTED WITH FOLLOW-UPS
 Evidence bound to source commit: YES
-Unverified assumptions remaining: none are treated as passed; missing runtime observations are listed below
+Unverified assumptions remaining: none are treated as passed; missing runtime observations are non-blocking follow-ups listed below
 Legacy authority still reachable: YES — expected baseline; live triggers still require capture
 Second-authority risk: NOT APPLICABLE to this evidence-only step
 Save/restore risk: P0-00A static risk remains; no new save/restore runtime evidence was captured
 Cross-system regression evidence: PASS — 98/98 active headless runners exit 0; the sole teardown-log outlier was remediated and independently rerun clean
-Manual evidence required before GO: YES
+Manual evidence required before final quality acceptance: YES; not required before P0-00C progress
 ```
 
-## Manual evidence required before GO
+## Deferred manual acceptance follow-ups
 
-Using Godot 4.7.1 and source commit `87024a3b75b43dbba621287b857ed1bd3a13b136` (or a later explicit P0-00B remediation commit), record one continuous duel session with console output or video/screenshots that shows:
+Using Godot 4.7.1 and source commit `616cce19b7fd9ac5d1ae07764ebe5302f81169e4` (or a later explicit P0-00B remediation commit), record one continuous duel session with console output or video/screenshots that shows:
 
 1. StartMenu -> Cardfront -> prematch Loadout/map/hero -> confirmed duel entry.
 2. A complete Draft -> Aim -> Volley/Execution cycle, including the related UI show/hide transitions.
@@ -220,7 +224,7 @@ Using Godot 4.7.1 and source commit `87024a3b75b43dbba621287b857ed1bd3a13b136` (
 9. Loadout and Draft UI visibility transitions with no stuck overlay.
 10. FPS/frame-time observation and the complete warning/error/log output for the session.
 
-The previously nonzero `CardfrontVerticalSliceFeedbackTestRunner`, the 20 real-start GDScript warnings, and all observed runner exit-log leaks are reconciled on source commit `87024a3`. They no longer block P0-00B. The intermittent editor file-access error and the ten played-session observations above still do.
+The previously nonzero `CardfrontVerticalSliceFeedbackTestRunner`, the 20 real-start GDScript warnings, all observed runner exit-log leaks, and the two atlas-related editor startup errors are reconciled. The ten played-session observations above remain follow-ups for later milestone/manual acceptance and do not block P0-00C.
 
 ## Findings
 
@@ -230,16 +234,15 @@ The previously nonzero `CardfrontVerticalSliceFeedbackTestRunner`, the 20 real-s
 4. The active main headless workflow is 98/98 exit-zero; its sole post-warning-cleanup teardown-log outlier has a clean targeted verbose rerun after remediation.
 5. Existing balance audits intentionally pass their runner contract while reporting material threshold debt; those values are baseline observations, not P0-00B acceptance.
 6. The shared Godot MCP now launches and inspects the live game successfully on Godot 4.7.1; ping, a 309-node scene tree, and runtime screenshot are verified, with the control listener disabled for release exports.
-7. A real `Main.tscn` launch now reaches StartMenu with zero GDScript warnings and zero runtime errors. The remaining `get_multiple_md5` editor-import error is tracked separately and is not being misreported as resolved.
+7. A real `Main.tscn` launch now reaches StartMenu with zero GDScript warnings and zero runtime errors. The two shared 3D atlases now have stable VRAM/mipmap import settings, and a clean import does not reproduce the earlier `get_multiple_md5` errors or texture auto-detection notices.
 
 ## Decision
 
 ```text
-AUDIT REQUIRED
-BLOCKED
-Decision: NO-GO
+MANUALLY ACCEPTED WITH FOLLOW-UPS
+Decision: GO (MANUAL PROGRESS ACCEPTANCE)
 ```
 
-P0-00C and P0-01 are forbidden from this state.
+This decision allows P0-00C to start. It does not mark unobserved items as passed and does not waive final batch/milestone acceptance.
 
-The **only allowed next step** is to remain in P0-00B: collect every missing continuous player-operated runtime observation and capture the complete session log, while separately reproducing or clearing the intermittent editor `get_multiple_md5` error using audit tooling only. P0-00C and P0-01 remain forbidden.
+The **only allowed next step** is P0-00C Frozen Delta Ledger. During implementation, run focused checks proportional to the current diff; defer the full regression/manual matrix to the next batch or milestone acceptance point unless the product owner explicitly requests it sooner. P0-01 remains gated by the rest of the P0-00 pre-implementation sequence.

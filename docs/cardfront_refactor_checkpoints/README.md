@@ -20,7 +20,9 @@
 
 > **测试入口修正：** Batch A 早期关于“测试入口尚未确定”的判断已由 Batch C §0 更新。当前 P0 现役测试 authority 是 `scripts/tests/*.gd` 及 `.github/workflows/` 中的 active Godot headless workflows；`tests_legacy_disabled/` 只作为历史参考。
 
-> **强制审计规则：** 从本版本起，所有会影响 gameplay authority、部署合法性、Support/Graph 真相、save/restore、AI 信息边界、Legacy Stronghold 退役或 P0 -> P1 放行的关键事项，必须满足“现在完成审计并形成证据”或“在对应 checkpoint 中明确 `AUDIT REQUIRED / BLOCKED / NO-GO`”二选一。禁止把“尚未检查”默认解释成“已确认”。完整审计门见 `P0_MANDATORY_AUDIT_GATES.md`。
+> **审计记录规则：** 所有会影响 gameplay authority、部署合法性、Support/Graph 真相、save/restore、AI 信息边界、Legacy Stronghold 退役或 P0 -> P1 放行的关键事项，必须形成证据或在对应 checkpoint 中明确记录为 follow-up / `AUDIT REQUIRED`。禁止把“尚未检查”默认解释成“已确认”；是否阻断日常施工由下述人工验收规则决定。完整审计门见 `P0_MANDATORY_AUDIT_GATES.md`。
+
+> **2026-08-09 人工验收与检查节奏修正：** P0 日常推进改为人工产品验收主导。未完成、体验仍需调整或非关键日志问题可以明确记入 follow-up，并由人工决定是否允许进入下一施工 step；不得把它们伪写成 `PASS`，但也不再要求每个 micro-step 都重复完整回归或连续录像。实施期间只运行与本次 diff 直接相关的 focused checks；完整 headless regression、连续试玩、性能和全量日志检查集中在 batch / milestone / release candidate 边界。只有启动/解析失败、数据损坏、当前改动涉及的 authority 无法确定、相关 focused check 失败，或人工明确拒绝验收时，才阻断继续开发。人工推进验收不等于最终质量验收。
 
 ---
 
