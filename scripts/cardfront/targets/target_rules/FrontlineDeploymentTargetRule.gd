@@ -23,7 +23,9 @@ func validate(req, card, context: Dictionary):
 	var result = DeploymentRulesScript.evaluate(context.get("region_map", null), battlefield, query)
 	if not result.allowed:
 		return CardPlayResultScript.fail(CardPlayResultScript.REASON_INVALID_TARGET, card.card_name, str(result.reason))
-	return CardPlayResultScript.ok(card.card_name)
+	var allowed = CardPlayResultScript.ok(card.card_name)
+	allowed.authority_reason = str(result.reason)
+	return allowed
 
 
 static func _current_deployment_context(context: Dictionary, owner_id: int) -> Dictionary:
