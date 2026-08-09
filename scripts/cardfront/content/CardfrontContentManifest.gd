@@ -16,6 +16,7 @@ const TARGET_OWNED_DEVICE: String = "owned_device"
 const TARGET_ENEMY_DEVICE: String = "enemy_device"
 const TARGET_LINE: String = "target_line"
 const TARGET_AREA: String = "target_area"
+const TARGET_FRONTLINE_DEPLOYMENT: String = "frontline_deployment"
 
 const TARGET_TYPES: Array[String] = [
 	TARGET_OWNED_CELL,
@@ -28,12 +29,14 @@ const TARGET_TYPES: Array[String] = [
 	TARGET_ENEMY_DEVICE,
 	TARGET_LINE,
 	TARGET_AREA,
+	TARGET_FRONTLINE_DEPLOYMENT,
 ]
 
 const IMPLEMENTED_TARGET_TYPES: Array[String] = [
 	TARGET_OWNED_BORDER,
 	TARGET_OWNED_REGION,
 	TARGET_ENEMY_REGION,
+	TARGET_FRONTLINE_DEPLOYMENT,
 ]
 
 const DEFAULT_HAND_IDS: Array[int] = [

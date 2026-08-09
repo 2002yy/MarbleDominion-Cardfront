@@ -12,6 +12,7 @@ const OWNED_DEVICE: String = "owned_device"
 const ENEMY_DEVICE: String = "enemy_device"
 const TARGET_LINE: String = "target_line"
 const TARGET_AREA: String = "target_area"
+const FRONTLINE_DEPLOYMENT: String = "frontline_deployment"
 
 static func is_valid(target_type: String) -> bool:
 	return CardfrontContentManifestScript.is_target_type_valid(str(target_type))

@@ -5,6 +5,7 @@ var reason: String = ""
 var card_name: String = ""
 var consumed_energy: int = 0
 var consumed_parts: int = 0
+var authority_reason: String = ""
 
 
 const REASON_SUCCESS: String = "success"
@@ -24,13 +25,15 @@ static func ok(p_card_name: String, p_energy: int = 0, p_parts: int = 0):
 	r.card_name = str(p_card_name)
 	r.consumed_energy = int(p_energy)
 	r.consumed_parts = int(p_parts)
+	r.authority_reason = REASON_SUCCESS
 	return r
 
 
-static func fail(p_reason: String, p_card_name: String = ""):
+static func fail(p_reason: String, p_card_name: String = "", p_authority_reason: String = ""):
 	var CardPlayResultScript = load("res://scripts/cardfront/cards/CardPlayResult.gd")
 	var r = CardPlayResultScript.new()
 	r.success = false
 	r.reason = str(p_reason)
 	r.card_name = str(p_card_name)
+	r.authority_reason = str(p_authority_reason) if p_authority_reason != "" else str(p_reason)
 	return r
