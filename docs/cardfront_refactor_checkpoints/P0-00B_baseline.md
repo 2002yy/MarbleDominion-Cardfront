@@ -7,7 +7,7 @@ Decision: **NO-GO**
 
 ```text
 Step: P0-00B Baseline Regression Capture
-Source commit: 2f2f754e559a66d3b94fb8adf573128bd2c323d3
+Source commit: 8ba51032a213bb71f05d181c19e1e92642eb845b
 Parent audit commit: ece2ed374544d7a70b443d3ac374d1950d0a3d35
 Original upstream source commit: fc56e21e0cf7ad8c79eaf9659afbda3e1f89e487
 Target step: P0-00B
@@ -18,7 +18,7 @@ Forbidden changes: gameplay behavior, Support implementation, map changes, refac
 Expected checkpoint: docs/cardfront_refactor_checkpoints/P0-00B_baseline.md
 ```
 
-The user changed the machine and repository engine authority during this step from the old CI pin to Godot `4.7.1-stable`. Commit `2f2f754` contains that non-gameplay authority update, the official Godot MCP `1.9.0` editor addon, and the Godot 4.7 UID metadata required for a warning-free source scan. All evidence below is bound to that commit. Evidence collected against the earlier 4.6.2 pin is not used for this decision.
+The user changed the machine and repository engine authority during this step from the old CI pin to Godot `4.7.1-stable`. Commit `2f2f754` contains that non-gameplay authority update, the official Godot MCP `1.9.0` editor addon, and the Godot 4.7 UID metadata required for a warning-free source scan. Commit `8ba5103` contains only regression-fixture determinism and teardown fixes found by this audit. The current evidence is bound to `8ba51032a213bb71f05d181c19e1e92642eb845b`. Evidence collected against the earlier 4.6.2 pin is not used for this decision.
 
 ## Environment and repository evidence
 
@@ -42,7 +42,7 @@ Godot_v4.7.1-stable_win64_console.exe
   --script res://scripts/tools/capture_cardfront_full_game.gd
 ```
 
-Result:
+Result against `2f2f754`:
 
 ```text
 exit=0
@@ -89,7 +89,7 @@ These prove the relevant code paths under a real Godot process. They are not a s
 
 The CI-order run performed editor import first and retained generated `.import` sidecars while executing all 98 unique runners in the active main workflow. Heavy balance runners were executed individually because a combined local tool batch exceeded 180 seconds.
 
-Result:
+Initial result against `2f2f754`:
 
 ```text
 97 runners: exit 0
@@ -107,7 +107,7 @@ player chamber after damage: expected 37, actual 33
 base volley projectile count: expected 6, actual 7
 ```
 
-The checkpoint does not decide whether the runtime tuning or the test expectations are stale. That authority reconciliation is required before P0-00B can pass; gameplay was not changed to make the test green.
+At that point the checkpoint did not decide whether runtime tuning or test expectations were stale. Authority reconciliation was required before P0-00B could pass; gameplay was not changed to make the test green.
 
 Exit-zero log debt observed in the same workflow:
 
@@ -115,6 +115,30 @@ Exit-zero log debt observed in the same workflow:
 - `CardfrontBattlefieldClickSelectionTestRunner.gd`: ObjectDB/resource leak warning/error at exit.
 - `CardfrontVfxLayerTestRunner.gd`: two warnings and one resource-leak error at exit.
 - `DeviceOverlayLayerTestRunner.gd`: two warnings and one resource-leak error at exit.
+
+Remediation audit found that `Main._ready()` loaded the developer's persisted Rapid Gunner preference while `CardfrontVerticalSliceFeedbackTestRunner.gd` assumed the frozen default Balanced Commander. The runner now pins both factions to the registry defaults, so its expected 40 health / 6 volley baseline is deterministic and still comes from the existing authority. No hero or gameplay value changed.
+
+The exit-log failures were test teardown defects: standalone overlay/VFX nodes were never freed, and feedback tests freed fixtures while short WAV playbacks were still active. The affected tests now release those objects explicitly. `CardfrontBattlefieldClickSelectionTestRunner.gd` was clean after the CI-order import and required no source change.
+
+Full rerun result on source commit `8ba5103`:
+
+```text
+98 runners: exit 0
+0 runners: exit nonzero
+0 runner logs: warning/error/resource/RID/ObjectDB leak
+Headless regression: PASS
+```
+
+Targeted verbose confirmation:
+
+| Runner | Result |
+| --- | --- |
+| `CardfrontVerticalSliceFeedbackTestRunner.gd` | PASS, 17 checks; exit 0 |
+| `CardfrontActionHintTestRunner.gd` | PASS, 33 checks; clean exit |
+| `CardfrontCardFeedbackTestRunner.gd` | PASS, 24 checks; clean exit |
+| `CardfrontBattlefieldClickSelectionTestRunner.gd` | PASS, 16 checks; clean exit |
+| `CardfrontVfxLayerTestRunner.gd` | PASS, 18 checks; clean exit |
+| `DeviceOverlayLayerTestRunner.gd` | PASS, 29 checks; clean exit |
 
 Balance telemetry debt:
 
@@ -137,20 +161,20 @@ An earlier local trial deleted generated `.import` sidecars before running tests
 | Automatic/upgrade spawn | Entity runners pass; capture helper uses direct spawn APIs, not an earned automatic/upgrade spawn | **BLOCKED** |
 | Two-lane / bridge baseline | Actual rendered battle capture visibly contains both bridge/lane presentations | **PASS** |
 | Loadout/Draft key show/hide | Draft visible and battle view visible in separate captures; Loadout and interactive hide/restore sequence absent | **BLOCKED** |
-| Warning/error/log baseline | Runtime capture is clean; editor is clean after UID import; main headless workflow has one nonzero regression and exit-zero leak logs | **FAIL** |
+| Warning/error/log baseline | Runtime capture and editor import are clean; all 98 active headless runners now exit 0 with clean logs; continuous played-session log remains uncaptured | **BLOCKED** |
 | Performance observation | Rendering device recorded; no valid FPS/frame-time sampling was taken | **BLOCKED** |
 
 ## Mandatory audit fields
 
 ```text
 Mandatory audit gates touched: P0-00B Baseline Regression Capture
-Audit status per gate: FAIL / BLOCKED
+Audit status per gate: BLOCKED
 Evidence bound to source commit: YES
 Unverified assumptions remaining: none are treated as passed; missing runtime observations are listed below
 Legacy authority still reachable: YES — expected baseline; live triggers still require capture
 Second-authority risk: NOT APPLICABLE to this evidence-only step
 Save/restore risk: P0-00A static risk remains; no new save/restore runtime evidence was captured
-Cross-system regression evidence: FAIL — CardfrontVerticalSliceFeedbackTestRunner exit 1
+Cross-system regression evidence: PASS — 98/98 active headless runners exit 0 with clean logs
 Manual evidence required before GO: YES
 ```
 
@@ -169,14 +193,14 @@ Using Godot 4.7.1 and this exact source commit (or a later explicit P0-00B remed
 9. Loadout and Draft UI visibility transitions with no stuck overlay.
 10. FPS/frame-time observation and the complete warning/error/log output for the session.
 
-Before those observations can support GO, the nonzero `CardfrontVerticalSliceFeedbackTestRunner` result must also be reconciled against the current frozen authority and rerun successfully. The exit-zero resource leak logs must be either fixed or explicitly accepted by the applicable test/log gate; they are not silently waived here.
+The previously nonzero `CardfrontVerticalSliceFeedbackTestRunner` and all observed exit-log leaks are reconciled and clean on source commit `8ba5103`. They no longer block P0-00B; the ten played-session observations above still do.
 
 ## Findings
 
 1. Godot 4.7.1 can parse, import, render Cardfront, load the MCP 1.9.0 editor plugin, and run the active test suite.
 2. Rendered evidence confirms the two-lane/bridge presentation and the current three-choice Draft surface.
 3. Automated coverage is substantial but cannot replace the mandatory player-operated runtime observations.
-4. The active main headless workflow currently contains a real nonzero regression in vertical-slice expectations.
+4. The active main headless workflow is now 98/98 exit-zero with clean logs after test-only determinism and teardown remediation.
 5. Existing balance audits intentionally pass their runner contract while reporting material threshold debt; those values are baseline observations, not P0-00B acceptance.
 
 ## Decision
@@ -189,4 +213,4 @@ Decision: NO-GO
 
 P0-00C and P0-01 are forbidden from this state.
 
-The **only allowed next step** is P0-00B remediation and completion on one source commit: reconcile the failing headless authority without changing gameplay merely to satisfy the test, rerun the affected regression, and collect every missing manual runtime observation above.
+The **only allowed next step** is to remain in P0-00B and collect every missing continuous player-operated runtime observation above on source commit `8ba5103` (or a later evidence-only P0-00B commit). P0-00C and P0-01 remain forbidden.
