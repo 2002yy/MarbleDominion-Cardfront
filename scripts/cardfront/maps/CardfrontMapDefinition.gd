@@ -2,6 +2,7 @@ extends RefCounted
 class_name CardfrontMapDefinition
 
 const GridExtentScript = preload("res://scripts/GridExtent.gd")
+const SupportMapMetadataScript = preload("res://scripts/cardfront/support/DeploymentSupportMapMetadata.gd")
 const SHAPE_RECT: String = "rect"
 const SHAPE_DIAMOND: String = "diamond"
 const OBJECTIVE_DESTROY_COMMAND_CHAMBER: String = "destroy_command_chamber"
@@ -65,6 +66,7 @@ static func validate(definition: Dictionary) -> Array:
 		errors.append("missing_strategy_identity")
 	if str(strategy_profile.get("opening_hint", "")) == "":
 		errors.append("missing_strategy_opening_hint")
+	errors.append_array(SupportMapMetadataScript.validate(definition))
 	return errors
 
 

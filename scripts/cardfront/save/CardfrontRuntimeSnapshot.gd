@@ -2,6 +2,7 @@ extends RefCounted
 class_name CardfrontRuntimeSnapshot
 
 const SCHEMA_VERSION: String = "2.0"
+const SupportStateCodecScript = preload("res://scripts/cardfront/support/SupportStateSnapshotCodec.gd")
 
 # v0.2 legacy fields (kept for backward compatibility tests)
 var resource_states: Dictionary = {}
@@ -22,6 +23,7 @@ var current_stronghold_bonuses: Dictionary = {}
 var current_gate_snapshot: Dictionary = {}
 var entity_snapshot: Dictionary = {}
 var territory_defense_state: Dictionary = {}
+var support_states: Dictionary = {}
 
 
 func to_dict() -> Dictionary:
@@ -43,6 +45,7 @@ func to_dict() -> Dictionary:
 		"current_gate_snapshot": current_gate_snapshot,
 		"entity_snapshot": entity_snapshot,
 		"territory_defense_state": territory_defense_state,
+		"support_states": SupportStateCodecScript.normalize_persistent(support_states),
 	}
 
 
@@ -64,6 +67,7 @@ static func from_dict(data: Dictionary):
 	snap.current_gate_snapshot = data.get("current_gate_snapshot", {})
 	snap.entity_snapshot = data.get("entity_snapshot", {})
 	snap.territory_defense_state = data.get("territory_defense_state", {})
+	snap.support_states = SupportStateCodecScript.normalize_persistent(data.get("support_states", {}))
 	return snap
 
 
