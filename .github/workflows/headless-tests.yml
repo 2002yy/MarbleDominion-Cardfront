@@ -130,6 +130,7 @@ jobs:
           - batch: Cardfront P0 support identity
             scripts: |
               CardfrontSupportIdentityTestRunner.gd
+              CardfrontSupportStateTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
