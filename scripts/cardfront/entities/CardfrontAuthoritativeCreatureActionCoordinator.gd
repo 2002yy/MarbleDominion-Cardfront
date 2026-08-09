@@ -72,16 +72,34 @@ func spawn_sapper_unit_at(owner_id: int, cell: Vector2i):
 	return sapper
 
 
-func spawn_repair_units(_owner_id: int, _amount: int = 2) -> Array:
-	push_error("Automatic creature spawning requires pre-resolved DeploymentRules cells")
-	return []
+func spawn_repair_units(owner_id: int, amount: int = 2) -> Array:
+	if runtime == null or not runtime.has_method("_resolve_spawn_cells"):
+		return []
+	var resolution: Dictionary = runtime._resolve_spawn_cells(owner_id, amount, {})
+	if not bool(resolution.get("allowed", false)):
+		return []
+	return spawn_repair_units_at(owner_id, resolution.get("cells", []) as Array)
 
 
-func spawn_armored_guard(_owner_id: int):
-	push_error("Automatic creature spawning requires a pre-resolved DeploymentRules cell")
-	return null
+func spawn_armored_guard(owner_id: int):
+	if runtime == null or not runtime.has_method("_resolve_spawn_cells"):
+		return null
+	var resolution: Dictionary = runtime._resolve_spawn_cells(owner_id, 1, {})
+	if not bool(resolution.get("allowed", false)):
+		return null
+	var cells: Array = resolution.get("cells", []) as Array
+	if cells.is_empty():
+		return null
+	return spawn_armored_guard_at(owner_id, cells[0] as Vector2i)
 
 
-func spawn_sapper_unit(_owner_id: int):
-	push_error("Automatic creature spawning requires a pre-resolved DeploymentRules cell")
-	return null
+func spawn_sapper_unit(owner_id: int):
+	if runtime == null or not runtime.has_method("_resolve_spawn_cells"):
+		return null
+	var resolution: Dictionary = runtime._resolve_spawn_cells(owner_id, 1, {})
+	if not bool(resolution.get("allowed", false)):
+		return null
+	var cells: Array = resolution.get("cells", []) as Array
+	if cells.is_empty():
+		return null
+	return spawn_sapper_unit_at(owner_id, cells[0] as Vector2i)
