@@ -7,7 +7,7 @@ Decision: **NO-GO**
 
 ```text
 Step: P0-00B Baseline Regression Capture
-Source commit: 8ba51032a213bb71f05d181c19e1e92642eb845b
+Source commit: 9faf518b7f7b9308df693d3e40bc23179c843801
 Parent audit commit: ece2ed374544d7a70b443d3ac374d1950d0a3d35
 Original upstream source commit: fc56e21e0cf7ad8c79eaf9659afbda3e1f89e487
 Target step: P0-00B
@@ -18,7 +18,7 @@ Forbidden changes: gameplay behavior, Support implementation, map changes, refac
 Expected checkpoint: docs/cardfront_refactor_checkpoints/P0-00B_baseline.md
 ```
 
-The user changed the machine and repository engine authority during this step from the old CI pin to Godot `4.7.1-stable`. Commit `2f2f754` contains that non-gameplay authority update, the official Godot MCP `1.9.0` editor addon, and the Godot 4.7 UID metadata required for a warning-free source scan. Commit `8ba5103` contains only regression-fixture determinism and teardown fixes found by this audit. The current evidence is bound to `8ba51032a213bb71f05d181c19e1e92642eb845b`. Evidence collected against the earlier 4.6.2 pin is not used for this decision.
+The user changed the machine and repository engine authority during this step from the old CI pin to Godot `4.7.1-stable`. Commit `2f2f754` contains that non-gameplay authority update, the official Godot MCP `1.9.0` editor addon, and the Godot 4.7 UID metadata required for a warning-free source scan. Commit `8ba5103` contains only regression-fixture determinism and teardown fixes found by this audit. Commit `9faf518` makes the packaged runtime bridge Godot 4.7.1-compatible and enables it as debug-only audit tooling. The current evidence is bound to `9faf518b7f7b9308df693d3e40bc23179c843801`. Evidence collected against the earlier 4.6.2 pin is not used for this decision.
 
 ## Environment and repository evidence
 
@@ -29,20 +29,32 @@ The user changed the machine and repository engine authority during this step fr
 - All four active workflows now download `Godot_v4.7.1-stable_win64.exe.zip`.
 - Editor plugin: official npm package `@yanhuifair/godot-mcp@1.9.0`, enabled at `res://addons/godot-mcp/plugin.cfg`.
 - Stable editor recheck after UID generation: exit `0`, warnings `0`, errors `0`; plugin loaded on `127.0.0.1:9876` and unloaded normally.
-- Runtime bridge script is present but is **not** registered as an autoload. P0-00B did not add a live-game node or listener to gameplay runtime.
+- Runtime bridge is registered as `godot_mcp_runtime`, listens only on loopback `127.0.0.1:9877`, and disables itself in non-debug exports.
 
 ### Godot MCP live-runtime probe
 
-After the automated remediation, the shared `godot_full` MCP successfully launched the 4.7.1 editor and a visible `Main.tscn` game process at 1280x720. The game reached `[StartMenu] Loaded scene StartMenu.tscn`, which is additional real-process boot evidence, but the probe could not inspect or operate the live game:
+The first shared `godot_full` probe successfully launched the 4.7.1 editor and a visible `Main.tscn` process at 1280x720. It reached `[StartMenu] Loaded scene StartMenu.tscn`, but live inspection initially failed:
 
 ```text
 runtime_screenshot -> RUNTIME_NOT_REACHABLE
 connect ECONNREFUSED 127.0.0.1:9877
 ```
 
-The repository intentionally has no runtime bridge autoload. In addition, the editor log shows that the packaged `addons/godot-mcp/runtime_bridge.gd` does not parse under the current 4.7.1 authority: its `_input` signature does not match the parent and four local `node` variables cannot infer a type. The editor also printed repeated `get_multiple_md5` file-access errors. The visible game boot printed current GDScript warnings including unused parameters/signals, integer division, and local/property shadowing across Cardfront and shared scripts.
+Audit remediation in `9faf518` renamed the handler that collided with Node's `_input(InputEvent) -> void`, added explicit `Node` return/local types, enabled the bridge autoload, and prevents its control port from opening in release exports. Godot 4.7.1 `--check-only` and a full editor load both report zero bridge parse errors.
 
-No runtime bridge was injected merely to manufacture evidence. These logs are now part of the P0-00B baseline and keep the live warning/error gate failed even though the headless runner matrix is clean.
+The second real-process probe proves:
+
+```text
+[godot-mcp-runtime] Listening on 127.0.0.1:9877
+runtime_ping: {"ok": true}
+runtime_get_tree: Main, 309 live nodes
+runtime_screenshot: success
+runtime bridge parse errors: 0
+```
+
+The screenshot shows an active Cardfront battle with the two-lane/bridge arena, HUD, Rapid Gunner player at 36/36 and volley 7, Balanced Commander AI at 40/40 and volley 6, 20/20/60 control, and 07:58 remaining. This is live runtime evidence but not proof of the missing player-operated menu and phase chain.
+
+The editor import still produced an intermittent `get_multiple_md5` file-access error, and the visible game boot printed 20 current GDScript warnings including unused parameters/signals, integer division, and local/property shadowing. Those logs keep the warning/error gate failed even though the bridge itself and headless runner matrix are clean.
 
 ## Rendered runtime capture
 
@@ -174,7 +186,7 @@ An earlier local trial deleted generated `.import` sidecars before running tests
 | Automatic/upgrade spawn | Entity runners pass; capture helper uses direct spawn APIs, not an earned automatic/upgrade spawn | **BLOCKED** |
 | Two-lane / bridge baseline | Actual rendered battle capture visibly contains both bridge/lane presentations | **PASS** |
 | Loadout/Draft key show/hide | Draft visible and battle view visible in separate captures; Loadout and interactive hide/restore sequence absent | **BLOCKED** |
-| Warning/error/log baseline | 98 active headless runners exit 0 with clean logs, but the MCP editor probe has runtime-bridge/file-access errors and visible Main boot has current GDScript warnings; continuous played-session log remains incomplete | **FAIL / BLOCKED** |
+| Warning/error/log baseline | 98 active headless runners and the MCP bridge are clean, but editor import has an intermittent file-access error and visible Main boot has 20 current GDScript warnings; continuous played-session log remains incomplete | **FAIL / BLOCKED** |
 | Performance observation | Rendering device recorded; no valid FPS/frame-time sampling was taken | **BLOCKED** |
 
 ## Mandatory audit fields
@@ -215,7 +227,7 @@ The previously nonzero `CardfrontVerticalSliceFeedbackTestRunner` and all observ
 3. Automated coverage is substantial but cannot replace the mandatory player-operated runtime observations.
 4. The active main headless workflow is now 98/98 exit-zero with clean logs after test-only determinism and teardown remediation.
 5. Existing balance audits intentionally pass their runner contract while reporting material threshold debt; those values are baseline observations, not P0-00B acceptance.
-6. The shared Godot MCP can launch the editor and game, but its packaged runtime bridge is not Godot 4.7.1-parse-clean and is not registered as an autoload; live MCP inspection therefore remains unavailable.
+6. The shared Godot MCP now launches and inspects the live game successfully on Godot 4.7.1; ping, a 309-node scene tree, and runtime screenshot are verified, with the control listener disabled for release exports.
 
 ## Decision
 
