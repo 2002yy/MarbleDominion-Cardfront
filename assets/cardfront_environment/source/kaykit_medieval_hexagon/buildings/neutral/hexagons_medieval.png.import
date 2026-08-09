@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bt5dyhxn7ohek"
-path="res://.godot/imported/hexagons_medieval.png-2ab9e95cc4395aef9970a57a25f1acc8.ctex"
+path.s3tc="res://.godot/imported/hexagons_medieval.png-2ab9e95cc4395aef9970a57a25f1acc8.s3tc.ctex"
+path.etc2="res://.godot/imported/hexagons_medieval.png-2ab9e95cc4395aef9970a57a25f1acc8.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/cardfront_environment/source/kaykit_medieval_hexagon/buildings/neutral/hexagons_medieval.png"
-dest_files=["res://.godot/imported/hexagons_medieval.png-2ab9e95cc4395aef9970a57a25f1acc8.ctex"]
+dest_files=["res://.godot/imported/hexagons_medieval.png-2ab9e95cc4395aef9970a57a25f1acc8.s3tc.ctex", "res://.godot/imported/hexagons_medieval.png-2ab9e95cc4395aef9970a57a25f1acc8.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -23,7 +25,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
