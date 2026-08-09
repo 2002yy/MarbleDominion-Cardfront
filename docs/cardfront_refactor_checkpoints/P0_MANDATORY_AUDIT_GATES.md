@@ -11,6 +11,8 @@
 
 2026-08-09 起，`AUDIT REQUIRED` 默认表示“记录为待验收/待复核”，不自动阻断每个 micro-step。人工产品负责人可以在已知 follow-up 明确落盘后批准继续施工。完整矩阵只在 batch、milestone、release candidate 或人工点名时执行；普通实现循环使用与改动直接相关的 focused checks。不得把未检查项写成通过，但不得为了凑齐非关键证据而反复中断开发。
 
+2026-08-10 起，P0 审计进一步冻结为 **structured-evidence-first**：默认不使用视频作为工程验收材料。任何旧 checkpoint、旧 follow-up 或历史说明中要求“连续录像 / video evidence / 录屏”的内容，若与本文冲突，以本文为准并视为 **SUPERSEDED**。
+
 ---
 
 # 1. 总规则
@@ -31,12 +33,87 @@ NOT CHECKED BUT ASSUMED OK
 ```text
 Source commit:
 Target step:
-Evidence type: static / automated / manual / performance / save-restore
+Evidence type: static / automated / runtime-probe / log / screenshot / manual / performance / save-restore
 Evidence source:
 Decision: PASS / FAIL / BLOCKED
 ```
 
 不同 commit 的测试、截图、人工试玩、性能数据不得拼成最终质量 `GO`；人工推进验收可以引用最近有效证据并明确其 commit 与剩余 follow-up。
+
+## 1.1 Evidence Priority — 默认证据等级
+
+所有后续 Agent 必须按下列优先级取证。**高优先级证据已经足以证明某个事实时，禁止为了“证据更完整”继续要求更低优先级、高 token / 高人工成本的材料。**
+
+1. **自动测试 / contract test**
+2. **结构化 runtime probe**
+   - current phase
+   - current support state
+   - spawn source
+   - resolved cell
+   - deployment / connectivity revision
+   - authority reason code
+3. **控制台日志 / JSON dump**
+4. **必要时一两张截图**
+   - 仅用于 UI、布局、合法区视觉、遮挡、可读性等必须“看”的事实
+   - 不用截图替代可结构化验证的 gameplay truth
+5. **人工试玩后一句话确认**
+   - 例如：`实际试玩 Draft -> Aim -> Volley 正常，无卡死。`
+   - 不要求人工整理长篇观察记录
+6. **视频**
+   - **默认禁止作为 P0 工程验收要求**
+   - 只有产品负责人明确要求分析动态动画、节奏、短时间交互竞态、瞬态视觉问题时才允许使用
+   - Agent 不得自行要求用户录制连续对局视频
+
+### 1.1.1 证据选择规则
+
+- 纯规则、authority、save、graph、deployment、AI information boundary 等工程事实：优先 1～3，通常不得要求视频。
+- UI 静态布局：优先 screenshot，不要求视频。
+- 动画节奏、过渡时序、仅在连续时间中出现的交互问题：在低成本 probe/log 无法证明时，才可由产品负责人明确选择视频。
+- 人工体验验收只需要结论，不要求把整段试玩重新交给 AI 消费。
+- “AI 看视频更直观”不是合法理由。
+- “已经有视频工具”不是合法理由。
+
+## 1.2 P0-04E Structured Trace Contract
+
+P0-04E `Automatic / Upgrade Entity Spawn` 属于纯工程规则切换，**禁止把视频作为 GO 证据**。
+
+成功路径至少应通过 test / runtime probe / structured log 得到等价 trace：
+
+```text
+old auto spawn request
+-> current DeploymentRules legal set
+-> deterministic resolver
+-> chosen support_id
+-> chosen cell
+-> reason
+```
+
+失败路径至少验证：
+
+```text
+no legal deployment source
+-> no_valid_deployment_source
+-> no fallback to old route slot
+-> no fallback to origin
+-> no fallback to arbitrary owned cell
+```
+
+建议结构化字段至少包括：
+
+```text
+owner_id
+request_kind
+preferred_support_id
+preferred_route_role
+legal_candidate_count
+resolved_support_id
+resolved_cell
+deployment_revision
+reason_code
+fallback_used
+```
+
+其中 `fallback_used` 对非法路径必须证明旧 route-slot / origin / arbitrary-owned-cell fallback 未被调用。
 
 ---
 
@@ -70,7 +147,7 @@ Decision: NO-GO
 
 **MANUAL BASELINE ACCEPTANCE**
 
-静态源码不能替代人工对核心体验的判断，但下列各项不再要求在进入下一施工 step 前全部形成连续录像。
+静态源码不能替代对核心运行状态的验证，但下列各项**不要求连续录像**。按 §1.1 Evidence Priority 取证；能由测试、runtime probe、日志证明的，不再额外要求截图或视频。
 
 验收时优先观察：
 
@@ -89,6 +166,8 @@ Decision: NO-GO
 未观察到的项目必须记录为 follow-up，不得伪写成 PASS。若游戏可启动、核心循环可操作、没有数据损坏/解析失败，人工可以批准 P0-00B 继续推进；其余细项在后续相关功能施工或 milestone 回归时补验。完整 headless regression 不在每个修复后重复运行。
 
 缺运行证据：记录为 `FOLLOW-UP / AUDIT REQUIRED`；只有人工拒绝验收或触发总规则中的硬阻断条件时才标记 `BLOCKED`。
+
+**禁止把 P0-00B follow-up 重新解释成“用户必须录一段完整对局视频”。**
 
 ## P0-00C — Frozen Delta Ledger
 
@@ -272,6 +351,8 @@ AMENDMENT REQUIRED
 P0-04 = NO-GO
 ```
 
+P0-04E 的证据必须优先使用 §1.2 的 structured trace；不得要求视频证明 spawn legality。
+
 ---
 
 # 7. P0-05：Legacy Stronghold Retirement 审计
@@ -326,6 +407,8 @@ P0-05 = NO-GO
 - 选中部署卡时才显示合法半透明区；
 - visual cache 不能成为 gameplay truth。
 
+视觉验收默认使用一两张静态截图；只有动态动画/时序问题且产品负责人明确要求时才使用视频。
+
 ## P0-07 Draft Preview Bug
 
 审计：
@@ -378,9 +461,11 @@ P0-11 不允许由“刚实现功能的同一个局部 unit test”自我认证�
 1. targeted new-contract tests
 2. affected existing cross-system regression
 3. active CI/headless evidence
-4. manual north-star evidence
+4. north-star acceptance evidence
 5. forbidden-diff / legacy-global-search evidence
 ```
+
+其中第 4 项默认按以下顺序取得：structured runtime probe / logs -> 必要截图 -> 人工一句话试玩确认。**视频不是 P0-11 默认所需证据。**
 
 性能相关另列真实证据；当前 performance smoke 的“能加载”不能冒充 FPS benchmark。
 
@@ -410,12 +495,14 @@ P1 allowed start commit: <sha>
 Mandatory audit gates touched:
 Audit status per gate: PASS / FAIL / BLOCKED / NOT APPLICABLE
 Evidence bound to source commit: YES/NO
+Highest-priority evidence used: automated / runtime-probe / log / screenshot / manual
 Unverified assumptions remaining:
 Legacy authority still reachable:
 Second-authority risk:
 Save/restore risk:
 Cross-system regression evidence:
 Manual evidence required before GO:
+Video requested explicitly by product owner: YES/NO
 ```
 
 如果 `Unverified assumptions remaining` 中存在会改变 gameplay authority、合法性、存档真相、AI 信息边界或 P0/P1 scope 的事项：
@@ -424,8 +511,10 @@ Manual evidence required before GO:
 Decision != GO
 ```
 
+`Video requested explicitly by product owner` 默认必须为 `NO`。Agent 不得为了填满 checkpoint 自行把它改成 `YES`。
+
 ---
 
 # 11. 最终执行口令
 
-> **能现在审计的，现在审计；不能现在审计的，必须在规划/Checkpoint 中醒目标红并阻断 GO。未经验证的关键事实永远不自动升级成“已确认”。**
+> **能自动证明的，不要求人工；能结构化证明的，不要求截图；能静态截图证明的，不要求视频。视频默认禁止，只有产品负责人明确点名动态问题时才启用。未经验证的关键事实永远不自动升级成“已确认”。**
