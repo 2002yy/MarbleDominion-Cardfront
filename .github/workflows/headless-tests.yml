@@ -149,6 +149,9 @@ jobs:
               CardfrontSupportConnectivityResolverTestRunner.gd
               CardfrontSupportConnectivityTruthTestRunner.gd
               CardfrontSupportConnectivityCacheTestRunner.gd
+          - batch: Cardfront P0 deployment pure
+            scripts: |
+              CardfrontDeploymentContractTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd

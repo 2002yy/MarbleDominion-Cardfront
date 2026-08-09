@@ -15,6 +15,12 @@ const REASON_NOT_OWNED_BORDER: String = "not_owned_border"
 const REASON_REGION_CONTROL_TOO_LOW: String = "region_control_too_low"
 const REASON_NOT_CONTESTED_REGION: String = "not_contested_region"
 const REASON_NOT_ENEMY_REGION: String = "not_enemy_region"
+const REASON_SUPPORT_NOT_CLAIMED: String = "support_not_claimed"
+const REASON_SUPPORT_OFFLINE: String = "support_offline"
+const REASON_SUPPORT_DISCONNECTED: String = "support_disconnected"
+const REASON_OUTSIDE_DEPLOYMENT_ZONE: String = "outside_deployment_zone"
+const REASON_WRONG_DEPLOY_DIRECTION: String = "wrong_deploy_direction"
+const REASON_NO_VALID_DEPLOYMENT_SOURCE: String = "no_valid_deployment_source"
 
 
 static func evaluate(region_map, battlefield, query):
@@ -35,6 +41,8 @@ static func evaluate(region_map, battlefield, query):
 			return _evaluate_contested_region(region_map, battlefield, query, resolved_region_id)
 		DeploymentRuleTypeScript.ENEMY_REGION:
 			return _evaluate_enemy_region(region_map, battlefield, query, resolved_region_id)
+		DeploymentRuleTypeScript.SUPPORT_NETWORK:
+			return _make_result(false, REASON_NO_VALID_DEPLOYMENT_SOURCE, resolved_region_id, 0)
 		_:
 			return _make_result(false, REASON_INVALID_RULE_TYPE, resolved_region_id, 0)
 
@@ -179,10 +187,21 @@ static func _is_inside_battlefield(battlefield, cell: Vector2i) -> bool:
 	return col is Array and cell.y < (col as Array).size()
 
 
-static func _make_result(allowed: bool, reason: String, region_id: int, owner_percent: int):
+static func _make_result(
+	allowed: bool,
+	reason: String,
+	region_id: int,
+	owner_percent: int,
+	resolved_support_id: String = "",
+	source_kind: String = DeploymentResultScript.SOURCE_NONE,
+	debug_explanation: String = ""
+):
 	var result = DeploymentResultScript.new()
 	result.allowed = allowed
 	result.reason = reason
 	result.region_id = region_id
 	result.owner_percent = owner_percent
+	result.resolved_support_id = str(resolved_support_id)
+	result.source_kind = str(source_kind)
+	result.debug_explanation = str(debug_explanation) if debug_explanation != "" else str(reason)
 	return result
