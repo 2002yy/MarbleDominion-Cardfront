@@ -157,6 +157,7 @@ jobs:
               CardfrontDeploymentPlayerCommitTestRunner.gd
               CardfrontDeploymentPreviewParityTestRunner.gd
               CardfrontDeploymentAiParityTestRunner.gd
+              CardfrontDeploymentAutomaticSpawnTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
