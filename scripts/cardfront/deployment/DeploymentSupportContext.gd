@@ -6,7 +6,11 @@ const SupportIdsScript = preload("res://scripts/cardfront/support/CardfrontSuppo
 const GridExtentScript = preload("res://scripts/GridExtent.gd")
 
 
-static func core_only(map_definition: Dictionary, side: int) -> Dictionary:
+static func core_only(
+	map_definition: Dictionary,
+	side: int,
+	deployment_revision: int = 0
+) -> Dictionary:
 	var extent: Vector2i = GridExtentScript.from_config(map_definition, Vector2i.ZERO)
 	var core_support_id: String = _core_support_id(side)
 	var candidate_cells: Array[Vector2i] = []
@@ -27,6 +31,7 @@ static func core_only(map_definition: Dictionary, side: int) -> Dictionary:
 	known_support_ids.sort()
 	return {
 		"side": side,
+		"deployment_revision": maxi(0, int(deployment_revision)),
 		"core_source": {
 			"support_id": core_support_id,
 			"candidate_cells": candidate_cells,
@@ -37,8 +42,14 @@ static func core_only(map_definition: Dictionary, side: int) -> Dictionary:
 	}
 
 
-static func with_online_supports(map_definition: Dictionary, side: int, online_support_ids: Array) -> Dictionary:
-	var context: Dictionary = core_only(map_definition, side)
+static func with_online_supports(
+	map_definition: Dictionary,
+	side: int,
+	online_support_ids: Array,
+	support_depth_by_id: Dictionary = {},
+	deployment_revision: int = 0
+) -> Dictionary:
+	var context: Dictionary = core_only(map_definition, side, deployment_revision)
 	var requested_online: Dictionary = {}
 	for support_id in online_support_ids:
 		requested_online[str(support_id)] = true
@@ -54,6 +65,8 @@ static func with_online_supports(map_definition: Dictionary, side: int, online_s
 			"anchor_cell": definition.get("anchor_cell", Vector2i.ZERO),
 			"forward": definition.get(direction_key, Vector2i.ZERO),
 			"profile_id": str(definition.get("deployment_profile_id", "")),
+			"route_role": str(definition.get("route_role", "")),
+			"graph_depth": maxi(0, int(support_depth_by_id.get(support_id, 0))),
 		})
 	sources.sort_custom(func(left, right): return str(left.support_id) < str(right.support_id))
 	context["support_sources"] = sources
