@@ -139,6 +139,7 @@ jobs:
               CardfrontSupportCaptureProfileTestRunner.gd
               CardfrontSupportCaptureAggregatorTestRunner.gd
               CardfrontSupportCaptureStateMachineTestRunner.gd
+              CardfrontSupportCaptureOccupancyAdapterTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
