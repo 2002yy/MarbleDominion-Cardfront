@@ -48,6 +48,7 @@ func _test_default_schema_shape() -> void:
 		"round_active",
 		"round_number",
 		"schema_version",
+		"support_states",
 		"target_bias_state",
 		"territory_defense_state",
 		"used_card_ids",
@@ -69,6 +70,7 @@ func _test_default_schema_shape() -> void:
 	_assert.that(payload.get("current_gate_snapshot") is Dictionary, "snapshot schema: current_gate_snapshot should be a dictionary")
 	_assert.that(payload.get("entity_snapshot") is Dictionary, "snapshot schema: entity_snapshot should be a dictionary")
 	_assert.that(payload.get("territory_defense_state") is Dictionary, "snapshot schema: territory_defense_state should be a dictionary")
+	_assert.that(payload.get("support_states") is Dictionary, "snapshot schema: support_states should be a dictionary")
 
 
 func _test_partial_payload_uses_defaults() -> void:
@@ -108,6 +110,7 @@ func _test_roundtrip_preserves_v02_fields() -> void:
 		"current_gate_snapshot": {},
 		"entity_snapshot": {},
 		"territory_defense_state": {},
+		"support_states": {},
 	}
 	var payload: Dictionary = CardfrontRuntimeSnapshotScript.from_dict(source).to_dict()
 
@@ -126,6 +129,7 @@ func _test_v03_field_defaults() -> void:
 	_assert.eq(payload.get("current_offers"), {}, "v03 defaults: current_offers should default to empty dict")
 	_assert.eq(payload.get("entity_snapshot"), {}, "v03 defaults: entity_snapshot should default to empty dict")
 	_assert.eq(payload.get("territory_defense_state"), {}, "v03 defaults: territory_defense_state should default to empty dict")
+	_assert.eq(payload.get("support_states"), {}, "support defaults: support_states should default to empty dict")
 
 
 func _test_v03_roundtrip() -> void:
@@ -150,6 +154,7 @@ func _test_v03_roundtrip() -> void:
 		"current_gate_snapshot": {0: {"state": "open", "openness": 1.0}},
 		"entity_snapshot": {"entities": [], "building_slots": {}},
 		"territory_defense_state": {"owner_caps": {1: 2, 2: 1}, "defense_initialized": true},
+		"support_states": {},
 	}
 	var payload: Dictionary = CardfrontRuntimeSnapshotScript.from_dict(source).to_dict()
 
