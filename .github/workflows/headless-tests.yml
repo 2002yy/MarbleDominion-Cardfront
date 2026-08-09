@@ -131,6 +131,7 @@ jobs:
             scripts: |
               CardfrontSupportIdentityTestRunner.gd
               CardfrontSupportStateTestRunner.gd
+              CardfrontSupportRegionMapperTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
