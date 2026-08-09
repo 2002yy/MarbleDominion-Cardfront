@@ -31,6 +31,19 @@ The user changed the machine and repository engine authority during this step fr
 - Stable editor recheck after UID generation: exit `0`, warnings `0`, errors `0`; plugin loaded on `127.0.0.1:9876` and unloaded normally.
 - Runtime bridge script is present but is **not** registered as an autoload. P0-00B did not add a live-game node or listener to gameplay runtime.
 
+### Godot MCP live-runtime probe
+
+After the automated remediation, the shared `godot_full` MCP successfully launched the 4.7.1 editor and a visible `Main.tscn` game process at 1280x720. The game reached `[StartMenu] Loaded scene StartMenu.tscn`, which is additional real-process boot evidence, but the probe could not inspect or operate the live game:
+
+```text
+runtime_screenshot -> RUNTIME_NOT_REACHABLE
+connect ECONNREFUSED 127.0.0.1:9877
+```
+
+The repository intentionally has no runtime bridge autoload. In addition, the editor log shows that the packaged `addons/godot-mcp/runtime_bridge.gd` does not parse under the current 4.7.1 authority: its `_input` signature does not match the parent and four local `node` variables cannot infer a type. The editor also printed repeated `get_multiple_md5` file-access errors. The visible game boot printed current GDScript warnings including unused parameters/signals, integer division, and local/property shadowing across Cardfront and shared scripts.
+
+No runtime bridge was injected merely to manufacture evidence. These logs are now part of the P0-00B baseline and keep the live warning/error gate failed even though the headless runner matrix is clean.
+
 ## Rendered runtime capture
 
 Command:
@@ -161,14 +174,14 @@ An earlier local trial deleted generated `.import` sidecars before running tests
 | Automatic/upgrade spawn | Entity runners pass; capture helper uses direct spawn APIs, not an earned automatic/upgrade spawn | **BLOCKED** |
 | Two-lane / bridge baseline | Actual rendered battle capture visibly contains both bridge/lane presentations | **PASS** |
 | Loadout/Draft key show/hide | Draft visible and battle view visible in separate captures; Loadout and interactive hide/restore sequence absent | **BLOCKED** |
-| Warning/error/log baseline | Runtime capture and editor import are clean; all 98 active headless runners now exit 0 with clean logs; continuous played-session log remains uncaptured | **BLOCKED** |
+| Warning/error/log baseline | 98 active headless runners exit 0 with clean logs, but the MCP editor probe has runtime-bridge/file-access errors and visible Main boot has current GDScript warnings; continuous played-session log remains incomplete | **FAIL / BLOCKED** |
 | Performance observation | Rendering device recorded; no valid FPS/frame-time sampling was taken | **BLOCKED** |
 
 ## Mandatory audit fields
 
 ```text
 Mandatory audit gates touched: P0-00B Baseline Regression Capture
-Audit status per gate: BLOCKED
+Audit status per gate: FAIL / BLOCKED
 Evidence bound to source commit: YES
 Unverified assumptions remaining: none are treated as passed; missing runtime observations are listed below
 Legacy authority still reachable: YES — expected baseline; live triggers still require capture
@@ -202,6 +215,7 @@ The previously nonzero `CardfrontVerticalSliceFeedbackTestRunner` and all observ
 3. Automated coverage is substantial but cannot replace the mandatory player-operated runtime observations.
 4. The active main headless workflow is now 98/98 exit-zero with clean logs after test-only determinism and teardown remediation.
 5. Existing balance audits intentionally pass their runner contract while reporting material threshold debt; those values are baseline observations, not P0-00B acceptance.
+6. The shared Godot MCP can launch the editor and game, but its packaged runtime bridge is not Godot 4.7.1-parse-clean and is not registered as an autoload; live MCP inspection therefore remains unavailable.
 
 ## Decision
 
@@ -213,4 +227,4 @@ Decision: NO-GO
 
 P0-00C and P0-01 are forbidden from this state.
 
-The **only allowed next step** is to remain in P0-00B and collect every missing continuous player-operated runtime observation above on source commit `8ba5103` (or a later evidence-only P0-00B commit). P0-00C and P0-01 remain forbidden.
+The **only allowed next step** is to remain in P0-00B: collect every missing continuous player-operated runtime observation and reconcile the newly captured editor/game warning-error baseline using audit tooling or manual recording only. P0-00C and P0-01 remain forbidden.
