@@ -24,6 +24,21 @@ The user changed the machine and repository engine authority during this step fr
 
 The product owner accepted this baseline for continued development with the gaps below retained as explicit follow-ups. This is a progress decision, not a claim that every baseline item passed or that the game reached final quality. P0 work must use focused checks during implementation and defer full regression/manual matrices to batch, milestone, release-candidate, or explicitly requested acceptance points.
 
+## 2026-08-10 evidence-policy supersession
+
+The old requirement to later provide **one continuous duel recording / video evidence** is **SUPERSEDED** by `P0_MANDATORY_AUDIT_GATES.md`.
+
+Default evidence priority is now:
+
+1. automated / contract tests;
+2. structured runtime probes;
+3. console logs / JSON dumps;
+4. one or two screenshots only when a fact is inherently visual;
+5. one-line product-owner play confirmation when experiential judgment is still needed;
+6. video only when the product owner explicitly requests analysis of animation, timing, transient interaction, or another genuinely dynamic issue.
+
+No Agent may reinterpret the historical follow-ups below as a requirement for the user to record or upload a continuous gameplay video. When a higher-priority evidence type proves a fact, lower-priority evidence must not be requested merely for completeness.
+
 ## Environment and repository evidence
 
 - Engine: `Godot_v4.7.1-stable_win64_console.exe`.
@@ -58,7 +73,7 @@ runtime bridge parse errors: 0
 
 The screenshot shows an active Cardfront battle with the two-lane/bridge arena, HUD, Rapid Gunner player at 36/36 and volley 7, Balanced Commander AI at 40/40 and volley 6, 20/20/60 control, and 07:58 remaining. This is live runtime evidence but not proof of the missing player-operated menu and phase chain.
 
-The warning-remediation launch against `87024a3` reached the StartMenu with the runtime bridge listening and reported `warning_count=0` and `error_count=0`. The 20 GDScript warnings (unused parameters/signals, intentional integer division, and local/property shadowing) are therefore closed. The two intermittent `get_multiple_md5` file-access errors occurred while Godot auto-detected two shared atlases as 3D textures. Their import settings are now explicitly VRAM Compressed with mipmaps and a clean editor import no longer reproduces either the file-access errors or the two auto-detection notices. The absent continuous played-session log remains a manual follow-up.
+The warning-remediation launch against `87024a3` reached the StartMenu with the runtime bridge listening and reported `warning_count=0` and `error_count=0`. The 20 GDScript warnings (unused parameters/signals, intentional integer division, and local/property shadowing) are therefore closed. The two intermittent `get_multiple_md5` file-access errors occurred while Godot auto-detected two shared atlases as 3D textures. Their import settings are now explicitly VRAM Compressed with mipmaps and a clean editor import no longer reproduces either the file-access errors or the two auto-detection notices. Remaining played-session observations are structured/manual follow-ups under the 2026-08-10 evidence policy, not a video requirement.
 
 ## Rendered runtime capture
 
@@ -112,7 +127,7 @@ Thirteen targeted runners completed with exit `0`, no warning and no error:
 | `CardfrontNeutralCreatureTestRunner.gd` | PASS, 30 checks |
 | `CardfrontRuntimeSnapshotTestRunner.gd` | PASS, 37 checks |
 
-These prove the relevant code paths under a real Godot process. They are not a substitute for the required contiguous runtime/manual evidence.
+These prove the relevant code paths under a real Godot process. Remaining experiential gaps should be closed with the highest-priority applicable evidence type; contiguous recording is not required.
 
 ### Active `headless-tests.yml` regression
 
@@ -192,7 +207,7 @@ An earlier local trial deleted generated `.import` sidecars before running tests
 | Automatic/upgrade spawn | Entity runners pass; capture helper uses direct spawn APIs, not an earned automatic/upgrade spawn | **FOLLOW-UP** |
 | Two-lane / bridge baseline | Actual rendered battle capture visibly contains both bridge/lane presentations | **PASS** |
 | Loadout/Draft key show/hide | Draft visible and battle view visible in separate captures; Loadout and interactive hide/restore sequence absent | **FOLLOW-UP** |
-| Warning/error/log baseline | Real Main boot now has 0 GDScript warnings and 0 errors; 98/98 active runners exit 0 and the remediated outlier has a clean verbose rerun. Explicit 3D atlas import settings eliminate the reproduced `get_multiple_md5`/auto-detection startup messages; the continuous played-session log remains incomplete | **FOLLOW-UP** |
+| Warning/error/log baseline | Real Main boot now has 0 GDScript warnings and 0 errors; 98/98 active runners exit 0 and the remediated outlier has a clean verbose rerun. Explicit 3D atlas import settings eliminate the reproduced `get_multiple_md5`/auto-detection startup messages; continuous video/log capture is not required | **FOLLOW-UP** |
 | Performance observation | Rendering device recorded; no valid FPS/frame-time sampling was taken | **FOLLOW-UP** |
 
 ## Mandatory audit fields
@@ -202,35 +217,42 @@ Mandatory audit gates touched: P0-00B Baseline Regression Capture
 Audit status per gate: MANUALLY ACCEPTED WITH FOLLOW-UPS
 Evidence bound to source commit: YES
 Unverified assumptions remaining: none are treated as passed; missing runtime observations are non-blocking follow-ups listed below
-Legacy authority still reachable: YES — expected baseline; live triggers still require capture
+Legacy authority still reachable: YES — expected baseline; live triggers still require structured evidence where relevant
 Second-authority risk: NOT APPLICABLE to this evidence-only step
 Save/restore risk: P0-00A static risk remains; no new save/restore runtime evidence was captured
 Cross-system regression evidence: PASS — 98/98 active headless runners exit 0; the sole teardown-log outlier was remediated and independently rerun clean
-Manual evidence required before final quality acceptance: YES; not required before P0-00C progress
+Manual evidence required before final quality acceptance: ONLY where tests/probes/logs/screenshots cannot answer the experiential question; no default video requirement
+Video requested explicitly by product owner: NO
 ```
 
-## Deferred manual acceptance follow-ups
+## Deferred evidence follow-ups — structured-first, no video by default
 
-Using Godot 4.7.1 and source commit `616cce19b7fd9ac5d1ae07764ebe5302f81169e4` (or a later explicit P0-00B remediation commit), record one continuous duel session with console output or video/screenshots that shows:
+The former “record one continuous duel session with console output or video/screenshots” instruction is **SUPERSEDED**.
 
-1. StartMenu -> Cardfront -> prematch Loadout/map/hero -> confirmed duel entry.
-2. A complete Draft -> Aim -> Volley/Execution cycle, including the related UI show/hide transitions.
-3. Command Point visible before and after a real gain/spend event.
-4. A real old Factory or Energy Stronghold bonus affecting a volley, and a Lab activation producing four choices; also capture the normal three-choice case.
-5. The current peek behavior/bug reproduction and restoration.
-6. At least one normal Creature action caused by round progression rather than a direct debug spawn call.
-7. At least one automatic or upgrade-earned spawn, including its selected cell and fallback behavior if applicable.
-8. Both bridge/lane behaviors during real volley execution.
-9. Loadout and Draft UI visibility transitions with no stuck overlay.
-10. FPS/frame-time observation and the complete warning/error/log output for the session.
+Close the remaining baseline questions independently with the cheapest reliable evidence:
 
-The previously nonzero `CardfrontVerticalSliceFeedbackTestRunner`, the 20 real-start GDScript warnings, all observed runner exit-log leaks, and the two atlas-related editor startup errors are reconciled. The ten played-session observations above remain follow-ups for later milestone/manual acceptance and do not block P0-00C.
+1. `StartMenu -> Cardfront -> prematch -> duel entry`: runtime phase/state probe or focused integration test; optional one-line manual confirmation.
+2. `Draft -> Aim -> Volley/Execution`: phase-transition contract/runtime probe; one-line manual confirmation only if interaction feel remains in question.
+3. Command Point gain/spend: structured before/after state dump or contract test.
+4. Legacy Factory/Energy/Lab behavior: automated legacy regression or structured volley/Draft state dump until P0-05 intentionally retires the behavior.
+5. Peek behavior: UI regression test; one or two screenshots only if geometry/layout cannot be asserted structurally.
+6. Normal Creature action: entity/round runtime trace showing action source and resulting cell/state.
+7. Automatic or upgrade-earned spawn: structured spawn trace showing request, legal candidate set/count, resolved source/cell, revision and reason. For P0-04E additionally prove no fallback to old route slot/origin/arbitrary owned cell.
+8. Bridge/lane behavior: existing deterministic runtime/test evidence; screenshot only for presentation-specific questions.
+9. Loadout/Draft show/hide: UI state assertion or runtime tree/visibility dump; screenshot only for visual overlap/stuck-overlay questions.
+10. Performance/log baseline: frame-time/FPS counters plus complete console/log output; no video required.
+
+If the product owner personally plays a milestone build, a concise statement such as `实际试玩 Draft -> Aim -> Volley 正常，无卡死` is sufficient as the manual experiential note unless a specific defect needs deeper reproduction.
+
+Video may be introduced only after the product owner explicitly requests analysis of a genuinely dynamic issue such as animation rhythm, short-lived interaction timing, transition flicker, or a transient race that lower-cost evidence cannot capture.
+
+The previously nonzero `CardfrontVerticalSliceFeedbackTestRunner`, the 20 real-start GDScript warnings, all observed runner exit-log leaks, and the two atlas-related editor startup errors are reconciled. The remaining observations stay as milestone follow-ups and do not block P0-00C merely because no video exists.
 
 ## Findings
 
 1. Godot 4.7.1 can parse, import, render Cardfront, load the MCP 1.9.0 editor plugin, and run the active test suite.
 2. Rendered evidence confirms the two-lane/bridge presentation and the current three-choice Draft surface.
-3. Automated coverage is substantial but cannot replace the mandatory player-operated runtime observations.
+3. Automated coverage is substantial. Remaining runtime/experiential gaps must use the structured-evidence hierarchy; continuous video is neither required nor preferred.
 4. The active main headless workflow is 98/98 exit-zero; its sole post-warning-cleanup teardown-log outlier has a clean targeted verbose rerun after remediation.
 5. Existing balance audits intentionally pass their runner contract while reporting material threshold debt; those values are baseline observations, not P0-00B acceptance.
 6. The shared Godot MCP now launches and inspects the live game successfully on Godot 4.7.1; ping, a 309-node scene tree, and runtime screenshot are verified, with the control listener disabled for release exports.
@@ -245,4 +267,4 @@ Decision: GO (MANUAL PROGRESS ACCEPTANCE)
 
 This decision allows P0-00C to start. It does not mark unobserved items as passed and does not waive final batch/milestone acceptance.
 
-The **only allowed next step** is P0-00C Frozen Delta Ledger. During implementation, run focused checks proportional to the current diff; defer the full regression/manual matrix to the next batch or milestone acceptance point unless the product owner explicitly requests it sooner. P0-01 remains gated by the rest of the P0-00 pre-implementation sequence.
+The **only allowed next step** recorded by this historical checkpoint was P0-00C Frozen Delta Ledger. Current implementation must follow the latest checkpoint chain. During implementation, run focused checks proportional to the current diff and use the evidence priority in `P0_MANDATORY_AUDIT_GATES.md`; do not request continuous gameplay recording unless the product owner explicitly asks for video analysis.
