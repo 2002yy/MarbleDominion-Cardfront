@@ -217,6 +217,9 @@ jobs:
         shell: pwsh
         run: |
           $scripts = "${{ matrix.scripts }}" -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+          if ($scripts.Count -eq 0) {
+            throw "Headless test batch resolved to zero scripts."
+          }
           $artifactDir = Join-Path "${{ github.workspace }}" "artifacts\headless\${{ strategy.job-index }}"
           New-Item -ItemType Directory -Path $artifactDir -Force | Out-Null
 
