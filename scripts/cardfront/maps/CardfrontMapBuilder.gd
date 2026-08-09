@@ -2,11 +2,14 @@ extends RefCounted
 class_name CardfrontMapBuilder
 
 const CardfrontMapDefinitionScript = preload("res://scripts/cardfront/maps/CardfrontMapDefinition.gd")
+const SupportMapMetadataScript = preload("res://scripts/cardfront/support/DeploymentSupportMapMetadata.gd")
 const GridExtentScript = preload("res://scripts/GridExtent.gd")
 
 
 static func apply_to_region_map(region_map, definition: Dictionary) -> bool:
 	if region_map == null or definition.is_empty():
+		return false
+	if not SupportMapMetadataScript.validate(definition).is_empty():
 		return false
 	var map_grid_extent := GridExtentScript.from_config(definition, Vector2i.ZERO)
 	if map_grid_extent.x <= 0 or map_grid_extent.y <= 0:

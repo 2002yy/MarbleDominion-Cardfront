@@ -6,6 +6,8 @@ const CardfrontMapDefinitionScript = preload("res://scripts/cardfront/maps/Cardf
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
+const SupportDefinitionScript = preload("res://scripts/cardfront/support/DeploymentSupportDefinition.gd")
+const SupportIdsScript = preload("res://scripts/cardfront/support/CardfrontSupportIds.gd")
 const GridExtentScript = preload("res://scripts/GridExtent.gd")
 
 
@@ -44,6 +46,15 @@ static func make(grid_extent_value) -> Dictionary:
 		"neutral_zones": [{"y0": contest_min_y, "y1": contest_max_y}],
 		"objective_rule": CardfrontMapDefinitionScript.OBJECTIVE_DESTROY_COMMAND_CHAMBER,
 		"stronghold_ruleset": StrongholdRulesScript.RULESET_ID,
+		"deployment_supports": _support_definitions(
+			center_x,
+			center_y,
+			left_x,
+			right_x,
+			top_y,
+			bottom_y,
+			height
+		),
 		"time_limit": CardfrontRulesScript.MATCH_DURATION_SECONDS,
 		"ai_profile": "baseline_duel",
 		"strategy_profile": {
@@ -82,6 +93,103 @@ static func make(grid_extent_value) -> Dictionary:
 			"b1_tail_hit_multiplier": 0.20,
 		},
 	})
+
+
+static func _support_definitions(
+	center_x: int,
+	center_y: int,
+	left_x: int,
+	right_x: int,
+	top_y: int,
+	bottom_y: int,
+	height: int
+) -> Array:
+	return [
+		_support(
+			SupportIdsScript.CORE_PLAYER,
+			Vector2i(center_x, maxi(0, height - 2)),
+			true,
+			[SupportIdsScript.SUPPORT_LEFT_SOUTH, SupportIdsScript.SUPPORT_RIGHT_SOUTH],
+			SupportDefinitionScript.ROUTE_ROLE_CORE,
+			"core_spawn_zone_v1",
+			"none",
+			"none"
+		),
+		_support(
+			SupportIdsScript.SUPPORT_LEFT_SOUTH,
+			Vector2i(left_x, bottom_y),
+			false,
+			[SupportIdsScript.CORE_PLAYER, SupportIdsScript.SUPPORT_LEFT_NORTH, SupportIdsScript.SUPPORT_CENTER],
+			SupportDefinitionScript.ROUTE_ROLE_LEFT
+		),
+		_support(
+			SupportIdsScript.SUPPORT_RIGHT_SOUTH,
+			Vector2i(right_x, bottom_y),
+			false,
+			[SupportIdsScript.CORE_PLAYER, SupportIdsScript.SUPPORT_RIGHT_NORTH, SupportIdsScript.SUPPORT_CENTER],
+			SupportDefinitionScript.ROUTE_ROLE_RIGHT
+		),
+		_support(
+			SupportIdsScript.SUPPORT_CENTER,
+			Vector2i(center_x, center_y),
+			false,
+			[
+				SupportIdsScript.SUPPORT_LEFT_SOUTH,
+				SupportIdsScript.SUPPORT_RIGHT_SOUTH,
+				SupportIdsScript.SUPPORT_LEFT_NORTH,
+				SupportIdsScript.SUPPORT_RIGHT_NORTH,
+			],
+			SupportDefinitionScript.ROUTE_ROLE_CENTER_TRANSFER
+		),
+		_support(
+			SupportIdsScript.SUPPORT_LEFT_NORTH,
+			Vector2i(left_x, top_y),
+			false,
+			[SupportIdsScript.SUPPORT_LEFT_SOUTH, SupportIdsScript.SUPPORT_CENTER, SupportIdsScript.CORE_AI],
+			SupportDefinitionScript.ROUTE_ROLE_LEFT
+		),
+		_support(
+			SupportIdsScript.SUPPORT_RIGHT_NORTH,
+			Vector2i(right_x, top_y),
+			false,
+			[SupportIdsScript.SUPPORT_RIGHT_SOUTH, SupportIdsScript.SUPPORT_CENTER, SupportIdsScript.CORE_AI],
+			SupportDefinitionScript.ROUTE_ROLE_RIGHT
+		),
+		_support(
+			SupportIdsScript.CORE_AI,
+			Vector2i(center_x, 1),
+			true,
+			[SupportIdsScript.SUPPORT_LEFT_NORTH, SupportIdsScript.SUPPORT_RIGHT_NORTH],
+			SupportDefinitionScript.ROUTE_ROLE_CORE,
+			"core_spawn_zone_v1",
+			"none",
+			"none"
+		),
+	]
+
+
+static func _support(
+	support_id: String,
+	anchor_cell: Vector2i,
+	is_core: bool,
+	authored_neighbors: Array[String],
+	route_role: String,
+	deployment_profile_id: String = "directional_rear_rect_v1",
+	capture_profile_id: String = "support_capture_v1",
+	suppression_profile_id: String = "territory_share_v1"
+) -> Dictionary:
+	return SupportDefinitionScript.make(
+		support_id,
+		anchor_cell,
+		is_core,
+		authored_neighbors,
+		route_role,
+		Vector2i(0, -1),
+		Vector2i(0, 1),
+		deployment_profile_id,
+		capture_profile_id,
+		suppression_profile_id
+	)
 
 
 static func _rect(x0: int, y0: int, x1: int, y1: int, region_type: String) -> Dictionary:
