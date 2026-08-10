@@ -2,8 +2,8 @@ extends RefCounted
 class_name DeploymentPlacementResolver
 
 const QueryScript = preload("res://scripts/cardfront/deployment/DeploymentQuery.gd")
-const RulesScript = preload("res://scripts/cardfront/deployment/DeploymentRules.gd")
-const RuleTypeScript = preload("res://scripts/cardfront/deployment/DeploymentRuleType.gd")
+const DeploymentRulesScript = preload("res://scripts/cardfront/deployment/DeploymentRules.gd")
+const DeploymentRuleTypeScript = preload("res://scripts/cardfront/deployment/DeploymentRuleType.gd")
 const ResultScript = preload("res://scripts/cardfront/deployment/DeploymentResult.gd")
 
 
@@ -127,7 +127,7 @@ static func _best_support_cell(
 	var winner: Dictionary = legal_candidates[0] as Dictionary
 	return {
 		"allowed": true,
-		"reason": RulesScript.REASON_ALLOWED,
+		"reason": DeploymentRulesScript.REASON_ALLOWED,
 		"cell": winner.cell,
 		"resolved_support_id": source_id,
 		"source_kind": ResultScript.SOURCE_SUPPORT,
@@ -176,7 +176,7 @@ static func _best_core_cell(
 		return {"allowed": false}
 	return {
 		"allowed": true,
-		"reason": RulesScript.REASON_ALLOWED,
+		"reason": DeploymentRulesScript.REASON_ALLOWED,
 		"cell": first_legal,
 		"resolved_support_id": core_id,
 		"source_kind": ResultScript.SOURCE_CORE,
@@ -196,11 +196,11 @@ static func _evaluate_cell(
 	var query = QueryScript.new()
 	query.owner_id = owner_id
 	query.cell = cell
-	query.rule_type = RuleTypeScript.SUPPORT_NETWORK
+	query.rule_type = DeploymentRuleTypeScript.SUPPORT_NETWORK
 	query.requested_support_id = requested_support_id
 	query.spawn_profile_id = spawn_profile_id
 	query.support_network_context = context
-	return RulesScript.evaluate(region_map, battlefield, query)
+	return DeploymentRulesScript.evaluate(region_map, battlefield, query)
 
 
 static func _support_candidate(source: Dictionary, cell: Vector2i) -> Dictionary:
@@ -250,7 +250,7 @@ static func _battlefield_extent(battlefield) -> Vector2i:
 static func _failure(revision: int) -> Dictionary:
 	return {
 		"allowed": false,
-		"reason": RulesScript.REASON_NO_VALID_DEPLOYMENT_SOURCE,
+		"reason": DeploymentRulesScript.REASON_NO_VALID_DEPLOYMENT_SOURCE,
 		"cell": Vector2i(-1, -1),
 		"resolved_support_id": "",
 		"source_kind": ResultScript.SOURCE_NONE,
