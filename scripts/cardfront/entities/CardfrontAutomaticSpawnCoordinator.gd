@@ -121,14 +121,13 @@ func spawn_single_creature(
 	var cells: Array = resolution.get("cells", []) as Array
 	var cell: Vector2i = cells[0] as Vector2i
 	var entity = null
-	match creature_id:
-		runtime.CREATURE_ARMORED_GUARD:
-			entity = runtime._creature_action_coordinator.spawn_armored_guard_at(owner_id, cell)
-		runtime.CREATURE_SAPPER_UNIT:
-			entity = runtime._creature_action_coordinator.spawn_sapper_unit_at(owner_id, cell)
-		_:
-			resolution["allowed"] = false
-			resolution["reason"] = REASON_ENTITY_SPAWN_FAILED
+	if creature_id == str(runtime.CREATURE_ARMORED_GUARD):
+		entity = runtime._creature_action_coordinator.spawn_armored_guard_at(owner_id, cell)
+	elif creature_id == str(runtime.CREATURE_SAPPER_UNIT):
+		entity = runtime._creature_action_coordinator.spawn_sapper_unit_at(owner_id, cell)
+	else:
+		resolution["allowed"] = false
+		resolution["reason"] = REASON_ENTITY_SPAWN_FAILED
 	resolution["entity"] = entity
 	if entity == null:
 		resolution["allowed"] = false
