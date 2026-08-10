@@ -1,9 +1,10 @@
 # P0-05A3 Branch Failure Scenarios
 
+Audited source commit: `84dfcddd13cd67db2c0c03e270e27487706b22e0`
 Branch: `audit/p0-04e-auto-spawn`
 Target step: **P0-05A3 — Branch Failure Scenarios**
-Decision: **PENDING CI**
-Evidence bound to candidate source commit: **PENDING**
+Decision: **GO**
+Evidence bound to audited source commit: **YES**
 
 ## Goal
 
@@ -33,11 +34,18 @@ The matrix runs from both faction roots so player south-to-north and AI north-to
    - downstream Claim ownership remains intact while disconnected;
    - restoring upstream Operational state restores downstream deployment authority without applying Claim again.
 
-## Candidate implementation
+## Same-source automated evidence
 
-Extend the already-authoritative `CardfrontSupportMapMetadataTestRunner.gd` rather than changing workflow configuration or creating an unexecuted test entrypoint.
+All evidence below is from audited source `84dfcddd13cd67db2c0c03e270e27487706b22e0`.
 
-The new matrix uses the same `CardfrontSupportDeploymentAuthority` introduced in P0-05A2 and the real `DefaultDuelMap.make(Vector2i(40, 40))` definitions. No alternate topology fixture is created for this checkpoint.
+- Headless Tests — run `31398873977` — **SUCCESS**.
+  - `Cardfront P0 support identity` — **SUCCESS**.
+  - Headless Parse Check — **SUCCESS**.
+  - Import Project — **SUCCESS**.
+  - `CardfrontSupportMapMetadataTestRunner.gd` exercises the complete six-scenario matrix from both faction roots.
+- Battlefield Entity Foundation Tests — run `31398874050` — **SUCCESS**.
+- Shared Upgrade AI Tests — run `31398873685` — **SUCCESS**.
+- B1 Simulation Tests — run `31398873626` — **SUCCESS**.
 
 ## Explicitly unchanged
 
@@ -51,22 +59,6 @@ Stronghold rewards: UNCHANGED
 save schema: UNCHANGED
 ```
 
-## Evidence to run
-
-Primary evidence:
-
-- Headless Tests / `Cardfront P0 support identity`
-  - parse;
-  - import;
-  - extended `CardfrontSupportMapMetadataTestRunner.gd`.
-
-Cross-system regression:
-
-- Headless Tests full matrix;
-- Battlefield Entity Foundation Tests;
-- Shared Upgrade AI Tests;
-- B1 Simulation Tests.
-
 ## Mandatory audit gates
 
 ```text
@@ -79,11 +71,12 @@ Reconnect without downstream recapture covered? YES
 Territory capture semantics changed? NO
 P0-04 deployment authority changed? NO
 Stronghold gameplay changed? NO
-Manual/video evidence required? NO
+Cross-system regression evidence: PASS
+Manual/video evidence required: NO
 ```
 
-## Exit
+## Decision
 
-Do not mark this checkpoint GO until the candidate source commit has same-source green CI evidence.
+**GO** for P0-05A3 on audited source `84dfcddd13cd67db2c0c03e270e27487706b22e0`.
 
-After GO, only allowed next step: **P0-05B1 — Legacy Stronghold Gameplay Consumer-First Cutover**.
+Only allowed next step: **P0-05B1 — Legacy Stronghold Gameplay Consumer-First Cutover**.
