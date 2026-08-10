@@ -177,6 +177,21 @@ func _test_repair_action(fixture: Dictionary) -> void:
 	var fortify = fixture["fortify"]
 	var target := Vector2i(2, 4)
 	fortify.set_fortify_stack(target, 0)
+	var repair_fixture = runtime.registry.spawn_creature(
+		"repair_action_fixture",
+		RuntimeScript.CREATURE_REPAIR_UNIT,
+		RulesScript.PLAYER_FACTION,
+		Vector2i(2, 5),
+		1,
+		CreatureStateScript.ARMOR_NORMAL,
+		1,
+		"repair_frontline",
+		3
+	)
+	_assert.that(
+		repair_fixture != null,
+		"repair action fixture spawns adjacent to frontline independently of deployment origin"
+	)
 	var before: int = fortify.get_fortify_stack(target)
 	runtime.advance_round()
 	var after: int = fortify.get_fortify_stack(target)
