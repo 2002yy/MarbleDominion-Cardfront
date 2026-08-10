@@ -103,3 +103,16 @@ func spawn_sapper_unit(owner_id: int):
 	if cells.is_empty():
 		return null
 	return spawn_sapper_unit_at(owner_id, cells[0] as Vector2i)
+
+
+func find_owner_spawn_cell(owner_id: int, _index: int) -> Vector2i:
+	if runtime == null or not runtime.has_method("resolve_automatic_spawn_cell"):
+		return Vector2i(-1, -1)
+	var resolution: Dictionary = runtime.resolve_automatic_spawn_cell(owner_id)
+	if not bool(resolution.get("allowed", false)):
+		return Vector2i(-1, -1)
+	return resolution.get("cell", Vector2i(-1, -1)) as Vector2i
+
+
+func find_adjacent_spawn_cell(owner_id: int, _origin: Vector2i) -> Vector2i:
+	return find_owner_spawn_cell(owner_id, 0)
