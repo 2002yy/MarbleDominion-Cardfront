@@ -1,113 +1,135 @@
 # P0-04E Automatic / Upgrade Spawn Cutover
 
-Source commit: `c36bbabad44d089262c130a03c16c248581d247e`
-Original intent: Remove the automatic/upgrade creature spawn bypass so the fourth deployment consumer obtains its final cell from the same `DeploymentRules` authority as Player Commit, Preview, and AI.
-Engineering Spec sections: 4.4 Deployment; Guardrails P0-04; Execution Detail Batch A P0-04E; Pre-Implementation Freeze Addendum section 5.
-Old authority: `RoundDirector -> BattlefieldEntityRuntime.apply_pending_upgrade_actions() -> CreatureActionCoordinator.find_owner_spawn_cell() -> route building slot / nearest owned cell / origin fallback`.
-Target authority: `DeploymentPlacementResolver` selects deterministically only among cells for which `DeploymentRules.evaluate()` returns allowed; `CardfrontBattlefieldEntityRuntime` resolves cells before entity creation and passes resolved cells to an authoritative creature coordinator.
-Allowed mutation surface: Automatic/upgrade repair, armored-guard, and sapper placement; additive deployment context placement metadata; focused resolver/runtime test; CI registration; checkpoint.
-Read-only surface: Territory capture, Support Capture, creature movement legality, tower building-slot placement, neutral Gate Colossus spawn, maps, save schema, Draft transaction semantics.
-Forbidden changes: Route-slot/origin/arbitrary-owned-cell fallback for automatic creatures, AI/upgrade crossing exception, resolver-side BFS/connectivity inference, random placement, creature movement rewrite, tower placement migration, neutral-creature migration.
-Test evidence authority: `CardfrontDeploymentAutomaticSpawnTestRunner.gd` plus existing P0 deployment batch on Godot 4.7.1.
+Audited source commit: `bd30e0cdcf11c10eaf3b5d2e54835a7c0cbd8e91`
+Branch: `audit/p0-04e-auto-spawn`
+Target step: **P0-04E — Automatic / Upgrade Spawn Cutover**
+Decision: **GO**
+Evidence bound to audited source commit: **YES**
 
-## Cutover contract
+## Goal
 
-Automatic player/AI creature actions now use this sequence:
+Remove the fourth deployment consumer's legacy bypass so repair / armored-guard / sapper automatic upgrade spawning resolves its final cell through the same deployment legality authority used by player Commit, Preview, and AI.
+
+Frozen authority chain:
 
 ```text
 pending upgrade action
- -> current deployment context provider
-    -> if no live provider is configured: explicit Core-only context from authored spawn_zones
+ -> CardfrontBattlefieldEntityRuntime
+ -> CardfrontAutomaticSpawnCoordinator
  -> DeploymentPlacementResolver
- -> DeploymentRules.evaluate() for every candidate considered legal
- -> deterministic source/cell ranking
- -> entity occupancy/capacity guard
- -> resolved cells
- -> creature creation
+ -> DeploymentRules.evaluate(SUPPORT_NETWORK)
+ -> deterministic legal cell
+ -> occupancy / capacity guard
+ -> authoritative creature creation at resolved cell
 ```
 
-`DeploymentPlacementResolver` does not traverse the Support graph or infer Online state. It consumes `support_sources`, `route_role`, `graph_depth`, and `deployment_revision` supplied by the current deployment context. Missing configured provider data fails closed; only the absence of a provider uses the explicit authoritative Core context.
+`CardfrontBattlefieldEntityRuntime` and `CardfrontAutomaticSpawnCoordinator` do not directly own deployment legality. `DeploymentPlacementResolver` is a deterministic placement resolver, not a second legality authority.
 
-Source ranking is frozen as preferred Support, preferred route role, deeper supplied authored graph depth, lexical stable Support ID, then Core. Support-cell ranking is rear distance, lateral distance, squared anchor distance, y, x. Core candidates are deterministic y then x because the Freeze Addendum does not impose an additional Core-local ranking rule.
+## What changed
 
-Entity occupancy is a separate physical placement guard after deployment legality: faction creature cap and per-cell creature slots are preserved. Multi-unit repair placement pre-resolves all requested cells with temporary slot reservations before any creature is created.
+- Added `scripts/cardfront/entities/CardfrontAutomaticSpawnCoordinator.gd`.
+- Automatic repair / armored guard / sapper placement now delegates to `DeploymentPlacementResolver`.
+- Entity runtime was reduced below its existing 650-line architecture guard and no longer directly imports `DeploymentRules`.
+- `CardfrontAuthoritativeCreatureActionCoordinator` exposes `spawn_*_at(...)` creation APIs for already-resolved cells.
+- Compatibility `find_owner_spawn_cell()` / `find_adjacent_spawn_cell()` in the authoritative runtime coordinator now fail closed through the current resolver instead of using route-slot / arbitrary-owned-cell fallback.
+- Repair behavior regression was decoupled from the retired legacy route-slot spawn origin by using an explicit frontline fixture.
 
-## Structured spawn evidence
-
-Each migrated pending creature action returns:
+## Preserved boundaries
 
 ```text
-action
-allowed
-reason
-spawned
-placements[]:
-  cell
-  resolved_support_id
-  source_kind
-  deployment_revision
-  legal_candidate_count
-  reason
+Territory Capture touched? NO
+Support Capture semantics touched? NO
+Creature movement legality touched? NO
+Tower building-slot semantics touched? NO
+Neutral Gate Colossus spawn touched? NO
+Map topology changed? NO
+Save schema changed? NO
+Random automatic placement added? NO
+Resolver-side BFS/connectivity inference added? NO
+P1/P2 deployment exceptions added? NO
 ```
 
-Required negative fixture paints the entire battlefield as enemy-owned while the legacy player route building slot still exists. Expected result:
+The old base `CardfrontCreatureActionCoordinator.gd` still physically contains legacy helper implementations for compatibility/history, but the production runtime instantiates `CardfrontAuthoritativeCreatureActionCoordinator.gd`, whose overrides route those helper entry points through the current placement authority. P0-04F additionally locks the production reference set so this dormant base implementation cannot silently regain authority.
+
+## Deterministic placement contract
+
+Source priority:
+
+1. valid `preferred_support_id`;
+2. preferred route-role Online Supports;
+3. remaining Online Supports by deeper supplied graph depth;
+4. stable lexical Support ID tie-break;
+5. explicit Core source;
+6. explicit failure.
+
+Support cell ranking remains deterministic. Core fallback uses authored `spawn_zones`. No route building slot, arbitrary owned cell, origin, or random fallback is permitted for migrated automatic creature actions.
+
+Failure contract:
 
 ```text
 allowed = false
 reason = no_valid_deployment_source
 spawned = 0
-no entity at legacy route origin
 ```
 
-## Audit fields
+The negative fixture deliberately leaves the old route building slot present while making all player deployment cells illegal and proves that no creature appears at the legacy origin.
+
+## Automated evidence — same audited source
+
+All evidence below is from `bd30e0cdcf11c10eaf3b5d2e54835a7c0cbd8e91`.
+
+### Headless Tests — run `31376230274` — SUCCESS
+
+Relevant job:
+
+- `Cardfront P0 deployment pure` — SUCCESS
+  - parse/import succeeds;
+  - `CardfrontDeploymentAutomaticSpawnTestRunner.gd` succeeds;
+  - existing deployment A-D tests remain green;
+  - automatic source ranking, Core fallback, Support placement, explicit failure, and no legacy route-origin fallback are covered.
+
+Relevant cross-system jobs in the same Headless run also remain green, including:
+
+- `Cardfront v0.3 core loop`;
+- `Cardfront live runtime boundary`;
+- `Cardfront v0.3 tactical strongholds`;
+- existing Support identity/capture/graph batches.
+
+### Battlefield Entity Foundation Tests — run `31376230222` — SUCCESS
+
+Confirms:
+
+- Entity runtime boundary remains valid;
+- live runtime regression passes;
+- runtime module split does not break entity behavior.
+
+### Shared Upgrade AI Tests — run `31376230249` — SUCCESS
+
+Confirms automatic spawn migration did not regress the shared upgrade/AI cross-system surface.
+
+### B1 Simulation Tests — run `31376230232` — SUCCESS
+
+Confirms the larger simulation/deck/route-gate regression family remains green on the same source commit.
+
+## Mandatory audit gates
 
 ```text
-Stable IDs introduced/used: existing support_id / Core IDs only
-Runtime numeric IDs used as identity? NO
-Territory capture touched? NO
-Support Capture touched? NO
-Creature movement legality touched? NO
-Tower route building-slot semantics touched? NO
-Neutral creature spawn semantics touched? NO
-Automatic creature route-slot fallback remaining in production call chain? NO (subject to CI/static diff verification)
-Deployment legality authority duplicated? NO
-Resolver performs BFS/connectivity inference? NO
-Random automatic placement added? NO
-Derived connectivity persisted as authority? NO
-Save compatibility impact: NONE
-Amendment required? NO
+P0-04 four-consumer deployment convergence: PASS
+Evidence bound to source commit: YES
+Unverified deployment-authority assumptions remaining: NONE known
+Legacy route-slot creature spawn authority reachable in production runtime: NO
+Second deployment authority risk: PASS / guarded by P0-04F source contract
+Save/restore risk introduced by this step: NONE
+Cross-system regression evidence: PASS
+Manual evidence required before this step GO: NONE beyond existing automated authority contract
 ```
 
-## Evidence status
+## Residual risk / explicit non-claim
 
-Implementation branch: `audit/p0-04e-auto-spawn`
+This checkpoint does **not** claim the historical base coordinator file has been deleted. It claims its old spawn helpers are no longer reachable as production placement authority through the current runtime assembly. Full legacy-code cleanup may happen only when the relevant later retirement step permits it.
 
-Automated evidence required before GO:
+## Decision
 
-```text
-runner: scripts/tests/CardfrontDeploymentAutomaticSpawnTestRunner.gd
-command: GitHub Actions Headless Tests / Cardfront P0 deployment pure
-expected focused coverage:
-- preferred Support ranking
-- preferred route ranking
-- deeper graph-depth ranking
-- lexical tie
-- deterministic Support cell ranking
-- Core fallback
-- live upgrade spawn uses Support authority
-- no-provider runtime uses explicit Core authority
-- no legal source fails with no_valid_deployment_source
-- legacy route origin is not used as hidden fallback
-```
+**GO** for P0-04E on audited source `bd30e0cdcf11c10eaf3b5d2e54835a7c0cbd8e91`.
 
-Cross-system evidence required before GO:
-
-- Headless Parse Check passes.
-- Existing P0 deployment A-D runners remain green.
-- Cardfront v0.3 core loop remains green, especially entity-card/armored-guard/sapper behavior.
-- Cardfront live runtime boundary remains green.
-- No diff to `next_owned_step_toward()` or global creature movement legality.
-
-Decision: **PENDING CI / NOT GO YET**
-
-Only after the required evidence passes may this checkpoint be amended to **GO** and P0-04F Four-Consumer Parity begin.
+Only allowed next step from this checkpoint: **P0-04F Four-Consumer Parity Matrix**.
