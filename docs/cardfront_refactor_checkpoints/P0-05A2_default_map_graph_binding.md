@@ -1,9 +1,10 @@
 # P0-05A2 Bind Existing Default Map to Authored Graph
 
+Audited source commit: `5a623c3fef46de4111a3a10d6a2e1bda40c87925`
 Branch: `audit/p0-04e-auto-spawn`
 Target step: **P0-05A2 — Bind Existing Default Map to Authored Graph**
-Decision: **PENDING CI**
-Evidence bound to candidate source commit: **PENDING**
+Decision: **GO**
+Evidence bound to audited source commit: **YES**
 
 ## Goal
 
@@ -19,18 +20,18 @@ This step binds only authored Support identity/topology/deployment metadata:
 
 The two physical routes remain equal authored branches. This step does not introduce a hidden `MAIN > BRANCH` weighting that is absent from the frozen P0-05A1 route semantics.
 
-## Candidate implementation
+## Implemented authority
 
-- Add `CardfrontSupportDeploymentAuthority` as a runtime composition layer over the existing:
+- Added `CardfrontSupportDeploymentAuthority` as a runtime composition layer over the existing:
   - `SupportTopologyContract`;
   - `SupportTopologyValidator`;
   - `SupportConnectivityCache`;
   - `DeploymentSupportContext`.
-- Initialize both Core roots as owned/operational permanent deployment roots.
-- Initialize non-Core Supports offline until authoritative Claim/Operational state is supplied.
-- Build deployment contexts directly from the selected map's `deployment_supports` metadata.
-- Bind the live battlefield entity runtime to this authority through the existing deployment-context provider seam.
-- Publish the authority on the battlefield as runtime metadata so later consumers can share the same object instead of rebuilding topology truth.
+- Both Core roots initialize as owned/operational permanent deployment roots.
+- Non-Core Supports initialize offline until authoritative Claim/Operational state is supplied.
+- Deployment contexts are built directly from the selected map's `deployment_supports` metadata.
+- The live battlefield entity runtime receives this authority through the existing deployment-context provider seam.
+- The authority is published on the battlefield as runtime metadata so later consumers can share the same object instead of rebuilding topology truth.
 
 ## Explicitly unchanged
 
@@ -44,43 +45,41 @@ creature movement legality: UNCHANGED
 Factory/Energy/Lab gameplay bonuses: UNCHANGED
 ```
 
-No Support capture signal is wired in this step. State mutation methods exist only as the narrow input seam for the later live-state cutover and deterministic runtime tests.
+No Support capture signal is wired in this step. State mutation methods remain only the narrow input seam for later live-state cutover and deterministic runtime tests.
 
-## Automated evidence to run
+## Same-source automated evidence
 
-Existing CI runner `CardfrontSupportMapMetadataTestRunner.gd` is extended so the already-authoritative Headless Tests workflow verifies:
+All evidence below is from audited source `5a623c3fef46de4111a3a10d6a2e1bda40c87925`.
 
-1. runtime topology is projected from the real `DefaultDuelMap.make()` definitions;
-2. Core-only fallback remains available before any non-Core Support is online;
-3. an online Support source inherits the exact authored anchor, route role, deploy direction, and profile;
-4. an upstream operational cut removes disconnected downstream Support from deployment authority;
-5. reconnect restores a still-owned downstream Support without recapture.
-
-Cross-system regression gates remain the existing PR workflows:
-
-- Headless Tests;
-- Battlefield Entity Foundation Tests;
-- Shared Upgrade AI Tests;
-- B1 Simulation Tests.
+- Headless Tests — run `31397970735` — **SUCCESS**.
+  - `Cardfront P0 support identity` — **SUCCESS**.
+  - Headless Parse Check — **SUCCESS**.
+  - Import Project — **SUCCESS**.
+  - `CardfrontSupportMapMetadataTestRunner.gd` verifies the real `DefaultDuelMap.make()` projection, Core fallback, authored anchor/direction/profile/route role, upstream disconnect, and reconnect without recapture.
+- Battlefield Entity Foundation Tests — run `31397969267` — **SUCCESS**.
+- Shared Upgrade AI Tests — run `31397969380` — **SUCCESS**.
+- B1 Simulation Tests — run `31397969404` — **SUCCESS**.
 
 ## Mandatory audit gates
 
 ```text
-Test evidence authority: CardfrontSupportMapMetadataTestRunner.gd + existing PR workflows
+Test evidence authority: CardfrontSupportMapMetadataTestRunner.gd + same-source PR workflows
 Stable IDs introduced/used: existing default_duel support_id values
 Runtime numeric IDs used as identity? NO
 Territory capture touched? NO
 Creature movement legality touched? NO
-All spawn paths checked: P0-04 authority unchanged; live automatic spawn now consumes real-map runtime context provider
+All spawn paths checked: P0-04 authority unchanged; live automatic spawn consumes real-map runtime context provider
 Derived states persisted as authority? NO
 Legacy stronghold active consumers remaining: YES, intentionally unchanged until P0-05B1
 Save compatibility impact: NONE
 Map geometry changed? NO
 Bridge/gate behavior changed? NO
+Cross-system regression evidence: PASS
+Manual/video evidence required: NO
 ```
 
-## Exit
+## Decision
 
-Do not mark this checkpoint GO until the candidate commit has same-source green CI evidence.
+**GO** for P0-05A2 on audited source `5a623c3fef46de4111a3a10d6a2e1bda40c87925`.
 
-After GO, only allowed next step: **P0-05A3 — Branch Failure Scenarios**.
+Only allowed next step: **P0-05A3 — Branch Failure Scenarios**.
