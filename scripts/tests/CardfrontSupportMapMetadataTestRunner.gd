@@ -7,6 +7,9 @@ const SupportDefinitionScript = preload("res://scripts/cardfront/support/Deploym
 const SupportIdsScript = preload("res://scripts/cardfront/support/CardfrontSupportIds.gd")
 const SupportMapMetadataScript = preload("res://scripts/cardfront/support/DeploymentSupportMapMetadata.gd")
 const SupportRegionMapperScript = preload("res://scripts/cardfront/support/DeploymentSupportRegionMapper.gd")
+const SupportTopologyContractScript = preload("res://scripts/cardfront/support/graph/SupportTopologyContract.gd")
+const SupportDeploymentAuthorityScript = preload("res://scripts/cardfront/support/CardfrontSupportDeploymentAuthority.gd")
+const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 
 var _assert: TestAssert
 
@@ -17,7 +20,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	_assert = TestAssert.new()
-	print("[CardfrontSupportMapMetadataTest] Checking authored topology metadata")
+	print("[CardfrontSupportMapMetadataTest] Checking authored topology metadata and runtime binding")
 	await process_frame
 
 	_test_default_duel_metadata()
@@ -25,6 +28,7 @@ func _run() -> void:
 	_test_invalid_topology_fails_map_setup()
 	_test_structurally_valid_but_frozen_wrong_topology_fails()
 	_test_metadata_contains_no_runtime_or_bonus_truth()
+	_test_runtime_authority_binds_default_map_metadata()
 
 	_assert.report("[CardfrontSupportMapMetadataTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
@@ -114,6 +118,61 @@ func _test_metadata_contains_no_runtime_or_bonus_truth() -> void:
 			"shot_bonus", "attack_bonus", "draft_choice_bonus", "resource_income", "rarity_bonus",
 		]:
 			_assert.that(not (definition as Dictionary).has(forbidden_key), "support metadata: %s excludes %s" % [definition.support_id, forbidden_key])
+
+
+func _test_runtime_authority_binds_default_map_metadata() -> void:
+	var definition: Dictionary = DefaultDuelMapScript.make(Vector2i(40, 40))
+	var supports: Array = definition.deployment_supports as Array
+	var by_id: Dictionary = _by_id(supports)
+	var authority = SupportDeploymentAuthorityScript.new()
+
+	_assert.that(authority.setup(definition), "support runtime: default_duel authored graph should configure authority")
+	var debug: Dictionary = authority.debug_snapshot()
+	_assert.eq(debug.validation_errors, [], "support runtime: authored topology should validate before live use")
+	_assert.eq(debug.topology, SupportTopologyContractScript.from_support_definitions(supports), "support runtime: topology must be projected from the real default map definitions")
+
+	var core_only: Dictionary = authority.deployment_context(CardfrontRulesScript.PLAYER_FACTION)
+	_assert.eq(str(core_only.core_source.support_id), SupportIdsScript.CORE_PLAYER, "support runtime: player core remains the fallback source")
+	_assert.eq(core_only.online_support_ids, [], "support runtime: non-core Supports begin offline until authoritative state says otherwise")
+
+	_assert.that(
+		authority.set_support_state(SupportIdsScript.SUPPORT_LEFT_SOUTH, CardfrontRulesScript.PLAYER_FACTION, true),
+		"support runtime: activating an authored left-route Support should invalidate connectivity once"
+	)
+	var left_online: Dictionary = authority.deployment_context(CardfrontRulesScript.PLAYER_FACTION)
+	var left_source: Dictionary = _source_by_id(left_online.support_sources as Array, SupportIdsScript.SUPPORT_LEFT_SOUTH)
+	var authored_left: Dictionary = by_id[SupportIdsScript.SUPPORT_LEFT_SOUTH] as Dictionary
+	_assert.eq(left_source.anchor_cell, authored_left.anchor_cell, "support runtime: deployment anchor comes from DefaultDuelMap metadata")
+	_assert.eq(left_source.forward, authored_left.player_deploy_direction, "support runtime: player deploy direction comes from authored metadata")
+	_assert.eq(str(left_source.profile_id), str(authored_left.deployment_profile_id), "support runtime: deployment profile comes from authored metadata")
+	_assert.eq(str(left_source.route_role), str(authored_left.route_role), "support runtime: route role comes from authored metadata")
+	_assert.eq(int(left_source.graph_depth), 1, "support runtime: first left-route Support resolves one edge from player Core")
+
+	# Connectivity must gate authored data: a downstream Claim can stay owned while an
+	# upstream operational cut removes it from deployment authority, then reconnect
+	# without recapturing that downstream Support.
+	authority.set_support_state(SupportIdsScript.SUPPORT_LEFT_NORTH, CardfrontRulesScript.PLAYER_FACTION, true)
+	_assert.that(
+		SupportIdsScript.SUPPORT_LEFT_NORTH in authority.deployment_context(CardfrontRulesScript.PLAYER_FACTION).online_support_ids,
+		"support runtime: connected downstream authored Support should become online"
+	)
+	authority.set_operational(SupportIdsScript.SUPPORT_LEFT_SOUTH, false)
+	var cut_context: Dictionary = authority.deployment_context(CardfrontRulesScript.PLAYER_FACTION)
+	_assert.that(SupportIdsScript.SUPPORT_LEFT_SOUTH not in cut_context.online_support_ids, "support runtime: disabled upstream Support leaves deployment authority")
+	_assert.that(SupportIdsScript.SUPPORT_LEFT_NORTH not in cut_context.online_support_ids, "support runtime: downstream Claim is offline while disconnected")
+	authority.set_operational(SupportIdsScript.SUPPORT_LEFT_SOUTH, true)
+	_assert.that(
+		SupportIdsScript.SUPPORT_LEFT_NORTH in authority.deployment_context(CardfrontRulesScript.PLAYER_FACTION).online_support_ids,
+		"support runtime: reconnect restores downstream deployment authority without recapture"
+	)
+
+
+func _source_by_id(sources: Array, support_id: String) -> Dictionary:
+	for raw_source in sources:
+		var source: Dictionary = raw_source as Dictionary
+		if str(source.get("support_id", "")) == support_id:
+			return source
+	return {}
 
 
 func _by_id(supports: Array) -> Dictionary:

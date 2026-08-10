@@ -60,4 +60,4 @@ Manual/video evidence required: NO
 
 **GO** for P0-05A1 on audited source `f27a74b06938dc408531cc70b0d6fca7689b91e8`.
 
-Only allowed next step: **P0-05A2 — Legacy Stronghold gameplay consumer retirement audit/cutover**.
+Only allowed next step: **P0-05A2 — Bind Existing Default Map to Authored Graph**.
