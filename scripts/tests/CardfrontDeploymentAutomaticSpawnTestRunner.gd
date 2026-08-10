@@ -13,6 +13,18 @@ const RuntimeScript = preload("res://scripts/cardfront/entities/CardfrontBattlef
 const BattlefieldEntityScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntity.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 
+const PRODUCTION_ROOT: String = "res://scripts/cardfront"
+const PLAYER_COMMIT_RULE_PATH: String = "res://scripts/cardfront/targets/target_rules/FrontlineDeploymentTargetRule.gd"
+const PREVIEW_PATH: String = "res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd"
+const AI_PLANNER_PATH: String = "res://scripts/cardfront/ai/CardfrontAiDeploymentPlanner.gd"
+const PLACEMENT_RESOLVER_PATH: String = "res://scripts/cardfront/deployment/DeploymentPlacementResolver.gd"
+const AUTOMATIC_SPAWN_PATH: String = "res://scripts/cardfront/entities/CardfrontAutomaticSpawnCoordinator.gd"
+const RUNTIME_PATH: String = "res://scripts/cardfront/entities/CardfrontBattlefieldEntityRuntime.gd"
+const AUTHORITATIVE_CREATURE_PATH: String = "res://scripts/cardfront/entities/CardfrontAuthoritativeCreatureActionCoordinator.gd"
+const BASE_CREATURE_PATH: String = "res://scripts/cardfront/entities/CardfrontCreatureActionCoordinator.gd"
+const DIRECT_EVALUATE_NEEDLE: String = "DeploymentRulesScript.evaluate("
+const BASE_CREATURE_REFERENCE_NEEDLE: String = "CardfrontCreatureActionCoordinator.gd"
+
 var _assert: TestAssert
 var _battlefields: Array = []
 var _map_definition: Dictionary
@@ -25,16 +37,91 @@ func _initialize() -> void:
 func _run() -> void:
 	_assert = TestAssert.new()
 	_map_definition = DefaultMapScript.make(Vector2i(40, 40))
-	print("[CardfrontDeploymentAutomaticSpawnTest] Checking deterministic resolver and upgrade spawn cutover")
+	print("[CardfrontDeploymentAutomaticSpawnTest] Checking deterministic resolver, spawn cutover, and four-consumer authority convergence")
+	_test_authority_convergence_source_contract()
 	await _test_source_ranking()
 	await _test_core_fallback()
 	await _test_upgrade_spawn_uses_online_support()
 	await _test_runtime_default_is_authoritative_core()
 	await _test_no_legacy_route_origin_fallback()
+	_test_legacy_helper_compatibility_routes_through_resolver()
 	_assert.report("[CardfrontDeploymentAutomaticSpawnTest]")
 	for battlefield in _battlefields:
 		TestFixtures.cleanup_node(battlefield)
 	quit(0 if _assert.failures.is_empty() else 1)
+
+
+func _test_authority_convergence_source_contract() -> void:
+	var production_paths: Array[String] = []
+	_collect_gd_files(PRODUCTION_ROOT, production_paths)
+	production_paths.sort()
+	_assert.that(not production_paths.is_empty(), "authority convergence: production Cardfront scripts are discoverable")
+
+	var direct_evaluate_consumers: Array[String] = []
+	var base_coordinator_references: Array[String] = []
+	for path in production_paths:
+		var source: String = _read_source(path)
+		if source.contains(DIRECT_EVALUATE_NEEDLE):
+			direct_evaluate_consumers.append(path)
+		if source.contains(BASE_CREATURE_REFERENCE_NEEDLE):
+			base_coordinator_references.append(path)
+
+	direct_evaluate_consumers.sort()
+	var expected_direct_consumers: Array[String] = [
+		AI_PLANNER_PATH,
+		PLACEMENT_RESOLVER_PATH,
+		PLAYER_COMMIT_RULE_PATH,
+		PREVIEW_PATH,
+	]
+	expected_direct_consumers.sort()
+	_assert.eq(
+		direct_evaluate_consumers,
+		expected_direct_consumers,
+		"authority convergence: only Commit, Preview, AI and placement resolver call DeploymentRules.evaluate in production"
+	)
+
+	base_coordinator_references.sort()
+	var expected_base_references: Array[String] = [AUTHORITATIVE_CREATURE_PATH]
+	_assert.eq(
+		base_coordinator_references,
+		expected_base_references,
+		"authority convergence: legacy creature coordinator is only inherited by the authoritative adapter"
+	)
+
+	var commit_source: String = _read_source(PLAYER_COMMIT_RULE_PATH)
+	_assert.that(commit_source.contains("DeploymentRuleTypeScript.SUPPORT_NETWORK"), "authority convergence: player Commit uses SUPPORT_NETWORK")
+	_assert.that(commit_source.contains(DIRECT_EVALUATE_NEEDLE), "authority convergence: player Commit delegates to DeploymentRules")
+
+	var preview_source: String = _read_source(PREVIEW_PATH)
+	_assert.that(preview_source.contains("DeploymentRuleTypeScript.SUPPORT_NETWORK"), "authority convergence: Preview uses SUPPORT_NETWORK")
+	_assert.that(preview_source.contains(DIRECT_EVALUATE_NEEDLE), "authority convergence: Preview delegates to DeploymentRules")
+
+	var ai_source: String = _read_source(AI_PLANNER_PATH)
+	_assert.that(ai_source.contains("DeploymentRuleTypeScript.SUPPORT_NETWORK"), "authority convergence: AI uses SUPPORT_NETWORK")
+	_assert.that(ai_source.contains(DIRECT_EVALUATE_NEEDLE), "authority convergence: AI delegates to DeploymentRules")
+
+	var resolver_source: String = _read_source(PLACEMENT_RESOLVER_PATH)
+	_assert.that(resolver_source.contains("DeploymentRuleTypeScript.SUPPORT_NETWORK"), "authority convergence: automatic placement resolver uses SUPPORT_NETWORK")
+	_assert.that(resolver_source.contains(DIRECT_EVALUATE_NEEDLE), "authority convergence: automatic placement resolver delegates to DeploymentRules")
+
+	var automatic_source: String = _read_source(AUTOMATIC_SPAWN_PATH)
+	_assert.that(automatic_source.contains("DeploymentPlacementResolver.gd"), "authority convergence: automatic spawn delegates placement to resolver")
+	_assert.that(not automatic_source.contains("DeploymentRules.gd"), "authority convergence: automatic spawn does not become a second legality authority")
+
+	var runtime_source: String = _read_source(RUNTIME_PATH)
+	_assert.that(runtime_source.contains("CardfrontAutomaticSpawnCoordinator.gd"), "authority convergence: entity runtime delegates automatic spawn orchestration")
+	_assert.that(not runtime_source.contains("DeploymentRules.gd"), "authority convergence: entity runtime does not directly own deployment legality")
+
+	var authoritative_source: String = _read_source(AUTHORITATIVE_CREATURE_PATH)
+	_assert.that(authoritative_source.contains("func find_owner_spawn_cell"), "authority convergence: inherited legacy owner-spawn helper is explicitly overridden")
+	_assert.that(authoritative_source.contains("func find_adjacent_spawn_cell"), "authority convergence: inherited legacy adjacent-spawn helper is explicitly overridden")
+	_assert.that(authoritative_source.contains("resolve_automatic_spawn_cell"), "authority convergence: compatibility helper resolves through current placement authority")
+	_assert.that(not authoritative_source.contains("_route_slot_id"), "authority convergence: authoritative creature adapter contains no route-slot spawn fallback")
+	_assert.that(not authoritative_source.contains("building_slots"), "authority convergence: authoritative creature adapter contains no building-slot spawn fallback")
+
+	var base_source: String = _read_source(BASE_CREATURE_PATH)
+	_assert.that(base_source.contains("find_owner_spawn_cell"), "authority convergence: legacy helper remains identifiable for compatibility audit")
+	_assert.that(base_source.contains("_route_slot_id"), "authority convergence: legacy route-slot implementation remains isolated in dormant base implementation")
 
 
 func _test_source_ranking() -> void:
@@ -176,6 +263,21 @@ func _test_no_legacy_route_origin_fallback() -> void:
 	_assert.eq(runtime.registry.get_entities_at(old_origin).size(), 0, "auto spawn failure runtime: old route origin is not used as fallback")
 
 
+func _test_legacy_helper_compatibility_routes_through_resolver() -> void:
+	var battlefield = Battlefield.new()
+	battlefield.configure(40)
+	get_root().add_child(battlefield)
+	_battlefields.append(battlefield)
+	_paint_owner(battlefield, Rules.AI_FACTION)
+	var runtime = RuntimeScript.new()
+	battlefield.add_child(runtime)
+	_assert.that(runtime.setup(battlefield, _map_definition), "legacy helper compatibility: runtime setup")
+	var resolved: Vector2i = runtime._creature_action_coordinator.find_owner_spawn_cell(Rules.PLAYER_FACTION, 0)
+	_assert.eq(resolved, Vector2i(-1, -1), "legacy helper compatibility: illegal battlefield fails closed instead of returning route origin")
+	var adjacent: Vector2i = runtime._creature_action_coordinator.find_adjacent_spawn_cell(Rules.PLAYER_FACTION, Vector2i(12, 12))
+	_assert.eq(adjacent, Vector2i(-1, -1), "legacy adjacent helper compatibility: arbitrary origin cannot bypass deployment authority")
+
+
 func _make_battlefield(fill_player: bool):
 	var battlefield = Battlefield.new()
 	battlefield.configure(40)
@@ -204,3 +306,27 @@ func _owner_creatures(runtime, owner_id: int) -> Array:
 		):
 			result.append(entity)
 	return result
+
+
+func _collect_gd_files(root_path: String, out_paths: Array[String]) -> void:
+	var dir := DirAccess.open(root_path)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var entry: String = dir.get_next()
+	while not entry.is_empty():
+		if not entry.begins_with("."):
+			var child_path: String = root_path.path_join(entry)
+			if dir.current_is_dir():
+				_collect_gd_files(child_path, out_paths)
+			elif entry.ends_with(".gd"):
+				out_paths.append(child_path)
+		entry = dir.get_next()
+	dir.list_dir_end()
+
+
+func _read_source(path: String) -> String:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return ""
+	return file.get_as_text()
