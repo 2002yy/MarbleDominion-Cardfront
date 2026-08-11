@@ -131,6 +131,7 @@ jobs:
             scripts: |
               CardfrontSupportIdentityTestRunner.gd
               CardfrontSupportStateTestRunner.gd
+              CardfrontSupportPresentationContractTestRunner.gd
               CardfrontSupportRegionMapperTestRunner.gd
               CardfrontSupportMapMetadataTestRunner.gd
           - batch: Cardfront P0 support capture pure
