@@ -8,6 +8,7 @@ signal bonuses_sampled(snapshot)
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
+const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 
 var region_map = null
@@ -116,7 +117,11 @@ func apply_to_volley_plan(owner_id: int, plan, snapshot: Dictionary = {}) -> voi
 
 
 func _apply_owner_best(owner_status: Dictionary, owner_best: Dictionary) -> void:
-	var ordered_types: Array = StrongholdRulesScript.STRONGHOLD_TYPES
+	var ordered_types: Array = [
+		RegionTypeScript.FACTORY,
+		RegionTypeScript.ENERGY,
+		RegionTypeScript.LAB,
+	]
 	for region_type in ordered_types:
 		if not owner_best.has(region_type):
 			continue
