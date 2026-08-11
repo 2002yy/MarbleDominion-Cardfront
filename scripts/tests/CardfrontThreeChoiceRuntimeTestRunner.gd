@@ -18,7 +18,7 @@ func _run() -> void:
 	await process_frame
 
 	await _test_player_choice_pauses_resolves_and_launches()
-	await _test_strongholds_modify_draft_and_volley()
+	await _test_strongholds_are_legacy_metadata_only()
 	await _test_timeout_selects_player_fallback()
 	await _test_ballwar_is_isolated()
 	GameConfig.reset_runtime_defaults()
@@ -101,7 +101,7 @@ func _test_timeout_selects_player_fallback() -> void:
 	await _flush()
 
 
-func _test_strongholds_modify_draft_and_volley() -> void:
+func _test_strongholds_are_legacy_metadata_only() -> void:
 	var main = await _start_main(GameConfig.GAME_MODE_CARDFRONT)
 	var director = main.runtime.round_director
 	_paint_all_strongholds(main, RulesScript.PLAYER_FACTION)
@@ -110,28 +110,21 @@ func _test_strongholds_modify_draft_and_volley() -> void:
 	await process_frame
 
 	var player_bonus: Dictionary = director.get_stronghold_bonus(RulesScript.PLAYER_FACTION)
-	_assert.eq(int(player_bonus.get("shot_count_bonus", 0)), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold: factory should grant +3 once")
-	_assert.eq(int(player_bonus.get("temporary_attack_level_bonus", 0)), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "runtime stronghold: energy should grant one temporary attack level")
-	_assert.eq(int(player_bonus.get("draft_choice_count", 0)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "runtime stronghold: lab should enable four choices")
-	_assert.eq(director.get_player_offer().size(), 4, "runtime stronghold: lab should expose four player choices")
-	_assert.eq(main.runtime.three_choice_panel.get_visible_choice_count(), 4, "runtime stronghold: formal panel should render all four choices")
-	var shell_rect: Rect2 = main.runtime.three_choice_panel.choice_shell.get_global_rect()
-	var previous_x: float = -INF
+	_assert.eq(int(player_bonus.get("shot_count_bonus", 0)), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold producer: factory legacy +3 should remain observable")
+	_assert.eq(int(player_bonus.get("temporary_attack_level_bonus", 0)), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "runtime stronghold producer: energy legacy +1 should remain observable")
+	_assert.eq(int(player_bonus.get("draft_choice_count", 0)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "runtime stronghold producer: lab legacy four-choice value should remain observable")
+	_assert.eq(director.get_player_offer().size(), 3, "runtime stronghold consumer: lab legacy value must not expand the player offer")
+	_assert.eq(main.runtime.three_choice_panel.get_visible_choice_count(), 3, "runtime stronghold consumer: formal panel must stay three-choice")
 	for card in main.runtime.three_choice_panel.get_choice_cards():
-		_assert.eq(card.custom_minimum_size.x, 214.0, "runtime stronghold: laboratory bonus should use the compact four-card layout")
-		var card_rect: Rect2 = card.get_global_rect()
-		_assert.that(shell_rect.encloses(card_rect), "runtime stronghold: every laboratory choice should remain inside the choice shell")
-		_assert.gt(card_rect.position.x, previous_x, "runtime stronghold: four choices should remain horizontally ordered")
-		previous_x = card_rect.position.x
-	_assert.that(str(main.runtime.three_choice_panel.stronghold_label.text).contains("工厂"), "runtime stronghold: battle HUD should name active bonuses")
-	_assert.that(str(main.runtime.three_choice_panel.result_label.text).contains("额外出现 1 张"), "runtime stronghold: draft should explain the fourth choice")
+		_assert.eq(card.custom_minimum_size.x, 280.0, "runtime stronghold consumer: cards should retain the formal three-column layout")
+	_assert.that(str(main.runtime.three_choice_panel.stronghold_label.text).contains("工厂"), "runtime stronghold compatibility: active stronghold identity may remain visible until P0-05B3 text cutover")
 
 	_assert.that(main.runtime.three_choice_panel.choose_index_for_test(0), "runtime stronghold: player should still choose normally")
 	var plan = director.current_plans.get(RulesScript.PLAYER_FACTION, null)
 	_assert.that(plan != null, "runtime stronghold: resolution should build a player plan")
 	if plan != null:
-		_assert.eq(int(plan.stronghold_shot_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold: plan should record +3 factory shots")
-		_assert.eq(int(plan.stronghold_attack_level_bonus), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "runtime stronghold: plan should record the temporary energy level")
+		_assert.eq(int(plan.stronghold_shot_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold compatibility: plan should retain factory legacy metadata")
+		_assert.eq(int(plan.stronghold_attack_level_bonus), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "runtime stronghold compatibility: plan should retain energy legacy metadata")
 	director.complete_reveal_for_test()
 
 	main._cleanup_game_layer()
