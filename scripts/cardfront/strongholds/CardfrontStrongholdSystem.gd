@@ -6,10 +6,7 @@ signal bonuses_sampled(snapshot)
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
-const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
-const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
-const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 var region_map = null
 var battlefield = null
@@ -93,19 +90,23 @@ func apply_to_volley_plan(owner_id: int, plan, snapshot: Dictionary = {}) -> voi
 		return
 	var source: Dictionary = snapshot if not snapshot.is_empty() else last_snapshot
 	var bonus: Dictionary = source.get(int(owner_id), _empty_owner_bonus()) as Dictionary
-	var shot_bonus: int = maxi(0, int(bonus.get("shot_count_bonus", 0)))
-	var attack_level_bonus: int = maxi(0, int(bonus.get("temporary_attack_level_bonus", 0)))
-	ProjectileTypeScript.append_standard(plan.projectile_sequence, shot_bonus, VolleyResolverScript.MAX_VOLLEY_COUNT)
-	plan.shot_count = clampi(plan.projectile_sequence.size(), 1, VolleyResolverScript.MAX_VOLLEY_COUNT)
-	plan.projectile_counts = ProjectileTypeScript.count_types(plan.projectile_sequence)
-	plan.attack_level = clampi(
-		int(plan.attack_level) + attack_level_bonus,
+	# P0-05B1: the old Factory/Energy formulas remain available only as
+	# compatibility evidence. They must no longer mutate the live volley plan.
+	var legacy_shot_bonus: int = maxi(
 		0,
-		RunStateScript.MAX_RESOLVED_ATTACK_LEVEL
+		int(bonus.get("compatibility_shot_count_bonus", bonus.get("shot_count_bonus", 0)))
 	)
-	plan.chamber_damage_quarters = 4 + int(plan.attack_level)
-	plan.stronghold_shot_bonus = shot_bonus
-	plan.stronghold_attack_level_bonus = attack_level_bonus
+	var legacy_attack_level_bonus: int = maxi(
+		0,
+		int(
+			bonus.get(
+				"compatibility_temporary_attack_level_bonus",
+				bonus.get("temporary_attack_level_bonus", 0)
+			)
+		)
+	)
+	plan.stronghold_shot_bonus = legacy_shot_bonus
+	plan.stronghold_attack_level_bonus = legacy_attack_level_bonus
 	plan.active_stronghold_types = (bonus.get("active_types", []) as Array).duplicate()
 
 
@@ -124,11 +125,11 @@ func _apply_owner_best(owner_bonus: Dictionary, owner_best: Dictionary) -> void:
 		owner_bonus.control_percent[region_type] = int(candidate.get("percent", 0))
 		match region_type:
 			RegionTypeScript.FACTORY:
-				owner_bonus.shot_count_bonus = StrongholdRulesScript.FACTORY_SHOT_BONUS
+				owner_bonus.compatibility_shot_count_bonus = StrongholdRulesScript.FACTORY_SHOT_BONUS
 			RegionTypeScript.ENERGY:
-				owner_bonus.temporary_attack_level_bonus = StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS
+				owner_bonus.compatibility_temporary_attack_level_bonus = StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS
 			RegionTypeScript.LAB:
-				owner_bonus.draft_choice_count = StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT
+				owner_bonus.compatibility_draft_choice_count = StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT
 
 
 func _empty_snapshot() -> Dictionary:
@@ -143,7 +144,13 @@ func _empty_owner_bonus() -> Dictionary:
 		"active_types": [],
 		"active_regions": {},
 		"control_percent": {},
+		# Gameplay-facing legacy fields are deliberately neutral from P0-05B1.
 		"shot_count_bonus": 0,
 		"temporary_attack_level_bonus": 0,
 		"draft_choice_count": 3,
+		# Old formulas are retained under compatibility-only names until the
+		# replacement stronghold semantics are implemented and migration is proven.
+		"compatibility_shot_count_bonus": 0,
+		"compatibility_temporary_attack_level_bonus": 0,
+		"compatibility_draft_choice_count": 3,
 	}
