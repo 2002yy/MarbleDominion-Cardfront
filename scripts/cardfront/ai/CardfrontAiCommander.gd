@@ -3,6 +3,7 @@ class_name CardfrontAiCommander
 
 const AiPolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
+const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDraftSystem.gd")
 
 const ARCHETYPE_BALANCED = "balanced"
 const ARCHETYPE_AGGRESSIVE = "aggressive"
@@ -89,11 +90,12 @@ func choose_id(
 	run_state = null,
 	context: Dictionary = {}
 ) -> String:
-	var ranked: Array = _base_policy.rank_ids(offer_ids, run_state, context)
+	var scoring_context: Dictionary = _sanitize_legacy_stronghold_context(context)
+	var ranked: Array = _base_policy.rank_ids(offer_ids, run_state, scoring_context)
 	if ranked.is_empty():
 		_last_ranked_evaluations = []
 		return ""
-	var resolved_archetype: String = _resolve_archetype(context)
+	var resolved_archetype: String = _resolve_archetype(scoring_context)
 	var weights: Dictionary = ARCHETYPE_WEIGHTS.get(resolved_archetype, {})
 	for evaluation in ranked:
 		var upgrade_id: String = str(evaluation.get("upgrade_id", ""))
@@ -108,6 +110,18 @@ func choose_id(
 
 func get_last_ranked_evaluations() -> Array:
 	return _last_ranked_evaluations.duplicate(true)
+
+func _sanitize_legacy_stronghold_context(context: Dictionary) -> Dictionary:
+	var sanitized: Dictionary = context.duplicate(true)
+	if str(sanitized.get("source", "")) != "live":
+		return sanitized
+	# P0-05B1: these live-context fields currently originate from the legacy
+	# Factory/Energy/Lab reward snapshot. The producer remains observable, but
+	# AI selection must not treat those retired rewards as real future value.
+	sanitized["post_multiplier_shot_bonus"] = 0
+	sanitized["temporary_attack_level_bonus"] = 0
+	sanitized["future_offer_size"] = DraftSystemScript.DEFAULT_OFFER_SIZE
+	return sanitized
 
 func _resolve_archetype(context: Dictionary) -> String:
 	var resolved: String = _archetype
