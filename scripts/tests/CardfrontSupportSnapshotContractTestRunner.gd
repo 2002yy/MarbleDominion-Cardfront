@@ -95,5 +95,5 @@ func _test_legacy_stronghold_data_does_not_infer_support_state() -> void:
 		"schema_version": "2.0",
 		"current_stronghold_bonuses": legacy_bonuses,
 	}).to_dict()
-	_assert.eq(payload.current_stronghold_bonuses, legacy_bonuses, "support snapshot: legacy Stronghold field remains compatibility-readable")
+	_assert.that(not payload.has("current_stronghold_bonuses"), "support snapshot: retired Stronghold reward field is ignored and not re-emitted")
 	_assert.eq(payload.support_states, {}, "support snapshot: legacy Stronghold data never migrates implicitly into Support state")

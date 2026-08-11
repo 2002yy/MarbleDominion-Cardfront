@@ -36,7 +36,6 @@ func _test_default_schema_shape() -> void:
 	_assert.eq(keys, [
 		"current_gate_snapshot",
 		"current_offers",
-		"current_stronghold_bonuses",
 		"devices",
 		"entity_snapshot",
 		"faction_run_states",
@@ -66,7 +65,6 @@ func _test_default_schema_shape() -> void:
 	_assert.that(payload.get("round_active") is bool, "snapshot schema: round_active should be a bool")
 	_assert.that(payload.get("hero_assignments") is Dictionary, "snapshot schema: hero_assignments should be a dictionary")
 	_assert.that(payload.get("current_offers") is Dictionary, "snapshot schema: current_offers should be a dictionary")
-	_assert.that(payload.get("current_stronghold_bonuses") is Dictionary, "snapshot schema: current_stronghold_bonuses should be a dictionary")
 	_assert.that(payload.get("current_gate_snapshot") is Dictionary, "snapshot schema: current_gate_snapshot should be a dictionary")
 	_assert.that(payload.get("entity_snapshot") is Dictionary, "snapshot schema: entity_snapshot should be a dictionary")
 	_assert.that(payload.get("territory_defense_state") is Dictionary, "snapshot schema: territory_defense_state should be a dictionary")
@@ -106,7 +104,6 @@ func _test_roundtrip_preserves_v02_fields() -> void:
 		"round_active": false,
 		"hero_assignments": {},
 		"current_offers": {},
-		"current_stronghold_bonuses": {},
 		"current_gate_snapshot": {},
 		"entity_snapshot": {},
 		"territory_defense_state": {},
@@ -162,3 +159,4 @@ func _test_v03_roundtrip() -> void:
 	_assert.eq(bool(payload.get("round_active", false)), true, "v03 roundtrip: round_active should be preserved")
 	_assert.eq(payload.get("hero_assignments"), {1: "balanced_commander", 2: "rapid_gunner"}, "v03 roundtrip: hero_assignments should be preserved")
 	_assert.eq(payload.get("round_number"), 7, "v03 roundtrip: round_number exact match")
+	_assert.that(not payload.has("current_stronghold_bonuses"), "v03 compatibility: retired Stronghold reward payload is ignored and not re-emitted")

@@ -5,7 +5,6 @@ const ConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanc
 const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDraftSystem.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
-const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
@@ -110,13 +109,8 @@ func simulate(
 		var plans: Dictionary = {}
 		for slot in [SLOT_A, SLOT_B]:
 			var state: Dictionary = states[slot] as Dictionary
-			var strongholds: Array = active_strongholds[slot] as Array
 			if _drafts_enabled():
-				var offer_size: int = (
-					StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT
-						if RegionTypeScript.LAB in strongholds
-						else DraftSystemScript.DEFAULT_OFFER_SIZE
-				)
+				var offer_size: int = DraftSystemScript.DEFAULT_OFFER_SIZE
 				var offer_ids: Array = _draw_offer_ids_fast(
 					state,
 					offer_size,
@@ -132,19 +126,12 @@ func simulate(
 
 			defense_pool[slot] = int(defense_pool[slot]) + int(state["pending_repair_points"])
 			state["pending_repair_points"] = 0
-			if RegionTypeScript.FACTORY in strongholds:
-				state["next_volley_bonus"] = int(state["next_volley_bonus"]) + StrongholdRulesScript.FACTORY_SHOT_BONUS
 			var plan: Dictionary = _build_and_consume_volley_fast(state)
-			var temporary_attack_level: int = (
-				StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS
-				if RegionTypeScript.ENERGY in strongholds
-				else 0
-			)
 			plans[slot] = {
 				"plan": plan,
 				"attack_level": resolve_attack_level_for_mode(
 					int(plan["attack_level"]),
-					temporary_attack_level,
+					0,
 					safe_simulation_mode
 				),
 			}
