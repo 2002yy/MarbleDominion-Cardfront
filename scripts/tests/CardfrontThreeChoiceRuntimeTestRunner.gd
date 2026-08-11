@@ -109,10 +109,12 @@ func _test_strongholds_are_status_only() -> void:
 	director.force_open_draft_for_test()
 	await process_frame
 
-	var player_status: Dictionary = director.get_stronghold_bonus(RulesScript.PLAYER_FACTION)
-	_assert.that(not player_status.has("shot_count_bonus"), "runtime stronghold status: Factory reward value must not be produced")
-	_assert.that(not player_status.has("temporary_attack_level_bonus"), "runtime stronghold status: Energy reward value must not be produced")
-	_assert.that(not player_status.has("draft_choice_count"), "runtime stronghold status: Lab reward value must not be produced")
+	var player_status: Dictionary = director.get_stronghold_status(RulesScript.PLAYER_FACTION)
+	var status_keys: Array = player_status.keys()
+	status_keys.sort()
+	var expected_status_keys: Array = ["active_regions", "active_types", "control_percent"]
+	expected_status_keys.sort()
+	_assert.eq(status_keys, expected_status_keys, "runtime stronghold status: snapshot must expose status fields only")
 	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.FACTORY), "runtime stronghold status: Factory identity should remain observable")
 	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.ENERGY), "runtime stronghold status: Energy identity should remain observable")
 	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.LAB), "runtime stronghold status: Lab identity should remain observable")
@@ -132,9 +134,6 @@ func _test_strongholds_are_status_only() -> void:
 	_assert.that(main.runtime.three_choice_panel.choose_index_for_test(0), "runtime stronghold: player should still choose normally")
 	var plan = director.current_plans.get(RulesScript.PLAYER_FACTION, null)
 	_assert.that(plan != null, "runtime stronghold: resolution should build a player plan")
-	if plan != null:
-		_assert.eq(int(plan.stronghold_shot_bonus), 0, "runtime stronghold: retired Factory metadata must be neutral")
-		_assert.eq(int(plan.stronghold_attack_level_bonus), 0, "runtime stronghold: retired Energy metadata must be neutral")
 	director.complete_reveal_for_test()
 
 	main._cleanup_game_layer()
