@@ -1,6 +1,8 @@
 # P0-05B2 — Legacy Stronghold Producer Demotion
 
-Status: **PENDING CI / NOT GO YET**
+Status: **GO**
+
+Validated code head: `c972bef85257cc6b571344d7e80cfef5ce151e40`
 
 ## Goal
 
@@ -44,11 +46,28 @@ These legacy names are explicitly non-authoritative. They do not recreate, renam
 - only `active_stronghold_types` may be copied as identity/status metadata
 - injected legacy numeric fields are ignored
 
-## Why status identity remains
+## Golden baseline transition
 
-P0-05B2 is not allowed to erase all stronghold identity because existing systems still consume activation/status for non-retired purposes, including presentation and timeout stronghold scoring.
+P0-00E was advanced rather than weakened:
 
-Those uses are distinct from the retired numeric rewards and are handled by later semantic/UI cleanup checkpoints.
+- historical Factory `+3`, Energy `+1`, and Lab `4` values remain recorded as migration history;
+- `runtime_effect_expected = false`;
+- `retired_at_checkpoint = P0-05B2`;
+- the golden runner injects the historical values and proves they cannot revive live volley or attack effects.
+
+## CI evidence
+
+On validated head `c972bef85257cc6b571344d7e80cfef5ce151e40`:
+
+- Cardfront P0 golden baseline: **PASS** — parse, import, and actual runner all passed;
+- Cardfront v0.3 tactical strongholds: **PASS**;
+- Cardfront v0.3 three-choice slice: **PASS**;
+- Cardfront v0.3 core loop: **PASS**;
+- Cardfront live runtime boundary: **PASS**;
+- Shared Upgrade AI Tests: **PASS**;
+- Battlefield Entity Foundation Tests: **PASS**.
+
+This is sufficient evidence for the P0-05B2 owner boundary. Later B3 commits are validated separately and do not retroactively change this code head.
 
 ## Regression evidence added/updated
 
@@ -65,14 +84,15 @@ Proves:
 
 ### `CardfrontThreeChoiceRuntimeTestRunner.gd`
 
-Proves in the full runtime:
+At the B2 validated head it proves:
 
 1. all three stronghold identities can still become active;
 2. the runtime snapshot contains no retired numeric reward fields;
 3. the player draft remains exactly three choices;
 4. Lab no longer drives the `四选一` draft-title branch;
-5. Factory/Energy plan metadata is neutral zero;
-6. old stronghold effect text is intentionally still visible and deferred to P0-05B3.
+5. Factory/Energy plan metadata is neutral zero.
+
+P0-05B3 subsequently owns the player-visible semantic wording.
 
 ## Explicit non-goals
 
@@ -89,20 +109,9 @@ Not touched in P0-05B2:
 - save schema;
 - global deletion of every legacy method/field name (P0-05B5 search gate).
 
-## Exit gate
-
-P0-05B2 becomes **GO** only if the PR head proves:
-
-1. Godot parse/import succeeds;
-2. `CardfrontStrongholdSystemTestRunner.gd` succeeds;
-3. `CardfrontThreeChoiceRuntimeTestRunner.gd` succeeds;
-4. `CardfrontUpgradeContentTestRunner.gd` remains green;
-5. tactical strongholds, three-choice slice, core loop, shared AI, and live runtime boundary remain green;
-6. no P0 deployment/support/entity regression appears.
-
 ## Batch A checkpoint fields
 
-Test evidence authority: GitHub Actions headless runners on PR head
+Test evidence authority: GitHub Actions headless runners on validated code head
 
 Stable IDs introduced/used: none
 
@@ -124,12 +133,12 @@ Legacy compatibility names remaining:
 - `get_owner_bonus`: **YES — status-only wrapper**
 - `bonuses_sampled`: **YES — status-only compatibility signal**
 - `apply_to_volley_plan`: **YES — neutral compatibility seam; no retired rewards**
-- UI old effect text/constants: **YES — deferred to P0-05B3/B5**
+- UI old effect text/constants: **deferred to P0-05B3/B5 on the B2 code head**
 
 Save compatibility impact: **NONE in P0-05B2**; no save field added, removed, or reinterpreted.
 
 ## Next checkpoint
 
-After this checkpoint is green, proceed to **P0-05B3 — UI/Text Semantic Cutover**.
+**P0-05B3 — UI/Text Semantic Cutover**.
 
 Do not invent replacement Factory/Energy/Lab abilities during B3. B3 is removal/semantic cleanup only unless a higher-level design document explicitly defines the replacement behavior.
