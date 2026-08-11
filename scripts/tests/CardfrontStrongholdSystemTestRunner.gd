@@ -6,6 +6,21 @@ const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd"
 const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDraftSystem.gd")
 const StrongholdSystemScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdSystem.gd")
 
+const PRODUCTION_ROOT: String = "res://scripts/cardfront"
+const RETIRED_AUTHORITY_NEEDLES: Array[String] = [
+	"FACTORY_SHOT_BONUS",
+	"ENERGY_ATTACK_LEVEL_BONUS",
+	"LAB_DRAFT_CHOICE_COUNT",
+	"current_stronghold_bonuses",
+	"get_stronghold_bonus",
+	"sample_bonuses",
+	"get_owner_bonus",
+	"apply_to_volley_plan",
+	"stronghold_shot_bonus",
+	"stronghold_attack_level_bonus",
+	"bonuses_sampled",
+]
+
 var _assert: TestAssert
 
 
@@ -22,6 +37,7 @@ func _run() -> void:
 	await _test_lost_control_removes_status()
 	await _test_status_api_has_no_legacy_reward_seams()
 	_test_draft_contract_remains_three_choice()
+	_test_production_source_has_no_legacy_reward_authority()
 
 	_assert.report("[CardfrontStrongholdSystemTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
@@ -108,6 +124,19 @@ func _test_draft_contract_remains_three_choice() -> void:
 	_assert.eq(oversized_request.size(), DraftSystemScript.DEFAULT_OFFER_SIZE, "draft contract: oversized requests must remain capped to the formal three-choice UI")
 
 
+func _test_production_source_has_no_legacy_reward_authority() -> void:
+	var production_paths: Array[String] = []
+	_collect_gd_files(PRODUCTION_ROOT, production_paths)
+	_assert.that(not production_paths.is_empty(), "legacy gate: production Cardfront scripts should be discoverable")
+	for path in production_paths:
+		var source: String = _read_source(path)
+		for needle in RETIRED_AUTHORITY_NEEDLES:
+			_assert.that(
+				not source.contains(needle),
+				"legacy gate: retired Stronghold authority token '%s' must not exist in production source %s" % [needle, path]
+			)
+
+
 func _make_fixture() -> Dictionary:
 	var region_map = RegionMapScript.new()
 	region_map.configure(20)
@@ -156,3 +185,27 @@ func _paint_region_percent(battlefield, region_map, region_id: int, owner_id: in
 		var cell: Vector2i = cells[index]
 		owners[cell.x][cell.y] = owner_id if index < owner_count else CardfrontRulesScript.NEUTRAL_OWNER
 	battlefield.replace_owners(owners, false)
+
+
+func _collect_gd_files(root_path: String, out_paths: Array[String]) -> void:
+	var dir := DirAccess.open(root_path)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var entry: String = dir.get_next()
+	while not entry.is_empty():
+		if not entry.begins_with("."):
+			var child_path: String = root_path.path_join(entry)
+			if dir.current_is_dir():
+				_collect_gd_files(child_path, out_paths)
+			elif entry.ends_with(".gd"):
+				out_paths.append(child_path)
+		entry = dir.get_next()
+	dir.list_dir_end()
+
+
+func _read_source(path: String) -> String:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return ""
+	return file.get_as_text()
