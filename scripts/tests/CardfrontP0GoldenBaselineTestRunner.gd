@@ -31,7 +31,7 @@ func _run() -> void:
 		_test_mode_and_duel(golden)
 		_test_phase_and_economy(golden)
 		_test_lane_metadata(golden)
-		_test_legacy_stronghold_runtime_effect(golden)
+		_test_legacy_stronghold_retirement(golden)
 		_test_exclusions_and_follow_up(golden)
 
 	_assert.report("[CardfrontP0GoldenBaselineTest]")
@@ -50,7 +50,8 @@ func _load_golden() -> Dictionary:
 func _test_mode_and_duel(golden: Dictionary) -> void:
 	var mode: Dictionary = golden.get("mode", {}) as Dictionary
 	var duel: Dictionary = golden.get("duel", {}) as Dictionary
-	_assert.eq(int(golden.get("schema_version", 0)), 1, "golden: schema version")
+	_assert.eq(int(golden.get("schema_version", 0)), 2, "golden: schema version should reflect the P0-05B2 contract transition")
+	_assert.eq(str(golden.get("transition_checkpoint", "")), "P0-05B2", "golden: stronghold retirement transition checkpoint")
 	_assert.eq(str(mode.get("id", "")), GameConfigScript.GAME_MODE_CARDFRONT, "golden: Cardfront mode id")
 	_assert.eq(str(mode.get("main_scene", "")), str(ProjectSettings.get_setting("application/run/main_scene", "")), "golden: configured main scene")
 	_assert.that(ResourceLoader.exists(str(mode.get("main_scene", ""))), "golden: main scene resource should exist")
@@ -67,7 +68,8 @@ func _test_phase_and_economy(golden: Dictionary) -> void:
 	_assert.eq(int(command_points.get("max", -1)), CommandPointSystemScript.MAX_POINTS, "golden: maximum Command Points")
 	_assert.eq(int(offer_size.get("player_default", -1)), DraftSystemScript.DEFAULT_OFFER_SIZE, "golden: player default offer size")
 	_assert.eq(int(offer_size.get("ai_default", -1)), DraftSystemScript.DEFAULT_OFFER_SIZE, "golden: AI default offer size")
-	_assert.eq(int(offer_size.get("legacy_lab", -1)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "golden: legacy Lab offer size")
+	_assert.eq(int(offer_size.get("legacy_lab", -1)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "golden: historical Lab offer size should remain identifiable")
+	_assert.eq(DraftSystemScript.MAX_OFFER_SIZE, DraftSystemScript.DEFAULT_OFFER_SIZE, "golden: formal draft consumer should remain capped to three")
 
 
 func _test_lane_metadata(golden: Dictionary) -> void:
@@ -77,29 +79,37 @@ func _test_lane_metadata(golden: Dictionary) -> void:
 	_assert.eq(str(lanes.get("strategy_identity", "")), "two_equal_routes", "golden: route strategy identity")
 
 
-func _test_legacy_stronghold_runtime_effect(golden: Dictionary) -> void:
+func _test_legacy_stronghold_retirement(golden: Dictionary) -> void:
 	var legacy: Dictionary = golden.get("legacy_stronghold", {}) as Dictionary
-	_assert.eq(str(legacy.get("ruleset", "")), StrongholdRulesScript.RULESET_ID, "golden: legacy Stronghold ruleset")
-	_assert.eq(int(legacy.get("activation_percent", -1)), StrongholdRulesScript.ACTIVATION_PERCENT, "golden: legacy activation threshold")
-	_assert.eq(int(legacy.get("factory_shot_bonus", -1)), StrongholdRulesScript.FACTORY_SHOT_BONUS, "golden: Factory bonus")
-	_assert.eq(int(legacy.get("energy_attack_level_bonus", -1)), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "golden: Energy bonus")
-	_assert.eq(int(legacy.get("lab_choice_count", -1)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "golden: Lab choice count")
-	_assert.that(bool(legacy.get("runtime_effect_expected", false)), "golden: legacy runtime effect should remain expected before retirement")
+	_assert.eq(str(legacy.get("ruleset", "")), StrongholdRulesScript.RULESET_ID, "golden: legacy Stronghold ruleset should remain identifiable")
+	_assert.eq(int(legacy.get("activation_percent", -1)), StrongholdRulesScript.ACTIVATION_PERCENT, "golden: stronghold activation threshold remains part of status semantics")
+	_assert.eq(int(legacy.get("factory_shot_bonus", -1)), StrongholdRulesScript.FACTORY_SHOT_BONUS, "golden: historical Factory +3 value")
+	_assert.eq(int(legacy.get("energy_attack_level_bonus", -1)), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "golden: historical Energy +1 value")
+	_assert.eq(int(legacy.get("lab_choice_count", -1)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "golden: historical Lab four-choice value")
+	_assert.that(not bool(legacy.get("runtime_effect_expected", true)), "golden: legacy numeric stronghold effects must be retired after P0-05B2")
+	_assert.eq(str(legacy.get("retired_at_checkpoint", "")), "P0-05B2", "golden: retirement checkpoint should be explicit")
+	_assert.eq(str(legacy.get("expected_after_support_cutover", "")), "retired", "golden: planned post-cutover state should be retired")
 
 	var plan = VolleyPlanScript.new()
 	plan.projectile_sequence = [ProjectileTypeScript.STANDARD]
 	plan.shot_count = 1
 	plan.attack_level = 0
+	plan.chamber_damage_quarters = 4
 	var system = StrongholdSystemScript.new()
 	system.apply_to_volley_plan(CardfrontRulesScript.PLAYER_FACTION, plan, {
 		CardfrontRulesScript.PLAYER_FACTION: {
 			"active_types": [RegionTypeScript.FACTORY, RegionTypeScript.ENERGY],
 			"shot_count_bonus": StrongholdRulesScript.FACTORY_SHOT_BONUS,
 			"temporary_attack_level_bonus": StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS,
+			"draft_choice_count": StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT,
 		},
 	})
-	_assert.eq(plan.shot_count, 1 + StrongholdRulesScript.FACTORY_SHOT_BONUS, "golden: Factory currently changes resolved volley count")
-	_assert.eq(plan.attack_level, StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "golden: Energy currently changes resolved attack level")
+	_assert.eq(plan.shot_count, 1, "golden: injected historical Factory value must not change resolved volley count")
+	_assert.eq(plan.projectile_sequence.size(), 1, "golden: injected historical Factory value must not append projectiles")
+	_assert.eq(plan.attack_level, 0, "golden: injected historical Energy value must not change resolved attack level")
+	_assert.eq(plan.chamber_damage_quarters, 4, "golden: injected historical Energy value must not change chamber damage")
+	_assert.eq(plan.stronghold_shot_bonus, 0, "golden: retired Factory plan metadata should be neutral")
+	_assert.eq(plan.stronghold_attack_level_bonus, 0, "golden: retired Energy plan metadata should be neutral")
 	system.free()
 
 
