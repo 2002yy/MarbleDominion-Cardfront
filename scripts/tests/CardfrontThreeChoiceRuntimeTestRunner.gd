@@ -120,8 +120,14 @@ func _test_strongholds_are_status_only() -> void:
 	_assert.eq(main.runtime.three_choice_panel.get_visible_choice_count(), 3, "runtime stronghold: formal panel must remain three-choice")
 	for card in main.runtime.three_choice_panel.get_choice_cards():
 		_assert.eq(card.custom_minimum_size.x, 280.0, "runtime stronghold: cards should retain the formal three-column layout")
-	_assert.that(not str(main.runtime.three_choice_panel.title_label.text).contains("四选一"), "runtime stronghold: retired Lab producer must no longer trigger four-choice title state")
-	_assert.that(str(main.runtime.three_choice_panel.stronghold_label.text).contains("工厂"), "runtime stronghold compatibility: old effect-text label remains visible until P0-05B3")
+	_assert.eq(str(main.runtime.three_choice_panel.title_label.text), "选择本轮强化", "runtime stronghold: draft title should stay generic under active strongholds")
+	_assert.that(not str(main.runtime.three_choice_panel.result_label.text).contains("实验室"), "runtime stronghold: draft instructions must not promise a Lab offer-size bonus")
+	var stronghold_text: String = str(main.runtime.three_choice_panel.stronghold_label.text)
+	_assert.that(stronghold_text.begins_with("据点控制："), "runtime stronghold: HUD should frame strongholds as control status")
+	for identity in ["能源", "工厂", "实验室"]:
+		_assert.that(stronghold_text.contains(identity), "runtime stronghold: active identity should remain visible: %s" % identity)
+	for retired_text in ["+3", "+1", "四选一", "攻击等级", "额外发射"]:
+		_assert.that(not stronghold_text.contains(retired_text), "runtime stronghold: retired promise must stay absent from HUD: %s" % retired_text)
 
 	_assert.that(main.runtime.three_choice_panel.choose_index_for_test(0), "runtime stronghold: player should still choose normally")
 	var plan = director.current_plans.get(RulesScript.PLAYER_FACTION, null)
