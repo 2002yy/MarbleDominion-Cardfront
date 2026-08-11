@@ -90,21 +90,10 @@ func apply_to_volley_plan(owner_id: int, plan, snapshot: Dictionary = {}) -> voi
 		return
 	var source: Dictionary = snapshot if not snapshot.is_empty() else last_snapshot
 	var bonus: Dictionary = source.get(int(owner_id), _empty_owner_bonus()) as Dictionary
-	# P0-05B1: the old Factory/Energy formulas remain available only as
-	# compatibility evidence. They must no longer mutate the live volley plan.
-	var legacy_shot_bonus: int = maxi(
-		0,
-		int(bonus.get("compatibility_shot_count_bonus", bonus.get("shot_count_bonus", 0)))
-	)
-	var legacy_attack_level_bonus: int = maxi(
-		0,
-		int(
-			bonus.get(
-				"compatibility_temporary_attack_level_bonus",
-				bonus.get("temporary_attack_level_bonus", 0)
-			)
-		)
-	)
+	# P0-05B1 consumer-first cut: keep the legacy producer output intact so
+	# compatibility can still observe it, but it no longer mutates live combat.
+	var legacy_shot_bonus: int = maxi(0, int(bonus.get("shot_count_bonus", 0)))
+	var legacy_attack_level_bonus: int = maxi(0, int(bonus.get("temporary_attack_level_bonus", 0)))
 	plan.stronghold_shot_bonus = legacy_shot_bonus
 	plan.stronghold_attack_level_bonus = legacy_attack_level_bonus
 	plan.active_stronghold_types = (bonus.get("active_types", []) as Array).duplicate()
@@ -125,11 +114,11 @@ func _apply_owner_best(owner_bonus: Dictionary, owner_best: Dictionary) -> void:
 		owner_bonus.control_percent[region_type] = int(candidate.get("percent", 0))
 		match region_type:
 			RegionTypeScript.FACTORY:
-				owner_bonus.compatibility_shot_count_bonus = StrongholdRulesScript.FACTORY_SHOT_BONUS
+				owner_bonus.shot_count_bonus = StrongholdRulesScript.FACTORY_SHOT_BONUS
 			RegionTypeScript.ENERGY:
-				owner_bonus.compatibility_temporary_attack_level_bonus = StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS
+				owner_bonus.temporary_attack_level_bonus = StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS
 			RegionTypeScript.LAB:
-				owner_bonus.compatibility_draft_choice_count = StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT
+				owner_bonus.draft_choice_count = StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT
 
 
 func _empty_snapshot() -> Dictionary:
@@ -144,13 +133,7 @@ func _empty_owner_bonus() -> Dictionary:
 		"active_types": [],
 		"active_regions": {},
 		"control_percent": {},
-		# Gameplay-facing legacy fields are deliberately neutral from P0-05B1.
 		"shot_count_bonus": 0,
 		"temporary_attack_level_bonus": 0,
 		"draft_choice_count": 3,
-		# Old formulas are retained under compatibility-only names until the
-		# replacement stronghold semantics are implemented and migration is proven.
-		"compatibility_shot_count_bonus": 0,
-		"compatibility_temporary_attack_level_bonus": 0,
-		"compatibility_draft_choice_count": 3,
 	}
