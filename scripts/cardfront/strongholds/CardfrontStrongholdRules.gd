@@ -5,6 +5,8 @@ const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd"
 
 const RULESET_ID: String = "tactical_v1"
 const ACTIVATION_PERCENT: int = 80
+# Historical P0 baseline values. These are retained for migration evidence only;
+# P0-05B1/B2 removed their gameplay authority and producer output.
 const FACTORY_SHOT_BONUS: int = 3
 const ENERGY_ATTACK_LEVEL_BONUS: int = 1
 const LAB_DRAFT_CHOICE_COUNT: int = 4
@@ -24,21 +26,19 @@ static func display_name(region_type: String) -> String:
 		RegionTypeScript.ENERGY:
 			return "能源中继站"
 		RegionTypeScript.FACTORY:
-			return "齐射工厂"
+			return "工业据点"
 		RegionTypeScript.LAB:
 			return "战术实验室"
 	return "战术据点"
 
 
+# P0-05B3 compatibility formatter. It must not promise a retired numeric
+# reward. Live UI should prefer status/badge wording instead of treating this
+# as an ability description; the function remains until the B5 legacy gate.
 static func effect_text(region_type: String) -> String:
-	match region_type:
-		RegionTypeScript.ENERGY:
-			return "下一轮临时攻击等级 +%d" % ENERGY_ATTACK_LEVEL_BONUS
-		RegionTypeScript.FACTORY:
-			return "下一轮齐射 +%d 发" % FACTORY_SHOT_BONUS
-		RegionTypeScript.LAB:
-			return "下次四选一"
-	return ""
+	if not is_stronghold_type(region_type):
+		return ""
+	return "%s控制状态" % badge_name(region_type)
 
 
 static func badge_name(region_type: String) -> String:
@@ -52,12 +52,6 @@ static func badge_name(region_type: String) -> String:
 	return "据点"
 
 
+# P0-05B3 compatibility formatter: identity only, never +3/+1/四选一.
 static func compact_effect_text(region_type: String) -> String:
-	match region_type:
-		RegionTypeScript.ENERGY:
-			return "能源+%d攻击等级" % ENERGY_ATTACK_LEVEL_BONUS
-		RegionTypeScript.FACTORY:
-			return "工厂+%d发" % FACTORY_SHOT_BONUS
-		RegionTypeScript.LAB:
-			return "实验室四选一"
-	return ""
+	return badge_name(region_type) if is_stronghold_type(region_type) else ""
