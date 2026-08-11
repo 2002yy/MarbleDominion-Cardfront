@@ -30,7 +30,7 @@ var _last_round_number: int = 0
 var _pending_player_upgrade_name: String = ""
 var _pending_player_upgrade_times: int = 1
 var _upgrade_toast_remaining: float = 0.0
-var _last_stronghold_bonuses: Dictionary = {}
+var _last_stronghold_status: Dictionary = {}
 var _view_size: Vector2 = Vector2(1120, 720)
 var _peek_button: Button = null
 var _peeking: bool = false
@@ -147,9 +147,9 @@ func _connect_director() -> void:
 
 func _refresh_initial_status() -> void:
 	var state = director.get_run_state(RulesScript.PLAYER_FACTION)
-	if director.has_method("get_stronghold_bonus"):
+	if director.has_method("get_stronghold_status"):
 		_on_strongholds_sampled({
-			RulesScript.PLAYER_FACTION: director.get_stronghold_bonus(RulesScript.PLAYER_FACTION),
+			RulesScript.PLAYER_FACTION: director.get_stronghold_status(RulesScript.PLAYER_FACTION),
 		})
 	_on_countdown_updated(director.phase_controller.time_remaining, director.round_number, state)
 
@@ -253,10 +253,10 @@ func _on_draft_time_updated(time_remaining: float, timeout_seconds: float) -> vo
 	timer_label.text = "%.1f" % maxf(0.0, time_remaining)
 
 
-func _on_strongholds_sampled(bonuses: Dictionary) -> void:
-	_last_stronghold_bonuses = bonuses.duplicate(true)
-	var player_bonus: Dictionary = bonuses.get(RulesScript.PLAYER_FACTION, {}) as Dictionary
-	var active_types: Array = player_bonus.get("active_types", []) as Array
+func _on_strongholds_sampled(status_snapshot: Dictionary) -> void:
+	_last_stronghold_status = status_snapshot.duplicate(true)
+	var player_status: Dictionary = status_snapshot.get(RulesScript.PLAYER_FACTION, {}) as Dictionary
+	var active_types: Array = player_status.get("active_types", []) as Array
 	if active_types.is_empty():
 		stronghold_label.text = ""
 		stronghold_label.visible = false
