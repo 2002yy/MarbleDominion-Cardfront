@@ -20,7 +20,7 @@ func _run() -> void:
 	_test_manifest_is_valid()
 	_test_cards_are_text_and_symbol_driven()
 	_test_seeded_offers_are_unique_and_deterministic()
-	_test_lab_draws_four_unique_choices()
+	_test_legacy_four_choice_request_is_capped_to_three()
 	_test_rarity_growth_changes_weights()
 	_test_capped_or_armed_upgrades_are_not_offered()
 	_test_timeout_fallback_comes_from_offer()
@@ -87,17 +87,17 @@ func _test_rarity_growth_changes_weights() -> void:
 	_assert.that(draft.weight_for_definition(common_definition, state) < base_common_weight, "rarity: common weight should decrease")
 
 
-func _test_lab_draws_four_unique_choices() -> void:
+func _test_legacy_four_choice_request_is_capped_to_three() -> void:
 	var state = RunStateScript.new()
 	state.setup(0)
 	var draft = DraftSystemScript.new()
 	draft.set_seed(3)
-	var offer: Array = draft.draw_offer(state, DraftSystemScript.MAX_OFFER_SIZE)
+	var offer: Array = draft.draw_offer(state, 4)
 	var unique_ids: Dictionary = {}
 	for definition in offer:
 		unique_ids[str((definition as Dictionary).get("id", ""))] = true
-	_assert.eq(offer.size(), 4, "lab: active laboratory should expose four choices")
-	_assert.eq(unique_ids.size(), 4, "lab: four-choice offer should remain unique")
+	_assert.eq(offer.size(), 3, "draft: legacy four-choice requests should be capped to the formal three-choice contract")
+	_assert.eq(unique_ids.size(), 3, "draft: capped offer should remain unique")
 
 
 func _test_timeout_fallback_comes_from_offer() -> void:
