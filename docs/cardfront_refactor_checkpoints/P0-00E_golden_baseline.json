@@ -1,6 +1,7 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "source_commit": "9323c9f3c9f2bf7d2d9d222731a74ca05b089290",
+  "transition_checkpoint": "P0-05B2",
   "mode": {
     "id": "卡牌前线",
     "main_scene": "res://scenes/Main.tscn"
@@ -35,7 +36,8 @@
     "factory_shot_bonus": 3,
     "energy_attack_level_bonus": 1,
     "lab_choice_count": 4,
-    "runtime_effect_expected": true,
+    "runtime_effect_expected": false,
+    "retired_at_checkpoint": "P0-05B2",
     "expected_after_support_cutover": "retired"
   },
   "draft_peek": {
