@@ -1,102 +1,85 @@
 # P0-05B5 Global Legacy Search Gate
 
-Audited source commit: `b75192484c2543d46a8390918c84a3798f176ace`
+Audited source commit: `7fc4a3b82ad57b6cec340c2ef36da54121942363`
 Branch: `audit/p0-04e-auto-spawn`
 Target step: **P0-05B5 — Global Legacy Search Gate**
 Decision: **PENDING CI / NOT GO YET**
 
 ## Goal
 
-Close P0-05 by proving that retired Factory / Energy / Lab numeric reward authority is absent from Cardfront production code, while retaining historical migration evidence in checkpoints and golden fixtures.
+Close P0-05 by proving that retired Factory / Energy / Lab numeric reward authority is absent from Cardfront production code, save/restore, and simulation consumers while retaining historical evidence only in tests and checkpoints.
 
-## Production cleanup completed
+## CI failure corrected
 
-The audited source removes these runtime seams:
+The previous audited source was not eligible for GO:
 
-- Factory / Energy / Lab reward constants from `CardfrontStrongholdRules`;
-- `bonuses_sampled`;
-- `sample_bonuses()`;
-- `get_owner_bonus()`;
-- `apply_to_volley_plan()`;
-- `current_stronghold_bonuses`;
-- `get_stronghold_bonus()`;
-- Stronghold reward metadata fields from `CardfrontVolleyPlan` and its snapshot;
-- the live Stronghold-specific AI sanitizer;
-- UI/runtime callers that used bonus-oriented names.
+- all four CI workflows bound to `b751924` were cancelled by later pushes;
+- the latest branch CI then found four real production residues;
+- `CardfrontRuntimeSnapshot` still carried the retired Stronghold reward dictionary;
+- `CardfrontBalanceMatchSimulator` still referenced the deleted Lab, Factory, and Energy reward constants;
+- those references broke compilation for Hero, Parity, Shared AI, and B1 simulation runners.
 
-`CardfrontStrongholdSystem` is now status-only:
+Commit `7fc4a3b` removes the snapshot authority and makes the simulator use the formal three-choice Draft plus normal volley/attack state with no Stronghold numeric reward injection.
+
+## Production gate
+
+`CardfrontStrongholdSystemTestRunner.gd` recursively scans `res://scripts/cardfront/**/*.gd` and rejects the retired authority vocabulary. The current source scan is clean. Historical tests and checkpoint text may still name old fields as migration evidence; they are not production authority.
+
+Stronghold runtime observation remains status-only:
 
 ```text
 sample_status()
 get_owner_status()
 get_region_activation()
-```
 
-Status schema remains:
-
-```text
+status schema:
 active_types
 active_regions
 control_percent
 ```
 
-No retired numeric gameplay field is produced.
+Stronghold activation may remain observable for map/status and timeout telemetry, but it does not change Draft size, volley count, or attack level.
 
-## Repeatable anti-drift gate
+## Local focused evidence
 
-`CardfrontStrongholdSystemTestRunner.gd` recursively scans `res://scripts/cardfront/**/*.gd` and fails if any of the following production authority tokens return:
+Godot 4.7.1:
 
-```text
-FACTORY_SHOT_BONUS
-ENERGY_ATTACK_LEVEL_BONUS
-LAB_DRAFT_CHOICE_COUNT
-current_stronghold_bonuses
-get_stronghold_bonus
-sample_bonuses
-get_owner_bonus
-apply_to_volley_plan
-stronghold_shot_bonus
-stronghold_attack_level_bonus
-bonuses_sampled
-```
+- Stronghold source/status gate: **PASS (2,311 checks)**.
+- Runtime snapshot: **PASS (39 checks)**.
+- Support snapshot boundary: **PASS (21 checks)**.
+- Hero simulation reduced-seed contract: **PASS (31 checks)**.
+- Parity reduced-seed contract: **PASS (8 checks)**.
+- Shared AI reduced-seed contract: **PASS (8 checks)**.
+- B1 deck candidate reduced probe: **PASS (21 checks)**.
+- B1 162-match matrix configuration: **PASS (40 checks)**.
+- B1 opening reduced probe: **PASS (30 checks)**.
 
-The scan intentionally excludes `scripts/tests/**` and `docs/**` because historical fixtures and migration assertions may name retired concepts without making them runtime authority.
-
-## Classified residual vocabulary
-
-Some generic AI value-model vocabulary such as `post_multiplier_shot_bonus` or `temporary_attack_level_bonus` may still exist outside the Stronghold system. Those fields are not sourced from Stronghold state in the audited runtime. Their continued existence is therefore classified as generic upgrade-valuation vocabulary, not Stronghold authority.
-
-Historical P0 baseline JSON retains the old numeric values only as migration evidence and explicitly marks their runtime effect as retired. The golden test now verifies that the historical fixture remains identifiable without importing retired Stronghold constants or invoking retired runtime APIs.
-
-## Regression target
-
-The following must remain true on the audited source:
-
-- project parses/imports;
-- tactical Stronghold status tests pass;
-- three-choice runtime remains exactly three choices;
-- AI/shared-upgrade tests remain green;
-- battlefield entity/deployment foundation remains green;
-- B1 simulation remains green;
-- BallWar isolation remains unchanged.
+The reduced simulations prove compilation, deterministic completion, offer validity, and contract shape. They do not replace the configured GitHub Actions seed counts or final numeric evidence.
 
 ## Mandatory audit fields
 
 ```text
-Stable IDs introduced/changed? NO
-Runtime numeric IDs used as identity? NO new use
-Territory capture touched? NO
-Creature movement legality touched? NO
-Deployment four-consumer authority touched? NO
-Derived states persisted as authority? NO
-Legacy Stronghold active reward consumers remaining? NONE known
-Legacy Stronghold production reward APIs remaining? NONE in production
-Save compatibility impact? NONE; see P0-05B4
-P1/P2 leakage? NONE
+Mandatory audit gates touched: P0-05 global legacy search; save compatibility; cross-system simulation
+Audit status per gate: production search PASS; focused regression PASS; active CI PENDING
+Evidence bound to source commit: YES — 7fc4a3b82ad57b6cec340c2ef36da54121942363
+Highest-priority evidence used: automated
+Unverified assumptions remaining: configured CI seed counts and full workflow matrix
+Legacy authority still reachable: NONE found in production source
+Second-authority risk: NONE introduced
+Save/restore risk: corrected in P0-05B4
+Cross-system regression evidence: focused Stronghold/snapshot/Hero/Parity/Shared AI/B1 runners
+Manual evidence required before GO: NO for this source gate
+Video requested explicitly by product owner: NO
+Stable IDs introduced/changed: NO
+Runtime numeric IDs used as identity: NO new use
+Territory capture touched: NO
+Creature movement legality touched: NO
+Deployment four-consumer authority touched: NO
+P1/P2 leakage: NONE
 ```
 
 ## Exit gate
 
-Do not mark GO until CI for audited source `b75192484c2543d46a8390918c84a3798f176ace` confirms the source gate and cross-system regressions.
+Do not mark GO until active CI for the branch tip containing audited source `7fc4a3b82ad57b6cec340c2ef36da54121942363` confirms the source gate and cross-system regressions.
 
 If green, P0-05 closes and the only allowed next step is **P0-06 — Support Presentation**.

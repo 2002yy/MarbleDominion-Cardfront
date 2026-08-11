@@ -1,82 +1,55 @@
 # P0-05B4 Save Compatibility Cleanup
 
-Audited source commit: `b75192484c2543d46a8390918c84a3798f176ace`
+Audited source commit: `7fc4a3b82ad57b6cec340c2ef36da54121942363`
 Branch: `audit/p0-04e-auto-spawn`
-Target step: **P0-05B4 — Save Compatibility Cleanup**
-Decision: **GO / NO CURRENT RUNTIME SCHEMA MIGRATION REQUIRED**
+Target step: **P0-05B4 — Save Compatibility Cleanup (corrected audit)**
+Decision: **GO**
 
-## Goal
+## Correction
 
-Prevent retired Stronghold numeric rewards from re-entering authority through save/restore compatibility while keeping this checkpoint scoped to the runtime that actually exists.
+The earlier checkpoint incorrectly stated that Cardfront had no implemented runtime snapshot. Source inspection and CI proved that `CardfrontRuntimeSnapshot.gd` is active. That false repository-reality statement is superseded by this checkpoint.
 
-## Repository reality audit
+The active snapshot previously serialized, deserialized, captured, and restored the retired Stronghold reward dictionary. The live `CardfrontRoundDirector` had already moved to status-only Stronghold observation, so the stale snapshot path both violated the retirement boundary and referenced a removed runtime property.
 
-The P0 planning contract describes a future `CardfrontRuntimeSnapshot` boundary with `supports`, territory claims, pending volley and pending choice data. The current branch does **not** yet contain an implemented `CardfrontRuntimeSnapshot` / Cardfront save-restore pipeline matching that planned schema.
+## Corrected compatibility boundary
 
-Searches for the planned runtime snapshot surface and its expected fields did not locate an implemented persistence class or restore path. Therefore this checkpoint does not invent a new save framework merely to satisfy a planning placeholder.
+`CardfrontRuntimeSnapshot` now:
 
-## Compatibility rule frozen here
+- does not write the retired Stronghold reward field;
+- ignores that unknown field when reading an older dictionary;
+- does not re-emit it during roundtrip;
+- does not restore it into `CardfrontRoundDirector`;
+- never maps it into Support state, connectivity, deployment, Draft size, attack level, or volley count.
 
-When Cardfront persistence is implemented later:
+The schema version remains `2.0`: older dictionaries remain readable because unknown keys are ignored, while newly emitted dictionaries contain only current authority. This is a compatibility cleanup, not a migration of legacy reward data.
 
-- missing new fields may receive neutral defaults;
-- historical Stronghold reward values must **not** be mapped into Support ownership, Support operational state, Support connectivity, Draft size, attack level, or volley count;
-- derived Support connectivity must be recomputed from authoritative topology + ownership/claim + operational state;
-- derived deployment legality must be recomputed from current authoritative state;
-- runtime numeric IDs must not become persistent identity authority.
+## Evidence
 
-Explicit forbidden migration:
-
-```text
-old stronghold bonus snapshot
-  -> Support state
-  -> connectivity / deployment / combat authority
-```
-
-## Runtime cleanup bound to this checkpoint
-
-`CardfrontRoundDirector` now:
-
-- stores `current_stronghold_status`, not `current_stronghold_bonuses`;
-- exposes `get_stronghold_status()`;
-- samples through `sample_status()`;
-- fixes formal Draft offer size to the three-choice contract instead of deriving it from Stronghold data;
-- does not feed Stronghold reward values into AI live valuation;
-- does not pass volley plans through a Stronghold reward mutation seam.
-
-This removes the live names and paths most likely to be mistaken for future persistence authority.
-
-## Regression / evidence
-
-- Current Cardfront persistence implementation matching the planned runtime snapshot: **not present**.
-- Save schema changed by this checkpoint: **NO**.
-- Old Stronghold reward -> Support migration introduced: **NO**.
-- Derived Support connectivity persisted as authority: **NO**.
-- Production runtime still exposes status-only Stronghold observation: **YES**.
+- `CardfrontRuntimeSnapshotTestRunner.gd`: **PASS (39 checks)**.
+- `CardfrontSupportSnapshotContractTestRunner.gd`: **PASS (21 checks)**.
+- An old payload containing the retired field is accepted, omitted from the new payload, and produces no Support state.
+- Production source search finds no retired Stronghold reward snapshot token.
 
 ## Mandatory audit fields
 
 ```text
-Stable IDs introduced/changed? NO
-Runtime numeric IDs used as persistent identity? NO new use
-Territory capture touched? NO
-Creature movement legality touched? NO
-Deployment four-consumer authority touched? NO
-Derived Support connectivity persisted as authority? NO
-Legacy Stronghold reward restore path found? NO
-Save compatibility impact? NONE in current runtime; future rule frozen above
-P1/P2 leakage? NONE
+Mandatory audit gates touched: P0-05 save compatibility; derived-state persistence; legacy authority retirement
+Audit status per gate: PASS
+Evidence bound to source commit: YES — 7fc4a3b82ad57b6cec340c2ef36da54121942363
+Highest-priority evidence used: automated
+Unverified assumptions remaining: none affecting save/gameplay authority
+Legacy authority still reachable: NO through CardfrontRuntimeSnapshot
+Second-authority risk: NONE introduced
+Save/restore risk: older retired reward data is intentionally ignored
+Cross-system regression evidence: runtime snapshot + Support snapshot focused runners
+Manual evidence required before GO: NO
+Video requested explicitly by product owner: NO
+Stable IDs introduced/changed: NO
+Runtime numeric IDs used as persistent identity: NO
+Territory capture touched: NO
+Creature movement legality touched: NO
+Deployment four-consumer authority touched: NO
+P1/P2 leakage: NONE
 ```
-
-## Non-goals
-
-- creating a new save manager;
-- defining a complete persistence schema ahead of its implementation checkpoint;
-- serializing connectivity caches;
-- converting historical Stronghold numeric values into Support semantics.
-
-## Exit gate
-
-**PASS.** There is no current Cardfront persistence path capable of restoring retired Stronghold reward authority, and the live runtime naming/consumer paths have been cut so a future save implementation has a clear authority boundary.
 
 Only allowed next step: **P0-05B5 — Global Legacy Search Gate**.
