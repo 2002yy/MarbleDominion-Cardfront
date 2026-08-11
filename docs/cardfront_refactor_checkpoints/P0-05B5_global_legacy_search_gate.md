@@ -3,7 +3,7 @@
 Audited source commit: `7fc4a3b82ad57b6cec340c2ef36da54121942363`
 Branch: `audit/p0-04e-auto-spawn`
 Target step: **P0-05B5 — Global Legacy Search Gate**
-Decision: **PENDING CI / NOT GO YET**
+Decision: **GO**
 
 ## Goal
 
@@ -56,14 +56,23 @@ Godot 4.7.1:
 
 The reduced simulations prove compilation, deterministic completion, offer validity, and contract shape. They do not replace the configured GitHub Actions seed counts or final numeric evidence.
 
+## GitHub Actions evidence
+
+PR #19 branch tip `12fda4a3de008ed7b82e4f4fd233ce0ac8816111`, containing audited source commit `7fc4a3b82ad57b6cec340c2ef36da54121942363`, completed the active workflow matrix with **41 passed, 0 failed, 0 cancelled, 0 pending**:
+
+- Headless Tests: run `31516604121` — PASS, including tactical Strongholds, Hero balance, and parity balance.
+- B1 Simulation Tests: run `31516604163` — PASS, including selectable deck candidates, 162-match matrix, opening strength, and 5,400 directional audit.
+- Battlefield Entity Foundation Tests: run `31516604063` — PASS.
+- Shared Upgrade AI Tests: run `31516604058` — PASS, including Shared AI 5,400 parity proxy audit.
+
 ## Mandatory audit fields
 
 ```text
 Mandatory audit gates touched: P0-05 global legacy search; save compatibility; cross-system simulation
-Audit status per gate: production search PASS; focused regression PASS; active CI PENDING
+Audit status per gate: production search PASS; focused regression PASS; active CI PASS (41/41)
 Evidence bound to source commit: YES — 7fc4a3b82ad57b6cec340c2ef36da54121942363
 Highest-priority evidence used: automated
-Unverified assumptions remaining: configured CI seed counts and full workflow matrix
+Unverified assumptions remaining: NONE for this source gate
 Legacy authority still reachable: NONE found in production source
 Second-authority risk: NONE introduced
 Save/restore risk: corrected in P0-05B4
@@ -80,6 +89,6 @@ P1/P2 leakage: NONE
 
 ## Exit gate
 
-Do not mark GO until active CI for the branch tip containing audited source `7fc4a3b82ad57b6cec340c2ef36da54121942363` confirms the source gate and cross-system regressions.
+The active CI matrix is green. P0-05 is closed.
 
-If green, P0-05 closes and the only allowed next step is **P0-06 — Support Presentation**.
+The only allowed next step is **P0-06 — Support Presentation**.
