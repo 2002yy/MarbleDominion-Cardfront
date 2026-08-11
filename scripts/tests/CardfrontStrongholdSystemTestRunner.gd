@@ -3,13 +3,8 @@ extends SceneTree
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
 const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
-const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDraftSystem.gd")
-const AiCommanderScript = preload("res://scripts/cardfront/ai/CardfrontAiCommander.gd")
-const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 const StrongholdSystemScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdSystem.gd")
-const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
-const VolleyPlanScript = preload("res://scripts/cardfront/volley/CardfrontVolleyPlan.gd")
 
 var _assert: TestAssert
 
@@ -25,9 +20,8 @@ func _run() -> void:
 
 	await _test_threshold_and_one_status_per_type()
 	await _test_lost_control_removes_status()
-	await _test_legacy_api_shell_is_status_only()
-	_test_legacy_reward_application_is_fully_neutral()
-	_test_consumers_reject_legacy_rewards()
+	await _test_status_api_has_no_legacy_reward_seams()
+	_test_draft_contract_remains_three_choice()
 
 	_assert.report("[CardfrontStrongholdSystemTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
@@ -85,7 +79,7 @@ func _test_lost_control_removes_status() -> void:
 	await process_frame
 
 
-func _test_legacy_api_shell_is_status_only() -> void:
+func _test_status_api_has_no_legacy_reward_seams() -> void:
 	var fixture: Dictionary = _make_fixture()
 	var region_map = fixture.region_map
 	var battlefield = fixture.battlefield
@@ -93,64 +87,25 @@ func _test_legacy_api_shell_is_status_only() -> void:
 	var factory_id: int = int(_region_ids_of_type(region_map, RegionTypeScript.FACTORY)[0])
 	_paint_region_percent(battlefield, region_map, factory_id, CardfrontRulesScript.PLAYER_FACTION, 1.00)
 
-	var sampled: Dictionary = system.sample_bonuses()
-	var legacy_named_owner: Dictionary = system.get_owner_bonus(CardfrontRulesScript.PLAYER_FACTION)
-	var player: Dictionary = sampled[CardfrontRulesScript.PLAYER_FACTION]
-	_assert.that((player.active_types as Array).has(RegionTypeScript.FACTORY), "stronghold compatibility shell: legacy method name may still expose status")
-	_assert.that(not player.has("shot_count_bonus"), "stronghold compatibility shell: legacy method must not recreate Factory reward output")
-	_assert.that(not legacy_named_owner.has("shot_count_bonus"), "stronghold compatibility shell: legacy owner getter must be status-only")
+	var sampled: Dictionary = system.sample_status()
+	var player: Dictionary = system.get_owner_status(CardfrontRulesScript.PLAYER_FACTION)
+	_assert.that((sampled[CardfrontRulesScript.PLAYER_FACTION].active_types as Array).has(RegionTypeScript.FACTORY), "stronghold status API: active identity should remain available")
+	_assert.that(not player.has("shot_count_bonus"), "stronghold status API: no Factory reward field may survive")
+	_assert.that(not system.has_method("sample_bonuses"), "stronghold status API: legacy sample_bonuses seam must be removed")
+	_assert.that(not system.has_method("get_owner_bonus"), "stronghold status API: legacy get_owner_bonus seam must be removed")
+	_assert.that(not system.has_method("apply_to_volley_plan"), "stronghold status API: legacy volley mutation seam must be removed")
+	_assert.that(not system.has_signal("bonuses_sampled"), "stronghold status API: legacy reward signal must be removed")
 
 	TestFixtures.cleanup_node(battlefield)
 	TestFixtures.cleanup_node(system)
 	await process_frame
 
 
-func _test_legacy_reward_application_is_fully_neutral() -> void:
-	var system = StrongholdSystemScript.new()
-	var plan = VolleyPlanScript.new()
-	for _index in range(31):
-		plan.projectile_sequence.append(ProjectileTypeScript.STANDARD)
-	plan.shot_count = plan.projectile_sequence.size()
-	plan.projectile_counts = ProjectileTypeScript.count_types(plan.projectile_sequence)
-	plan.projectile_power = 2
-	plan.attack_level = RunStateScript.MAX_ATTACK_LEVEL
-	plan.chamber_damage_quarters = 4 + RunStateScript.MAX_ATTACK_LEVEL
-	var malicious_legacy_snapshot: Dictionary = {
-		CardfrontRulesScript.PLAYER_FACTION: {
-			"active_types": [RegionTypeScript.FACTORY, RegionTypeScript.ENERGY],
-			"shot_count_bonus": StrongholdRulesScript.FACTORY_SHOT_BONUS,
-			"temporary_attack_level_bonus": StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS,
-			"draft_choice_count": StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT,
-		},
-	}
-	system.apply_to_volley_plan(CardfrontRulesScript.PLAYER_FACTION, plan, malicious_legacy_snapshot)
-
-	_assert.eq(plan.shot_count, 31, "stronghold compatibility seam: injected Factory reward must not append live volley shots")
-	_assert.eq(plan.projectile_sequence.size(), 31, "stronghold compatibility seam: injected Factory reward must not mutate projectile sequence")
-	_assert.eq(plan.attack_level, RunStateScript.MAX_ATTACK_LEVEL, "stronghold compatibility seam: injected Energy reward must not raise attack level")
-	_assert.eq(plan.chamber_damage_quarters, 4 + RunStateScript.MAX_ATTACK_LEVEL, "stronghold compatibility seam: injected Energy reward must not raise chamber damage")
-	_assert.eq(plan.stronghold_shot_bonus, 0, "stronghold compatibility seam: retired Factory reward metadata must be neutral")
-	_assert.eq(plan.stronghold_attack_level_bonus, 0, "stronghold compatibility seam: retired Energy reward metadata must be neutral")
-	_assert.that((plan.active_stronghold_types as Array).has(RegionTypeScript.FACTORY), "stronghold compatibility seam: status identity may remain attached")
-	system.free()
-
-
-func _test_consumers_reject_legacy_rewards() -> void:
+func _test_draft_contract_remains_three_choice() -> void:
 	var draft = DraftSystemScript.new()
 	draft.set_seed(17)
-	var offer: Array = draft.draw_offer(null, StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT)
-	_assert.eq(offer.size(), DraftSystemScript.DEFAULT_OFFER_SIZE, "stronghold draft consumer: legacy four-choice request must stay capped to three")
-
-	var commander = AiCommanderScript.new()
-	var sanitized: Dictionary = commander._sanitize_legacy_stronghold_context({
-		"source": "live",
-		"post_multiplier_shot_bonus": StrongholdRulesScript.FACTORY_SHOT_BONUS,
-		"temporary_attack_level_bonus": StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS,
-		"future_offer_size": StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT,
-	})
-	_assert.eq(int(sanitized.post_multiplier_shot_bonus), 0, "stronghold AI consumer: legacy Factory reward must not affect valuation")
-	_assert.eq(int(sanitized.temporary_attack_level_bonus), 0, "stronghold AI consumer: legacy Energy reward must not affect valuation")
-	_assert.eq(int(sanitized.future_offer_size), DraftSystemScript.DEFAULT_OFFER_SIZE, "stronghold AI consumer: legacy Lab reward must not affect future-offer valuation")
+	var oversized_request: Array = draft.draw_offer(null, DraftSystemScript.DEFAULT_OFFER_SIZE + 1)
+	_assert.eq(oversized_request.size(), DraftSystemScript.DEFAULT_OFFER_SIZE, "draft contract: oversized requests must remain capped to the formal three-choice UI")
 
 
 func _make_fixture() -> Dictionary:
