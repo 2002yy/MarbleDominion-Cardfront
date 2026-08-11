@@ -3,7 +3,7 @@ extends SceneTree
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const MatchPhaseScript = preload("res://scripts/cardfront/run/CardfrontMatchPhase.gd")
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
-const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
+const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
 
 var _assert: TestAssert
 
@@ -18,7 +18,7 @@ func _run() -> void:
 	await process_frame
 
 	await _test_player_choice_pauses_resolves_and_launches()
-	await _test_strongholds_are_legacy_metadata_only()
+	await _test_strongholds_are_status_only()
 	await _test_timeout_selects_player_fallback()
 	await _test_ballwar_is_isolated()
 	GameConfig.reset_runtime_defaults()
@@ -101,7 +101,7 @@ func _test_timeout_selects_player_fallback() -> void:
 	await _flush()
 
 
-func _test_strongholds_are_legacy_metadata_only() -> void:
+func _test_strongholds_are_status_only() -> void:
 	var main = await _start_main(GameConfig.GAME_MODE_CARDFRONT)
 	var director = main.runtime.round_director
 	_paint_all_strongholds(main, RulesScript.PLAYER_FACTION)
@@ -109,22 +109,26 @@ func _test_strongholds_are_legacy_metadata_only() -> void:
 	director.force_open_draft_for_test()
 	await process_frame
 
-	var player_bonus: Dictionary = director.get_stronghold_bonus(RulesScript.PLAYER_FACTION)
-	_assert.eq(int(player_bonus.get("shot_count_bonus", 0)), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold producer: factory legacy +3 should remain observable")
-	_assert.eq(int(player_bonus.get("temporary_attack_level_bonus", 0)), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "runtime stronghold producer: energy legacy +1 should remain observable")
-	_assert.eq(int(player_bonus.get("draft_choice_count", 0)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "runtime stronghold producer: lab legacy four-choice value should remain observable")
-	_assert.eq(director.get_player_offer().size(), 3, "runtime stronghold consumer: lab legacy value must not expand the player offer")
-	_assert.eq(main.runtime.three_choice_panel.get_visible_choice_count(), 3, "runtime stronghold consumer: formal panel must stay three-choice")
+	var player_status: Dictionary = director.get_stronghold_bonus(RulesScript.PLAYER_FACTION)
+	_assert.that(not player_status.has("shot_count_bonus"), "runtime stronghold status: Factory reward value must not be produced")
+	_assert.that(not player_status.has("temporary_attack_level_bonus"), "runtime stronghold status: Energy reward value must not be produced")
+	_assert.that(not player_status.has("draft_choice_count"), "runtime stronghold status: Lab reward value must not be produced")
+	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.FACTORY), "runtime stronghold status: Factory identity should remain observable")
+	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.ENERGY), "runtime stronghold status: Energy identity should remain observable")
+	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.LAB), "runtime stronghold status: Lab identity should remain observable")
+	_assert.eq(director.get_player_offer().size(), 3, "runtime stronghold: player offer must remain exactly three")
+	_assert.eq(main.runtime.three_choice_panel.get_visible_choice_count(), 3, "runtime stronghold: formal panel must remain three-choice")
 	for card in main.runtime.three_choice_panel.get_choice_cards():
-		_assert.eq(card.custom_minimum_size.x, 280.0, "runtime stronghold consumer: cards should retain the formal three-column layout")
-	_assert.that(str(main.runtime.three_choice_panel.stronghold_label.text).contains("工厂"), "runtime stronghold compatibility: active stronghold identity may remain visible until P0-05B3 text cutover")
+		_assert.eq(card.custom_minimum_size.x, 280.0, "runtime stronghold: cards should retain the formal three-column layout")
+	_assert.that(not str(main.runtime.three_choice_panel.title_label.text).contains("四选一"), "runtime stronghold: retired Lab producer must no longer trigger four-choice title state")
+	_assert.that(str(main.runtime.three_choice_panel.stronghold_label.text).contains("工厂"), "runtime stronghold compatibility: old effect-text label remains visible until P0-05B3")
 
 	_assert.that(main.runtime.three_choice_panel.choose_index_for_test(0), "runtime stronghold: player should still choose normally")
 	var plan = director.current_plans.get(RulesScript.PLAYER_FACTION, null)
 	_assert.that(plan != null, "runtime stronghold: resolution should build a player plan")
 	if plan != null:
-		_assert.eq(int(plan.stronghold_shot_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold compatibility: plan should retain factory legacy metadata")
-		_assert.eq(int(plan.stronghold_attack_level_bonus), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "runtime stronghold compatibility: plan should retain energy legacy metadata")
+		_assert.eq(int(plan.stronghold_shot_bonus), 0, "runtime stronghold: retired Factory metadata must be neutral")
+		_assert.eq(int(plan.stronghold_attack_level_bonus), 0, "runtime stronghold: retired Energy metadata must be neutral")
 	director.complete_reveal_for_test()
 
 	main._cleanup_game_layer()
