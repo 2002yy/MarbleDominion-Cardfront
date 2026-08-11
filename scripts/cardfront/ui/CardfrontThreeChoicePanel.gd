@@ -186,15 +186,12 @@ func _on_draft_opened(player_offer: Array, _ai_offer: Array, timeout_seconds: fl
 		card.upgrade_chosen.connect(_choose_upgrade)
 		_choice_cards.append(card)
 	_layout_choice_cards(_choice_cards.size())
-	var player_bonus: Dictionary = _last_stronghold_bonuses.get(RulesScript.PLAYER_FACTION, {}) as Dictionary
-	var has_lab_choice: bool = int(player_bonus.get("draft_choice_count", 3)) >= StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT
-	title_label.text = "实验室加成：四选一" if has_lab_choice else "\u9009\u62e9\u672c\u8f6e\u5f3a\u5316"
+	# P0-05B3: the formal draft is always three-choice. Stronghold identity may
+	# be shown separately, but it must not alter or describe the draft offer.
+	title_label.text = "\u9009\u62e9\u672c\u8f6e\u5f3a\u5316"
 	round_label.text = "\u7b2c %d \u8f6e  \u00b7  \u5168\u573a\u5df2\u6682\u505c" % int(round_number)
 	ai_status_label.text = "AI \u5df2\u9501\u5b9a\u9009\u62e9"
-	if has_lab_choice:
-		result_label.text = "实验室已激活：本轮额外出现 1 张候选牌\n点击一张强化牌，超时将随机选择"
-	else:
-		result_label.text = "\u70b9\u51fb\u4e00\u5f20\u5f3a\u5316\u724c\uff0c\u8d85\u65f6\u5c06\u968f\u673a\u9009\u62e9"
+	result_label.text = "\u70b9\u51fb\u4e00\u5f20\u5f3a\u5316\u724c\uff0c\u8d85\u65f6\u5c06\u968f\u673a\u9009\u62e9"
 	timer_bar.max_value = _timeout_seconds
 	timer_bar.value = _timeout_seconds
 	timer_label.text = "%.1f" % _timeout_seconds
@@ -266,10 +263,10 @@ func _on_strongholds_sampled(bonuses: Dictionary) -> void:
 		return
 	var parts: Array[String] = []
 	for region_type in active_types:
-		var text: String = StrongholdRulesScript.compact_effect_text(str(region_type))
+		var text: String = StrongholdRulesScript.badge_name(str(region_type))
 		if text != "":
 			parts.append(text)
-	stronghold_label.text = "据点：%s" % " · ".join(parts)
+	stronghold_label.text = "据点控制：%s" % " · ".join(parts)
 	stronghold_label.visible = true
 	stronghold_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.32))
 
