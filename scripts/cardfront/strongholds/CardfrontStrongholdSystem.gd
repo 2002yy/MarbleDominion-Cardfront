@@ -2,9 +2,6 @@ extends Node
 class_name CardfrontStrongholdSystem
 
 signal status_sampled(snapshot)
-# Compatibility signal name retained temporarily for presentation code that has
-# not yet crossed P0-05B3. It carries status only, never legacy reward values.
-signal bonuses_sampled(snapshot)
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionControlCalculatorScript = preload("res://scripts/cardfront/regions/RegionControlCalculator.gd")
@@ -30,8 +27,6 @@ func setup(new_region_map, new_battlefield) -> bool:
 	return true
 
 
-# P0-05B2 authoritative producer: this is a status/activation snapshot only.
-# Factory/Energy/Lab legacy numeric rewards are intentionally not produced.
 func sample_status() -> Dictionary:
 	var snapshot: Dictionary = _empty_snapshot()
 	var best_by_owner: Dictionary = {}
@@ -65,24 +60,11 @@ func sample_status() -> Dictionary:
 
 	last_snapshot = snapshot.duplicate(true)
 	status_sampled.emit(last_snapshot.duplicate(true))
-	bonuses_sampled.emit(last_snapshot.duplicate(true))
 	return last_snapshot.duplicate(true)
-
-
-# Legacy API shell. The name is retained only to avoid an unrelated caller
-# break during the staged cutover. It is explicitly non-authoritative and
-# returns the same status-only schema as sample_status().
-func sample_bonuses() -> Dictionary:
-	return sample_status()
 
 
 func get_owner_status(owner_id: int) -> Dictionary:
 	return (last_snapshot.get(int(owner_id), _empty_owner_status()) as Dictionary).duplicate(true)
-
-
-# Legacy API shell; status only, no renamed/repackaged reward fields.
-func get_owner_bonus(owner_id: int) -> Dictionary:
-	return get_owner_status(owner_id)
 
 
 func get_region_activation(region_id: int) -> Dictionary:
@@ -101,19 +83,6 @@ func get_region_activation(region_id: int) -> Dictionary:
 		"owner_id": CardfrontRulesScript.NEUTRAL_OWNER,
 		"region_type": "",
 	}
-
-
-# Legacy call seam retained until the global legacy search gate. It may attach
-# active stronghold identity for diagnostics/presentation, but retired rewards
-# are fixed at zero and cannot mutate combat.
-func apply_to_volley_plan(owner_id: int, plan, snapshot: Dictionary = {}) -> void:
-	if plan == null:
-		return
-	var source: Dictionary = snapshot if not snapshot.is_empty() else last_snapshot
-	var status: Dictionary = source.get(int(owner_id), _empty_owner_status()) as Dictionary
-	plan.stronghold_shot_bonus = 0
-	plan.stronghold_attack_level_bonus = 0
-	plan.active_stronghold_types = (status.get("active_types", []) as Array).duplicate()
 
 
 func _apply_owner_best(owner_status: Dictionary, owner_best: Dictionary) -> void:
