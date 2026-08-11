@@ -23,7 +23,7 @@ func _run() -> void:
 
 	await _test_threshold_and_one_bonus_per_type()
 	await _test_lost_control_removes_bonus()
-	_test_bonus_application_is_explicit_and_bounded()
+	_test_legacy_reward_application_is_metadata_only()
 
 	_assert.report("[CardfrontStrongholdSystemTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
@@ -45,9 +45,12 @@ func _test_threshold_and_one_bonus_per_type() -> void:
 	var snapshot: Dictionary = system.sample_bonuses()
 	var player: Dictionary = snapshot[CardfrontRulesScript.PLAYER_FACTION]
 
-	_assert.eq(int(player.shot_count_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "stronghold: two factories should still grant one +3 bonus")
-	_assert.eq(int(player.temporary_attack_level_bonus), 0, "stronghold: 79 percent energy control should not activate")
-	_assert.eq(int(player.draft_choice_count), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "stronghold: 80 percent lab control should enable four choices")
+	_assert.eq(int(player.shot_count_bonus), 0, "stronghold: factory must no longer grant live volley shots")
+	_assert.eq(int(player.compatibility_shot_count_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "stronghold: factory legacy +3 formula should remain as compatibility evidence")
+	_assert.eq(int(player.temporary_attack_level_bonus), 0, "stronghold: energy live attack bonus must stay neutral")
+	_assert.eq(int(player.compatibility_temporary_attack_level_bonus), 0, "stronghold: 79 percent energy control should not activate even in compatibility output")
+	_assert.eq(int(player.draft_choice_count), 3, "stronghold: lab must no longer expand the live draft beyond three choices")
+	_assert.eq(int(player.compatibility_draft_choice_count), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "stronghold: lab legacy four-choice formula should remain as compatibility evidence")
 	_assert.eq(int(player.active_regions[RegionTypeScript.FACTORY]), int(factory_ids[1]), "stronghold: same type should select the highest-control region")
 	_assert.eq((player.active_types as Array).count(RegionTypeScript.FACTORY), 1, "stronghold: same type should appear once")
 
@@ -65,11 +68,13 @@ func _test_lost_control_removes_bonus() -> void:
 
 	_paint_region_percent(battlefield, region_map, energy_id, CardfrontRulesScript.PLAYER_FACTION, 1.00)
 	var active: Dictionary = system.sample_bonuses()[CardfrontRulesScript.PLAYER_FACTION]
-	_assert.eq(int(active.temporary_attack_level_bonus), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "stronghold: controlled energy relay should grant one temporary attack level")
+	_assert.eq(int(active.temporary_attack_level_bonus), 0, "stronghold: controlled energy relay must not mutate live attack level")
+	_assert.eq(int(active.compatibility_temporary_attack_level_bonus), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "stronghold: controlled energy relay should retain the legacy +1 formula as compatibility evidence")
 
 	_paint_all_neutral(battlefield)
 	var lost: Dictionary = system.sample_bonuses()[CardfrontRulesScript.PLAYER_FACTION]
-	_assert.eq(int(lost.temporary_attack_level_bonus), 0, "stronghold: lost control should remove the next sampled bonus")
+	_assert.eq(int(lost.temporary_attack_level_bonus), 0, "stronghold: lost control should keep the live attack bonus neutral")
+	_assert.eq(int(lost.compatibility_temporary_attack_level_bonus), 0, "stronghold: lost control should clear the compatibility producer value")
 	_assert.that((lost.active_types as Array).is_empty(), "stronghold: lost control should clear active types")
 
 	TestFixtures.cleanup_node(battlefield)
@@ -77,11 +82,9 @@ func _test_lost_control_removes_bonus() -> void:
 	await process_frame
 
 
-func _test_bonus_application_is_explicit_and_bounded() -> void:
+func _test_legacy_reward_application_is_metadata_only() -> void:
 	var system = StrongholdSystemScript.new()
 	var plan = VolleyPlanScript.new()
-	# Stronghold bonuses append typed projectiles, so the fixture must populate
-	# the typed sequence rather than only assigning the legacy shot_count field.
 	for _index in range(31):
 		plan.projectile_sequence.append(ProjectileTypeScript.STANDARD)
 	plan.shot_count = plan.projectile_sequence.size()
@@ -92,19 +95,23 @@ func _test_bonus_application_is_explicit_and_bounded() -> void:
 	var snapshot: Dictionary = {
 		CardfrontRulesScript.PLAYER_FACTION: {
 			"active_types": [RegionTypeScript.FACTORY, RegionTypeScript.ENERGY],
-			"shot_count_bonus": StrongholdRulesScript.FACTORY_SHOT_BONUS,
-			"temporary_attack_level_bonus": StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS,
+			"shot_count_bonus": 0,
+			"temporary_attack_level_bonus": 0,
+			"draft_choice_count": 3,
+			"compatibility_shot_count_bonus": StrongholdRulesScript.FACTORY_SHOT_BONUS,
+			"compatibility_temporary_attack_level_bonus": StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS,
+			"compatibility_draft_choice_count": StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT,
 		},
 	}
 	system.apply_to_volley_plan(CardfrontRulesScript.PLAYER_FACTION, plan, snapshot)
 
-	_assert.eq(plan.shot_count, 32, "stronghold: exceptional bonuses should respect the 32-shot safety cap")
-	_assert.eq(plan.projectile_sequence.size(), 32, "stronghold: typed sequence should respect the 32-shot safety cap")
-	_assert.eq(plan.projectile_power, 2, "stronghold: energy bonus must not mutate legacy projectile power")
-	_assert.eq(plan.attack_level, RunStateScript.MAX_RESOLVED_ATTACK_LEVEL, "stronghold: energy should temporarily raise a permanent level-three build to level four")
-	_assert.eq(plan.chamber_damage_quarters, 8, "stronghold: temporary level four should deal 200 percent chamber damage")
-	_assert.eq(plan.stronghold_shot_bonus, StrongholdRulesScript.FACTORY_SHOT_BONUS, "stronghold: plan should record factory contribution")
-	_assert.eq(plan.stronghold_attack_level_bonus, StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "stronghold: plan should record energy contribution")
+	_assert.eq(plan.shot_count, 31, "stronghold: legacy factory reward must not append live volley shots")
+	_assert.eq(plan.projectile_sequence.size(), 31, "stronghold: legacy factory reward must not mutate the typed projectile sequence")
+	_assert.eq(plan.projectile_power, 2, "stronghold: compatibility metadata must not mutate projectile power")
+	_assert.eq(plan.attack_level, RunStateScript.MAX_ATTACK_LEVEL, "stronghold: legacy energy reward must not raise live attack level")
+	_assert.eq(plan.chamber_damage_quarters, 4 + RunStateScript.MAX_ATTACK_LEVEL, "stronghold: legacy energy reward must not raise chamber damage")
+	_assert.eq(plan.stronghold_shot_bonus, StrongholdRulesScript.FACTORY_SHOT_BONUS, "stronghold: plan may retain factory legacy contribution as metadata")
+	_assert.eq(plan.stronghold_attack_level_bonus, StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "stronghold: plan may retain energy legacy contribution as metadata")
 	system.free()
 
 
