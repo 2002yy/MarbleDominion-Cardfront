@@ -6,7 +6,9 @@ const DeckRegistryScript = preload("res://scripts/cardfront/draft/CardfrontUpgra
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 
 const DEFAULT_OFFER_SIZE: int = 3
-const MAX_OFFER_SIZE: int = 4
+# P0-05B1: the formal gameplay draft is three-choice. Legacy Lab may still
+# produce draft_choice_count=4, but the draft consumer no longer accepts it.
+const MAX_OFFER_SIZE: int = 3
 const COMMON_BASE_WEIGHT: float = 100.0
 const UNCOMMON_BASE_WEIGHT: float = 42.0
 const RARE_BASE_WEIGHT: float = 12.0
