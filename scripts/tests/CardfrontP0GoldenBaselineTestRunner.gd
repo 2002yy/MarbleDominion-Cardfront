@@ -10,9 +10,6 @@ const MatchPhaseScript = preload("res://scripts/cardfront/run/CardfrontMatchPhas
 const CommandPointSystemScript = preload("res://scripts/cardfront/run/CardfrontCommandPointSystem.gd")
 const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
 const StrongholdSystemScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdSystem.gd")
-const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
-const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
-const VolleyPlanScript = preload("res://scripts/cardfront/volley/CardfrontVolleyPlan.gd")
 
 var _assert: TestAssert
 
@@ -63,12 +60,13 @@ func _test_mode_and_duel(golden: Dictionary) -> void:
 func _test_phase_and_economy(golden: Dictionary) -> void:
 	var command_points: Dictionary = golden.get("command_points", {}) as Dictionary
 	var offer_size: Dictionary = golden.get("offer_size", {}) as Dictionary
+	var legacy: Dictionary = golden.get("legacy_stronghold", {}) as Dictionary
 	_assert.eq(golden.get("phase_progression", []), MatchPhaseScript.ALL, "golden: Draft/Aim/Execution/Volley phase structure")
 	_assert.eq(int(command_points.get("default", -1)), CommandPointSystemScript.DEFAULT_POINTS, "golden: default Command Points")
 	_assert.eq(int(command_points.get("max", -1)), CommandPointSystemScript.MAX_POINTS, "golden: maximum Command Points")
 	_assert.eq(int(offer_size.get("player_default", -1)), DraftSystemScript.DEFAULT_OFFER_SIZE, "golden: player default offer size")
 	_assert.eq(int(offer_size.get("ai_default", -1)), DraftSystemScript.DEFAULT_OFFER_SIZE, "golden: AI default offer size")
-	_assert.eq(int(offer_size.get("legacy_lab", -1)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "golden: historical Lab offer size should remain identifiable")
+	_assert.eq(int(offer_size.get("legacy_lab", -1)), int(legacy.get("lab_choice_count", -2)), "golden: historical Lab fixture should stay internally consistent without runtime coupling")
 	_assert.eq(DraftSystemScript.MAX_OFFER_SIZE, DraftSystemScript.DEFAULT_OFFER_SIZE, "golden: formal draft consumer should remain capped to three")
 
 
@@ -81,35 +79,21 @@ func _test_lane_metadata(golden: Dictionary) -> void:
 
 func _test_legacy_stronghold_retirement(golden: Dictionary) -> void:
 	var legacy: Dictionary = golden.get("legacy_stronghold", {}) as Dictionary
-	_assert.eq(str(legacy.get("ruleset", "")), StrongholdRulesScript.RULESET_ID, "golden: legacy Stronghold ruleset should remain identifiable")
-	_assert.eq(int(legacy.get("activation_percent", -1)), StrongholdRulesScript.ACTIVATION_PERCENT, "golden: stronghold activation threshold remains part of status semantics")
-	_assert.eq(int(legacy.get("factory_shot_bonus", -1)), StrongholdRulesScript.FACTORY_SHOT_BONUS, "golden: historical Factory +3 value")
-	_assert.eq(int(legacy.get("energy_attack_level_bonus", -1)), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "golden: historical Energy +1 value")
-	_assert.eq(int(legacy.get("lab_choice_count", -1)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "golden: historical Lab four-choice value")
-	_assert.that(not bool(legacy.get("runtime_effect_expected", true)), "golden: legacy numeric stronghold effects must be retired after P0-05B2")
+	_assert.eq(str(legacy.get("ruleset", "")), StrongholdRulesScript.RULESET_ID, "golden: historical Stronghold ruleset should remain identifiable")
+	_assert.eq(int(legacy.get("activation_percent", -1)), StrongholdRulesScript.ACTIVATION_PERCENT, "golden: activation threshold remains part of current status semantics")
+	_assert.that(legacy.has("factory_shot_bonus"), "golden: historical Factory value should remain recorded in the fixture")
+	_assert.that(legacy.has("energy_attack_level_bonus"), "golden: historical Energy value should remain recorded in the fixture")
+	_assert.that(legacy.has("lab_choice_count"), "golden: historical Lab value should remain recorded in the fixture")
+	_assert.that(not bool(legacy.get("runtime_effect_expected", true)), "golden: historical numeric effects must remain retired")
 	_assert.eq(str(legacy.get("retired_at_checkpoint", "")), "P0-05B2", "golden: retirement checkpoint should be explicit")
-	_assert.eq(str(legacy.get("expected_after_support_cutover", "")), "retired", "golden: planned post-cutover state should be retired")
+	_assert.eq(str(legacy.get("expected_after_support_cutover", "")), "retired", "golden: planned post-cutover state should remain retired")
 
-	var plan = VolleyPlanScript.new()
-	plan.projectile_sequence = [ProjectileTypeScript.STANDARD]
-	plan.shot_count = 1
-	plan.attack_level = 0
-	plan.chamber_damage_quarters = 4
 	var system = StrongholdSystemScript.new()
-	system.apply_to_volley_plan(CardfrontRulesScript.PLAYER_FACTION, plan, {
-		CardfrontRulesScript.PLAYER_FACTION: {
-			"active_types": [RegionTypeScript.FACTORY, RegionTypeScript.ENERGY],
-			"shot_count_bonus": StrongholdRulesScript.FACTORY_SHOT_BONUS,
-			"temporary_attack_level_bonus": StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS,
-			"draft_choice_count": StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT,
-		},
-	})
-	_assert.eq(plan.shot_count, 1, "golden: injected historical Factory value must not change resolved volley count")
-	_assert.eq(plan.projectile_sequence.size(), 1, "golden: injected historical Factory value must not append projectiles")
-	_assert.eq(plan.attack_level, 0, "golden: injected historical Energy value must not change resolved attack level")
-	_assert.eq(plan.chamber_damage_quarters, 4, "golden: injected historical Energy value must not change chamber damage")
-	_assert.eq(plan.stronghold_shot_bonus, 0, "golden: retired Factory plan metadata should be neutral")
-	_assert.eq(plan.stronghold_attack_level_bonus, 0, "golden: retired Energy plan metadata should be neutral")
+	_assert.that(system.has_method("sample_status"), "golden: current Stronghold surface should expose status sampling")
+	_assert.that(system.has_method("get_owner_status"), "golden: current Stronghold surface should expose owner status")
+	_assert.that(not system.has_method("sample_bonuses"), "golden: retired reward sampling API must not return")
+	_assert.that(not system.has_method("get_owner_bonus"), "golden: retired reward getter must not return")
+	_assert.that(not system.has_method("apply_to_volley_plan"), "golden: retired volley mutation seam must not return")
 	system.free()
 
 
