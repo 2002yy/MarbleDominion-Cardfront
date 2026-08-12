@@ -292,6 +292,7 @@ func _on_choice_locked(owner_id: int, upgrade_id: String, automatic: bool) -> vo
 
 
 func _on_choices_revealed(player_definition: Dictionary, ai_definition: Dictionary, resolution_results: Dictionary) -> void:
+	_set_draft_display_mode(DISPLAY_MODE_DRAFT_VISIBLE)
 	title_label.text = "\u53cc\u65b9\u5f3a\u5316\u5df2\u786e\u5b9a"
 	var player_times: int = int((resolution_results.get(RulesScript.PLAYER_FACTION, {}) as Dictionary).get("times_applied", 1))
 	var player_suffix: String = " \u00d7%d" % player_times if player_times > 1 else ""
@@ -306,6 +307,7 @@ func _on_choices_revealed(player_definition: Dictionary, ai_definition: Dictiona
 
 
 func _on_volley_launched(plans: Dictionary, _issued_intents: Dictionary) -> void:
+	_set_draft_display_mode(DISPLAY_MODE_DRAFT_VISIBLE)
 	draft_root.visible = false
 	battle_status.visible = false
 	var player_plan = plans.get(RulesScript.PLAYER_FACTION, null)
@@ -318,6 +320,7 @@ func _on_volley_launched(plans: Dictionary, _issued_intents: Dictionary) -> void
 
 
 func _on_director_stopped() -> void:
+	_set_draft_display_mode(DISPLAY_MODE_DRAFT_VISIBLE)
 	draft_root.visible = false
 	battle_status.visible = false
 	upgrade_toast.visible = false

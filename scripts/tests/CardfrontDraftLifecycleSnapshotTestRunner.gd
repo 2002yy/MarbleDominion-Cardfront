@@ -141,7 +141,9 @@ func _test_timeout_while_preview_lifecycle() -> void:
 	_assert.that(offered_ids.has(selected_id), "timeout preview: fallback comes from the visible offer")
 	_assert.eq(director.get_phase(), MatchPhaseScript.RESOLVE_CHOICES, "timeout preview: resolution still starts")
 	_assert.that(panel.draft_root.visible, "timeout preview: result surface remains visible")
-	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_BATTLEFIELD_PREVIEW, "timeout preview: current implementation retains preview mode during reveal")
+	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_DRAFT_VISIBLE, "timeout preview: reveal forces Draft-visible mode")
+	_assert.that(panel.choice_shell.visible, "timeout preview: result content is visible")
+	_assert.eq(panel.choice_shell.mouse_filter, Control.MOUSE_FILTER_STOP, "timeout preview: result content restores normal filter")
 	_assert.eq(panel.choice_shell.position, preview_position, "timeout preview: fixed shell geometry remains unchanged during reveal")
 	_assert.eq(panel.title_label.text, "双方强化已确定", "timeout preview: both results are rendered")
 
@@ -149,6 +151,15 @@ func _test_timeout_while_preview_lifecycle() -> void:
 	_assert.eq(director.get_phase(), MatchPhaseScript.BATTLE_COUNTDOWN, "timeout preview: volley launches and countdown resumes")
 	_assert.that(not paused, "timeout preview: world resumes after launch")
 	_assert.that(not panel.draft_root.visible, "timeout preview: DraftRoot hides after launch")
+	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_DRAFT_VISIBLE, "timeout preview: launch leaves preview reset")
+	_assert.eq(panel._peek_button.text, "查看战场", "timeout preview: launch resets peek chrome text")
+
+	director.force_open_draft_for_test()
+	await process_frame
+	_assert.that(panel.draft_root.visible, "timeout preview: next Draft opens normally")
+	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_DRAFT_VISIBLE, "timeout preview: next Draft starts visible")
+	_assert.that(panel.choice_shell.visible, "timeout preview: next Draft content is visible")
+	_assert.eq(panel.get_visible_choice_count(), 3, "timeout preview: next Draft exposes three cards")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
@@ -207,7 +218,9 @@ func _test_director_stop_lifecycle() -> void:
 	_assert.that(not panel.draft_root.visible, "director_stopped: DraftRoot hides")
 	_assert.that(not panel.battle_status.visible, "director_stopped: battle status hides")
 	_assert.that(not panel.upgrade_toast.visible, "director_stopped: upgrade toast hides")
-	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_BATTLEFIELD_PREVIEW, "director_stopped: current implementation does not reset preview mode")
+	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_DRAFT_VISIBLE, "director_stopped: preview mode resets")
+	_assert.that(panel.choice_shell.visible, "director_stopped: Draft content state resets for reuse")
+	_assert.eq(panel._peek_button.text, "查看战场", "director_stopped: peek chrome text resets")
 	_assert.eq(panel.choice_shell.position, preview_position, "director_stopped: shell geometry remains fixed")
 
 	main._cleanup_game_layer()
