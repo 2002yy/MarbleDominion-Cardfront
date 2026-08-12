@@ -70,7 +70,10 @@ func _test_choice_and_next_draft_lifecycle() -> void:
 	_assert.eq(preview_position, baseline_position, "peek click: ChoiceShell geometry stays fixed")
 	_assert.eq(panel._peek_button.get_global_rect(), baseline_peek_global_rect, "peek click: stable chrome does not move with ChoiceShell")
 	_assert.that(panel.draft_root.visible, "peek click: DraftRoot remains visible")
-	_assert.eq(panel.get_visible_choice_count(), 3, "peek click: current cards remain visible and clickable")
+	_assert.that(not panel.choice_shell.visible, "peek click: Draft content is hidden")
+	_assert.eq(panel.choice_shell.mouse_filter, Control.MOUSE_FILTER_IGNORE, "peek click: Draft content ignores pointer input")
+	_assert.eq(panel.get_visible_choice_count(), 0, "peek click: cards are not visible")
+	_assert.that(not panel.choose_index_for_test(0), "peek click: card selection is rejected")
 	_assert.eq(panel._peek_button.text, "返回选择", "peek click: button offers return")
 	_assert.that(paused, "peek click: battle remains paused")
 	_assert.that(not main.runtime.direction_controller.is_processing_unhandled_input(), "peek click: Aim input remains disabled")
@@ -81,6 +84,8 @@ func _test_choice_and_next_draft_lifecycle() -> void:
 	await process_frame
 	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_DRAFT_VISIBLE, "Space: display authority returns to Draft mode")
 	_assert.eq(panel.choice_shell.position, baseline_position, "Space: ChoiceShell geometry stays fixed")
+	_assert.that(panel.choice_shell.visible, "Space: Draft content becomes visible again")
+	_assert.eq(panel.choice_shell.mouse_filter, Control.MOUSE_FILTER_STOP, "Space: Draft content accepts pointer input again")
 	Input.parse_input_event(space_event)
 	await process_frame
 	preview_position = panel.choice_shell.position
@@ -91,9 +96,11 @@ func _test_choice_and_next_draft_lifecycle() -> void:
 	_assert.eq(panel.choice_shell.position, preview_position, "timer update: current preview position is preserved")
 	_assert.eq(_card_ids(panel), first_offer_ids, "timer update: offer identity is unchanged")
 
-	_assert.that(panel.choose_index_for_test(0), "choice_locked: current visible preview card can still lock")
+	panel._toggle_peek()
+	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_DRAFT_VISIBLE, "choice_locked: return to Draft before choosing")
+	_assert.that(panel.choose_index_for_test(0), "choice_locked: visible Draft card can lock")
 	_assert.eq(director.get_phase(), MatchPhaseScript.RESOLVE_CHOICES, "choice_locked: normal resolution starts")
-	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_BATTLEFIELD_PREVIEW, "choices_revealed: current implementation retains preview mode")
+	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_DRAFT_VISIBLE, "choices_revealed: normal Draft choice remains Draft-visible")
 	_assert.eq(panel.choice_shell.position, preview_position, "choices_revealed: fixed shell geometry remains unchanged")
 	_assert.that(panel.draft_root.visible, "choices_revealed: DraftRoot stays visible for result")
 	_assert.eq(panel.title_label.text, "双方强化已确定", "choices_revealed: result title is rendered")
@@ -101,7 +108,7 @@ func _test_choice_and_next_draft_lifecycle() -> void:
 	director.complete_reveal_for_test()
 	_assert.eq(director.get_phase(), MatchPhaseScript.BATTLE_COUNTDOWN, "volley_launched: next countdown starts")
 	_assert.that(not panel.draft_root.visible, "volley_launched: DraftRoot hides")
-	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_BATTLEFIELD_PREVIEW, "volley_launched: current implementation does not reset preview mode")
+	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_DRAFT_VISIBLE, "volley_launched: normal Draft choice retains Draft mode")
 	_assert.eq(panel.choice_shell.position, preview_position, "volley_launched: shell geometry remains fixed")
 
 	director.force_open_draft_for_test()

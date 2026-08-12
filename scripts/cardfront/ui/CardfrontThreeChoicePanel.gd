@@ -96,12 +96,14 @@ func get_choice_cards() -> Array:
 func get_visible_choice_count() -> int:
 	var count: int = 0
 	for card in _choice_cards:
-		if card != null and is_instance_valid(card) and card.visible:
+		if card != null and is_instance_valid(card) and card.is_visible_in_tree():
 			count += 1
 	return count
 
 
 func choose_index_for_test(index: int) -> bool:
+	if _display_mode != DISPLAY_MODE_DRAFT_VISIBLE or not choice_shell.visible:
+		return false
 	if index < 0 or index >= _choice_cards.size():
 		return false
 	var card = _choice_cards[index]
@@ -221,6 +223,8 @@ func _set_draft_display_mode(mode: String) -> void:
 	)
 	var is_preview: bool = _display_mode == DISPLAY_MODE_BATTLEFIELD_PREVIEW
 	dimmer.color.a = _PEEK_DIMMER_ALPHA if is_preview else _NORMAL_DIMMER_ALPHA
+	choice_shell.visible = not is_preview
+	choice_shell.mouse_filter = Control.MOUSE_FILTER_IGNORE if is_preview else Control.MOUSE_FILTER_STOP
 	_peek_button.text = "返回选择" if is_preview else "查看战场"
 	_peek_button.position = Vector2(
 		clampf(
