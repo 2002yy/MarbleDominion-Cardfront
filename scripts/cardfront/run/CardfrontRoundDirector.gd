@@ -17,6 +17,7 @@ const MatchPhaseScript = preload("res://scripts/cardfront/run/CardfrontMatchPhas
 const MatchPhaseControllerScript = preload("res://scripts/cardfront/run/CardfrontMatchPhaseController.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDraftSystem.gd")
+const DraftOfferContextScript = preload("res://scripts/cardfront/draft/CardfrontDraftOfferContext.gd")
 const UpgradeResolverScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeResolver.gd")
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
 const AiCommanderScript = preload("res://scripts/cardfront/ai/CardfrontAiCommander.gd")
@@ -287,16 +288,22 @@ func _open_draft() -> void:
 	current_gate_snapshot = _sample_gates()
 	if battlefield_entity_runtime != null and is_instance_valid(battlefield_entity_runtime):
 		battlefield_entity_runtime.prepare_draft(run_states)
+	var player_context = DraftOfferContextScript.create(
+		RulesScript.PLAYER_FACTION,
+		get_run_state(RulesScript.PLAYER_FACTION)
+	)
+	var ai_context = DraftOfferContextScript.create(
+		RulesScript.AI_FACTION,
+		get_run_state(RulesScript.AI_FACTION)
+	)
 	current_offers = {
-		RulesScript.PLAYER_FACTION: _draft_system.draw_offer(
-			get_run_state(RulesScript.PLAYER_FACTION),
-			DraftSystemScript.DEFAULT_OFFER_SIZE,
-			RulesScript.PLAYER_FACTION
+		RulesScript.PLAYER_FACTION: _draft_system.draw_offer_for_context(
+			player_context,
+			DraftSystemScript.DEFAULT_OFFER_SIZE
 		),
-		RulesScript.AI_FACTION: _draft_system.draw_offer(
-			get_run_state(RulesScript.AI_FACTION),
-			DraftSystemScript.DEFAULT_OFFER_SIZE,
-			RulesScript.AI_FACTION
+		RulesScript.AI_FACTION: _draft_system.draw_offer_for_context(
+			ai_context,
+			DraftSystemScript.DEFAULT_OFFER_SIZE
 		),
 	}
 	var ai_choice: Dictionary = _ai_commander.choose(
