@@ -1,12 +1,17 @@
 extends RefCounted
 class_name CardfrontSupportDeploymentAuthority
 
+signal presentation_snapshots_changed(snapshots)
+
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const SupportIdsScript = preload("res://scripts/cardfront/support/CardfrontSupportIds.gd")
 const SupportTopologyContractScript = preload("res://scripts/cardfront/support/graph/SupportTopologyContract.gd")
 const SupportTopologyValidatorScript = preload("res://scripts/cardfront/support/graph/SupportTopologyValidator.gd")
 const SupportConnectivityCacheScript = preload("res://scripts/cardfront/support/graph/SupportConnectivityCache.gd")
 const DeploymentSupportContextScript = preload("res://scripts/cardfront/deployment/DeploymentSupportContext.gd")
+const PresentationSnapshotBuilderScript = preload(
+	"res://scripts/cardfront/support/presentation/SupportPresentationSnapshotBuilder.gd"
+)
 
 var map_definition: Dictionary = {}
 var topology: Dictionary = {}
@@ -78,7 +83,9 @@ func set_claim_owner(support_id: String, claim_owner: int) -> bool:
 	if int(_claim_owner_by_support.get(safe_id, RulesScript.NEUTRAL_OWNER)) == int(claim_owner):
 		return false
 	_claim_owner_by_support[safe_id] = int(claim_owner)
-	return _connectivity_cache.load_states(_claim_owner_by_support, _operational_by_support)
+	var changed: bool = _connectivity_cache.load_states(_claim_owner_by_support, _operational_by_support)
+	_emit_presentation_snapshots()
+	return changed
 
 
 func set_operational(support_id: String, operational: bool) -> bool:
@@ -88,7 +95,9 @@ func set_operational(support_id: String, operational: bool) -> bool:
 	if bool(_operational_by_support.get(safe_id, false)) == bool(operational):
 		return false
 	_operational_by_support[safe_id] = bool(operational)
-	return _connectivity_cache.load_states(_claim_owner_by_support, _operational_by_support)
+	var changed: bool = _connectivity_cache.load_states(_claim_owner_by_support, _operational_by_support)
+	_emit_presentation_snapshots()
+	return changed
 
 
 func set_support_state(support_id: String, claim_owner: int, operational: bool) -> bool:
@@ -104,7 +113,51 @@ func set_support_state(support_id: String, claim_owner: int, operational: bool) 
 		changed = true
 	if not changed:
 		return false
-	return _connectivity_cache.load_states(_claim_owner_by_support, _operational_by_support)
+	var cache_changed: bool = _connectivity_cache.load_states(_claim_owner_by_support, _operational_by_support)
+	_emit_presentation_snapshots()
+	return cache_changed
+
+
+func presentation_snapshots() -> Array:
+	var definitions_by_id: Dictionary = {}
+	for raw_definition in map_definition.get("deployment_supports", []) as Array:
+		var definition: Dictionary = raw_definition as Dictionary
+		definitions_by_id[str(definition.get("support_id", ""))] = definition
+	var connected_by_side: Dictionary = {}
+	for side in RulesScript.get_duel_factions():
+		var resolved: Dictionary = _connectivity_cache.resolve_for_side(int(side))
+		connected_by_side[int(side)] = resolved.get("connected_support_ids", []) as Array
+
+	var result: Array = []
+	var ordered_ids: Array = definitions_by_id.keys()
+	ordered_ids.sort()
+	for raw_support_id in ordered_ids:
+		var support_id: String = str(raw_support_id)
+		var claim_owner: int = int(_claim_owner_by_support.get(support_id, RulesScript.NEUTRAL_OWNER))
+		var connected: bool = (
+			claim_owner != RulesScript.NEUTRAL_OWNER
+			and support_id in (connected_by_side.get(claim_owner, []) as Array)
+		)
+		var snapshot = PresentationSnapshotBuilderScript.build(
+			definitions_by_id[support_id] as Dictionary,
+			{
+				"support_id": support_id,
+				"claim_owner": claim_owner,
+				"operational": bool(_operational_by_support.get(support_id, false)),
+				"network_connected": connected,
+				"capture_side": RulesScript.NEUTRAL_OWNER,
+				"capture_progress": 0.0,
+				"contested": false,
+			},
+			RulesScript.NEUTRAL_OWNER
+		)
+		if snapshot != null:
+			result.append(snapshot.to_dictionary())
+	return result
+
+
+func _emit_presentation_snapshots() -> void:
+	presentation_snapshots_changed.emit(presentation_snapshots())
 
 
 func debug_snapshot() -> Dictionary:

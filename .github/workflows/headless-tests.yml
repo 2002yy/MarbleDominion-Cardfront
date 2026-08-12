@@ -132,6 +132,7 @@ jobs:
               CardfrontSupportIdentityTestRunner.gd
               CardfrontSupportStateTestRunner.gd
               CardfrontSupportPresentationContractTestRunner.gd
+              CardfrontSupportPresentationLifecycleTestRunner.gd
               CardfrontSupportRegionMapperTestRunner.gd
               CardfrontSupportMapMetadataTestRunner.gd
           - batch: Cardfront P0 support capture pure
