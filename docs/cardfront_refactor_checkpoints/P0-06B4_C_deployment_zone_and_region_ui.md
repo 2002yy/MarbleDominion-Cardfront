@@ -10,7 +10,7 @@ Only allowed next step: **P0-07A1 — Geometry Golden Snapshot**.
 
 The pre-existing `CardfrontTargetPreviewLayer` remains the preview-side consumer of `DeploymentRules.evaluate()`. It now emits only the already-evaluated legal cell result and the deployment authority revision.
 
-`CardfrontDeploymentZoneLayer3D` consumes that result as a detached cell array and renders one translucent, non-colliding marker per legal cell in the active orthographic battlefield. It does not import or call `DeploymentRules`, inspect Support graph/runtime context, infer ownership, or implement another legality predicate.
+`CardfrontDeploymentZoneLayer3D` consumes that result as a detached cell array and renders one translucent, non-colliding marker per legal cell in the active orthographic battlefield. It does not import or call `DeploymentRules`, inspect Support graph/runtime context, infer ownership, or implement another legality predicate. The seam remains dormant and hidden until a formal targeted-deployment controller is introduced by an authorized later checkpoint.
 
 Lifecycle:
 
@@ -26,13 +26,13 @@ non-frontline selection / cancel / clear
   -> empty result -> 3D zone hidden
 ```
 
-The live runtime now constructs the existing target-preview authority even while its legacy 2D drawing surface remains hidden by orthographic presentation. It binds that authority to the real Support deployment context provider and forwards only evaluated results to the 3D arena.
+The formal live runtime does **not** construct the retired legacy target-preview/card-hand stack. This preserves the live-runtime boundary and prevents B4 presentation work from reviving compatibility gameplay. The legacy compatibility path retains its existing preview authority; the focused B4 runner binds the same owner to the real Support deployment context and verifies the result-only 3D projection seam.
 
 ## Current product-entry limitation
 
 The formal live three-choice run does not construct the legacy targeted-card hand/CardPlaySystem and currently contains no player-facing targeted deployment card. Therefore there is no honest current manual click path for a player to enter frontline deployment targeting.
 
-This checkpoint does not re-enable the retired compatibility hand, invent a new card, or claim such a click was performed. The activation path is verified with the real `default_duel` map, real Support authority, real `DeploymentRules` evaluation, real preview owner, and real 3D visualizer in the focused integration runner.
+This checkpoint does not re-enable the retired compatibility hand, invent a new card, or claim such a click was performed. The activation path is verified with the real `default_duel` map, real Support authority, real `DeploymentRules` evaluation, compatibility preview owner, and real 3D visualizer in the focused integration runner. The formal live runtime proves the zone remains hidden and the legacy preview remains absent.
 
 ## P0-06C result
 
@@ -93,7 +93,7 @@ Audit status per gate: PASS / PASS
 Evidence bound to source commit: YES — 3902ddad243a40fcb30edd0c28799a44f2157160
 Highest-priority evidence used: focused integration tests + live orthographic construction + source authority audit
 Unverified assumptions remaining: no current formal player-facing targeted deployment card exists for manual click evidence
-Legacy authority still reachable: legacy 2D preview remains the single preview rules consumer but its drawing is hidden in orthographic mode
+Legacy authority still reachable: legacy 2D preview remains available only in the explicitly enabled compatibility path; formal live runtime does not construct it
 Second-authority risk: NONE; 3D visualizer accepts only evaluated cell results
 Save/restore risk: NONE
 Cross-system regression evidence: preview parity, four-consumer parity, automatic spawn, Stronghold, three-choice, Support presentation and RegionInfoPanel passed
