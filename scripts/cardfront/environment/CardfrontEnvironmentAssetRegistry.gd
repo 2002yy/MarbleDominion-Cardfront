@@ -64,6 +64,48 @@ const ASSETS: Dictionary = {
 		"source_pack": "cardfront_custom_blender",
 		"fallback": "primitive_pylon",
 	},
+	"custom_beacon_tower": {
+		"path": "res://assets/cardfront_environment/source/custom/beacon_tower.glb",
+		"role": "defense_tower",
+		"source_pack": "cardfront_custom_blender",
+		"fallback": "primitive_tower",
+	},
+	"custom_interceptor_tower": {
+		"path": "res://assets/cardfront_environment/source/custom/interceptor_tower.glb",
+		"role": "defense_tower",
+		"source_pack": "cardfront_custom_blender",
+		"fallback": "primitive_tower",
+	},
+	"custom_castle_wall": {
+		"path": "res://assets/cardfront_environment/source/custom/castle_wall_segment.glb",
+		"role": "map_landmark",
+		"source_pack": "cardfront_custom_blender",
+		"fallback": "primitive_wall",
+	},
+	"custom_banner_flag": {
+		"path": "res://assets/cardfront_environment/source/custom/banner_flag.glb",
+		"role": "map_landmark",
+		"source_pack": "cardfront_custom_blender",
+		"fallback": "primitive_banner",
+	},
+	"custom_storage_tank": {
+		"path": "res://assets/cardfront_environment/source/custom/storage_tank.glb",
+		"role": "map_landmark",
+		"source_pack": "cardfront_custom_blender",
+		"fallback": "primitive_tank",
+	},
+	"custom_lab_dome": {
+		"path": "res://assets/cardfront_environment/source/custom/lab_dome.glb",
+		"role": "map_landmark",
+		"source_pack": "cardfront_custom_blender",
+		"fallback": "primitive_dome",
+	},
+	"custom_energy_ring": {
+		"path": "res://assets/cardfront_environment/source/custom/energy_ring.glb",
+		"role": "map_landmark",
+		"source_pack": "cardfront_custom_blender",
+		"fallback": "primitive_ring",
+	},
 }
 
 

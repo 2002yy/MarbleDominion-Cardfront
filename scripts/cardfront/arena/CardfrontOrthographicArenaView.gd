@@ -847,6 +847,19 @@ func _build_map_landmarks(height: float, arena_width: float) -> void:
 							Vector3(side * (arena_width * 0.5 + 2.2), 1.8, height * z_ratio * _z_scale),
 							Color(0.64, 0.48, 0.86)
 						)
+			for side in [-1.0, 1.0]:
+				_try_spawn_glb(
+					"custom_lab_dome",
+					Vector3(side * (arena_width * 0.5 + 2.4), 0.0, height * 0.12 * _z_scale),
+					1.15,
+					PI
+				)
+				_try_spawn_glb(
+					"custom_energy_ring",
+					Vector3(side * (arena_width * 0.5 + 2.4), 0.0, height * 0.38 * _z_scale),
+					1.1,
+					0.0
+				)
 		"cross_resource":
 			for side in [-1.0, 1.0]:
 				for z_ratio in [-0.31, 0.31]:
@@ -859,8 +872,29 @@ func _build_map_landmarks(height: float, arena_width: float) -> void:
 						_add_factory_stack(
 							Vector3(side * (arena_width * 0.5 + 2.4), 0.0, height * z_ratio * _z_scale)
 						)
+			for side in [-1.0, 1.0]:
+				_try_spawn_glb(
+					"custom_storage_tank",
+					Vector3(side * (arena_width * 0.5 + 2.6), 0.0, 0.0),
+					1.0,
+					0.0
+				)
 		_:
-			pass
+			for side in [-1.0, 1.0]:
+				for z_ratio in [-0.30, 0.30]:
+					_try_spawn_glb(
+						"custom_castle_wall",
+						Vector3(side * (arena_width * 0.5 + 2.4), 0.0, height * z_ratio * _z_scale),
+						1.0,
+						PI * 0.5
+					)
+			for side in [-1.0, 1.0]:
+				_try_spawn_glb(
+					"custom_banner_flag",
+					Vector3(side * (arena_width * 0.5 + 2.6), 0.0, 0.0),
+					1.0,
+						0.0
+				)
 
 
 func _try_spawn_glb(asset_id: String, position_value: Vector3, scale_value: float, rotation_y: float) -> bool:
@@ -1736,12 +1770,43 @@ func _sync_entity_readability(entity) -> void:
 		status.modulate = Color(0.58, 0.62, 0.66) if not bool(entity.powered) else Color.WHITE
 	var proxy: Node3D = _entity_proxies.get(entity_id, null)
 	if proxy != null and is_instance_valid(proxy):
-		var power_node: MeshInstance3D = proxy.get_node_or_null("PowerCore")
+		var power_node: Node3D = proxy.find_child("PowerCore", true, false) as Node3D
 		if power_node != null:
 			power_node.visible = bool(entity.powered)
 
 
+func _try_spawn_tower_glb(proxy: Node3D, entity) -> bool:
+	var tower_id: String = str(entity.tower_id)
+	var shape: String = CombatReadabilityScript.tower_shape(tower_id)
+	var asset_id: String = "custom_beacon_tower" if shape == "beacon" else "custom_interceptor_tower"
+	var scene: PackedScene = EnvironmentAssetRegistryScript.load_scene(asset_id)
+	if scene == null:
+		return false
+	var instance: Node3D = scene.instantiate() as Node3D
+	if instance == null:
+		return false
+	instance.name = "TowerGlb"
+	instance.scale = Vector3.ONE * 1.05
+	instance.position.y = TILE_HEIGHT + 0.35
+	instance.set_meta("presentation_only", true)
+	proxy.add_child(instance)
+	_apply_building_material_pass(instance, int(entity.owner_id))
+	if shape == "beacon":
+		var orb: Node = instance.find_child("BeaconOrb", true, false)
+		if orb != null:
+			orb.name = "PowerCore"
+	else:
+		var core := Node3D.new()
+		core.name = "PowerCore"
+		instance.add_child(core)
+		for child in instance.find_children("IntTip*", "", true, false):
+			child.reparent(core, false)
+	return true
+
+
 func _build_tower_proxy(proxy: Node3D, entity, owner_color: Color) -> void:
+	if _try_spawn_tower_glb(proxy, entity):
+		return
 	var base := MeshInstance3D.new()
 	base.name = "TowerBase"
 	var base_mesh := CylinderMesh.new()
