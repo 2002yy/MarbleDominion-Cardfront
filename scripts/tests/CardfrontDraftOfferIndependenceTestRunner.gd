@@ -19,6 +19,7 @@ func _run() -> void:
 	await process_frame
 
 	_test_context_envelope()
+	_test_stronghold_cutover_cannot_expand_offer()
 	_test_context_and_legacy_api_parity()
 	_test_offer_containers_are_deeply_independent()
 	_test_round_director_getters_return_deep_copies()
@@ -41,6 +42,18 @@ func _test_context_envelope() -> void:
 	_assert.eq(context.snapshot(), {"owner_id": RulesScript.PLAYER_FACTION, "deck_id": DeckRegistryScript.DECK_BARRAGE_CONTROL}, "context: public snapshot exposes only owner and deck")
 	for forbidden_key in ["route", "profession", "behavior", "reroll"]:
 		_assert.that(not context.snapshot().has(forbidden_key), "context: P1 field stays absent: %s" % forbidden_key)
+
+
+func _test_stronghold_cutover_cannot_expand_offer() -> void:
+	var draft = DraftSystemScript.new()
+	draft.set_side_seed_for_tests(RulesScript.PLAYER_FACTION, 8051)
+	draft.set_side_seed_for_tests(RulesScript.AI_FACTION, 8052)
+	var player_context = OfferContextScript.create(RulesScript.PLAYER_FACTION)
+	var ai_context = OfferContextScript.create(RulesScript.AI_FACTION)
+	for forbidden_key in ["stronghold_status", "active_types", "draft_choice_count"]:
+		_assert.that(not player_context.snapshot().has(forbidden_key), "stronghold cutover: Offer context excludes %s" % forbidden_key)
+	_assert.eq(draft.draw_offer_for_context(player_context, 4).size(), 3, "stronghold cutover: stale Player four-choice request is capped to three")
+	_assert.eq(draft.draw_offer_for_context(ai_context, 4).size(), 3, "stronghold cutover: stale AI four-choice request is capped to three")
 
 
 func _test_context_and_legacy_api_parity() -> void:

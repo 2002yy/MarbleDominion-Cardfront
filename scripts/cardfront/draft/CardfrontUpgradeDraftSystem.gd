@@ -8,8 +8,8 @@ const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const OfferContextScript = preload("res://scripts/cardfront/draft/CardfrontDraftOfferContext.gd")
 
 const DEFAULT_OFFER_SIZE: int = 3
-# P0-05B1: the formal gameplay draft is three-choice. Legacy Lab may still
-# produce draft_choice_count=4, but the draft consumer no longer accepts it.
+# P0-05B/P0-08C: the formal gameplay draft is three-choice. A stale caller may
+# still request four choices, but the draft consumer never accepts that request.
 const MAX_OFFER_SIZE: int = 3
 const COMMON_BASE_WEIGHT: float = 100.0
 const UNCOMMON_BASE_WEIGHT: float = 42.0
