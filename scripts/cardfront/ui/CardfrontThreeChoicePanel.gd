@@ -34,8 +34,9 @@ var _pending_player_upgrade_times: int = 1
 var _upgrade_toast_remaining: float = 0.0
 var _last_stronghold_status: Dictionary = {}
 var _view_size: Vector2 = Vector2(1120, 720)
-var _peeking: bool = false
-var _saved_shell_position: Vector2 = Vector2.ZERO
+const DISPLAY_MODE_DRAFT_VISIBLE: String = "draft_visible"
+const DISPLAY_MODE_BATTLEFIELD_PREVIEW: String = "battlefield_preview"
+var _display_mode: String = DISPLAY_MODE_DRAFT_VISIBLE
 const _NORMAL_DIMMER_ALPHA: float = 0.62
 const _PEEK_DIMMER_ALPHA: float = 0.12
 
@@ -109,6 +110,10 @@ func choose_index_for_test(index: int) -> bool:
 
 func is_upgrade_toast_visible_for_test() -> bool:
 	return upgrade_toast.visible
+
+
+func get_display_mode_for_test() -> String:
+	return _display_mode
 
 
 func get_upgrade_toast_text_for_test() -> String:
@@ -194,31 +199,29 @@ func _on_draft_opened(player_offer: Array, _ai_offer: Array, timeout_seconds: fl
 	timer_label.text = "%.1f" % _timeout_seconds
 	battle_status.visible = false
 	draft_root.visible = true
-	_reset_peek_state()
+	_set_draft_display_mode(DISPLAY_MODE_DRAFT_VISIBLE)
 
 
 func _toggle_peek() -> void:
 	if not draft_root.visible:
 		return
-	_peeking = not _peeking
-	if _peeking:
-		_saved_shell_position = choice_shell.position
-		dimmer.color.a = _PEEK_DIMMER_ALPHA
-		choice_shell.position = Vector2(
-			maxf(8.0, _view_size.x - choice_shell.size.x - 8.0),
-			_view_size.y - choice_shell.size.y - 8.0
-		)
-		_peek_button.text = "返回选择"
-	else:
-		dimmer.color.a = _NORMAL_DIMMER_ALPHA
-		choice_shell.position = _saved_shell_position
-		_peek_button.text = "查看战场"
+	var next_mode: String = (
+		DISPLAY_MODE_DRAFT_VISIBLE
+		if _display_mode == DISPLAY_MODE_BATTLEFIELD_PREVIEW
+		else DISPLAY_MODE_BATTLEFIELD_PREVIEW
+	)
+	_set_draft_display_mode(next_mode)
 
 
-func _reset_peek_state() -> void:
-	_peeking = false
-	dimmer.color.a = _NORMAL_DIMMER_ALPHA
-	_peek_button.text = "查看战场"
+func _set_draft_display_mode(mode: String) -> void:
+	_display_mode = (
+		DISPLAY_MODE_BATTLEFIELD_PREVIEW
+		if mode == DISPLAY_MODE_BATTLEFIELD_PREVIEW
+		else DISPLAY_MODE_DRAFT_VISIBLE
+	)
+	var is_preview: bool = _display_mode == DISPLAY_MODE_BATTLEFIELD_PREVIEW
+	dimmer.color.a = _PEEK_DIMMER_ALPHA if is_preview else _NORMAL_DIMMER_ALPHA
+	_peek_button.text = "返回选择" if is_preview else "查看战场"
 	_peek_button.position = Vector2(
 		clampf(
 			choice_shell.position.x + choice_shell.size.x - _peek_button.size.x - 12.0,
