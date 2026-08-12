@@ -122,6 +122,7 @@ jobs:
           - batch: Cardfront v0.3 three-choice slice
             scripts: |
               CardfrontDraftGeometrySnapshotTestRunner.gd
+              CardfrontDraftLifecycleSnapshotTestRunner.gd
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontModeSmokeTestRunner.gd
