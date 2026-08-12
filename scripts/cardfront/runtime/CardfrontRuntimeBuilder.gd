@@ -150,6 +150,9 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		and capture_interceptor.entity_runtime != null
 	):
 		runtime.orthographic_arena_view.set_entity_runtime(capture_interceptor.entity_runtime)
+		var support_authority = capture_interceptor.get_support_deployment_authority()
+		if support_authority != null:
+			runtime.orthographic_arena_view.set_support_presentation_source(support_authority)
 	CardfrontPresentationModeControllerScript.activate_orthographic(runtime)
 	return _build_result(true)
 

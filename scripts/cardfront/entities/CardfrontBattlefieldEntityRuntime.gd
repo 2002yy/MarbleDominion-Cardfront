@@ -33,7 +33,8 @@ const SapperSystemScript = preload("res://scripts/cardfront/entities/CardfrontSa
 const NeutralCreatureSystemScript = preload("res://scripts/cardfront/entities/CardfrontNeutralCreatureSystem.gd")
 const ProjectileBridgeScript = preload("res://scripts/cardfront/entities/CardfrontEntityProjectileBridge.gd")
 const TowerRuntimeScript = preload("res://scripts/cardfront/entities/CardfrontTowerRuntime.gd")
-const CreatureCoordinatorScript = preload("res://scripts/cardfront/entities/CardfrontCreatureActionCoordinator.gd")
+const CreatureCoordinatorScript = preload("res://scripts/cardfront/entities/CardfrontAuthoritativeCreatureActionCoordinator.gd")
+const AutomaticSpawnCoordinatorScript = preload("res://scripts/cardfront/entities/CardfrontAutomaticSpawnCoordinator.gd")
 
 const CREATURE_REPAIR_UNIT: String = "repair_unit"
 const CREATURE_SCOUT_UNIT: String = "scout_unit"
@@ -54,6 +55,7 @@ var territory_defense_system = null
 var bullet_pool = null
 var registry = RegistryScript.new()
 var map_definition: Dictionary = {}
+var deployment_context_provider = null
 var presentation_layer = null
 var debug_layer = null
 var _entity_serial: int = 0
@@ -62,6 +64,7 @@ var _neutral_creature_system = NeutralCreatureSystemScript.new()
 var _projectile_bridge = ProjectileBridgeScript.new()
 var _tower_runtime = TowerRuntimeScript.new()
 var _creature_action_coordinator = CreatureCoordinatorScript.new()
+var _automatic_spawn_coordinator = AutomaticSpawnCoordinatorScript.new()
 
 
 func _init() -> void:
@@ -73,6 +76,7 @@ func _init() -> void:
 	_projectile_bridge.setup(self)
 	_tower_runtime.setup(self)
 	_creature_action_coordinator.setup(self)
+	_automatic_spawn_coordinator.setup(self)
 
 
 func setup(new_battlefield, new_map_definition: Dictionary = {}) -> bool:
@@ -97,6 +101,10 @@ func configure_map_definition(new_map_definition: Dictionary) -> void:
 	registry.clear()
 	_register_map_building_slots()
 	_mark_visuals_dirty()
+
+
+func configure_deployment_context_provider(new_provider) -> void:
+	deployment_context_provider = new_provider
 
 
 func configure_dependencies(new_round_director, new_territory_defense_system) -> void:
@@ -157,14 +165,44 @@ func apply_pending_upgrade_actions(owner_id: int, run_state) -> Array:
 		if not (raw_action is Dictionary):
 			continue
 		var action: Dictionary = raw_action as Dictionary
+		var placement_request: Dictionary = _automatic_spawn_coordinator.placement_request_from_action(action)
 		match str(action.get("action", "")):
 			"summon_repair_units":
-				var units: Array = spawn_repair_units(owner_id, int(action.get("amount", 2)))
-				results.append({"action": "summon_repair_units", "spawned": units.size()})
+				var repair_result: Dictionary = _automatic_spawn_coordinator.spawn_repair_units(
+					owner_id,
+					int(action.get("amount", 2)),
+					placement_request
+				)
+				results.append(
+					_automatic_spawn_coordinator.public_spawn_result(
+						"summon_repair_units",
+						repair_result
+					)
+				)
 			"summon_armored_guard":
-				results.append(_spawn_result("summon_armored_guard", spawn_armored_guard(owner_id)))
+				var guard_result: Dictionary = _automatic_spawn_coordinator.spawn_single_creature(
+					owner_id,
+					CREATURE_ARMORED_GUARD,
+					placement_request
+				)
+				results.append(
+					_automatic_spawn_coordinator.public_spawn_result(
+						"summon_armored_guard",
+						guard_result
+					)
+				)
 			"summon_sapper_unit":
-				results.append(_spawn_result("summon_sapper_unit", spawn_sapper_unit(owner_id)))
+				var sapper_result: Dictionary = _automatic_spawn_coordinator.spawn_single_creature(
+					owner_id,
+					CREATURE_SAPPER_UNIT,
+					placement_request
+				)
+				results.append(
+					_automatic_spawn_coordinator.public_spawn_result(
+						"summon_sapper_unit",
+						sapper_result
+					)
+				)
 			"summon_gate_colossus":
 				results.append(
 					_spawn_result(
@@ -215,16 +253,39 @@ func debug_spawn_repair_units(owner_id: int, amount: int = 2) -> Array:
 	return spawn_repair_units(owner_id, amount)
 
 
-func spawn_repair_units(owner_id: int, amount: int = 2) -> Array:
-	return _creature_action_coordinator.spawn_repair_units(owner_id, amount)
+func spawn_repair_units(owner_id: int, amount: int = 2, placement_request: Dictionary = {}) -> Array:
+	var result: Dictionary = _automatic_spawn_coordinator.spawn_repair_units(
+		owner_id,
+		amount,
+		placement_request
+	)
+	return result.get("entities", []) as Array
 
 
-func spawn_armored_guard(owner_id: int):
-	return _creature_action_coordinator.spawn_armored_guard(owner_id)
+func spawn_armored_guard(owner_id: int, placement_request: Dictionary = {}):
+	var result: Dictionary = _automatic_spawn_coordinator.spawn_single_creature(
+		owner_id,
+		CREATURE_ARMORED_GUARD,
+		placement_request
+	)
+	return result.get("entity", null)
 
 
-func spawn_sapper_unit(owner_id: int):
-	return _creature_action_coordinator.spawn_sapper_unit(owner_id)
+func spawn_sapper_unit(owner_id: int, placement_request: Dictionary = {}):
+	var result: Dictionary = _automatic_spawn_coordinator.spawn_single_creature(
+		owner_id,
+		CREATURE_SAPPER_UNIT,
+		placement_request
+	)
+	return result.get("entity", null)
+
+
+func resolve_automatic_spawn_cell(
+	owner_id: int,
+	placement_request: Dictionary = {},
+	availability: Callable = Callable()
+) -> Dictionary:
+	return _automatic_spawn_coordinator.resolve_cell(owner_id, placement_request, availability)
 
 
 func debug_spawn_fire_control_beacon(owner_id: int, lane_index: int = 0):
@@ -380,8 +441,9 @@ func _is_frontline_cell(cell: Vector2i, owner_id: int) -> bool:
 	return _creature_action_coordinator.is_frontline_cell(cell, owner_id)
 
 
-func _find_owner_spawn_cell(owner_id: int, index: int) -> Vector2i:
-	return _creature_action_coordinator.find_owner_spawn_cell(owner_id, index)
+func _find_owner_spawn_cell(owner_id: int, _index: int) -> Vector2i:
+	var result: Dictionary = resolve_automatic_spawn_cell(owner_id)
+	return result.get("cell", Vector2i(-1, -1)) as Vector2i if bool(result.get("allowed", false)) else Vector2i(-1, -1)
 
 
 func _find_adjacent_spawn_cell(owner_id: int, origin: Vector2i) -> Vector2i:
@@ -485,6 +547,10 @@ func _mark_visuals_dirty() -> void:
 		presentation_layer.mark_dirty()
 	if debug_layer != null and is_instance_valid(debug_layer):
 		debug_layer.mark_dirty()
+
+
+func _resolve_spawn_cells(owner_id: int, amount: int, placement_request: Dictionary) -> Dictionary:
+	return _automatic_spawn_coordinator.resolve_cells(owner_id, amount, placement_request)
 
 
 func _spawn_result(action: String, entity) -> Dictionary:

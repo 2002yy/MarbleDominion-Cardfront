@@ -131,6 +131,8 @@ jobs:
             scripts: |
               CardfrontSupportIdentityTestRunner.gd
               CardfrontSupportStateTestRunner.gd
+              CardfrontSupportPresentationContractTestRunner.gd
+              CardfrontSupportPresentationLifecycleTestRunner.gd
               CardfrontSupportRegionMapperTestRunner.gd
               CardfrontSupportMapMetadataTestRunner.gd
           - batch: Cardfront P0 support capture pure
@@ -149,6 +151,9 @@ jobs:
               CardfrontSupportConnectivityResolverTestRunner.gd
               CardfrontSupportConnectivityTruthTestRunner.gd
               CardfrontSupportConnectivityCacheTestRunner.gd
+          - batch: Cardfront P0 route semantics pure
+            scripts: |
+              CardfrontRouteSemanticsTestRunner.gd
           - batch: Cardfront P0 deployment pure
             scripts: |
               CardfrontDeploymentContractTestRunner.gd
@@ -157,6 +162,8 @@ jobs:
               CardfrontDeploymentPlayerCommitTestRunner.gd
               CardfrontDeploymentPreviewParityTestRunner.gd
               CardfrontDeploymentAiParityTestRunner.gd
+              CardfrontDeploymentAutomaticSpawnTestRunner.gd
+              CardfrontDeploymentFourConsumerParityTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd

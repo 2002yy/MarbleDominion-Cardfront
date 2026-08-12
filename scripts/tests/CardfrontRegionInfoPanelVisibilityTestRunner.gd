@@ -59,6 +59,13 @@ func _test_panel_is_bright_large_and_off_map() -> void:
 				if not region_cells.is_empty():
 					main.runtime.region_info_panel.update_for_cell(region_cells[0])
 					_assert.that(region_panel.visible, "region panel should appear contextually over a stronghold")
+					var threshold_text: String = str(main.runtime.region_info_panel._threshold_80.text)
+					var stronghold_text: String = str(main.runtime.region_info_panel._stronghold_label.text)
+					var semantic_text: String = "%s %s" % [threshold_text, stronghold_text]
+					_assert.that(threshold_text.begins_with("据点控制："), "region panel: 80 percent line should describe control status, not a retired ability")
+					_assert.that(stronghold_text.begins_with("据点状态："), "region panel: stronghold line should describe current status")
+					for retired_text in ["据点能力", "四选一", "+3", "+1", "攻击等级", "额外发射"]:
+						_assert.that(not semantic_text.contains(retired_text), "region panel: retired stronghold promise must stay absent: %s" % retired_text)
 			var viewport_size: Vector2 = main.runtime.current_layout.get("viewport_size", Vector2(1120.0, 720.0))
 			var battlefield_rect: Rect2 = main.runtime.current_layout.get("battlefield_rect", Rect2())
 			var panel_rect := Rect2(region_panel.global_position, region_panel.size)

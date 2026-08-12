@@ -3,7 +3,7 @@ extends SceneTree
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const MatchPhaseScript = preload("res://scripts/cardfront/run/CardfrontMatchPhase.gd")
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
-const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdRules.gd")
+const RegionTypeScript = preload("res://scripts/cardfront/regions/RegionType.gd")
 
 var _assert: TestAssert
 
@@ -18,7 +18,7 @@ func _run() -> void:
 	await process_frame
 
 	await _test_player_choice_pauses_resolves_and_launches()
-	await _test_strongholds_modify_draft_and_volley()
+	await _test_strongholds_are_status_only()
 	await _test_timeout_selects_player_fallback()
 	await _test_ballwar_is_isolated()
 	GameConfig.reset_runtime_defaults()
@@ -101,7 +101,7 @@ func _test_timeout_selects_player_fallback() -> void:
 	await _flush()
 
 
-func _test_strongholds_modify_draft_and_volley() -> void:
+func _test_strongholds_are_status_only() -> void:
 	var main = await _start_main(GameConfig.GAME_MODE_CARDFRONT)
 	var director = main.runtime.round_director
 	_paint_all_strongholds(main, RulesScript.PLAYER_FACTION)
@@ -109,29 +109,31 @@ func _test_strongholds_modify_draft_and_volley() -> void:
 	director.force_open_draft_for_test()
 	await process_frame
 
-	var player_bonus: Dictionary = director.get_stronghold_bonus(RulesScript.PLAYER_FACTION)
-	_assert.eq(int(player_bonus.get("shot_count_bonus", 0)), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold: factory should grant +3 once")
-	_assert.eq(int(player_bonus.get("temporary_attack_level_bonus", 0)), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "runtime stronghold: energy should grant one temporary attack level")
-	_assert.eq(int(player_bonus.get("draft_choice_count", 0)), StrongholdRulesScript.LAB_DRAFT_CHOICE_COUNT, "runtime stronghold: lab should enable four choices")
-	_assert.eq(director.get_player_offer().size(), 4, "runtime stronghold: lab should expose four player choices")
-	_assert.eq(main.runtime.three_choice_panel.get_visible_choice_count(), 4, "runtime stronghold: formal panel should render all four choices")
-	var shell_rect: Rect2 = main.runtime.three_choice_panel.choice_shell.get_global_rect()
-	var previous_x: float = -INF
+	var player_status: Dictionary = director.get_stronghold_status(RulesScript.PLAYER_FACTION)
+	var status_keys: Array = player_status.keys()
+	status_keys.sort()
+	var expected_status_keys: Array = ["active_regions", "active_types", "control_percent"]
+	expected_status_keys.sort()
+	_assert.eq(status_keys, expected_status_keys, "runtime stronghold status: snapshot must expose status fields only")
+	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.FACTORY), "runtime stronghold status: Factory identity should remain observable")
+	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.ENERGY), "runtime stronghold status: Energy identity should remain observable")
+	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.LAB), "runtime stronghold status: Lab identity should remain observable")
+	_assert.eq(director.get_player_offer().size(), 3, "runtime stronghold: player offer must remain exactly three")
+	_assert.eq(main.runtime.three_choice_panel.get_visible_choice_count(), 3, "runtime stronghold: formal panel must remain three-choice")
 	for card in main.runtime.three_choice_panel.get_choice_cards():
-		_assert.eq(card.custom_minimum_size.x, 214.0, "runtime stronghold: laboratory bonus should use the compact four-card layout")
-		var card_rect: Rect2 = card.get_global_rect()
-		_assert.that(shell_rect.encloses(card_rect), "runtime stronghold: every laboratory choice should remain inside the choice shell")
-		_assert.gt(card_rect.position.x, previous_x, "runtime stronghold: four choices should remain horizontally ordered")
-		previous_x = card_rect.position.x
-	_assert.that(str(main.runtime.three_choice_panel.stronghold_label.text).contains("工厂"), "runtime stronghold: battle HUD should name active bonuses")
-	_assert.that(str(main.runtime.three_choice_panel.result_label.text).contains("额外出现 1 张"), "runtime stronghold: draft should explain the fourth choice")
+		_assert.eq(card.custom_minimum_size.x, 280.0, "runtime stronghold: cards should retain the formal three-column layout")
+	_assert.eq(str(main.runtime.three_choice_panel.title_label.text), "选择本轮强化", "runtime stronghold: draft title should stay generic under active strongholds")
+	_assert.that(not str(main.runtime.three_choice_panel.result_label.text).contains("实验室"), "runtime stronghold: draft instructions must not promise a Lab offer-size bonus")
+	var stronghold_text: String = str(main.runtime.three_choice_panel.stronghold_label.text)
+	_assert.that(stronghold_text.begins_with("据点控制："), "runtime stronghold: HUD should frame strongholds as control status")
+	for identity in ["能源", "工厂", "实验室"]:
+		_assert.that(stronghold_text.contains(identity), "runtime stronghold: active identity should remain visible: %s" % identity)
+	for retired_text in ["+3", "+1", "四选一", "攻击等级", "额外发射"]:
+		_assert.that(not stronghold_text.contains(retired_text), "runtime stronghold: retired promise must stay absent from HUD: %s" % retired_text)
 
 	_assert.that(main.runtime.three_choice_panel.choose_index_for_test(0), "runtime stronghold: player should still choose normally")
 	var plan = director.current_plans.get(RulesScript.PLAYER_FACTION, null)
 	_assert.that(plan != null, "runtime stronghold: resolution should build a player plan")
-	if plan != null:
-		_assert.eq(int(plan.stronghold_shot_bonus), StrongholdRulesScript.FACTORY_SHOT_BONUS, "runtime stronghold: plan should record +3 factory shots")
-		_assert.eq(int(plan.stronghold_attack_level_bonus), StrongholdRulesScript.ENERGY_ATTACK_LEVEL_BONUS, "runtime stronghold: plan should record the temporary energy level")
 	director.complete_reveal_for_test()
 
 	main._cleanup_game_layer()

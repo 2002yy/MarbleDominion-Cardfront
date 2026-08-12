@@ -5,7 +5,7 @@ signal phase_changed(previous_phase, next_phase)
 signal countdown_updated(time_remaining, round_number, player_state)
 signal draft_opened(player_offer, ai_offer, timeout_seconds, round_number)
 signal draft_time_updated(time_remaining, timeout_seconds)
-signal strongholds_sampled(bonuses)
+signal strongholds_sampled(status_snapshot)
 signal gates_sampled(snapshot)
 signal choice_locked(owner_id, upgrade_id, automatic)
 signal choices_revealed(player_definition, ai_definition, resolution_results)
@@ -44,7 +44,7 @@ var run_states: Dictionary = {}
 var current_offers: Dictionary = {}
 var current_plans: Dictionary = {}
 var last_resolution_results: Dictionary = {}
-var current_stronghold_bonuses: Dictionary = {}
+var current_stronghold_status: Dictionary = {}
 var current_gate_snapshot: Dictionary = {}
 var round_number: int = 0
 var active: bool = false
@@ -183,14 +183,13 @@ func get_ai_offer() -> Array:
 	return (current_offers.get(RulesScript.AI_FACTION, []) as Array).duplicate(true)
 
 
-func get_stronghold_bonus(owner_id: int) -> Dictionary:
-	return (current_stronghold_bonuses.get(int(owner_id), {}) as Dictionary).duplicate(true)
+func get_stronghold_status(owner_id: int) -> Dictionary:
+	return (current_stronghold_status.get(int(owner_id), {}) as Dictionary).duplicate(true)
 
 
 func get_upgrade_value_context(owner_id: int) -> Dictionary:
 	var safe_owner_id: int = int(owner_id)
 	var opponent_id: int = _opponent_id(safe_owner_id)
-	var bonus: Dictionary = current_stronghold_bonuses.get(safe_owner_id, {}) as Dictionary
 	var own_defense: Dictionary = {}
 	var enemy_defense: Dictionary = {}
 	if territory_defense_system != null and is_instance_valid(territory_defense_system):
@@ -211,8 +210,8 @@ func get_upgrade_value_context(owner_id: int) -> Dictionary:
 		"round_number": maxi(1, round_number),
 		"rounds_remaining": maxi(1, VALUE_PLANNING_MAX_ROUNDS - maxi(1, round_number) + 1),
 		"pre_multiplier_shot_bonus": 0,
-		"post_multiplier_shot_bonus": maxi(0, int(bonus.get("shot_count_bonus", 0))),
-		"temporary_attack_level_bonus": maxi(0, int(bonus.get("temporary_attack_level_bonus", 0))),
+		"post_multiplier_shot_bonus": 0,
+		"temporary_attack_level_bonus": 0,
 		"estimated_chamber_hit_chance": 0.17,
 		"enemy_defense_contact_chance": clampf(
 			0.06 + enemy_defended_ratio * 0.28 + float(enemy_cap) * 0.025,
@@ -226,7 +225,7 @@ func get_upgrade_value_context(owner_id: int) -> Dictionary:
 		"own_health_ratio": _turret_health_ratio(safe_owner_id),
 		"enemy_health_ratio": _turret_health_ratio(opponent_id),
 		"route_pressure": clampf(0.85 + enemy_defended_ratio * 0.50, 0.5, 1.5),
-		"future_offer_size": _draft_choice_count(safe_owner_id),
+		"future_offer_size": DraftSystemScript.DEFAULT_OFFER_SIZE,
 		"owned_creature_count": int(own_state.owned_creature_count) if own_state != null else 0,
 		"owned_defense_tower_count": int(own_state.owned_defense_tower_count) if own_state != null else 0,
 		"enemy_defense_tower_count": int(enemy_state.owned_defense_tower_count) if enemy_state != null else 0,
@@ -284,18 +283,18 @@ func _open_draft() -> void:
 	_resolution_started = false
 	current_plans.clear()
 	last_resolution_results.clear()
-	current_stronghold_bonuses = _sample_strongholds()
+	current_stronghold_status = _sample_strongholds()
 	current_gate_snapshot = _sample_gates()
 	if battlefield_entity_runtime != null and is_instance_valid(battlefield_entity_runtime):
 		battlefield_entity_runtime.prepare_draft(run_states)
 	current_offers = {
 		RulesScript.PLAYER_FACTION: _draft_system.draw_offer(
 			get_run_state(RulesScript.PLAYER_FACTION),
-			_draft_choice_count(RulesScript.PLAYER_FACTION)
+			DraftSystemScript.DEFAULT_OFFER_SIZE
 		),
 		RulesScript.AI_FACTION: _draft_system.draw_offer(
 			get_run_state(RulesScript.AI_FACTION),
-			_draft_choice_count(RulesScript.AI_FACTION)
+			DraftSystemScript.DEFAULT_OFFER_SIZE
 		),
 	}
 	var ai_choice: Dictionary = _ai_commander.choose(
@@ -341,8 +340,6 @@ func _begin_resolution() -> void:
 				battlefield_entity_runtime.apply_pending_upgrade_actions(int(owner_id), run_state)
 			)
 		var plan = _volley_resolver.build_and_consume(run_state)
-		if stronghold_system != null and is_instance_valid(stronghold_system):
-			stronghold_system.apply_to_volley_plan(int(owner_id), plan, current_stronghold_bonuses)
 		if battlefield_entity_runtime != null and is_instance_valid(battlefield_entity_runtime):
 			battlefield_entity_runtime.decorate_volley_plan(int(owner_id), plan)
 		if int(owner_id) == RulesScript.PLAYER_FACTION and direction_controller != null and is_instance_valid(direction_controller):
@@ -426,7 +423,7 @@ func _sample_strongholds() -> Dictionary:
 			empty[int(owner_id)] = {}
 		strongholds_sampled.emit(empty.duplicate(true))
 		return empty
-	var sampled: Dictionary = stronghold_system.sample_bonuses()
+	var sampled: Dictionary = stronghold_system.sample_status()
 	strongholds_sampled.emit(sampled.duplicate(true))
 	return sampled
 
@@ -438,15 +435,6 @@ func _sample_gates() -> Dictionary:
 	var sampled: Dictionary = gate_connectivity_system.sample_and_lock(round_number)
 	gates_sampled.emit(sampled.duplicate(true))
 	return sampled
-
-
-func _draft_choice_count(owner_id: int) -> int:
-	var bonus: Dictionary = current_stronghold_bonuses.get(int(owner_id), {}) as Dictionary
-	return clampi(
-		int(bonus.get("draft_choice_count", DraftSystemScript.DEFAULT_OFFER_SIZE)),
-		DraftSystemScript.DEFAULT_OFFER_SIZE,
-		DraftSystemScript.MAX_OFFER_SIZE
-	)
 
 
 func _opponent_id(owner_id: int) -> int:

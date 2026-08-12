@@ -3,11 +3,13 @@ class_name CardfrontCaptureInterceptor
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const EntityRuntimeScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntityLiveRuntime.gd")
+const SupportDeploymentAuthorityScript = preload("res://scripts/cardfront/support/CardfrontSupportDeploymentAuthority.gd")
 
 var fortify_layer = null
 var round_director = null
 var territory_defense_system = null
 var entity_runtime = null
+var support_deployment_authority = null
 
 func setup(new_fortify_layer) -> void:
 	fortify_layer = new_fortify_layer
@@ -16,6 +18,9 @@ func configure_runtime(new_round_director, new_territory_defense_system) -> void
 	round_director = new_round_director
 	territory_defense_system = new_territory_defense_system
 	_configure_entity_runtime()
+
+func get_support_deployment_authority():
+	return support_deployment_authority
 
 func should_block_capture(cell: Vector2i, incoming_owner: int, current_owner: int, capture_context: Dictionary = {}) -> bool:
 	if entity_runtime != null and is_instance_valid(entity_runtime):
@@ -72,11 +77,13 @@ func on_capture_applied(cell: Vector2i, incoming_owner: int, current_owner: int,
 
 func _configure_entity_runtime() -> void:
 	entity_runtime = null
+	support_deployment_authority = null
 	if territory_defense_system == null:
 		return
 	var battlefield = territory_defense_system.battlefield
 	if battlefield == null or not is_instance_valid(battlefield):
 		return
+	battlefield.remove_meta("cardfront_support_deployment_authority")
 	var existing = battlefield.get_node_or_null("CardfrontBattlefieldEntityRuntime")
 	if existing != null and is_instance_valid(existing):
 		entity_runtime = existing
@@ -95,6 +102,20 @@ func _configure_entity_runtime() -> void:
 		and not (region_map.get("map_definition") as Dictionary).is_empty()
 	):
 		entity_runtime.configure_map_definition(region_map.get("map_definition") as Dictionary)
+	_configure_support_deployment_authority(battlefield)
+
+func _configure_support_deployment_authority(battlefield) -> void:
+	if entity_runtime == null or not is_instance_valid(entity_runtime):
+		return
+	var effective_map_definition = entity_runtime.get("map_definition")
+	if not effective_map_definition is Dictionary or (effective_map_definition as Dictionary).is_empty():
+		return
+	var authority = SupportDeploymentAuthorityScript.new()
+	if not authority.setup(effective_map_definition as Dictionary):
+		return
+	support_deployment_authority = authority
+	entity_runtime.configure_deployment_context_provider(Callable(support_deployment_authority, "deployment_context"))
+	battlefield.set_meta("cardfront_support_deployment_authority", support_deployment_authority)
 
 func _is_frontline_cell(cell: Vector2i, owner_id: int) -> bool:
 	var battlefield = territory_defense_system.battlefield

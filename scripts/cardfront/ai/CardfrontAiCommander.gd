@@ -89,11 +89,12 @@ func choose_id(
 	run_state = null,
 	context: Dictionary = {}
 ) -> String:
-	var ranked: Array = _base_policy.rank_ids(offer_ids, run_state, context)
+	var scoring_context: Dictionary = context.duplicate(true)
+	var ranked: Array = _base_policy.rank_ids(offer_ids, run_state, scoring_context)
 	if ranked.is_empty():
 		_last_ranked_evaluations = []
 		return ""
-	var resolved_archetype: String = _resolve_archetype(context)
+	var resolved_archetype: String = _resolve_archetype(scoring_context)
 	var weights: Dictionary = ARCHETYPE_WEIGHTS.get(resolved_archetype, {})
 	for evaluation in ranked:
 		var upgrade_id: String = str(evaluation.get("upgrade_id", ""))

@@ -126,7 +126,9 @@ func _update_panel(region_id: int) -> void:
 
 	_threshold_50.text = "过半控制：%s" % ("已达成" if player_pct >= 50 else "还差 %d%%" % (50 - player_pct))
 	_threshold_50.add_theme_color_override("font_color", Color(0.45, 0.80, 0.50) if player_pct >= 50 else Color(0.55, 0.50, 0.45))
-	_threshold_80.text = "据点激活：%s" % ("已达成" if player_pct >= StrongholdRulesScript.ACTIVATION_PERCENT else "还差 %d%%" % (StrongholdRulesScript.ACTIVATION_PERCENT - player_pct))
+	# P0-05B3: 80% remains a real control/status threshold, but it no longer
+	# promises a Factory/Energy/Lab numeric ability.
+	_threshold_80.text = "据点控制：%s" % ("已达成" if player_pct >= StrongholdRulesScript.ACTIVATION_PERCENT else "还差 %d%%" % (StrongholdRulesScript.ACTIVATION_PERCENT - player_pct))
 	_threshold_80.add_theme_color_override("font_color", Color(0.80, 0.72, 0.30) if player_pct >= StrongholdRulesScript.ACTIVATION_PERCENT else Color(0.55, 0.50, 0.45))
 	var active_owner: int = leader_owner if maxi(player_pct, ai_pct) >= StrongholdRulesScript.ACTIVATION_PERCENT else CardfrontRulesScript.NEUTRAL_OWNER
 	var sampled: Dictionary = {}
@@ -134,19 +136,13 @@ func _update_panel(region_id: int) -> void:
 		sampled = stronghold_system.get_region_activation(region_id)
 	if bool(sampled.get("active", false)):
 		var sampled_owner: int = int(sampled.get("owner_id", CardfrontRulesScript.NEUTRAL_OWNER))
-		_stronghold_label.text = "本轮据点：%s · %s" % [
-			StrongholdRulesScript.effect_text(region_type),
-			CardfrontRulesScript.owner_display_name(sampled_owner),
-		]
+		_stronghold_label.text = "据点状态：有效控制 · %s" % CardfrontRulesScript.owner_display_name(sampled_owner)
 		_stronghold_label.add_theme_color_override("font_color", CardfrontRulesScript.owner_color(sampled_owner).lightened(0.30))
 	elif active_owner == CardfrontRulesScript.NEUTRAL_OWNER:
-		_stronghold_label.text = "据点能力：%s（未激活）" % StrongholdRulesScript.effect_text(region_type)
+		_stronghold_label.text = "据点状态：未达控制阈值"
 		_stronghold_label.add_theme_color_override("font_color", Color(0.62, 0.64, 0.70))
 	else:
-		_stronghold_label.text = "待采样：%s · %s" % [
-			StrongholdRulesScript.effect_text(region_type),
-			CardfrontRulesScript.owner_display_name(active_owner),
-		]
+		_stronghold_label.text = "据点状态：待本轮刷新 · %s" % CardfrontRulesScript.owner_display_name(active_owner)
 		_stronghold_label.add_theme_color_override("font_color", CardfrontRulesScript.owner_color(active_owner).lightened(0.30))
 
 	if leader_owner == CardfrontRulesScript.NEUTRAL_OWNER:

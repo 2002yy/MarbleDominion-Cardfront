@@ -48,6 +48,12 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.that(view.get_region_badge_text_for_test(first_region_id).contains("%"), "orthographic arena: stronghold badge should keep an explicit percentage")
 	_assert.eq(view.get_bridge_count_for_test(), 2, "orthographic arena: open arena should expose two clear bridge crossings")
 	_assert.eq(view.get_gate_count_for_test(), 2, "orthographic arena: both bridge lanes should expose a gate")
+	_assert.eq(view.get_support_visual_count_for_test(), 7, "orthographic arena: every authored support_id should own one live visual")
+	_assert.eq(view.get_support_presentation_update_count_for_test(), 7, "orthographic arena: initial Support presentation should update once per authored ID")
+	var player_core_visual = view.support_presentation_layer.get_visual("core_player")
+	_assert.that(player_core_visual != null, "orthographic arena: player Core support visual should be bound by stable ID")
+	if player_core_visual != null:
+		_assert.that(not player_core_visual.has_collision_nodes(), "orthographic arena: Support visuals must not enter collision authority")
 	_assert.eq(view.get_gate_openness_for_test(0), 1.0, "orthographic arena: gates should default open without changing gameplay")
 	_assert.that(view.set_gate_openness(0, 0.5), "orthographic arena: presentation gate should accept a normalized openness")
 	_assert.eq(view.get_gate_openness_for_test(0), 0.5, "orthographic arena: presentation gate should retain its openness")

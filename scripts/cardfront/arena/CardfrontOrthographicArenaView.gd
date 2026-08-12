@@ -9,6 +9,9 @@ const BattlefieldEntityScript = preload("res://scripts/cardfront/entities/Cardfr
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 const CombatReadabilityScript = preload("res://scripts/cardfront/arena/CardfrontCombatReadabilityProfile.gd")
 const EnvironmentBuilderScript = preload("res://scripts/cardfront/environment/CardfrontEnvironmentBuilder.gd")
+const SupportPresentationLayerScript = preload(
+	"res://scripts/cardfront/support/presentation/CardfrontSupportPresentationLayer3D.gd"
+)
 
 const CANVAS_LAYER: int = 4
 const MAX_BULLET_PROXIES: int = 256
@@ -41,6 +44,8 @@ var turrets: Dictionary = {}
 var layout: Dictionary = {}
 var map_id: String = "default_duel"
 var entity_runtime = null
+var support_presentation_source = null
+var support_presentation_layer = null
 
 var viewport_container: SubViewportContainer
 var world_viewport: SubViewport
@@ -113,6 +118,7 @@ func setup(new_battlefield, new_region_map, new_bullet_pool, new_turrets: Dictio
 	map_id = str(layout.get("map_id", "default_duel"))
 	_build_viewport(arena_view_rect)
 	_build_world()
+	_build_support_presentation_layer()
 	_build_tiles()
 	_build_territory_boundaries()
 	_build_sparse_claim_markers()
@@ -138,6 +144,42 @@ func set_entity_runtime(new_entity_runtime) -> void:
 	entity_runtime = new_entity_runtime
 	_connect_entity_runtime()
 	_sync_entities()
+
+
+func _exit_tree() -> void:
+	_disconnect_support_presentation_source()
+
+
+func set_support_presentation_source(new_source) -> bool:
+	_disconnect_support_presentation_source()
+	support_presentation_source = new_source
+	if support_presentation_source == null:
+		if support_presentation_layer != null:
+			support_presentation_layer.clear_visuals()
+		return false
+	if not support_presentation_source.has_method("presentation_snapshots"):
+		support_presentation_source = null
+		return false
+	var changed := Callable(self, "_on_support_presentation_snapshots_changed")
+	if (
+		support_presentation_source.has_signal("presentation_snapshots_changed")
+		and not support_presentation_source.is_connected("presentation_snapshots_changed", changed)
+	):
+		support_presentation_source.connect("presentation_snapshots_changed", changed)
+	_on_support_presentation_snapshots_changed(support_presentation_source.presentation_snapshots())
+	return true
+
+
+func cell_to_world(cell: Vector2i, height: float = 0.0) -> Vector3:
+	return _cell_to_world(cell, height)
+
+
+func get_support_visual_count_for_test() -> int:
+	return support_presentation_layer.get_visual_count() if support_presentation_layer != null else 0
+
+
+func get_support_presentation_update_count_for_test() -> int:
+	return support_presentation_layer.presentation_update_count if support_presentation_layer != null else 0
 
 
 func get_camera_for_test() -> Camera3D:
@@ -487,6 +529,31 @@ func _build_world() -> void:
 	)
 	camera.current = true
 	world_root.add_child(camera)
+
+
+func _build_support_presentation_layer() -> void:
+	support_presentation_layer = SupportPresentationLayerScript.new()
+	if not support_presentation_layer.setup(Callable(self, "cell_to_world")):
+		support_presentation_layer.free()
+		support_presentation_layer = null
+		return
+	world_root.add_child(support_presentation_layer)
+
+
+func _on_support_presentation_snapshots_changed(snapshots: Array) -> void:
+	if support_presentation_layer != null:
+		support_presentation_layer.sync_snapshots(snapshots)
+
+
+func _disconnect_support_presentation_source() -> void:
+	if support_presentation_source == null:
+		return
+	var changed := Callable(self, "_on_support_presentation_snapshots_changed")
+	if (
+		support_presentation_source.has_signal("presentation_snapshots_changed")
+		and support_presentation_source.is_connected("presentation_snapshots_changed", changed)
+	):
+		support_presentation_source.disconnect("presentation_snapshots_changed", changed)
 
 
 func _build_tiles() -> void:

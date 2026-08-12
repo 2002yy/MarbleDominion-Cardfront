@@ -7,6 +7,9 @@ const SupportDefinitionScript = preload("res://scripts/cardfront/support/Deploym
 const SupportIdsScript = preload("res://scripts/cardfront/support/CardfrontSupportIds.gd")
 const SupportMapMetadataScript = preload("res://scripts/cardfront/support/DeploymentSupportMapMetadata.gd")
 const SupportRegionMapperScript = preload("res://scripts/cardfront/support/DeploymentSupportRegionMapper.gd")
+const SupportTopologyContractScript = preload("res://scripts/cardfront/support/graph/SupportTopologyContract.gd")
+const SupportDeploymentAuthorityScript = preload("res://scripts/cardfront/support/CardfrontSupportDeploymentAuthority.gd")
+const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 
 var _assert: TestAssert
 
@@ -17,7 +20,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	_assert = TestAssert.new()
-	print("[CardfrontSupportMapMetadataTest] Checking authored topology metadata")
+	print("[CardfrontSupportMapMetadataTest] Checking authored topology metadata and runtime binding")
 	await process_frame
 
 	_test_default_duel_metadata()
@@ -25,6 +28,8 @@ func _run() -> void:
 	_test_invalid_topology_fails_map_setup()
 	_test_structurally_valid_but_frozen_wrong_topology_fails()
 	_test_metadata_contains_no_runtime_or_bonus_truth()
+	_test_runtime_authority_binds_default_map_metadata()
+	_test_runtime_branch_failure_matrix()
 
 	_assert.report("[CardfrontSupportMapMetadataTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
@@ -114,6 +119,147 @@ func _test_metadata_contains_no_runtime_or_bonus_truth() -> void:
 			"shot_bonus", "attack_bonus", "draft_choice_bonus", "resource_income", "rarity_bonus",
 		]:
 			_assert.that(not (definition as Dictionary).has(forbidden_key), "support metadata: %s excludes %s" % [definition.support_id, forbidden_key])
+
+
+func _test_runtime_authority_binds_default_map_metadata() -> void:
+	var definition: Dictionary = DefaultDuelMapScript.make(Vector2i(40, 40))
+	var supports: Array = definition.deployment_supports as Array
+	var by_id: Dictionary = _by_id(supports)
+	var authority = SupportDeploymentAuthorityScript.new()
+
+	_assert.that(authority.setup(definition), "support runtime: default_duel authored graph should configure authority")
+	var debug: Dictionary = authority.debug_snapshot()
+	_assert.eq(debug.validation_errors, [], "support runtime: authored topology should validate before live use")
+	_assert.eq(debug.topology, SupportTopologyContractScript.from_support_definitions(supports), "support runtime: topology must be projected from the real default map definitions")
+
+	var core_only: Dictionary = authority.deployment_context(CardfrontRulesScript.PLAYER_FACTION)
+	_assert.eq(str(core_only.core_source.support_id), SupportIdsScript.CORE_PLAYER, "support runtime: player core remains the fallback source")
+	_assert.eq(core_only.online_support_ids, [], "support runtime: non-core Supports begin offline until authoritative state says otherwise")
+
+	_assert.that(
+		authority.set_support_state(SupportIdsScript.SUPPORT_LEFT_SOUTH, CardfrontRulesScript.PLAYER_FACTION, true),
+		"support runtime: activating an authored left-route Support should invalidate connectivity once"
+	)
+	var left_online: Dictionary = authority.deployment_context(CardfrontRulesScript.PLAYER_FACTION)
+	var left_source: Dictionary = _source_by_id(left_online.support_sources as Array, SupportIdsScript.SUPPORT_LEFT_SOUTH)
+	var authored_left: Dictionary = by_id[SupportIdsScript.SUPPORT_LEFT_SOUTH] as Dictionary
+	_assert.eq(left_source.anchor_cell, authored_left.anchor_cell, "support runtime: deployment anchor comes from DefaultDuelMap metadata")
+	_assert.eq(left_source.forward, authored_left.player_deploy_direction, "support runtime: player deploy direction comes from authored metadata")
+	_assert.eq(str(left_source.profile_id), str(authored_left.deployment_profile_id), "support runtime: deployment profile comes from authored metadata")
+	_assert.eq(str(left_source.route_role), str(authored_left.route_role), "support runtime: route role comes from authored metadata")
+	_assert.eq(int(left_source.graph_depth), 1, "support runtime: first left-route Support resolves one edge from player Core")
+
+	# Connectivity must gate authored data: a downstream Claim can stay owned while an
+	# upstream operational cut removes it from deployment authority, then reconnect
+	# without recapturing that downstream Support.
+	authority.set_support_state(SupportIdsScript.SUPPORT_LEFT_NORTH, CardfrontRulesScript.PLAYER_FACTION, true)
+	_assert.that(
+		SupportIdsScript.SUPPORT_LEFT_NORTH in authority.deployment_context(CardfrontRulesScript.PLAYER_FACTION).online_support_ids,
+		"support runtime: connected downstream authored Support should become online"
+	)
+	authority.set_operational(SupportIdsScript.SUPPORT_LEFT_SOUTH, false)
+	var cut_context: Dictionary = authority.deployment_context(CardfrontRulesScript.PLAYER_FACTION)
+	_assert.that(SupportIdsScript.SUPPORT_LEFT_SOUTH not in cut_context.online_support_ids, "support runtime: disabled upstream Support leaves deployment authority")
+	_assert.that(SupportIdsScript.SUPPORT_LEFT_NORTH not in cut_context.online_support_ids, "support runtime: downstream Claim is offline while disconnected")
+	authority.set_operational(SupportIdsScript.SUPPORT_LEFT_SOUTH, true)
+	_assert.that(
+		SupportIdsScript.SUPPORT_LEFT_NORTH in authority.deployment_context(CardfrontRulesScript.PLAYER_FACTION).online_support_ids,
+		"support runtime: reconnect restores downstream deployment authority without recapture"
+	)
+
+
+func _test_runtime_branch_failure_matrix() -> void:
+	# The frozen map exposes two equal physical branches (LEFT / RIGHT), not a hidden
+	# main-route priority. Run the same six failure/recovery truths from both Core roots
+	# so side-specific graph direction cannot accidentally pass on only one faction.
+	_run_branch_failure_matrix(
+		CardfrontRulesScript.PLAYER_FACTION,
+		SupportIdsScript.CORE_PLAYER,
+		SupportIdsScript.SUPPORT_LEFT_SOUTH,
+		SupportIdsScript.SUPPORT_LEFT_NORTH,
+		SupportIdsScript.SUPPORT_RIGHT_SOUTH,
+		SupportIdsScript.SUPPORT_RIGHT_NORTH,
+		"player"
+	)
+	_run_branch_failure_matrix(
+		CardfrontRulesScript.AI_FACTION,
+		SupportIdsScript.CORE_AI,
+		SupportIdsScript.SUPPORT_LEFT_NORTH,
+		SupportIdsScript.SUPPORT_LEFT_SOUTH,
+		SupportIdsScript.SUPPORT_RIGHT_NORTH,
+		SupportIdsScript.SUPPORT_RIGHT_SOUTH,
+		"ai"
+	)
+
+
+func _run_branch_failure_matrix(
+	side: int,
+	core_id: String,
+	left_upstream: String,
+	left_downstream: String,
+	right_upstream: String,
+	right_downstream: String,
+	label: String
+) -> void:
+	var authority = SupportDeploymentAuthorityScript.new()
+	_assert.that(authority.setup(DefaultDuelMapScript.make(Vector2i(40, 40))), "branch failure %s: runtime authority setup" % label)
+	for support_id in [left_upstream, left_downstream, right_upstream, right_downstream]:
+		authority.set_support_state(str(support_id), side, true)
+
+	# 1. Both authored branches connected.
+	var both_online: Dictionary = authority.deployment_context(side)
+	_assert.that(_contains_all(both_online.online_support_ids as Array, [left_upstream, left_downstream, right_upstream, right_downstream]), "branch failure %s: both routes online" % label)
+
+	# 2. Left branch upstream offline while right branch survives.
+	authority.set_operational(left_upstream, false)
+	var left_cut: Dictionary = authority.deployment_context(side)
+	_assert.that(left_upstream not in left_cut.online_support_ids and left_downstream not in left_cut.online_support_ids, "branch failure %s: left upstream cut removes left downstream authority" % label)
+	_assert.that(right_upstream in left_cut.online_support_ids and right_downstream in left_cut.online_support_ids, "branch failure %s: right branch survives left cut" % label)
+
+	# Restore left, then 3. cut the right branch instead.
+	authority.set_operational(left_upstream, true)
+	authority.set_operational(right_upstream, false)
+	var right_cut: Dictionary = authority.deployment_context(side)
+	_assert.that(right_upstream not in right_cut.online_support_ids and right_downstream not in right_cut.online_support_ids, "branch failure %s: right upstream cut removes right downstream authority" % label)
+	_assert.that(left_upstream in right_cut.online_support_ids and left_downstream in right_cut.online_support_ids, "branch failure %s: left branch survives right cut" % label)
+
+	# 4. Both frontline paths offline.
+	authority.set_operational(left_upstream, false)
+	var both_cut: Dictionary = authority.deployment_context(side)
+	_assert.eq(both_cut.online_support_ids, [], "branch failure %s: both route cuts remove all non-Core deployment sources" % label)
+
+	# 5. Core fallback remains authored and available while every non-Core source is offline.
+	_assert.eq(str((both_cut.core_source as Dictionary).get("support_id", "")), core_id, "branch failure %s: Core fallback survives both route cuts" % label)
+
+	# 6. Downstream Claims remain owned while disconnected; reconnecting each upstream
+	# restores the downstream source without re-applying its Claim.
+	var cut_debug: Dictionary = authority.debug_snapshot()
+	_assert.eq(int((cut_debug.claim_owner_by_support as Dictionary).get(left_downstream, CardfrontRulesScript.NEUTRAL_OWNER)), side, "branch failure %s: disconnected left downstream Claim is retained" % label)
+	_assert.eq(int((cut_debug.claim_owner_by_support as Dictionary).get(right_downstream, CardfrontRulesScript.NEUTRAL_OWNER)), side, "branch failure %s: disconnected right downstream Claim is retained" % label)
+
+	authority.set_operational(left_upstream, true)
+	var left_reconnected: Dictionary = authority.deployment_context(side)
+	_assert.that(left_downstream in left_reconnected.online_support_ids, "branch failure %s: left reconnect restores downstream without recapture" % label)
+	_assert.that(right_downstream not in left_reconnected.online_support_ids, "branch failure %s: right branch stays offline until its own upstream reconnects" % label)
+
+	authority.set_operational(right_upstream, true)
+	var fully_reconnected: Dictionary = authority.deployment_context(side)
+	_assert.that(_contains_all(fully_reconnected.online_support_ids as Array, [left_upstream, left_downstream, right_upstream, right_downstream]), "branch failure %s: both branches recover without downstream recapture" % label)
+
+
+func _contains_all(values: Array, required: Array) -> bool:
+	for item in required:
+		if item not in values:
+			return false
+	return true
+
+
+func _source_by_id(sources: Array, support_id: String) -> Dictionary:
+	for raw_source in sources:
+		var source: Dictionary = raw_source as Dictionary
+		if str(source.get("support_id", "")) == support_id:
+			return source
+	return {}
 
 
 func _by_id(supports: Array) -> Dictionary:

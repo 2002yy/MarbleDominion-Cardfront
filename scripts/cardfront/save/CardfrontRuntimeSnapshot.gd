@@ -19,7 +19,6 @@ var round_number: int = 0
 var round_active: bool = false
 var hero_assignments: Dictionary = {}
 var current_offers: Dictionary = {}
-var current_stronghold_bonuses: Dictionary = {}
 var current_gate_snapshot: Dictionary = {}
 var entity_snapshot: Dictionary = {}
 var territory_defense_state: Dictionary = {}
@@ -41,7 +40,6 @@ func to_dict() -> Dictionary:
 		"round_active": round_active,
 		"hero_assignments": hero_assignments,
 		"current_offers": current_offers,
-		"current_stronghold_bonuses": current_stronghold_bonuses,
 		"current_gate_snapshot": current_gate_snapshot,
 		"entity_snapshot": entity_snapshot,
 		"territory_defense_state": territory_defense_state,
@@ -63,7 +61,6 @@ static func from_dict(data: Dictionary):
 	snap.round_active = bool(data.get("round_active", false))
 	snap.hero_assignments = data.get("hero_assignments", {})
 	snap.current_offers = data.get("current_offers", {})
-	snap.current_stronghold_bonuses = data.get("current_stronghold_bonuses", {})
 	snap.current_gate_snapshot = data.get("current_gate_snapshot", {})
 	snap.entity_snapshot = data.get("entity_snapshot", {})
 	snap.territory_defense_state = data.get("territory_defense_state", {})
@@ -89,7 +86,6 @@ static func capture(runtime) -> RefCounted:
 	if round_director.phase_controller != null and round_director.phase_controller.has_method("snapshot"):
 		snap.match_phase = round_director.phase_controller.snapshot()
 	snap.current_offers = _serialize_offers(round_director.current_offers)
-	snap.current_stronghold_bonuses = (round_director.current_stronghold_bonuses if round_director.current_stronghold_bonuses else {}).duplicate(true)
 	snap.current_gate_snapshot = (round_director.current_gate_snapshot if round_director.current_gate_snapshot else {}).duplicate(true)
 	if runtime.battlefield != null:
 		var entity_runtime = runtime.battlefield.get_node_or_null("CardfrontBattlefieldEntityRuntime")
@@ -125,9 +121,6 @@ static func apply_to_runtime(runtime, data: Dictionary) -> void:
 	var saved_offers: Dictionary = data.get("current_offers", {})
 	if not saved_offers.is_empty():
 		round_director.current_offers = saved_offers.duplicate(true)
-	var saved_bonuses: Dictionary = data.get("current_stronghold_bonuses", {})
-	if not saved_bonuses.is_empty():
-		round_director.current_stronghold_bonuses = saved_bonuses.duplicate(true)
 	var saved_gates: Dictionary = data.get("current_gate_snapshot", {})
 	if not saved_gates.is_empty():
 		round_director.current_gate_snapshot = saved_gates.duplicate(true)

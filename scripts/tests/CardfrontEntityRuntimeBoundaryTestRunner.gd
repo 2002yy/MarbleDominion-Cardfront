@@ -13,6 +13,8 @@ const DebugLayerScript = preload(
 const RUNTIME_PATH := "res://scripts/cardfront/entities/CardfrontBattlefieldEntityRuntime.gd"
 const PRESENTATION_PATH := "res://scripts/cardfront/entities/CardfrontEntityPresentationLayer.gd"
 const DEBUG_PATH := "res://scripts/cardfront/entities/CardfrontEntityDebugLayer.gd"
+const AUTHORITATIVE_CREATURE_COORDINATOR_PATH := "res://scripts/cardfront/entities/CardfrontAuthoritativeCreatureActionCoordinator.gd"
+const AUTOMATIC_SPAWN_COORDINATOR_PATH := "res://scripts/cardfront/entities/CardfrontAutomaticSpawnCoordinator.gd"
 
 var _assert: TestAssert
 
@@ -24,6 +26,7 @@ func _initialize() -> void:
 func _run() -> void:
 	_assert = TestAssert.new()
 	_test_coordinator_boundary()
+	_test_deployment_boundary()
 	_test_presentation_boundary()
 	_test_debug_boundary()
 	_test_runtime_module_assembly()
@@ -41,12 +44,35 @@ func _test_coordinator_boundary() -> void:
 	for module_name in [
 		"CardfrontEntityProjectileBridge.gd",
 		"CardfrontTowerRuntime.gd",
-		"CardfrontCreatureActionCoordinator.gd",
+		"CardfrontAuthoritativeCreatureActionCoordinator.gd",
+		"CardfrontAutomaticSpawnCoordinator.gd",
 	]:
 		_assert.that(
 			source.contains(module_name),
 			"entity boundary: runtime assembles %s" % module_name
 		)
+
+
+func _test_deployment_boundary() -> void:
+	var runtime_source := _read_source(RUNTIME_PATH)
+	var creature_source := _read_source(AUTHORITATIVE_CREATURE_COORDINATOR_PATH)
+	var automatic_spawn_source := _read_source(AUTOMATIC_SPAWN_COORDINATOR_PATH)
+	_assert.that(
+		not runtime_source.contains("DeploymentRules.gd"),
+		"entity boundary: runtime does not directly depend on DeploymentRules"
+	)
+	_assert.that(
+		creature_source.contains("CardfrontCreatureActionCoordinator.gd"),
+		"entity boundary: authoritative creature coordinator preserves base creature behavior"
+	)
+	_assert.that(
+		automatic_spawn_source.contains("DeploymentPlacementResolver.gd"),
+		"entity boundary: automatic spawn delegates placement to DeploymentPlacementResolver"
+	)
+	_assert.that(
+		not automatic_spawn_source.contains("DeploymentRules.gd"),
+		"entity boundary: automatic spawn does not create a second direct DeploymentRules consumer"
+	)
 
 
 func _test_presentation_boundary() -> void:
@@ -98,6 +124,10 @@ func _test_runtime_module_assembly() -> void:
 	_assert.that(
 		runtime._creature_action_coordinator != null,
 		"entity boundary: creature coordinator is assembled"
+	)
+	_assert.that(
+		runtime._automatic_spawn_coordinator != null,
+		"entity boundary: automatic spawn coordinator is assembled"
 	)
 	var presentation = PresentationLayerScript.new()
 	var debug = DebugLayerScript.new()
