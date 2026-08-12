@@ -1343,6 +1343,55 @@ The first prototype model already exists outside the repository:
 - Acceptance follows the existing default_duel benchmark gates (25% thumbnail
   hierarchy, HUD chrome <15%, no playfield overlap).
 
+### Candidate Slice: Map Landmark And Background Art Plan / 地图地标与背景美术方案候选
+
+**Status: candidate with P0 partially integrated. 状态：候选，P0 部分接入。**
+
+Current diagnosis: the three maps differ only by palette plus procedural
+primitives. The background is flat (single-color sky/backdrop/outer), and
+landmarks are unidentifiable (procedural cylinders read as neither factory
+nor laboratory).
+
+#### Three-Layer Background Structure / 三层背景结构
+
+| Layer | Element | Current | Plan |
+| --- | --- | --- | --- |
+| 1 (farthest, quietest) | Sky | Single color per theme | 2-3 stop vertical gradient per map, keeping existing hue identity, adding value depth |
+| 1 | Skyline silhouette | None | One low-contrast silhouette band per map (industrial roofline / crystal cluster / rolling hills), value between sky and backdrop |
+| 1 | Outer ground | Single color | Keep the existing 5-cell checker; deepen outer edge for a framed look |
+| 2 (mid) | Map landmark kit | Procedural primitives | 2-4 identifiable silhouette models per map, placed outside the playable core |
+| 3 (near) | Chamber / tower visuals | BoxMesh + procedural | GLB replacement (see the building-replacement slice above) |
+
+#### Per-Map Landmark Kit / 每图地标套件
+
+| Map | Generated (Blender bpy, outside repo) | To generate | Placement |
+| --- | --- | --- | --- |
+| default_duel 绿野 | `defense_tower.glb` (also chamber candidate) | wall segment x2, flag x2 | four outer corners |
+| cross_resource 工业 | `cardfront_industrial_stack.glb` | storage tank/pipe group, factory block | left/right outer edges, factory skyline |
+| central_lab 实验室 | `cardfront_lab_crystal_pylon.glb` | lab dome, energy ring | four corners, research-facility silhouette |
+
+Placement rules follow the existing KayKit environment rules: outside the
+playable core, never covering bridge entrances, target previews, or ownership
+outlines.
+
+#### Execution Order / 执行顺序
+
+1. P0 (integrated): register the three generated GLBs in
+   `CardfrontEnvironmentAssetRegistry`; replace procedural landmarks
+   (industrial stack on cross_resource, lab pylon on central_lab) and keep the
+   command-chamber GLB as a candidate visual with procedural fallback. Verify
+   with arena tests plus the deterministic screenshot tool.
+2. P1: generate the remaining landmark models (wall segments, storage tanks,
+   lab domes, flags) with the same Blender bpy pipeline.
+3. P2: background value pass (gradient sky + skyline silhouettes per map).
+4. P3: replace defense tower / beacon / interceptor visuals with the generated
+   GLBs (beacon and interceptor models are already generated and waiting).
+
+Art rules from the approved Art Integration Rules apply unchanged: one
+material palette per scene, one lighting setup, presentation-only, registry
+with fallback, per-map human screenshot acceptance before extending language
+to the next map.
+
 ## 12. Acceptance Requirements / 验收要求
 
 Every gameplay slice must include:

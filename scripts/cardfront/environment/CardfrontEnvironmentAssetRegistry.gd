@@ -46,6 +46,24 @@ const ASSETS: Dictionary = {
 		"source_pack": "kaykit_medieval_hexagon",
 		"fallback": "primitive_tree",
 	},
+	"custom_defense_tower": {
+		"path": "res://assets/cardfront_environment/source/custom/defense_tower.glb",
+		"role": "command_chamber",
+		"source_pack": "cardfront_custom_blender",
+		"fallback": "primitive_chamber",
+	},
+	"custom_industrial_stack": {
+		"path": "res://assets/cardfront_environment/source/custom/industrial_stack.glb",
+		"role": "map_landmark",
+		"source_pack": "cardfront_custom_blender",
+		"fallback": "primitive_stack",
+	},
+	"custom_lab_pylon": {
+		"path": "res://assets/cardfront_environment/source/custom/lab_crystal_pylon.glb",
+		"role": "map_landmark",
+		"source_pack": "cardfront_custom_blender",
+		"fallback": "primitive_pylon",
+	},
 }
 
 

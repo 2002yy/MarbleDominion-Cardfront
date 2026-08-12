@@ -9,6 +9,7 @@ const BattlefieldEntityScript = preload("res://scripts/cardfront/entities/Cardfr
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 const CombatReadabilityScript = preload("res://scripts/cardfront/arena/CardfrontCombatReadabilityProfile.gd")
 const EnvironmentBuilderScript = preload("res://scripts/cardfront/environment/CardfrontEnvironmentBuilder.gd")
+const EnvironmentAssetRegistryScript = preload("res://scripts/cardfront/environment/CardfrontEnvironmentAssetRegistry.gd")
 const SupportPresentationLayerScript = preload(
 	"res://scripts/cardfront/support/presentation/CardfrontSupportPresentationLayer3D.gd"
 )
@@ -834,18 +835,46 @@ func _build_map_landmarks(height: float, arena_width: float) -> void:
 		"central_lab":
 			for side in [-1.0, 1.0]:
 				for z_ratio in [-0.25, 0.25]:
-					_add_landmark_pylon(
-						Vector3(side * (arena_width * 0.5 + 2.2), 1.8, height * z_ratio * _z_scale),
-						Color(0.64, 0.48, 0.86)
+					var landmark_pos := Vector3(
+						side * (arena_width * 0.5 + 2.2),
+						0.0,
+						height * z_ratio * _z_scale
 					)
+					if not _try_spawn_glb("custom_lab_pylon", landmark_pos, 1.25, 0.0):
+						_add_landmark_pylon(
+							Vector3(side * (arena_width * 0.5 + 2.2), 1.8, height * z_ratio * _z_scale),
+							Color(0.64, 0.48, 0.86)
+						)
 		"cross_resource":
 			for side in [-1.0, 1.0]:
 				for z_ratio in [-0.31, 0.31]:
-					_add_factory_stack(
-						Vector3(side * (arena_width * 0.5 + 2.4), 0.0, height * z_ratio * _z_scale)
+					var landmark_pos := Vector3(
+						side * (arena_width * 0.5 + 2.4),
+						0.0,
+						height * z_ratio * _z_scale
 					)
+					if not _try_spawn_glb("custom_industrial_stack", landmark_pos, 0.95, 0.0):
+						_add_factory_stack(
+							Vector3(side * (arena_width * 0.5 + 2.4), 0.0, height * z_ratio * _z_scale)
+						)
 		_:
 			pass
+
+
+func _try_spawn_glb(asset_id: String, position_value: Vector3, scale_value: float, rotation_y: float) -> bool:
+	var scene: PackedScene = EnvironmentAssetRegistryScript.load_scene(asset_id)
+	if scene == null:
+		return false
+	var instance: Node3D = scene.instantiate() as Node3D
+	if instance == null:
+		return false
+	instance.name = "Landmark_%s" % asset_id
+	instance.position = position_value
+	instance.scale = Vector3(scale_value, scale_value, scale_value)
+	instance.rotation.y = rotation_y
+	instance.set_meta("presentation_only", true)
+	world_root.add_child(instance)
+	return true
 
 
 func _add_landmark_pylon(position_value: Vector3, color: Color) -> void:
@@ -1308,6 +1337,80 @@ func _get_region_leader(control: Dictionary) -> Dictionary:
 	return {"owner_id": best_owner, "percent": maxi(0, best_percent)}
 
 
+func _try_spawn_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
+	var scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("custom_defense_tower")
+	if scene == null:
+		return false
+	var instance: Node3D = scene.instantiate() as Node3D
+	if instance == null:
+		return false
+	instance.name = "ChamberTower"
+	instance.scale = Vector3(1.7, 0.5, 1.0)
+	instance.position = Vector3.ZERO
+	instance.set_meta("presentation_only", true)
+	proxy.add_child(instance)
+	var plate := MeshInstance3D.new()
+	plate.name = "FactionPlate"
+	var plate_mesh := CylinderMesh.new()
+	plate_mesh.top_radius = 3.4
+	plate_mesh.bottom_radius = 3.4
+	plate_mesh.height = 0.10
+	plate_mesh.radial_segments = 24
+	plate.mesh = plate_mesh
+	plate.position.y = 0.05
+	plate.material_override = _get_faction_material(owner_id, 0.30)
+	proxy.add_child(plate)
+	return true
+
+
+func _build_procedural_chamber(proxy: Node3D, owner_id: int) -> void:
+	var chamber := MeshInstance3D.new()
+	chamber.name = "ChamberFoundation"
+	var chamber_mesh := BoxMesh.new()
+	chamber_mesh.size = COMMAND_CHAMBER_SIZE
+	chamber.mesh = chamber_mesh
+	chamber.position.y = 0.30
+	chamber.material_override = _make_material(Color(0.34, 0.36, 0.31), 0.0)
+	proxy.add_child(chamber)
+
+	var keep := MeshInstance3D.new()
+	keep.name = "ChamberKeep"
+	var keep_mesh := BoxMesh.new()
+	keep_mesh.size = Vector3(3.76, 1.72, 2.54)
+	keep.mesh = keep_mesh
+	keep.position.y = 1.06
+	keep.material_override = _get_faction_material(owner_id, 0.14)
+	proxy.add_child(keep)
+
+	for corner in [
+		Vector3(-1.94, 1.34, -1.34),
+		Vector3(1.94, 1.34, -1.34),
+		Vector3(-1.94, 1.34, 1.34),
+		Vector3(1.94, 1.34, 1.34),
+	]:
+		var corner_tower := MeshInstance3D.new()
+		corner_tower.name = "CornerTower"
+		var corner_mesh := CylinderMesh.new()
+		corner_mesh.top_radius = 0.48
+		corner_mesh.bottom_radius = 0.58
+		corner_mesh.height = 1.72
+		corner_mesh.radial_segments = 8
+		corner_tower.mesh = corner_mesh
+		corner_tower.position = corner
+		corner_tower.material_override = _get_faction_material(owner_id, 0.08)
+		proxy.add_child(corner_tower)
+
+	for merlon_x in [-1.20, -0.40, 0.40, 1.20]:
+		var merlon := MeshInstance3D.new()
+		merlon.name = "Battlement"
+		var merlon_mesh := BoxMesh.new()
+		merlon_mesh.size = Vector3(0.44, 0.38, 0.46)
+		merlon.mesh = merlon_mesh
+		merlon.position = Vector3(merlon_x, 1.98, -0.92)
+		merlon.material_override = _get_faction_material(owner_id, 0.10)
+		proxy.add_child(merlon)
+
+
 func _build_combatant_proxies() -> void:
 	for owner_id in CardfrontRulesScript.get_duel_factions():
 		var turret = turrets.get(owner_id, null)
@@ -1317,51 +1420,8 @@ func _build_combatant_proxies() -> void:
 		proxy.name = "Combatant_%s" % str(owner_id)
 		world_root.add_child(proxy)
 
-		var chamber := MeshInstance3D.new()
-		chamber.name = "ChamberFoundation"
-		var chamber_mesh := BoxMesh.new()
-		chamber_mesh.size = COMMAND_CHAMBER_SIZE
-		chamber.mesh = chamber_mesh
-		chamber.position.y = 0.30
-		chamber.material_override = _make_material(Color(0.34, 0.36, 0.31), 0.0)
-		proxy.add_child(chamber)
-
-		var keep := MeshInstance3D.new()
-		keep.name = "ChamberKeep"
-		var keep_mesh := BoxMesh.new()
-		keep_mesh.size = Vector3(3.76, 1.72, 2.54)
-		keep.mesh = keep_mesh
-		keep.position.y = 1.06
-		keep.material_override = _get_faction_material(int(owner_id), 0.14)
-		proxy.add_child(keep)
-
-		for corner in [
-			Vector3(-1.94, 1.34, -1.34),
-			Vector3(1.94, 1.34, -1.34),
-			Vector3(-1.94, 1.34, 1.34),
-			Vector3(1.94, 1.34, 1.34),
-		]:
-			var corner_tower := MeshInstance3D.new()
-			corner_tower.name = "CornerTower"
-			var corner_mesh := CylinderMesh.new()
-			corner_mesh.top_radius = 0.48
-			corner_mesh.bottom_radius = 0.58
-			corner_mesh.height = 1.72
-			corner_mesh.radial_segments = 8
-			corner_tower.mesh = corner_mesh
-			corner_tower.position = corner
-			corner_tower.material_override = _get_faction_material(int(owner_id), 0.08)
-			proxy.add_child(corner_tower)
-
-		for merlon_x in [-1.20, -0.40, 0.40, 1.20]:
-			var merlon := MeshInstance3D.new()
-			merlon.name = "Battlement"
-			var merlon_mesh := BoxMesh.new()
-			merlon_mesh.size = Vector3(0.44, 0.38, 0.46)
-			merlon.mesh = merlon_mesh
-			merlon.position = Vector3(merlon_x, 1.98, -0.92)
-			merlon.material_override = _get_faction_material(int(owner_id), 0.10)
-			proxy.add_child(merlon)
+		if not _try_spawn_chamber_glb(proxy, int(owner_id)):
+			_build_procedural_chamber(proxy, int(owner_id))
 
 		var turret_pivot := Node3D.new()
 		turret_pivot.name = "TurretPivot"
