@@ -290,11 +290,13 @@ func _open_draft() -> void:
 	current_offers = {
 		RulesScript.PLAYER_FACTION: _draft_system.draw_offer(
 			get_run_state(RulesScript.PLAYER_FACTION),
-			DraftSystemScript.DEFAULT_OFFER_SIZE
+			DraftSystemScript.DEFAULT_OFFER_SIZE,
+			RulesScript.PLAYER_FACTION
 		),
 		RulesScript.AI_FACTION: _draft_system.draw_offer(
 			get_run_state(RulesScript.AI_FACTION),
-			DraftSystemScript.DEFAULT_OFFER_SIZE
+			DraftSystemScript.DEFAULT_OFFER_SIZE,
+			RulesScript.AI_FACTION
 		),
 	}
 	var ai_choice: Dictionary = _ai_commander.choose(
@@ -314,7 +316,7 @@ func _open_draft() -> void:
 func _on_draft_timeout() -> void:
 	for owner_id in phase_controller.get_missing_owner_ids():
 		var offer: Array = current_offers.get(int(owner_id), []) as Array
-		var fallback: Dictionary = _draft_system.choose_timeout_fallback(offer)
+		var fallback: Dictionary = _draft_system.choose_timeout_fallback(offer, int(owner_id))
 		var fallback_id: String = str(fallback.get("id", ""))
 		if fallback_id != "" and phase_controller.select_upgrade(int(owner_id), fallback_id):
 			choice_locked.emit(int(owner_id), fallback_id, true)

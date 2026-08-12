@@ -4,6 +4,7 @@ class_name CardfrontUpgradeDraftSystem
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
 const DeckRegistryScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDeckRegistry.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
+const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 
 const DEFAULT_OFFER_SIZE: int = 3
 # P0-05B1: the formal gameplay draft is three-choice. Legacy Lab may still
@@ -13,29 +14,42 @@ const COMMON_BASE_WEIGHT: float = 100.0
 const UNCOMMON_BASE_WEIGHT: float = 42.0
 const RARE_BASE_WEIGHT: float = 12.0
 
-var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+const PLAYER_SEED_SALT: int = 0x243F6A8885A308D3
+const AI_SEED_SALT: int = 0x13198A2E03707344
+
+var _side_rngs: Dictionary = {
+	RulesScript.PLAYER_FACTION: RandomNumberGenerator.new(),
+	RulesScript.AI_FACTION: RandomNumberGenerator.new(),
+}
 
 
 func set_seed(seed_value: int) -> void:
-	_rng.seed = int(seed_value)
+	_side_rng(RulesScript.PLAYER_FACTION).seed = _derive_side_seed(seed_value, PLAYER_SEED_SALT)
+	_side_rng(RulesScript.AI_FACTION).seed = _derive_side_seed(seed_value, AI_SEED_SALT)
+
+
+func set_side_seed_for_tests(owner_id: int, seed_value: int) -> void:
+	_side_rng(owner_id).seed = int(seed_value)
 
 
 func randomize_seed() -> void:
-	_rng.randomize()
+	_side_rng(RulesScript.PLAYER_FACTION).randomize()
+	_side_rng(RulesScript.AI_FACTION).randomize()
 
 
-func draw_three(run_state = null) -> Array:
-	return draw_offer(run_state, DEFAULT_OFFER_SIZE)
+func draw_three(run_state = null, owner_id: int = RulesScript.PLAYER_FACTION) -> Array:
+	return draw_offer(run_state, DEFAULT_OFFER_SIZE, owner_id)
 
 
-func draw_offer(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE) -> Array:
+func draw_offer(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE, owner_id: int = RulesScript.PLAYER_FACTION) -> Array:
 	var result: Array = []
-	for upgrade_id in draw_offer_ids(run_state, offer_size):
+	for upgrade_id in draw_offer_ids(run_state, offer_size, owner_id):
 		result.append(UpgradeManifestScript.get_definition(str(upgrade_id)))
 	return result
 
 
-func draw_offer_ids(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE) -> Array:
+func draw_offer_ids(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE, owner_id: int = RulesScript.PLAYER_FACTION) -> Array:
+	var side_rng: RandomNumberGenerator = _side_rng(owner_id)
 	var resolved_offer_size: int = clampi(int(offer_size), 1, MAX_OFFER_SIZE)
 	var candidate_ids: Array = []
 	for raw_upgrade_id in _deck_upgrade_ids(run_state):
@@ -45,7 +59,7 @@ func draw_offer_ids(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE) -> A
 			candidate_ids.append(upgrade_id)
 	var result: Array = []
 	while result.size() < resolved_offer_size and not candidate_ids.is_empty():
-		var selected_index: int = _weighted_index(candidate_ids, run_state)
+		var selected_index: int = _weighted_index(candidate_ids, run_state, side_rng)
 		if selected_index < 0:
 			break
 		var upgrade_id: String = str(candidate_ids[selected_index])
@@ -54,10 +68,10 @@ func draw_offer_ids(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE) -> A
 	return result
 
 
-func choose_timeout_fallback(offer: Array) -> Dictionary:
+func choose_timeout_fallback(offer: Array, owner_id: int = RulesScript.PLAYER_FACTION) -> Dictionary:
 	if offer.is_empty():
 		return {}
-	var selected_index: int = _rng.randi_range(0, offer.size() - 1)
+	var selected_index: int = _side_rng(owner_id).randi_range(0, offer.size() - 1)
 	var selected = offer[selected_index]
 	if not (selected is Dictionary):
 		return {}
@@ -121,7 +135,7 @@ func _deck_upgrade_ids(run_state) -> Array:
 	return DeckRegistryScript.get_upgrade_ids(deck_id)
 
 
-func _weighted_index(candidate_ids: Array, run_state) -> int:
+func _weighted_index(candidate_ids: Array, run_state, side_rng: RandomNumberGenerator) -> int:
 	var weights: Array[float] = []
 	var total_weight: float = 0.0
 	for raw_upgrade_id in candidate_ids:
@@ -132,9 +146,20 @@ func _weighted_index(candidate_ids: Array, run_state) -> int:
 	if total_weight <= 0.0:
 		return 0 if not candidate_ids.is_empty() else -1
 
-	var roll: float = _rng.randf() * total_weight
+	var roll: float = side_rng.randf() * total_weight
 	for index in range(candidate_ids.size()):
 		roll -= weights[index]
 		if roll <= 0.0:
 			return index
 	return candidate_ids.size() - 1
+
+
+func _side_rng(owner_id: int) -> RandomNumberGenerator:
+	var safe_owner_id: int = int(owner_id)
+	if not _side_rngs.has(safe_owner_id):
+		_side_rngs[safe_owner_id] = RandomNumberGenerator.new()
+	return _side_rngs[safe_owner_id] as RandomNumberGenerator
+
+
+func _derive_side_seed(master_seed: int, salt: int) -> int:
+	return int(master_seed) ^ int(salt)

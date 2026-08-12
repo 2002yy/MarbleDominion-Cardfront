@@ -123,6 +123,7 @@ jobs:
             scripts: |
               CardfrontDraftGeometrySnapshotTestRunner.gd
               CardfrontDraftLifecycleSnapshotTestRunner.gd
+              CardfrontDraftSideRngIsolationTestRunner.gd
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontModeSmokeTestRunner.gd
