@@ -1281,6 +1281,68 @@ Implementation checkpoint (2026-08-03):
   state, gate state, stronghold percentage, and upgrade choice is understood
   during a real match. Automated readability checks do not replace that review.
 
+### Candidate Slice: GLB Model Replacement For Static Buildings / 静态建筑 GLB 替换候选
+
+**Status: candidate only. 状态：仅候选。** This is a documented concept, not a
+committed implementation order item. Existing slices above keep their priority.
+
+#### Concept / 概念
+
+Replace selected procedural `BoxMesh` buildings in the orthographic arena with
+authored GLB models while keeping the 2D authoritative simulation unchanged.
+The first prototype model already exists outside the repository:
+
+> `blender_models/exports/defense_tower.glb` — stylized toy-sandbox defense
+> tower with turret barrel, battlements, door arch, arrow slits, flag, and a
+> themed marble. Built via Blender 5.2 headless bpy scripting.
+
+#### Suitable Replacement Targets / 适合替换的目标（按收益排序）
+
+| Rank | Target | Instances | Current presentation | Notes |
+| --- | --- | ---: | --- | --- |
+| 1 | Command chambers | 2 | Plain `BoxMesh` 6.8×0.84×4.0 | Static buildings; tower model matches the turret/marble theme. Barrel pivot must stay aim-driven. |
+| 2 | Defense towers (Fire-Control Beacon / Interceptor Tower) | 2–4 | Procedural beacon/interceptor silhouettes | Static per round; need powered/unpowered and level state visuals. |
+| 3 | Map landmarks (industrial stacks, lab pylons) | per map | KayKit glTF already; candidate for bespoke themed models | Follow the existing `CardfrontEnvironmentAssetRegistry` pattern. |
+| 4 | Stronghold platforms | 5 | BoxMesh + TorusMesh control ring | Optional themed platforms per region type (Energy/Factory/Lab). |
+
+#### Not Suitable For GLB Replacement / 不适合 GLB 替换
+
+- Territory tiles (2000+ MultiMesh instances; performance-critical).
+- Creatures/entities (256px sprite animation pipeline is the accepted path).
+- Projectiles (256 pooled mesh proxies; performance-critical).
+- Bridges and gates (dynamic open/half-open/closed state must stay procedural).
+
+#### Integration Steps / 接入步骤
+
+1. Copy the GLB into the repository under
+   `assets/cardfront_environment/source/` (e.g. `custom/defense_tower.glb`).
+2. Register it in `CardfrontEnvironmentAssetRegistry` with a `primitive_*`
+   fallback, following the existing KayKit entry pattern (path, role,
+   source_pack, fallback). Do not scatter raw paths in `Main.gd` or the arena
+   view.
+3. Load in `CardfrontOrthographicArenaView` via the glTF loader. Replace the
+   chamber `BoxMesh` in `_build_combatant_proxies()` with the imported scene,
+   keeping the turret barrel pivot as a separate presentation node driven by
+   the existing aim angle.
+4. Scale adaptation: the tower model is ~4 Blender units tall. Fit it to the
+   existing chamber footprint (6.8 wide × 4 deep × 0.84 high) — scale down and
+   flatten so combat readability gates (chamber ≥72 px on the longest readable
+   axis at desktop) remain intact.
+5. Verify with `CardfrontOrthographicArenaTestRunner`,
+   `CardfrontBattlefieldScaleTestRunner`, and the deterministic screenshot
+   tool. Present the before/after captures for human review.
+
+#### Constraints / 约束
+
+- Presentation only. The 2D Battlefield, bullets, gates, capture, and chamber
+  health stay authoritative and untouched.
+- Keep the explicit primitive fallback; a missing GLB must never break the
+  arena.
+- The tower must not cover bridge approaches, target previews, or ownership
+  outlines.
+- Acceptance follows the existing default_duel benchmark gates (25% thumbnail
+  hierarchy, HUD chrome <15%, no playfield overlap).
+
 ## 12. Acceptance Requirements / 验收要求
 
 Every gameplay slice must include:
