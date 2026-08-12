@@ -133,6 +133,7 @@ jobs:
               CardfrontSupportStateTestRunner.gd
               CardfrontSupportPresentationContractTestRunner.gd
               CardfrontSupportPresentationLifecycleTestRunner.gd
+              CardfrontDeploymentZoneVisualizationTestRunner.gd
               CardfrontSupportRegionMapperTestRunner.gd
               CardfrontSupportMapMetadataTestRunner.gd
           - batch: Cardfront P0 support capture pure

@@ -12,6 +12,9 @@ const EnvironmentBuilderScript = preload("res://scripts/cardfront/environment/Ca
 const SupportPresentationLayerScript = preload(
 	"res://scripts/cardfront/support/presentation/CardfrontSupportPresentationLayer3D.gd"
 )
+const DeploymentZoneLayerScript = preload(
+	"res://scripts/cardfront/support/presentation/CardfrontDeploymentZoneLayer3D.gd"
+)
 
 const CANVAS_LAYER: int = 4
 const MAX_BULLET_PROXIES: int = 256
@@ -46,6 +49,8 @@ var map_id: String = "default_duel"
 var entity_runtime = null
 var support_presentation_source = null
 var support_presentation_layer = null
+var deployment_zone_source = null
+var deployment_zone_layer = null
 
 var viewport_container: SubViewportContainer
 var world_viewport: SubViewport
@@ -119,6 +124,7 @@ func setup(new_battlefield, new_region_map, new_bullet_pool, new_turrets: Dictio
 	_build_viewport(arena_view_rect)
 	_build_world()
 	_build_support_presentation_layer()
+	_build_deployment_zone_layer()
 	_build_tiles()
 	_build_territory_boundaries()
 	_build_sparse_claim_markers()
@@ -148,6 +154,7 @@ func set_entity_runtime(new_entity_runtime) -> void:
 
 func _exit_tree() -> void:
 	_disconnect_support_presentation_source()
+	_disconnect_deployment_zone_source()
 
 
 func set_support_presentation_source(new_source) -> bool:
@@ -180,6 +187,26 @@ func get_support_visual_count_for_test() -> int:
 
 func get_support_presentation_update_count_for_test() -> int:
 	return support_presentation_layer.presentation_update_count if support_presentation_layer != null else 0
+
+
+func set_deployment_zone_source(new_source) -> bool:
+	_disconnect_deployment_zone_source()
+	deployment_zone_source = new_source
+	if deployment_zone_source == null or not deployment_zone_source.has_signal("deployment_zone_changed"):
+		deployment_zone_source = null
+		if deployment_zone_layer != null:
+			deployment_zone_layer.clear_zone()
+		return false
+	var changed := Callable(self, "_on_deployment_zone_changed")
+	if not deployment_zone_source.is_connected("deployment_zone_changed", changed):
+		deployment_zone_source.connect("deployment_zone_changed", changed)
+	if deployment_zone_layer != null:
+		deployment_zone_layer.clear_zone()
+	return true
+
+
+func get_deployment_zone_cell_count_for_test() -> int:
+	return deployment_zone_layer.get_visible_cells_for_test().size() if deployment_zone_layer != null else 0
 
 
 func get_camera_for_test() -> Camera3D:
@@ -540,6 +567,18 @@ func _build_support_presentation_layer() -> void:
 	world_root.add_child(support_presentation_layer)
 
 
+func _build_deployment_zone_layer() -> void:
+	deployment_zone_layer = DeploymentZoneLayerScript.new()
+	if not deployment_zone_layer.setup(
+		Callable(self, "cell_to_world"),
+		Vector2(ARENA_X_SCALE, _z_scale)
+	):
+		deployment_zone_layer.free()
+		deployment_zone_layer = null
+		return
+	world_root.add_child(deployment_zone_layer)
+
+
 func _on_support_presentation_snapshots_changed(snapshots: Array) -> void:
 	if support_presentation_layer != null:
 		support_presentation_layer.sync_snapshots(snapshots)
@@ -554,6 +593,22 @@ func _disconnect_support_presentation_source() -> void:
 		and support_presentation_source.is_connected("presentation_snapshots_changed", changed)
 	):
 		support_presentation_source.disconnect("presentation_snapshots_changed", changed)
+
+
+func _on_deployment_zone_changed(cells: Array, revision: int) -> void:
+	if deployment_zone_layer != null:
+		deployment_zone_layer.show_cells(cells, revision)
+
+
+func _disconnect_deployment_zone_source() -> void:
+	if deployment_zone_source == null:
+		return
+	var changed := Callable(self, "_on_deployment_zone_changed")
+	if (
+		deployment_zone_source.has_signal("deployment_zone_changed")
+		and deployment_zone_source.is_connected("deployment_zone_changed", changed)
+	):
+		deployment_zone_source.disconnect("deployment_zone_changed", changed)
 
 
 func _build_tiles() -> void:

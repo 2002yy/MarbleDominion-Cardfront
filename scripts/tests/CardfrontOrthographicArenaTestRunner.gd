@@ -50,6 +50,9 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.eq(view.get_gate_count_for_test(), 2, "orthographic arena: both bridge lanes should expose a gate")
 	_assert.eq(view.get_support_visual_count_for_test(), 7, "orthographic arena: every authored support_id should own one live visual")
 	_assert.eq(view.get_support_presentation_update_count_for_test(), 7, "orthographic arena: initial Support presentation should update once per authored ID")
+	_assert.eq(main.runtime.target_preview_layer, null, "orthographic arena: formal live runtime must not revive the legacy target preview")
+	_assert.eq(view.get_deployment_zone_cell_count_for_test(), 0, "orthographic arena: deployment zone is hidden by default")
+	_assert.that(not view.deployment_zone_layer.visible, "orthographic arena: empty deployment zone has no visual")
 	var player_core_visual = view.support_presentation_layer.get_visual("core_player")
 	_assert.that(player_core_visual != null, "orthographic arena: player Core support visual should be bound by stable ID")
 	if player_core_visual != null:
