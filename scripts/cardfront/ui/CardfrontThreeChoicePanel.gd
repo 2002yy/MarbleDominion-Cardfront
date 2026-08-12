@@ -16,6 +16,8 @@ const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/Cardf
 @onready var card_box: HBoxContainer = get_node("DraftRoot/ChoiceShell/CardBox")
 @onready var ai_status_label: Label = get_node("DraftRoot/ChoiceShell/AiStatusLabel")
 @onready var result_label: Label = get_node("DraftRoot/ChoiceShell/ResultLabel")
+@onready var peek_chrome: Control = get_node("DraftRoot/PeekChrome")
+@onready var _peek_button: Button = get_node("DraftRoot/PeekChrome/PeekButton")
 @onready var battle_status: Panel = get_node("BattleStatus")
 @onready var battle_phase_label: Label = get_node("BattleStatus/PhaseLabel")
 @onready var battle_stats_label: Label = get_node("BattleStatus/StatsLabel")
@@ -32,9 +34,9 @@ var _pending_player_upgrade_times: int = 1
 var _upgrade_toast_remaining: float = 0.0
 var _last_stronghold_status: Dictionary = {}
 var _view_size: Vector2 = Vector2(1120, 720)
-var _peek_button: Button = null
-var _peeking: bool = false
-var _saved_shell_position: Vector2 = Vector2.ZERO
+const DISPLAY_MODE_DRAFT_VISIBLE: String = "draft_visible"
+const DISPLAY_MODE_BATTLEFIELD_PREVIEW: String = "battlefield_preview"
+var _display_mode: String = DISPLAY_MODE_DRAFT_VISIBLE
 const _NORMAL_DIMMER_ALPHA: float = 0.62
 const _PEEK_DIMMER_ALPHA: float = 0.12
 
@@ -46,16 +48,10 @@ func _ready() -> void:
 	upgrade_toast.visible = false
 	dimmer.mouse_filter = Control.MOUSE_FILTER_STOP
 	choice_shell.mouse_filter = Control.MOUSE_FILTER_STOP
-	_create_peek_button()
+	_configure_peek_button()
 
 
-func _create_peek_button() -> void:
-	_peek_button = Button.new()
-	_peek_button.name = "PeekButton"
-	_peek_button.text = "查看战场"
-	_peek_button.size = Vector2(120.0, 32.0)
-	_peek_button.focus_mode = Control.FOCUS_NONE
-	_peek_button.mouse_filter = Control.MOUSE_FILTER_STOP
+func _configure_peek_button() -> void:
 	var stylebox := StyleBoxFlat.new()
 	stylebox.bg_color = Color(0.04, 0.08, 0.12, 0.92)
 	stylebox.border_color = Color(0.30, 0.70, 0.90, 0.72)
@@ -70,8 +66,8 @@ func _create_peek_button() -> void:
 	_peek_button.add_theme_stylebox_override("pressed", stylebox)
 	_peek_button.add_theme_color_override("font_color", Color(0.70, 0.92, 1.0))
 	_peek_button.add_theme_color_override("font_hover_color", Color(0.85, 0.98, 1.0))
-	_peek_button.pressed.connect(_toggle_peek)
-	choice_shell.add_child(_peek_button)
+	if not _peek_button.pressed.is_connected(_toggle_peek):
+		_peek_button.pressed.connect(_toggle_peek)
 
 
 func setup(new_director, view_size: Vector2 = Vector2(1120, 720)) -> bool:
@@ -84,6 +80,8 @@ func setup(new_director, view_size: Vector2 = Vector2(1120, 720)) -> bool:
 	draft_root.size = view_size
 	dimmer.position = Vector2.ZERO
 	dimmer.size = view_size
+	peek_chrome.position = Vector2.ZERO
+	peek_chrome.size = view_size
 	choice_shell.position = Vector2((view_size.x - choice_shell.size.x) * 0.5, 116.0)
 	battle_status.position = Vector2(12.0, 68.0)
 	_connect_director()
@@ -98,12 +96,14 @@ func get_choice_cards() -> Array:
 func get_visible_choice_count() -> int:
 	var count: int = 0
 	for card in _choice_cards:
-		if card != null and is_instance_valid(card) and card.visible:
+		if card != null and is_instance_valid(card) and card.is_visible_in_tree():
 			count += 1
 	return count
 
 
 func choose_index_for_test(index: int) -> bool:
+	if _display_mode != DISPLAY_MODE_DRAFT_VISIBLE or not choice_shell.visible:
+		return false
 	if index < 0 or index >= _choice_cards.size():
 		return false
 	var card = _choice_cards[index]
@@ -112,6 +112,10 @@ func choose_index_for_test(index: int) -> bool:
 
 func is_upgrade_toast_visible_for_test() -> bool:
 	return upgrade_toast.visible
+
+
+func get_display_mode_for_test() -> String:
+	return _display_mode
 
 
 func get_upgrade_toast_text_for_test() -> String:
@@ -197,32 +201,39 @@ func _on_draft_opened(player_offer: Array, _ai_offer: Array, timeout_seconds: fl
 	timer_label.text = "%.1f" % _timeout_seconds
 	battle_status.visible = false
 	draft_root.visible = true
-	_reset_peek_state()
+	_set_draft_display_mode(DISPLAY_MODE_DRAFT_VISIBLE)
 
 
 func _toggle_peek() -> void:
 	if not draft_root.visible:
 		return
-	_peeking = not _peeking
-	if _peeking:
-		_saved_shell_position = choice_shell.position
-		dimmer.color.a = _PEEK_DIMMER_ALPHA
-		choice_shell.position = Vector2(
-			maxf(8.0, _view_size.x - choice_shell.size.x - 8.0),
-			_view_size.y - choice_shell.size.y - 8.0
-		)
-		_peek_button.text = "返回选择"
-	else:
-		dimmer.color.a = _NORMAL_DIMMER_ALPHA
-		choice_shell.position = _saved_shell_position
-		_peek_button.text = "查看战场"
+	var next_mode: String = (
+		DISPLAY_MODE_DRAFT_VISIBLE
+		if _display_mode == DISPLAY_MODE_BATTLEFIELD_PREVIEW
+		else DISPLAY_MODE_BATTLEFIELD_PREVIEW
+	)
+	_set_draft_display_mode(next_mode)
 
 
-func _reset_peek_state() -> void:
-	_peeking = false
-	dimmer.color.a = _NORMAL_DIMMER_ALPHA
-	_peek_button.text = "查看战场"
-	_peek_button.position = Vector2(choice_shell.size.x - _peek_button.size.x - 12.0, 8.0)
+func _set_draft_display_mode(mode: String) -> void:
+	_display_mode = (
+		DISPLAY_MODE_BATTLEFIELD_PREVIEW
+		if mode == DISPLAY_MODE_BATTLEFIELD_PREVIEW
+		else DISPLAY_MODE_DRAFT_VISIBLE
+	)
+	var is_preview: bool = _display_mode == DISPLAY_MODE_BATTLEFIELD_PREVIEW
+	dimmer.color.a = _PEEK_DIMMER_ALPHA if is_preview else _NORMAL_DIMMER_ALPHA
+	choice_shell.visible = not is_preview
+	choice_shell.mouse_filter = Control.MOUSE_FILTER_IGNORE if is_preview else Control.MOUSE_FILTER_STOP
+	_peek_button.text = "返回选择" if is_preview else "查看战场"
+	_peek_button.position = Vector2(
+		clampf(
+			choice_shell.position.x + choice_shell.size.x - _peek_button.size.x - 12.0,
+			8.0,
+			maxf(8.0, _view_size.x - _peek_button.size.x - 8.0)
+		),
+		choice_shell.position.y + 8.0
+	)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -281,6 +292,7 @@ func _on_choice_locked(owner_id: int, upgrade_id: String, automatic: bool) -> vo
 
 
 func _on_choices_revealed(player_definition: Dictionary, ai_definition: Dictionary, resolution_results: Dictionary) -> void:
+	_set_draft_display_mode(DISPLAY_MODE_DRAFT_VISIBLE)
 	title_label.text = "\u53cc\u65b9\u5f3a\u5316\u5df2\u786e\u5b9a"
 	var player_times: int = int((resolution_results.get(RulesScript.PLAYER_FACTION, {}) as Dictionary).get("times_applied", 1))
 	var player_suffix: String = " \u00d7%d" % player_times if player_times > 1 else ""
@@ -295,6 +307,7 @@ func _on_choices_revealed(player_definition: Dictionary, ai_definition: Dictiona
 
 
 func _on_volley_launched(plans: Dictionary, _issued_intents: Dictionary) -> void:
+	_set_draft_display_mode(DISPLAY_MODE_DRAFT_VISIBLE)
 	draft_root.visible = false
 	battle_status.visible = false
 	var player_plan = plans.get(RulesScript.PLAYER_FACTION, null)
@@ -307,6 +320,7 @@ func _on_volley_launched(plans: Dictionary, _issued_intents: Dictionary) -> void
 
 
 func _on_director_stopped() -> void:
+	_set_draft_display_mode(DISPLAY_MODE_DRAFT_VISIBLE)
 	draft_root.visible = false
 	battle_status.visible = false
 	upgrade_toast.visible = false
