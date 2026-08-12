@@ -1,6 +1,6 @@
 # P0-06B4 / P0-06C Deployment Zone and Region UI Separation
 
-Source commit: `3902ddad243a40fcb30edd0c28799a44f2157160`
+Source commit: `ca01511c1766dc801aa62d198e091a361e786026`
 
 Decision: **GO**
 
@@ -71,6 +71,12 @@ P0-06C and Support separation regression:
 
 Total focused assertions: **2,752 passed**.
 
+### PR #20 live-boundary remediation
+
+The initial B4 wiring incorrectly reconstructed `CardfrontTargetPreviewLayer` in the formal live runtime. GitHub Actions correctly rejected that boundary in the live-runtime, tactical-stronghold, and gate-connectivity jobs. Commit `ca01511c1766dc801aa62d198e091a361e786026` removes that live construction/configuration while retaining the dormant result-only 3D seam.
+
+The exact failing runner and all scripts in the three affected CI batches were then reproduced locally: **2,888 checks passed**, including `CardfrontLiveRuntimeBoundaryTestRunner.gd` (34), B4 visualization (18), orthographic arena (61), preview/four-consumer/automatic-spawn parity, tactical Stronghold, three-choice, and gate runtime suites.
+
 The active Support identity workflow includes `CardfrontDeploymentZoneVisualizationTestRunner.gd`.
 
 ## Scope and non-goals
@@ -90,7 +96,7 @@ The active Support identity workflow includes `CardfrontDeploymentZoneVisualizat
 ```text
 Mandatory audit gates touched: P0-06B4 Deployment-zone visualization; P0-06C legacy Region UI separation
 Audit status per gate: PASS / PASS
-Evidence bound to source commit: YES — 3902ddad243a40fcb30edd0c28799a44f2157160
+Evidence bound to source commit: YES — ca01511c1766dc801aa62d198e091a361e786026
 Highest-priority evidence used: focused integration tests + live orthographic construction + source authority audit
 Unverified assumptions remaining: no current formal player-facing targeted deployment card exists for manual click evidence
 Legacy authority still reachable: legacy 2D preview remains available only in the explicitly enabled compatibility path; formal live runtime does not construct it
