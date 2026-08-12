@@ -121,6 +121,7 @@ jobs:
               CardfrontPrematchFlowTestRunner.gd
           - batch: Cardfront v0.3 three-choice slice
             scripts: |
+              CardfrontDraftGeometrySnapshotTestRunner.gd
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontModeSmokeTestRunner.gd
