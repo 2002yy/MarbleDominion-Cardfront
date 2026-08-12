@@ -1,6 +1,8 @@
 extends Node2D
 class_name CardfrontTargetPreviewLayer
 
+signal deployment_zone_changed(cells, revision)
+
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardTargetTypeScript = preload("res://scripts/cardfront/cards/CardTargetType.gd")
 const DeploymentQueryScript = preload("res://scripts/cardfront/deployment/DeploymentQuery.gd")
@@ -49,7 +51,7 @@ func configure_deployment_authority(context_provider, revision_provider = null) 
 
 
 func show_for_card(card_id: int, card_data: Dictionary) -> void:
-	clear_preview()
+	_reset_preview_state()
 	_active = true
 	_pulse_time = 0.0
 	var target_type: String = str(card_data.get("target_type", ""))
@@ -72,11 +74,18 @@ func show_for_card(card_id: int, card_data: Dictionary) -> void:
 			_preview_color = Color(0.30, 0.82, 0.52, 0.34)
 			_find_frontline_deployment_cells(card_data)
 
+	_emit_deployment_zone()
 	set_process(visible)
 	queue_redraw()
 
 
 func clear_preview() -> void:
+	_reset_preview_state()
+	deployment_zone_changed.emit([], -1)
+	queue_redraw()
+
+
+func _reset_preview_state() -> void:
 	_active = false
 	_valid_cells.clear()
 	_hint_cells.clear()
@@ -85,7 +94,13 @@ func clear_preview() -> void:
 	_preview_revision = -1
 	_pulse_time = 0.0
 	set_process(false)
-	queue_redraw()
+
+
+func _emit_deployment_zone() -> void:
+	var cells: Array = []
+	if _active and _preview_type == CardTargetTypeScript.FRONTLINE_DEPLOYMENT:
+		cells = _valid_cells.duplicate()
+	deployment_zone_changed.emit(cells, _preview_revision)
 
 
 func is_valid_target(cell: Vector2i) -> bool:

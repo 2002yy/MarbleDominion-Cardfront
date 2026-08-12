@@ -142,6 +142,8 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		return _build_result(false)
 	if not _record_or_fail("territory_defense", create_territory_defense_system(game_layer, runtime.battlefield, runtime.region_map, runtime.fortify_layer, runtime.round_director), runtime):
 		return _build_result(false)
+	if not _record_or_fail("target_preview", create_target_preview_layer(game_layer, runtime.battlefield, runtime.region_map), runtime):
+		return _build_result(false)
 	var capture_interceptor = runtime.battlefield.capture_interceptor
 	if (
 		runtime.orthographic_arena_view != null
@@ -153,6 +155,12 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		var support_authority = capture_interceptor.get_support_deployment_authority()
 		if support_authority != null:
 			runtime.orthographic_arena_view.set_support_presentation_source(support_authority)
+			runtime.target_preview_layer.configure_deployment_authority(
+				Callable(support_authority, "deployment_context"),
+				Callable(support_authority, "deployment_revision")
+			)
+	if runtime.orthographic_arena_view != null and runtime.target_preview_layer != null:
+		runtime.orthographic_arena_view.set_deployment_zone_source(runtime.target_preview_layer)
 	CardfrontPresentationModeControllerScript.activate_orthographic(runtime)
 	return _build_result(true)
 
