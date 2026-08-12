@@ -76,6 +76,8 @@ var _labels_force_visible: bool = false
 const LABEL_FADE_DURATION: float = 0.35
 const LABEL_AUTO_HIDE_DELAY: float = 2.8
 const LABEL_CHANGE_THRESHOLD: int = 10
+const GLB_DARKEN_FACTOR: float = 0.70
+const GLB_FACTION_TINT_STRENGTH: float = 0.30
 var _bridge_tops: Array[MeshInstance3D] = []
 var _gate_bars: Array[MeshInstance3D] = []
 var _gate_labels: Array[Label3D] = []
@@ -873,6 +875,7 @@ func _try_spawn_glb(asset_id: String, position_value: Vector3, scale_value: floa
 	instance.scale = Vector3(scale_value, scale_value, scale_value)
 	instance.rotation.y = rotation_y
 	instance.set_meta("presentation_only", true)
+	_apply_building_material_pass(instance, -1)
 	world_root.add_child(instance)
 	return true
 
@@ -1349,18 +1352,34 @@ func _try_spawn_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
 	instance.position = Vector3.ZERO
 	instance.set_meta("presentation_only", true)
 	proxy.add_child(instance)
-	var plate := MeshInstance3D.new()
-	plate.name = "FactionPlate"
-	var plate_mesh := CylinderMesh.new()
-	plate_mesh.top_radius = 3.4
-	plate_mesh.bottom_radius = 3.4
-	plate_mesh.height = 0.10
-	plate_mesh.radial_segments = 24
-	plate.mesh = plate_mesh
-	plate.position.y = 0.05
-	plate.material_override = _get_faction_material(owner_id, 0.30)
-	proxy.add_child(plate)
+	_apply_building_material_pass(instance, int(owner_id))
 	return true
+
+
+func _apply_building_material_pass(instance: Node3D, faction_id: int) -> void:
+	var apply_tint: bool = faction_id >= 0
+	var tint: Color = _arena_faction_color(faction_id) if apply_tint else Color.WHITE
+	for child in instance.find_children("*", "MeshInstance3D", true, false):
+		var mesh_instance: MeshInstance3D = child as MeshInstance3D
+		if mesh_instance.mesh == null:
+			continue
+		for surface_idx in range(mesh_instance.mesh.get_surface_count()):
+			var mat: Material = mesh_instance.get_active_material(surface_idx)
+			if not (mat is StandardMaterial3D):
+				continue
+			var source: StandardMaterial3D = mat as StandardMaterial3D
+			if source.emission_enabled:
+				continue
+			var dup: StandardMaterial3D = source.duplicate() as StandardMaterial3D
+			var base: Color = dup.albedo_color
+			var darkened := Color(
+				base.r * GLB_DARKEN_FACTOR,
+				base.g * GLB_DARKEN_FACTOR,
+				base.b * GLB_DARKEN_FACTOR,
+				base.a
+			)
+			dup.albedo_color = darkened.lerp(tint, GLB_FACTION_TINT_STRENGTH) if apply_tint else darkened
+			mesh_instance.set_surface_override_material(surface_idx, dup)
 
 
 func _build_procedural_chamber(proxy: Node3D, owner_id: int) -> void:
