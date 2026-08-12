@@ -20,6 +20,7 @@ func _run() -> void:
 	_test_plus_five_is_one_volley_only()
 	_test_x2_is_one_volley_only()
 	_test_permanent_growth_survives_volley()
+	_test_selected_level_and_application_count_are_distinct()
 	_test_echo_repeats_on_the_following_round()
 	_test_multiplier_does_not_stack_and_volley_is_capped()
 	_test_unknown_upgrade_fails_without_mutation()
@@ -65,6 +66,20 @@ func _test_permanent_growth_survives_volley() -> void:
 	_assert.eq(fixture.state.rarity_level, 1, "growth: rarity level should persist")
 
 
+func _test_selected_level_and_application_count_are_distinct() -> void:
+	var fixture: Dictionary = _make_fixture()
+	var upgrade_id: String = UpgradeManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1
+	_assert.eq(fixture.state.get_selected_upgrade_level(upgrade_id), 0, "level authority: unselected upgrade starts at zero")
+	_assert.eq(fixture.state.get_effect_application_count(upgrade_id), 0, "application history: unapplied effect starts at zero")
+	fixture.upgrades.resolve(fixture.state, upgrade_id)
+	fixture.upgrades.resolve(fixture.state, upgrade_id)
+	_assert.eq(fixture.state.get_selected_upgrade_level(upgrade_id), 2, "level authority: two successful selections produce Level 2")
+	_assert.eq(fixture.state.get_effect_application_count(upgrade_id), 2, "application history: two direct applications are recorded")
+	fixture.state.record_effect_application(upgrade_id)
+	_assert.eq(fixture.state.get_selected_upgrade_level(upgrade_id), 2, "level authority: non-selection application cannot increase Level")
+	_assert.eq(fixture.state.get_effect_application_count(upgrade_id), 3, "application history: compatibility count includes non-selection application")
+
+
 func _test_echo_repeats_on_the_following_round() -> void:
 	var fixture: Dictionary = _make_fixture()
 	fixture.upgrades.resolve(fixture.state, UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE)
@@ -78,6 +93,10 @@ func _test_echo_repeats_on_the_following_round() -> void:
 	_assert.eq(str(repeated_result.get("echo_repeated_upgrade_id", "")), UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, "echo: queued choice should replay next round")
 	_assert.eq(next_plan.shot_count, 15, "echo: replayed +5 should affect the following volley")
 	_assert.eq(fixture.state.attack_level, 1, "echo: current round choice should still apply exactly once")
+	_assert.eq(fixture.state.get_selected_upgrade_level(UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE), 1, "echo: selecting Echo itself gives Echo Level 1")
+	_assert.eq(fixture.state.get_selected_upgrade_level(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5), 1, "echo: replay must not increase copied upgrade Level")
+	_assert.eq(fixture.state.get_effect_application_count(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5), 2, "echo: copied effect application history includes selection and replay")
+	_assert.eq(fixture.state.get_selected_upgrade_level(UpgradeManifestScript.UPGRADE_ATTACK_LEVEL_PLUS_1), 1, "echo: the following real selection gains one Level")
 
 
 func _test_multiplier_does_not_stack_and_volley_is_capped() -> void:
@@ -100,6 +119,7 @@ func _test_unknown_upgrade_fails_without_mutation() -> void:
 
 	_assert.that(not bool(result.get("success", true)), "upgrade: unknown id should fail")
 	_assert.eq(fixture.state.snapshot(), before, "upgrade: failed resolution should not mutate state")
+	_assert.eq(fixture.state.get_selected_upgrade_level("missing_upgrade"), 0, "level authority: failed resolution cannot increase Level")
 
 
 func _make_fixture() -> Dictionary:

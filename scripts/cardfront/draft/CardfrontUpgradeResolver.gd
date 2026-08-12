@@ -17,12 +17,15 @@ func resolve(run_state, upgrade_id: String) -> Dictionary:
 		var echoed_definition: Dictionary = UpgradeManifestScript.get_definition(echoed_upgrade_id)
 		if echoed_definition.is_empty() or not _apply_once(run_state, echoed_definition):
 			return _failure(upgrade_id, "invalid_echo")
-		run_state.record_upgrade(echoed_upgrade_id)
+		run_state.record_effect_application(echoed_upgrade_id)
 
 	var should_queue_echo: bool = run_state.consume_echo_next_choice()
 	if not _apply_once(run_state, definition):
 		return _failure(upgrade_id, "unknown_effect")
-	run_state.record_upgrade(upgrade_id)
+	run_state.record_effect_application(upgrade_id)
+	# P0-09A3: this is the sole Selected Level increment point. Echo replay is
+	# applied above but deliberately cannot pass through this selection record.
+	run_state.record_selected_upgrade_resolved(upgrade_id)
 	if should_queue_echo:
 		run_state.queue_echo_upgrade(upgrade_id)
 
