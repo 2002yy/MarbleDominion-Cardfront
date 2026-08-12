@@ -110,10 +110,14 @@ func _test_geometry_snapshot(viewport_size: Vector2, expected_shell_position: Ve
 		_assert.eq(card.position, Vector2(14.0 + 300.0 * index, 0.0), "%s: card %d position snapshot" % [label, index])
 		_assert.eq(card.size, Vector2(280.0, 266.0), "%s: card %d rect snapshot" % [label, index])
 
-	var peek_button: Button = panel.get_node("DraftRoot/ChoiceShell/PeekButton")
-	_assert.eq(str(peek_button.get_parent().get_path()), str(panel.choice_shell.get_path()), "%s: PeekButton parent path snapshot" % label)
-	_assert.eq(peek_button.position, Vector2(812.0, 8.0), "%s: PeekButton position snapshot" % label)
+	var peek_button: Button = panel.get_node("DraftRoot/PeekChrome/PeekButton")
+	_assert.eq(str(peek_button.get_parent().get_path()), str(panel.peek_chrome.get_path()), "%s: PeekButton stable parent path" % label)
+	var expected_peek_x: float = minf(expected_shell_position.x + 812.0, viewport_size.x - 128.0)
+	_assert.eq(peek_button.position, Vector2(expected_peek_x, 124.0), "%s: PeekButton position snapshot" % label)
 	_assert.eq(peek_button.size, Vector2(120.0, 32.0), "%s: PeekButton size snapshot" % label)
+	_assert.that(peek_button.get_global_rect().end.x <= viewport_size.x - 8.0, "%s: PeekButton stays inside the right viewport edge" % label)
+	_assert.eq(panel.peek_chrome.position, Vector2.ZERO, "%s: PeekChrome position snapshot" % label)
+	_assert.eq(panel.peek_chrome.size, viewport_size, "%s: PeekChrome size snapshot" % label)
 
 	_assert.eq(panel.dimmer.position, Vector2.ZERO, "%s: Dimmer position snapshot" % label)
 	_assert.eq(panel.dimmer.size, viewport_size, "%s: Dimmer size snapshot" % label)

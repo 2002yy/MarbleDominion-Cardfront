@@ -55,6 +55,7 @@ func _test_choice_and_next_draft_lifecycle() -> void:
 	director.force_open_draft_for_test()
 	await process_frame
 	var baseline_position: Vector2 = panel.choice_shell.position
+	var baseline_peek_global_rect: Rect2 = panel._peek_button.get_global_rect()
 	var first_offer_ids: Array = _card_ids(panel)
 	_assert.eq(director.get_phase(), MatchPhaseScript.DRAFT_PAUSED, "draft_opened: phase is paused Draft")
 	_assert.that(panel.draft_root.visible, "draft_opened: DraftRoot is visible")
@@ -66,6 +67,7 @@ func _test_choice_and_next_draft_lifecycle() -> void:
 	var preview_position: Vector2 = panel.choice_shell.position
 	_assert.that(panel._peeking, "peek click: current implementation enters preview flag")
 	_assert.neq(preview_position, baseline_position, "peek click: current implementation moves ChoiceShell")
+	_assert.eq(panel._peek_button.get_global_rect(), baseline_peek_global_rect, "peek click: stable chrome does not move with ChoiceShell")
 	_assert.that(panel.draft_root.visible, "peek click: DraftRoot remains visible")
 	_assert.eq(panel.get_visible_choice_count(), 3, "peek click: current cards remain visible and clickable")
 	_assert.eq(panel._peek_button.text, "返回选择", "peek click: button offers return")

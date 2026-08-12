@@ -16,6 +16,8 @@ const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/Cardf
 @onready var card_box: HBoxContainer = get_node("DraftRoot/ChoiceShell/CardBox")
 @onready var ai_status_label: Label = get_node("DraftRoot/ChoiceShell/AiStatusLabel")
 @onready var result_label: Label = get_node("DraftRoot/ChoiceShell/ResultLabel")
+@onready var peek_chrome: Control = get_node("DraftRoot/PeekChrome")
+@onready var _peek_button: Button = get_node("DraftRoot/PeekChrome/PeekButton")
 @onready var battle_status: Panel = get_node("BattleStatus")
 @onready var battle_phase_label: Label = get_node("BattleStatus/PhaseLabel")
 @onready var battle_stats_label: Label = get_node("BattleStatus/StatsLabel")
@@ -32,7 +34,6 @@ var _pending_player_upgrade_times: int = 1
 var _upgrade_toast_remaining: float = 0.0
 var _last_stronghold_status: Dictionary = {}
 var _view_size: Vector2 = Vector2(1120, 720)
-var _peek_button: Button = null
 var _peeking: bool = false
 var _saved_shell_position: Vector2 = Vector2.ZERO
 const _NORMAL_DIMMER_ALPHA: float = 0.62
@@ -46,16 +47,10 @@ func _ready() -> void:
 	upgrade_toast.visible = false
 	dimmer.mouse_filter = Control.MOUSE_FILTER_STOP
 	choice_shell.mouse_filter = Control.MOUSE_FILTER_STOP
-	_create_peek_button()
+	_configure_peek_button()
 
 
-func _create_peek_button() -> void:
-	_peek_button = Button.new()
-	_peek_button.name = "PeekButton"
-	_peek_button.text = "查看战场"
-	_peek_button.size = Vector2(120.0, 32.0)
-	_peek_button.focus_mode = Control.FOCUS_NONE
-	_peek_button.mouse_filter = Control.MOUSE_FILTER_STOP
+func _configure_peek_button() -> void:
 	var stylebox := StyleBoxFlat.new()
 	stylebox.bg_color = Color(0.04, 0.08, 0.12, 0.92)
 	stylebox.border_color = Color(0.30, 0.70, 0.90, 0.72)
@@ -70,8 +65,8 @@ func _create_peek_button() -> void:
 	_peek_button.add_theme_stylebox_override("pressed", stylebox)
 	_peek_button.add_theme_color_override("font_color", Color(0.70, 0.92, 1.0))
 	_peek_button.add_theme_color_override("font_hover_color", Color(0.85, 0.98, 1.0))
-	_peek_button.pressed.connect(_toggle_peek)
-	choice_shell.add_child(_peek_button)
+	if not _peek_button.pressed.is_connected(_toggle_peek):
+		_peek_button.pressed.connect(_toggle_peek)
 
 
 func setup(new_director, view_size: Vector2 = Vector2(1120, 720)) -> bool:
@@ -84,6 +79,8 @@ func setup(new_director, view_size: Vector2 = Vector2(1120, 720)) -> bool:
 	draft_root.size = view_size
 	dimmer.position = Vector2.ZERO
 	dimmer.size = view_size
+	peek_chrome.position = Vector2.ZERO
+	peek_chrome.size = view_size
 	choice_shell.position = Vector2((view_size.x - choice_shell.size.x) * 0.5, 116.0)
 	battle_status.position = Vector2(12.0, 68.0)
 	_connect_director()
@@ -222,7 +219,14 @@ func _reset_peek_state() -> void:
 	_peeking = false
 	dimmer.color.a = _NORMAL_DIMMER_ALPHA
 	_peek_button.text = "查看战场"
-	_peek_button.position = Vector2(choice_shell.size.x - _peek_button.size.x - 12.0, 8.0)
+	_peek_button.position = Vector2(
+		clampf(
+			choice_shell.position.x + choice_shell.size.x - _peek_button.size.x - 12.0,
+			8.0,
+			maxf(8.0, _view_size.x - _peek_button.size.x - 8.0)
+		),
+		choice_shell.position.y + 8.0
+	)
 
 
 func _unhandled_input(event: InputEvent) -> void:
