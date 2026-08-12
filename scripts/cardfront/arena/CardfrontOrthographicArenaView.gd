@@ -78,6 +78,7 @@ const LABEL_AUTO_HIDE_DELAY: float = 2.8
 const LABEL_CHANGE_THRESHOLD: int = 10
 const GLB_DARKEN_FACTOR: float = 0.70
 const GLB_FACTION_TINT_STRENGTH: float = 0.30
+const SKYLINE_DISTANCE: float = 12.0
 var _bridge_tops: Array[MeshInstance3D] = []
 var _gate_bars: Array[MeshInstance3D] = []
 var _gate_labels: Array[Label3D] = []
@@ -498,7 +499,7 @@ func _build_world() -> void:
 	environment_node.name = "WorldEnvironment"
 	arena_environment = Environment.new()
 	arena_environment.background_mode = Environment.BG_COLOR
-	arena_environment.background_color = _theme_color("backdrop")
+	arena_environment.background_color = _theme_color("sky")
 	arena_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	arena_environment.ambient_light_color = Color(0.94, 0.95, 0.84)
 	arena_environment.ambient_light_energy = 0.94
@@ -523,7 +524,7 @@ func _build_world() -> void:
 	outer_box.size = Vector3(arena_width + OUTER_FLOOR_WIDTH_PADDING, 0.56, arena_depth + 8.0)
 	outer_floor.mesh = outer_box
 	outer_floor.position.y = -0.48
-	outer_floor.material_override = _make_material(_theme_color("outer"), 0.0)
+	outer_floor.material_override = _make_material(_theme_color("outer").darkened(0.06), 0.0)
 	world_root.add_child(outer_floor)
 
 	var floor_mesh := MeshInstance3D.new()
@@ -534,6 +535,7 @@ func _build_world() -> void:
 	floor_mesh.position.y = -0.24
 	floor_mesh.material_override = _make_material(_theme_color("ground"), 0.0)
 	world_root.add_child(floor_mesh)
+	_build_background_value_layers(arena_width, arena_depth)
 	_environment_builder = EnvironmentBuilderScript.new()
 	_environment_builder.setup(world_root, {
 		"foliage": _theme_color("foliage_a"),
@@ -895,6 +897,98 @@ func _build_map_landmarks(height: float, arena_width: float) -> void:
 					1.0,
 						0.0
 				)
+
+
+func _build_background_value_layers(arena_width: float, arena_depth: float) -> void:
+	var sky_top: Color = _theme_color("sky")
+	var sky_bottom: Color = _theme_color("backdrop")
+	var sky_plane := MeshInstance3D.new()
+	sky_plane.name = "SkyGradient"
+	var sky_mesh := PlaneMesh.new()
+	sky_mesh.size = Vector2(arena_width + 52.0, 34.0)
+	sky_mesh.orientation = PlaneMesh.FACE_Z
+	sky_plane.mesh = sky_mesh
+	sky_plane.position = Vector3(0.0, 11.0, -arena_depth * 1.2)
+	sky_plane.material_override = _make_gradient_sky_material(sky_top, sky_bottom)
+	world_root.add_child(sky_plane)
+	_build_skyline_silhouettes(arena_width, arena_depth)
+
+
+func _make_gradient_sky_material(top_color: Color, bottom_color: Color) -> ShaderMaterial:
+	var mat := ShaderMaterial.new()
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+
+uniform vec3 top_color : source_color = vec3(0.62, 0.69, 0.62);
+uniform vec3 bottom_color : source_color = vec3(0.38, 0.49, 0.45);
+
+void fragment() {
+	ALBEDO = mix(top_color, bottom_color, clamp(UV.y, 0.0, 1.0));
+}
+"""
+	mat.shader = shader
+	mat.set_shader_parameter("top_color", top_color)
+	mat.set_shader_parameter("bottom_color", bottom_color)
+	return mat
+
+
+func _build_skyline_silhouettes(arena_width: float, arena_depth: float) -> void:
+	var skyline := Node3D.new()
+	skyline.name = "Skyline"
+	world_root.add_child(skyline)
+	var z_position: float = -(arena_depth * 0.5 + SKYLINE_DISTANCE)
+	var base: Color = _theme_color("backdrop").darkened(0.10)
+	match map_id:
+		"cross_resource":
+			for i in range(9):
+				var x: float = lerpf(-arena_width * 0.62, arena_width * 0.62, float(i) / 8.0)
+				var w: float = 3.0 + float(i % 3) * 1.4
+				var h: float = 2.4 + float((i * 7) % 5) * 0.7
+				var box := MeshInstance3D.new()
+				var mesh := BoxMesh.new()
+				mesh.size = Vector3(w, h, 2.0)
+				box.mesh = mesh
+				box.position = Vector3(x, h * 0.5 + 0.6, z_position)
+				box.material_override = _make_material(base, 0.0)
+				skyline.add_child(box)
+				if i % 3 == 0:
+					var chimney := MeshInstance3D.new()
+					var chimney_mesh := BoxMesh.new()
+					chimney_mesh.size = Vector3(0.5, 1.2, 0.5)
+					chimney.mesh = chimney_mesh
+					chimney.position = Vector3(x + w * 0.25, h + 1.2, z_position)
+					chimney.material_override = _make_material(base, 0.0)
+					skyline.add_child(chimney)
+		"central_lab":
+			for i in range(7):
+				var x: float = lerpf(-arena_width * 0.55, arena_width * 0.55, float(i) / 6.0)
+				var h: float = 3.0 + float((i * 5) % 4) * 0.9
+				var cone := MeshInstance3D.new()
+				var cone_mesh := CylinderMesh.new()
+				cone_mesh.top_radius = 0.02
+				cone_mesh.bottom_radius = 0.8 + float(i % 2) * 0.3
+				cone_mesh.height = h
+				cone_mesh.radial_segments = 6
+				cone.mesh = cone_mesh
+				cone.position = Vector3(x, h * 0.5 + 0.6, z_position)
+				cone.material_override = _make_material(base, 0.0)
+				skyline.add_child(cone)
+		_:
+			for i in range(6):
+				var x: float = lerpf(-arena_width * 0.60, arena_width * 0.60, float(i) / 5.0)
+				var h: float = 1.8 + float((i * 3) % 4) * 0.5
+				var hill := MeshInstance3D.new()
+				var hill_mesh := SphereMesh.new()
+				hill_mesh.radius = 3.0
+				hill_mesh.height = 2.0 * h
+				hill_mesh.radial_segments = 12
+				hill_mesh.rings = 6
+				hill.mesh = hill_mesh
+				hill.position = Vector3(x, h * 0.5 + 0.4, z_position)
+				hill.material_override = _make_material(base, 0.0)
+				skyline.add_child(hill)
 
 
 func _try_spawn_glb(asset_id: String, position_value: Vector3, scale_value: float, rotation_y: float) -> bool:

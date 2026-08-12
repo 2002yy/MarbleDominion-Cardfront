@@ -1381,11 +1381,23 @@ outlines.
    (industrial stack on cross_resource, lab pylon on central_lab) and keep the
    command-chamber GLB as a candidate visual with procedural fallback. Verify
    with arena tests plus the deterministic screenshot tool.
-2. P1: generate the remaining landmark models (wall segments, storage tanks,
-   lab domes, flags) with the same Blender bpy pipeline.
-3. P2: background value pass (gradient sky + skyline silhouettes per map).
-4. P3: replace defense tower / beacon / interceptor visuals with the generated
-   GLBs (beacon and interceptor models are already generated and waiting).
+2. P1 (integrated): generated and integrated the second landmark batch
+   (castle wall + banner flag for default_duel, storage tank for
+   cross_resource, lab dome + energy ring for central_lab). Defense tower
+   GLBs (beacon/interceptor) integrated with PowerCore state preserved.
+   Registry now holds 7 KayKit + 10 custom Blender entries. All models go
+   through the darken-only material pass (or darken + faction tint for
+   chambers).
+3. P2 (integrated): background value layer. BG color now uses the theme sky
+   color; a tall unshaded gradient plane (sky -> backdrop) sits behind the
+   arena; per-map skyline silhouettes (rolling hills / industrial roofline /
+   crystal cones) sit at `SKYLINE_DISTANCE` behind the far edge; the outer
+   floor is slightly darkened for a framed look. Human screenshot review
+   remains the acceptance gate.
+4. P3 (integrated): beacon and interceptor tower visuals use the generated
+   GLBs; the command chamber uses the defense tower GLB with faction tint.
+5. Remaining: per-map human screenshot acceptance before extending the
+   material language further.
 
 Art rules from the approved Art Integration Rules apply unchanged: one
 material palette per scene, one lighting setup, presentation-only, registry
