@@ -30,7 +30,7 @@ func _run() -> void:
 	_test_authored_representative_support()
 	_test_existing_owned_movement_reaches_footprint_after_territory_advance()
 	_test_opponent_presence_contests()
-	_test_zero_control_alone_cannot_claim()
+	_test_siege_platform_test_needs_control_unit_to_claim()
 
 	_assert.report("[CardfrontSupportCaptureTerritoryPrototypeTest]")
 	TestFixtures.cleanup_node(_battlefield)
@@ -120,22 +120,62 @@ func _test_opponent_presence_contests() -> void:
 	_assert.eq(float(contested.capture_progress), 0.4, "territory prototype: contest freezes progress")
 
 
-func _test_zero_control_alone_cannot_claim() -> void:
+func _test_siege_platform_test_needs_control_unit_to_claim() -> void:
 	_runtime.registry.clear()
-	var cell: Vector2i = (_support.anchor_cell as Vector2i) + Vector2i.DOWN
-	_runtime.registry.spawn_creature("prototype_zero_control", "gate_colossus", RulesScript.PLAYER_FACTION, cell, 8)
+	var anchor: Vector2i = _support.anchor_cell as Vector2i
+	var cell: Vector2i = anchor + Vector2i.DOWN
+	var siege_platform = _runtime.registry.spawn_creature(
+		"SiegePlatform_Test",
+		"SiegePlatform_Test",
+		RulesScript.PLAYER_FACTION,
+		cell,
+		99,
+		"heavy",
+		1,
+		"siege_platform_test"
+	)
+	_assert.that(siege_platform != null, "territory prototype F5: SiegePlatform_Test enters the real registry")
+	if siege_platform == null:
+		return
+	# This deterministic fixture represents overwhelming combat/suppression pressure.
+	# Capture power remains centralized in SupportCaptureProfiles and must not be
+	# inferred from HP, armor, movement, behavior, or the test pressure metadata.
+	siege_platform.metadata["support_suppression_damage"] = 999
 	var contributors: Array = OccupancyScript.extract(_runtime.registry, _footprint)
 	var result: Dictionary = AggregatorScript.aggregate(_for_owner(contributors, RulesScript.PLAYER_FACTION))
-	_assert.eq(contributors.size(), 1, "territory prototype: zero-control Creature remains auditable")
-	_assert.eq(float(result.resolved_capture_power), 0.0, "territory prototype: zero-control Creature resolves no capture power")
+	_assert.eq(int(siege_platform.metadata.support_suppression_damage), 999, "territory prototype F5: fixture carries overwhelming suppression pressure")
+	_assert.eq(contributors.size(), 1, "territory prototype F5: zero-control SiegePlatform_Test remains auditable")
+	_assert.eq(float(result.resolved_capture_power), 0.0, "territory prototype F5: combat pressure never implies capture control")
 	var transition: Dictionary = MachineScript.step({
 		"support_id": str(_support.support_id),
 		"claim_owner": RulesScript.AI_FACTION,
+		# Suppression/destruction already happened in the separate territory pipeline.
 		"operational": false,
 		"capture_progress": 0.0,
 	}, float(result.resolved_capture_power), 0.0, 10.0)
-	_assert.eq(int(transition.claim_owner), RulesScript.AI_FACTION, "territory prototype: zero-control Creature alone cannot change Claim")
-	_assert.eq(float(transition.capture_progress), 0.0, "territory prototype: zero-control Creature alone cannot advance")
+	_assert.eq(int(transition.claim_owner), RulesScript.AI_FACTION, "territory prototype F5: SiegePlatform_Test alone cannot change Claim after suppression")
+	_assert.eq(float(transition.capture_progress), 0.0, "territory prototype F5: SiegePlatform_Test alone cannot advance capture")
+
+	var control_unit = _runtime.registry.spawn_creature(
+		"prototype_cheap_control",
+		"scout_unit",
+		RulesScript.PLAYER_FACTION,
+		anchor,
+		1
+	)
+	_assert.that(control_unit != null, "territory prototype F5: cheap control unit can join the suppressed Support")
+	contributors = OccupancyScript.extract(_runtime.registry, _footprint)
+	result = AggregatorScript.aggregate(_for_owner(contributors, RulesScript.PLAYER_FACTION))
+	_assert.eq(float(result.resolved_capture_power), 2.0, "territory prototype F5: only the cheap control unit contributes capture power")
+	var completed: Dictionary = MachineScript.step(
+		transition,
+		float(result.resolved_capture_power),
+		0.0,
+		5.0
+	)
+	_assert.that(bool(completed.capture_completed), "territory prototype F5: cheap control converts the suppressed position")
+	_assert.eq(int(completed.claim_owner), RulesScript.PLAYER_FACTION, "territory prototype F5: control unit completes Claim transfer")
+	_assert.that(_runtime.registry.get_entity("SiegePlatform_Test") == siege_platform, "territory prototype F5: support state transition does not delete the existing strong unit")
 
 
 func _support_by_id(definitions: Array, support_id: String) -> Dictionary:

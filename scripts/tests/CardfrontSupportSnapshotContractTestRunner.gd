@@ -5,6 +5,8 @@ const SupportIdsScript = preload("res://scripts/cardfront/support/CardfrontSuppo
 const StateScript = preload("res://scripts/cardfront/support/DeploymentSupportState.gd")
 const CodecScript = preload("res://scripts/cardfront/support/SupportStateSnapshotCodec.gd")
 const RuntimeSnapshotScript = preload("res://scripts/cardfront/save/CardfrontRuntimeSnapshot.gd")
+const DefaultMapScript = preload("res://scripts/cardfront/maps/maps/DefaultDuelMap.gd")
+const AuthorityScript = preload("res://scripts/cardfront/support/CardfrontSupportDeploymentAuthority.gd")
 
 var _assert: TestAssert
 
@@ -20,6 +22,7 @@ func _run() -> void:
 
 	_test_authoritative_fields_roundtrip()
 	_test_derived_fields_are_discarded()
+	_test_restored_authority_rebuilds_connectivity()
 	_test_runtime_snapshot_additive_compatibility()
 	_test_legacy_stronghold_data_does_not_infer_support_state()
 
@@ -70,6 +73,38 @@ func _test_derived_fields_are_discarded() -> void:
 	_assert.that(not restored.network_connected, "support snapshot: restore requires graph connectivity rebuild")
 	_assert.that(not restored.contested, "support snapshot: restore requires occupancy rebuild")
 	_assert.that(not restored.is_online_for(RulesScript.PLAYER_FACTION), "support snapshot: restore cannot trust serialized Online")
+
+
+func _test_restored_authority_rebuilds_connectivity() -> void:
+	var rear = StateScript.new()
+	rear.setup(SupportIdsScript.SUPPORT_LEFT_SOUTH, RulesScript.PLAYER_FACTION, true)
+	rear.set_network_connected(false)
+	var front = StateScript.new()
+	front.setup(SupportIdsScript.SUPPORT_LEFT_NORTH, RulesScript.PLAYER_FACTION, true, RulesScript.AI_FACTION, 0.4)
+	front.set_network_connected(false)
+	var restored_states: Dictionary = CodecScript.decode(CodecScript.encode({
+		rear.support_id: rear,
+		front.support_id: front,
+	}))
+
+	var authority = AuthorityScript.new()
+	_assert.that(authority.setup(DefaultMapScript.make(Vector2i(40, 40))), "support snapshot rehydrate: real topology configures")
+	for support_id in restored_states.keys():
+		var restored = restored_states[support_id]
+		authority.set_support_state(str(support_id), int(restored.claim_owner), bool(restored.operational))
+	var rebuilt: Dictionary = authority.deployment_context(RulesScript.PLAYER_FACTION)
+	_assert.that(SupportIdsScript.SUPPORT_LEFT_SOUTH in rebuilt.online_support_ids, "support snapshot rehydrate: restored rear Claim reconnects from Core")
+	_assert.that(SupportIdsScript.SUPPORT_LEFT_NORTH in rebuilt.online_support_ids, "support snapshot rehydrate: restored front Claim reconnects through restored rear")
+
+	var isolated_authority = AuthorityScript.new()
+	_assert.that(isolated_authority.setup(DefaultMapScript.make(Vector2i(40, 40))), "support snapshot rehydrate: isolated topology configures")
+	isolated_authority.set_support_state(
+		SupportIdsScript.SUPPORT_LEFT_NORTH,
+		RulesScript.PLAYER_FACTION,
+		true
+	)
+	var isolated: Dictionary = isolated_authority.deployment_context(RulesScript.PLAYER_FACTION)
+	_assert.that(SupportIdsScript.SUPPORT_LEFT_NORTH not in isolated.online_support_ids, "support snapshot rehydrate: CapturedOffline Claim remains denied without a restored Core path")
 
 
 func _test_runtime_snapshot_additive_compatibility() -> void:

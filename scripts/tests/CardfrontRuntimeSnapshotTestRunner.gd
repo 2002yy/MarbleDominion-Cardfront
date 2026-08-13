@@ -158,5 +158,7 @@ func _test_v03_roundtrip() -> void:
 	_assert.eq(int(payload.get("round_number", 0)), 7, "v03 roundtrip: round_number should be preserved")
 	_assert.eq(bool(payload.get("round_active", false)), true, "v03 roundtrip: round_active should be preserved")
 	_assert.eq(payload.get("hero_assignments"), {1: "balanced_commander", 2: "rapid_gunner"}, "v03 roundtrip: hero_assignments should be preserved")
+	_assert.eq(payload.get("match_phase"), {"phase": "battle_countdown", "time_remaining": 5.3}, "v03 roundtrip: active Draft phase payload should be preserved")
+	_assert.eq(payload.get("current_offers"), {1: [{"id": "reinforced_volley"}, {"id": "double_volley"}]}, "v03 roundtrip: active Offer payload should be preserved")
 	_assert.eq(payload.get("round_number"), 7, "v03 roundtrip: round_number exact match")
 	_assert.that(not payload.has("current_stronghold_bonuses"), "v03 compatibility: retired Stronghold reward payload is ignored and not re-emitted")
