@@ -9,29 +9,28 @@ This is the repository's only current status page. It records state and routing;
 - Remote repository: `2002yy/MarbleDominion-Cardfront`
 - Remote `main`: `c38a190f5a6ecd10693e1458f9c586e6d0470373`
 - Active P0 branch: `agent/p0-09b3`
-- Latest implementation commit: `6826c8310eef6a8f2fe68dcf1f2d450980700c16`
-- The P0 branch contains the accepted P0-09B3 and P0-09B4 work plus the documentation consolidation. Verify live ahead/behind counts with Git instead of copying this line into reports.
+- Latest implementation commit: `c769de1439fe9e36d73a6b7a25cc23c11e7218f2`
+- The P0 branch contains the accepted P0-09B3 through P0-09B5 work plus the documentation consolidation. Verify live ahead/behind counts with Git instead of copying this line into reports.
 - Engine baseline: Godot `4.7.1-stable.official`
 
 The P0 worktree also contains local visual-acceptance screenshots under ignored/untracked evidence paths. They are intentionally excluded from broad clean/stage operations.
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-09B4 Minimal Player-Facing Level Feedback](cardfront_refactor_checkpoints/P0-09B4_minimal_player_facing_level_feedback.md)
+- Latest formal checkpoint: [P0-09B5 No Deck Inflation Test](cardfront_refactor_checkpoints/P0-09B5_no_deck_inflation_test.md)
 - Decision: **GO**
-- Completed contract: Draft cards show `获得 Lv.1` for a first selection and `Lv.N → Lv.N+1` for repeat selection by reading detached P0-09B3 Offer/View data only.
-- Only allowed formal next step: **P0-09B5 - No Deck Inflation Test**.
+- Completed contract: repeated selection advances one stable upgrade ID's Selected Level without adding Manifest, deck, eligible-candidate, or runtime card identities.
+- Only allowed formal next step: **P0-10A1 - Current AI Read-Set Audit**.
 
-P0-09B5 is limited to proving that repeated selection increments one stable upgrade identity instead of adding duplicate card/deck identities:
+P0-10A1 is a source-bound audit of the current AI input/read surface. It must classify:
 
 ```text
-one upgrade ID in the eligible/Manifest identity set
-Selected Level increments N times
-Manifest definition count does not grow
-no N runtime card identities are created
+AI currently reads
+AI currently could read because a full object or free-form context is passed
+AI does not need
 ```
 
-It must not redesign the deck model, change Offer/RNG/rarity, tune effects, or start P0-10 work.
+It must not redesign scoring, change archetype weights, pass full RunState/GameState/Node into a new DTO, or infer future fields merely because they may be useful.
 
 ## Accepted Visual Work
 

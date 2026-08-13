@@ -5,9 +5,9 @@
 ## Current Progress / 当前进度
 
 - Current status authority: [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
-- Latest accepted checkpoint: [`P0-09B4_minimal_player_facing_level_feedback.md`](P0-09B4_minimal_player_facing_level_feedback.md)
+- Latest accepted checkpoint: [`P0-09B5_no_deck_inflation_test.md`](P0-09B5_no_deck_inflation_test.md)
 - Latest decision: **GO**
-- Only allowed formal next step: **P0-09B5 - No Deck Inflation Test**
+- Only allowed formal next step: **P0-10A1 - Current AI Read-Set Audit**
 - P1 status: **LOCKED** until `P0-11O_P0_FINAL_GO_NO_GO.md` records Final decision `GO` and a P1 allowed start commit.
 
 The historical bootstrap instructions below remain the audit chain for a fresh repository review. They are not permission to restart or skip the latest checkpoint.
