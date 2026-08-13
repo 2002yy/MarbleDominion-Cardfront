@@ -178,6 +178,7 @@ jobs:
             scripts: |
               CardfrontAiObservationBoundaryTestRunner.gd
               CardfrontAiObservationProjectionTestRunner.gd
+              CardfrontAiCommanderObservationTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd

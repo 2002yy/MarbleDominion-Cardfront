@@ -314,10 +314,9 @@ func _open_draft() -> void:
 			DraftSystemScript.DEFAULT_OFFER_SIZE
 		),
 	}
-	var ai_choice: Dictionary = _ai_commander.choose(
+	var ai_choice: Dictionary = _ai_commander.choose_from_observation(
 		get_ai_offer(),
-		get_run_state(RulesScript.AI_FACTION),
-		get_upgrade_value_context(RulesScript.AI_FACTION)
+		get_ai_observation(RulesScript.AI_FACTION)
 	)
 	var ai_choice_id: String = str(ai_choice.get("id", ""))
 	if ai_choice_id != "" and phase_controller.select_upgrade(RulesScript.AI_FACTION, ai_choice_id):
