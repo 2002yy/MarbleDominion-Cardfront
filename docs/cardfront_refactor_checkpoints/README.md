@@ -5,9 +5,11 @@
 ## Current Progress / 当前进度
 
 - Current status authority: [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
-- Latest accepted checkpoint: [`P0-11J_log_signal.md`](P0-11J_log_signal.md)
-- Latest decision: **GO**
-- Only allowed formal next step: **P0-11K - Human North-Star Playtest**
+- Latest final seal: [`P0-11O_P0_FINAL_GO_NO_GO.md`](P0-11O_P0_FINAL_GO_NO_GO.md) — **NO-GO**
+- Automated final gates: [`P0-11L_visual_evidence.md`](P0-11L_visual_evidence.md), [`P0-11M_ci_gate.md`](P0-11M_ci_gate.md), and [`P0-11N_drift_reaudit.md`](P0-11N_drift_reaudit.md) — **GO**
+- Blocking human checkpoint: [`P0-11K_manual_playtest.md`](P0-11K_manual_playtest.md) — **NO-GO / AUDIT REQUIRED**
+- Current overall decision: **NO-GO**
+- Only a source-bound human P0-11K decision on RC `def95b5` can unlock final P0 GO. P1 and PR #24 merge remain locked.
 - P1 status: **LOCKED** until `P0-11O_P0_FINAL_GO_NO_GO.md` records Final decision `GO` and a P1 allowed start commit.
 
 The historical bootstrap instructions below remain the audit chain for a fresh repository review. They are not permission to restart or skip the latest checkpoint.

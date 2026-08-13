@@ -9,7 +9,7 @@ This is the repository's only current status page. It records state and routing;
 - Remote repository: `2002yy/MarbleDominion-Cardfront`
 - Remote `main`: `80361a75de504f399bbd79bb97ba365c9de5edd1`
 - Active P0 branch: `agent/p0-09b3`
-- Latest implementation commit: `509aea4d5fd8ac95eb23ce87c00c9007c02a559d`
+- Latest implementation commit: `def95b5dd575aee85a132870ba350e51cf51ba27`
 - The P0 branch contains the accepted P0-09B3 through P0-09B5 work and the completed P0-10 AI observation boundary/Commander migration. Verify live ahead/behind counts with Git instead of copying this line into reports.
 - Engine baseline: Godot `4.7.1-stable.official`
 
@@ -17,10 +17,10 @@ The P0 worktree also contains local visual-acceptance screenshots under ignored/
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-11J Log / Signal Hygiene Audit](cardfront_refactor_checkpoints/P0-11J_log_signal.md)
-- Decision: **GO**
-- Completed contract: P0-11F-J deterministic integration, metamorphic invariance, save/restore migration, performance counters/rendered measurement, and log/signal hygiene pass on source commit `76fdfd3`. The audit added the missing F5 `SiegePlatform_Test` evidence, proved topology rehydration, and repaired stale existing Support visual snapshots. Focused evidence remains clean. A final complete suite/import/boot rerun is still required on the eventual RC.
-- Only allowed formal next step: **P0-11K - Human North-Star Playtest**.
+- Latest formal checkpoints: [P0-11K Human North-Star Playtest](cardfront_refactor_checkpoints/P0-11K_manual_playtest.md) and [P0-11L Visual Evidence Pack](cardfront_refactor_checkpoints/P0-11L_visual_evidence.md).
+- Current overall decision: **NO-GO / AUDIT REQUIRED**. P0-11L/M/N are GO on RC `def95b5`; P0-11K has no independent human evidence, so P0-11O keeps P1 locked.
+- The final audit found and repaired a missing production Support capture runtime, stale existing Support visual refreshes, ambiguous Support state readability, and a clipped `760x540` Draft. The source-bound 13-image pack now distinguishes all required states and proves Active-network targeting extends beyond Core fallback through the real rules projection.
+- Final automated evidence: Godot 4.7.1 boot/import, 155/155 local unique active runners, 314 logs with zero error/warning, 42/42 CI jobs, 13/13 source-bound visual states, and rendered average/P95 4.154/4.766 ms. The only action capable of unlocking final GO is the P0-11K human North-Star session on RC `def95b5`.
 
 P0-11B was the first hard final-audit gate:
 
