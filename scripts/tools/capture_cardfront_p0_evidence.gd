@@ -4,6 +4,7 @@ const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const SupportIdsScript = preload("res://scripts/cardfront/support/CardfrontSupportIds.gd")
 const CardTargetTypeScript = preload("res://scripts/cardfront/cards/CardTargetType.gd")
 const TargetPreviewScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
+const DeploymentGeometryScript = preload("res://scripts/cardfront/deployment/DeploymentGeometry.gd")
 
 const DESKTOP := Vector2i(1120, 720)
 const NARROW := Vector2i(760, 540)
@@ -14,6 +15,7 @@ var _authority
 var _annotation: Label
 var _output_dir: String
 var _sha: String
+var _baseline_owners: Array
 
 
 func _initialize() -> void:
@@ -47,6 +49,7 @@ func _capture() -> void:
 		quit(2)
 		return
 	_capture_runtime.set_process(false)
+	_baseline_owners = _main.runtime.battlefield.owners.duplicate(true)
 	_build_annotation()
 
 	await _save("01-default-battle.png", "default battle / neutral Supports / no persistent network lines")
@@ -69,9 +72,15 @@ func _capture() -> void:
 		SupportIdsScript.SUPPORT_LEFT_SOUTH: _record(RulesScript.PLAYER_FACTION, true),
 		SupportIdsScript.SUPPORT_LEFT_NORTH: _record(RulesScript.PLAYER_FACTION, true),
 	})
-	await _capture_deployment_zone("07-active-support-zone.png", "Active Support legal targeting projection")
+	_own_support_footprint(SupportIdsScript.SUPPORT_LEFT_NORTH)
+	var active_zone_count: int = await _capture_deployment_zone("07-active-support-zone.png", "Active Support legal targeting projection")
+	_main.runtime.battlefield.replace_owners(_baseline_owners.duplicate(true), false)
 	_set_support_states({})
-	await _capture_deployment_zone("08-core-fallback-zone.png", "Core fallback legal targeting projection")
+	var core_zone_count: int = await _capture_deployment_zone("08-core-fallback-zone.png", "Core fallback legal targeting projection")
+	if active_zone_count <= core_zone_count:
+		push_error("Active Support evidence must expand beyond Core fallback (%d <= %d)" % [active_zone_count, core_zone_count])
+		quit(3)
+		return
 	_set_support_states({
 		SupportIdsScript.SUPPORT_LEFT_SOUTH: _record(RulesScript.PLAYER_FACTION, false),
 		SupportIdsScript.SUPPORT_LEFT_NORTH: _record(RulesScript.PLAYER_FACTION, true),
@@ -100,7 +109,7 @@ func _capture() -> void:
 	quit(0)
 
 
-func _capture_deployment_zone(file_name: String, scenario: String) -> void:
+func _capture_deployment_zone(file_name: String, scenario: String) -> int:
 	var preview = TargetPreviewScript.new()
 	root.add_child(preview)
 	preview.setup(_main.runtime.battlefield, _main.runtime.region_map, GameConfig.GAME_MODE_CARDFRONT)
@@ -108,9 +117,34 @@ func _capture_deployment_zone(file_name: String, scenario: String) -> void:
 	_main.runtime.orthographic_arena_view.set_deployment_zone_source(preview)
 	preview.show_for_card(99011, {"target_type": CardTargetTypeScript.FRONTLINE_DEPLOYMENT, "params": {}})
 	await _frames(3)
-	await _save(file_name, scenario)
+	var visible_count: int = _main.runtime.orthographic_arena_view.get_deployment_zone_cell_count_for_test()
+	await _save(file_name, "%s / %d allowed cells" % [scenario, visible_count])
 	_main.runtime.orthographic_arena_view.set_deployment_zone_source(null)
 	preview.queue_free()
+	return visible_count
+
+
+func _own_support_footprint(support_id: String) -> void:
+	var context: Dictionary = _authority.deployment_context(RulesScript.PLAYER_FACTION)
+	var owners: Array = _baseline_owners.duplicate(true)
+	var extent: Vector2i = _main.runtime.battlefield.grid_extent
+	for raw_source in context.get("support_sources", []) as Array:
+		var source: Dictionary = raw_source as Dictionary
+		if str(source.get("support_id", "")) != support_id:
+			continue
+		for x in range(extent.x):
+			for y in range(extent.y):
+				var cell := Vector2i(x, y)
+				if DeploymentGeometryScript.classify(
+					str(source.get("profile_id", "")),
+					source.get("anchor_cell", Vector2i.ZERO) as Vector2i,
+					source.get("forward", Vector2i.ZERO) as Vector2i,
+					cell,
+					extent
+				) == DeploymentGeometryScript.CLASS_INSIDE:
+					owners[x][y] = RulesScript.PLAYER_FACTION
+		break
+	_main.runtime.battlefield.replace_owners(owners, false)
 
 
 func _set_support_states(overrides: Dictionary) -> void:
