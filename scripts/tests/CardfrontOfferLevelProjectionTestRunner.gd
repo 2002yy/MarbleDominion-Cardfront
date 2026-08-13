@@ -6,6 +6,7 @@ const OfferContextScript = preload("res://scripts/cardfront/draft/CardfrontDraft
 const OfferViewScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeOfferView.gd")
 const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDraftSystem.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
+const ChoiceCardScene = preload("res://scenes/ui/cardfront/CardfrontUpgradeChoiceCard.tscn")
 
 var _assert: TestAssert
 
@@ -23,6 +24,7 @@ func _run() -> void:
 	_test_projection_never_mutates_manifest()
 	_test_side_offers_project_independent_levels()
 	_test_timeout_fallback_retains_view_data()
+	await _test_player_facing_level_feedback()
 	await _test_runtime_panel_receives_projection()
 
 	GameConfig.reset_runtime_defaults()
@@ -93,6 +95,26 @@ func _test_timeout_fallback_retains_view_data() -> void:
 	_assert.that(not _levels(offer).has(99), "timeout: fallback mutation cannot rewrite the offer view")
 
 
+func _test_player_facing_level_feedback() -> void:
+	var state = _state(RulesScript.PLAYER_FACTION)
+	var upgrade_id: String = ManifestScript.UPGRADE_VOLLEY_PLUS_5
+	var definition: Dictionary = ManifestScript.get_definition(upgrade_id)
+	var card = ChoiceCardScene.instantiate()
+	get_root().add_child(card)
+	await process_frame
+	card.setup(OfferViewScript.project(definition, state))
+	_assert.eq(card.get_level_feedback_text_for_test(), "获得 Lv.1", "feedback: first selection is presented as obtaining Level 1")
+	_assert.eq(card.rarity_label.text, "普通 · 获得 Lv.1", "feedback: first-selection Level is visible beside rarity")
+	_assert.eq(card.description_label.text, str(definition.get("description", "")), "feedback: Level copy does not invent effect text")
+	state.selected_upgrade_levels[upgrade_id] = 3
+	card.setup(OfferViewScript.project(definition, state))
+	_assert.eq(card.get_level_feedback_text_for_test(), "Lv.3 → Lv.4", "feedback: repeat selection presents current and next Level")
+	_assert.eq(card.rarity_label.text, "普通 · Lv.3 → Lv.4", "feedback: repeat-selection Level is player-facing")
+	_assert.that(not ManifestScript.get_definition(upgrade_id).has("current_level"), "feedback: presentation does not write Level into Manifest")
+	TestFixtures.cleanup_node(card)
+	await _flush()
+
+
 func _test_runtime_panel_receives_projection() -> void:
 	var main = await _start_main()
 	var director = main.runtime.round_director
@@ -107,6 +129,7 @@ func _test_runtime_panel_receives_projection() -> void:
 	for card in cards:
 		_assert.eq(int(card.definition.get("current_level", -1)), 4, "runtime view: choice card receives projected current Level data")
 		_assert.eq(int(card.definition.get("next_level", -1)), 5, "runtime view: choice card receives projected next Level data")
+		_assert.eq(card.get_level_feedback_text_for_test(), "Lv.4 → Lv.5", "runtime view: projected Level is visible without a RunState read")
 		_assert.that(not ManifestScript.get_definition(str(card.upgrade_id)).has("current_level"), "runtime view: panel binding leaves Manifest static")
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
