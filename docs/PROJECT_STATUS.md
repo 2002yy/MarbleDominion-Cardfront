@@ -17,10 +17,10 @@ The P0 worktree also contains local visual-acceptance screenshots under ignored/
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-11E Intentional Semantic Replacement Audit](cardfront_refactor_checkpoints/P0-11E_semantic_replacement.md)
+- Latest formal checkpoint: [P0-11J Log / Signal Hygiene Audit](cardfront_refactor_checkpoints/P0-11J_log_signal.md)
 - Decision: **GO**
-- Completed contract: Stronghold semantic replacement and snapshot migration gates pass on `6e4b287`. The audit found and repaired a reachable Main timeout call to the removed `sample_bonuses()` API; timeout now consumes status-only telemetry, and the reverse source gate includes `Main.gd`. Twelve focused runners pass cleanly. Because source changed after C/D, their complete suite must be rerun once on the final P0-11 RC before seal.
-- Only allowed formal next step: **P0-11F - Full Integration Scenario Matrix**.
+- Completed contract: P0-11F-J deterministic integration, metamorphic invariance, save/restore migration, performance counters/rendered measurement, and log/signal hygiene pass on source commit `76fdfd3`. The audit added the missing F5 `SiegePlatform_Test` evidence, proved topology rehydration, and repaired stale existing Support visual snapshots. Focused evidence remains clean. A final complete suite/import/boot rerun is still required on the eventual RC.
+- Only allowed formal next step: **P0-11K - Human North-Star Playtest**.
 
 P0-11B was the first hard final-audit gate:
 

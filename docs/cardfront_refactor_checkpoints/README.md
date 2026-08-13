@@ -5,9 +5,9 @@
 ## Current Progress / 当前进度
 
 - Current status authority: [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
-- Latest accepted checkpoint: [`P0-11E_semantic_replacement.md`](P0-11E_semantic_replacement.md)
+- Latest accepted checkpoint: [`P0-11J_log_signal.md`](P0-11J_log_signal.md)
 - Latest decision: **GO**
-- Only allowed formal next step: **P0-11F - Full Integration Scenario Matrix**
+- Only allowed formal next step: **P0-11K - Human North-Star Playtest**
 - P1 status: **LOCKED** until `P0-11O_P0_FINAL_GO_NO_GO.md` records Final decision `GO` and a P1 allowed start commit.
 
 The historical bootstrap instructions below remain the audit chain for a fresh repository review. They are not permission to restart or skip the latest checkpoint.
