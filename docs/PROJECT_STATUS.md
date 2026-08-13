@@ -19,7 +19,7 @@ The P0 worktree also contains local visual-acceptance screenshots under ignored/
 
 - Latest formal checkpoint: [P0-11B Parse / Import / Boot Gate](cardfront_refactor_checkpoints/P0-11B_parse_import_boot.md)
 - Decision: **GO**
-- Completed contract: a clean detached checkout of `708c38a` completed a 702-item Godot 4.7.1 import, main boot, Cardfront boot and base-scene instantiation with zero formal log errors or warnings. The four active workflows now use Godot's dedicated `--import` mode after the old generic fresh-import/editor-quit path exposed a native access violation.
+- Completed contract: three clean detached checkouts of `085ed12` each completed a serialized 702-item Godot 4.7.1 import, followed by main/Cardfront/base-scene boot with zero formal log errors or warnings. The four active workflows use Godot's dedicated `--import` mode, and project imports are serialized after the previous parallel first-import path exposed nondeterministic native access violations on the 16 GB audit machine.
 - Only allowed formal next step: **P0-11C - New Frozen Contract Suite**.
 
 P0-11B was the first hard final-audit gate:
