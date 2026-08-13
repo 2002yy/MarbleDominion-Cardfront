@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dypyjswee4ki"
-path="res://.godot/imported/teleport_02.ogg-d6196b637de596a87fb9c6043cd5627c.oggvorbisstr"
+path="res://.godot/imported/teleport_02.ogg-3e269167d8dd5f142d29f9865ee150a7.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_50_cc0_scifi_sfx/teleport_02.ogg"
-dest_files=["res://.godot/imported/teleport_02.ogg-d6196b637de596a87fb9c6043cd5627c.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_50_cc0_scifi_sfx/teleport_02.ogg"
+dest_files=["res://.godot/imported/teleport_02.ogg-3e269167d8dd5f142d29f9865ee150a7.oggvorbisstr"]
 
 [params]
 

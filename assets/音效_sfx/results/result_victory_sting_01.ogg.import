@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://uu5kikjtw0xv"
-path="res://.godot/imported/result_victory_sting_01.ogg-45a8b3382c7c65e30a6a3dd9a11c627b.oggvorbisstr"
+path="res://.godot/imported/result_victory_sting_01.ogg-ed6bbf854184a50af3b3421cd6530436.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/results/result_victory_sting_01.ogg"
-dest_files=["res://.godot/imported/result_victory_sting_01.ogg-45a8b3382c7c65e30a6a3dd9a11c627b.oggvorbisstr"]
+source_file="res://assets/音效_sfx/results/result_victory_sting_01.ogg"
+dest_files=["res://.godot/imported/result_victory_sting_01.ogg-ed6bbf854184a50af3b3421cd6530436.oggvorbisstr"]
 
 [params]
 

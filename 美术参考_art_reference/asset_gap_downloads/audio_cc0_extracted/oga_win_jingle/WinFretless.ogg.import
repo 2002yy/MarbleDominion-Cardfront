@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://c4nlx5v3tleq3"
-path="res://.godot/imported/WinFretless.ogg-d1925f2f20583ed0c5375fbb36a3f5ac.oggvorbisstr"
+path="res://.godot/imported/WinFretless.ogg-d87a802da06edd33971a5b0bab53f77b.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinFretless.ogg"
-dest_files=["res://.godot/imported/WinFretless.ogg-d1925f2f20583ed0c5375fbb36a3f5ac.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinFretless.ogg"
+dest_files=["res://.godot/imported/WinFretless.ogg-d87a802da06edd33971a5b0bab53f77b.oggvorbisstr"]
 
 [params]
 

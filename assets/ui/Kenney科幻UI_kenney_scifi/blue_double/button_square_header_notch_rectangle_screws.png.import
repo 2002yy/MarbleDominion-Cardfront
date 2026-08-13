@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dchlpagok7rwf"
-path="res://.godot/imported/button_square_header_notch_rectangle_screws.png-67bdb1050957629e5e0fea4d314d89b1.ctex"
+path="res://.godot/imported/button_square_header_notch_rectangle_screws.png-3dc2267257e35ffcac94609c0cd44d1b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/kenney_scifi/blue_double/button_square_header_notch_rectangle_screws.png"
-dest_files=["res://.godot/imported/button_square_header_notch_rectangle_screws.png-67bdb1050957629e5e0fea4d314d89b1.ctex"]
+source_file="res://assets/ui/Kenney科幻UI_kenney_scifi/blue_double/button_square_header_notch_rectangle_screws.png"
+dest_files=["res://.godot/imported/button_square_header_notch_rectangle_screws.png-3dc2267257e35ffcac94609c0cd44d1b.ctex"]
 
 [params]
 

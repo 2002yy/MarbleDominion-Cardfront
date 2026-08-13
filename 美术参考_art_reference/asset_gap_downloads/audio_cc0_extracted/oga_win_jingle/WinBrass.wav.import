@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bqnt5q82oi8vj"
-path="res://.godot/imported/WinBrass.wav-043394495f762c062fa28b6dc47db884.sample"
+path="res://.godot/imported/WinBrass.wav-2e5cf744a1b48bf2f304881c801efb87.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinBrass.wav"
-dest_files=["res://.godot/imported/WinBrass.wav-043394495f762c062fa28b6dc47db884.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinBrass.wav"
+dest_files=["res://.godot/imported/WinBrass.wav-2e5cf744a1b48bf2f304881c801efb87.sample"]
 
 [params]
 

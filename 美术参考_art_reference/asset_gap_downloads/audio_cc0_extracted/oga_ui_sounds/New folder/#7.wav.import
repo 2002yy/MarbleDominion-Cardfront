@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://b11juld81x080"
-path="res://.godot/imported/#7.wav-4f8ee73b7186f011400a32e8b8832d4d.sample"
+path="res://.godot/imported/#7.wav-e9ddeca392b50bff998931d4ed3648ff.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_ui_sounds/New folder/#7.wav"
-dest_files=["res://.godot/imported/#7.wav-4f8ee73b7186f011400a32e8b8832d4d.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_ui_sounds/New folder/#7.wav"
+dest_files=["res://.godot/imported/#7.wav-e9ddeca392b50bff998931d4ed3648ff.sample"]
 
 [params]
 

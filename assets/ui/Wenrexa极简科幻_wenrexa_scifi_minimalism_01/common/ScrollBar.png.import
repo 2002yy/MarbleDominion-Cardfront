@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ddca4rbvmwe26"
-path="res://.godot/imported/ScrollBar.png-d97bad23f7671ff329e09da50d9317ed.ctex"
+path="res://.godot/imported/ScrollBar.png-c145dbfe060bec3695c41d061ca2c8c1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/wenrexa_scifi_minimalism_01/common/ScrollBar.png"
-dest_files=["res://.godot/imported/ScrollBar.png-d97bad23f7671ff329e09da50d9317ed.ctex"]
+source_file="res://assets/ui/Wenrexa极简科幻_wenrexa_scifi_minimalism_01/common/ScrollBar.png"
+dest_files=["res://.godot/imported/ScrollBar.png-c145dbfe060bec3695c41d061ca2c8c1.ctex"]
 
 [params]
 

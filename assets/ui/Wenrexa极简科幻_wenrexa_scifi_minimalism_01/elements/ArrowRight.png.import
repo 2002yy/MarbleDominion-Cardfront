@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://y3eocoqbedlo"
-path="res://.godot/imported/ArrowRight.png-3a2f75ac6ac4617ba33f31414417ace2.ctex"
+path="res://.godot/imported/ArrowRight.png-aa916ba6b51f1d7cc7133303f168cc40.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/wenrexa_scifi_minimalism_01/elements/ArrowRight.png"
-dest_files=["res://.godot/imported/ArrowRight.png-3a2f75ac6ac4617ba33f31414417ace2.ctex"]
+source_file="res://assets/ui/Wenrexa极简科幻_wenrexa_scifi_minimalism_01/elements/ArrowRight.png"
+dest_files=["res://.godot/imported/ArrowRight.png-aa916ba6b51f1d7cc7133303f168cc40.ctex"]
 
 [params]
 

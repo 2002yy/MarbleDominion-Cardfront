@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://2uov6mx1ttk5"
-path="res://.godot/imported/WinGrandPiano.ogg-bf661496d7054e4096184cf7a17b910f.oggvorbisstr"
+path="res://.godot/imported/WinGrandPiano.ogg-2bdd3d1015ec02056bdfa3aa846cc2d4.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinGrandPiano.ogg"
-dest_files=["res://.godot/imported/WinGrandPiano.ogg-bf661496d7054e4096184cf7a17b910f.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinGrandPiano.ogg"
+dest_files=["res://.godot/imported/WinGrandPiano.ogg-2bdd3d1015ec02056bdfa3aa846cc2d4.oggvorbisstr"]
 
 [params]
 

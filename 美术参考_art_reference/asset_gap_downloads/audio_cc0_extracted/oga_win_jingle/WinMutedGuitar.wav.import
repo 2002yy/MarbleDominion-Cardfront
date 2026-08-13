@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://cwbhw6rkcyjmo"
-path="res://.godot/imported/WinMutedGuitar.wav-0d7c3cc5d9d5c5851baf0ec97bdf7d60.sample"
+path="res://.godot/imported/WinMutedGuitar.wav-3bb309374256539b45851110516665ec.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinMutedGuitar.wav"
-dest_files=["res://.godot/imported/WinMutedGuitar.wav-0d7c3cc5d9d5c5851baf0ec97bdf7d60.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinMutedGuitar.wav"
+dest_files=["res://.godot/imported/WinMutedGuitar.wav-3bb309374256539b45851110516665ec.sample"]
 
 [params]
 

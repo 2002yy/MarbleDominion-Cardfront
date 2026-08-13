@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4fw7k51h88u"
-path="res://.godot/imported/bar_shadow_round_outline_small.png-4ee3c13b77ed23ceee3ff35a5097c048.ctex"
+path="res://.godot/imported/bar_shadow_round_outline_small.png-ddaf07d4d86fd84c24c021cddb9833ac.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/kenney_scifi/shadows/bar_shadow_round_outline_small.png"
-dest_files=["res://.godot/imported/bar_shadow_round_outline_small.png-4ee3c13b77ed23ceee3ff35a5097c048.ctex"]
+source_file="res://assets/ui/Kenney科幻UI_kenney_scifi/shadows/bar_shadow_round_outline_small.png"
+dest_files=["res://.godot/imported/bar_shadow_round_outline_small.png-ddaf07d4d86fd84c24c021cddb9833ac.ctex"]
 
 [params]
 

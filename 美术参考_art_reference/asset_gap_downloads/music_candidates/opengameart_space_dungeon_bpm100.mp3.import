@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://cglt7h53ox4a0"
-path="res://.godot/imported/opengameart_space_dungeon_bpm100.mp3-92ba89737fa21e750e86929eeac396f4.mp3str"
+path="res://.godot/imported/opengameart_space_dungeon_bpm100.mp3-25b4ebff7fc185f484d6e0f687ca057f.mp3str"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/music_candidates/opengameart_space_dungeon_bpm100.mp3"
-dest_files=["res://.godot/imported/opengameart_space_dungeon_bpm100.mp3-92ba89737fa21e750e86929eeac396f4.mp3str"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/music_candidates/opengameart_space_dungeon_bpm100.mp3"
+dest_files=["res://.godot/imported/opengameart_space_dungeon_bpm100.mp3-25b4ebff7fc185f484d6e0f687ca057f.mp3str"]
 
 [params]
 

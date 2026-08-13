@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dk6d8s0gi5shc"
-path="res://.godot/imported/timer_warning_error_01.ogg-dcf44b10356cc3663499a6319bfb8683.oggvorbisstr"
+path="res://.godot/imported/timer_warning_error_01.ogg-c0905eaf4c23abb1afb31c18d75720f2.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/timer_warning/timer_warning_error_01.ogg"
-dest_files=["res://.godot/imported/timer_warning_error_01.ogg-dcf44b10356cc3663499a6319bfb8683.oggvorbisstr"]
+source_file="res://assets/音效_sfx/timer_warning/timer_warning_error_01.ogg"
+dest_files=["res://.godot/imported/timer_warning_error_01.ogg-c0905eaf4c23abb1afb31c18d75720f2.oggvorbisstr"]
 
 [params]
 

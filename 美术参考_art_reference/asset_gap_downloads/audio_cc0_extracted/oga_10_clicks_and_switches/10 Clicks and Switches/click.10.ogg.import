@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://be0ppom511r4w"
-path="res://.godot/imported/click.10.ogg-3dae6ed99db0fd8fa96a3fb530c38584.oggvorbisstr"
+path="res://.godot/imported/click.10.ogg-4898bed5d27a50d62a1fca5a78af34fb.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_10_clicks_and_switches/10 Clicks and Switches/click.10.ogg"
-dest_files=["res://.godot/imported/click.10.ogg-3dae6ed99db0fd8fa96a3fb530c38584.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_10_clicks_and_switches/10 Clicks and Switches/click.10.ogg"
+dest_files=["res://.godot/imported/click.10.ogg-4898bed5d27a50d62a1fca5a78af34fb.oggvorbisstr"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dg2n8gslg8yqv"
-path="res://.godot/imported/timer_warning_beep_01.wav-64b019a8aa1cab7139c9e1986dc62a57.sample"
+path="res://.godot/imported/timer_warning_beep_01.wav-891eea6c63c39ba8d2649b246d00f63f.sample"
 
 [deps]
 
-source_file="res://assets/sfx/timer_warning/timer_warning_beep_01.wav"
-dest_files=["res://.godot/imported/timer_warning_beep_01.wav-64b019a8aa1cab7139c9e1986dc62a57.sample"]
+source_file="res://assets/音效_sfx/timer_warning/timer_warning_beep_01.wav"
+dest_files=["res://.godot/imported/timer_warning_beep_01.wav-891eea6c63c39ba8d2649b246d00f63f.sample"]
 
 [params]
 

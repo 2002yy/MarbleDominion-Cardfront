@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://d2y4wlowrtjsc"
-path="res://.godot/imported/result_victory_square_01.ogg-08154bf6667e3441a3396ddb8a8dbc42.oggvorbisstr"
+path="res://.godot/imported/result_victory_square_01.ogg-eaa60e332df1738074a35431fd7f5d56.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/results/result_victory_square_01.ogg"
-dest_files=["res://.godot/imported/result_victory_square_01.ogg-08154bf6667e3441a3396ddb8a8dbc42.oggvorbisstr"]
+source_file="res://assets/音效_sfx/results/result_victory_square_01.ogg"
+dest_files=["res://.godot/imported/result_victory_square_01.ogg-eaa60e332df1738074a35431fd7f5d56.oggvorbisstr"]
 
 [params]
 

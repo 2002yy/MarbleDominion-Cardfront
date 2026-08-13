@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dbnfdx8ovyosv"
-path="res://.godot/imported/ItemDisable.png-4b0b8c41013381f7fc2a3bbde51ccae7.ctex"
+path="res://.godot/imported/ItemDisable.png-0261c2ac4d246b0cbb579953631e9e1a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/wenrexa_scifi_minimalism_01/common/ItemDisable.png"
-dest_files=["res://.godot/imported/ItemDisable.png-4b0b8c41013381f7fc2a3bbde51ccae7.ctex"]
+source_file="res://assets/ui/Wenrexa极简科幻_wenrexa_scifi_minimalism_01/common/ItemDisable.png"
+dest_files=["res://.godot/imported/ItemDisable.png-0261c2ac4d246b0cbb579953631e9e1a.ctex"]
 
 [params]
 

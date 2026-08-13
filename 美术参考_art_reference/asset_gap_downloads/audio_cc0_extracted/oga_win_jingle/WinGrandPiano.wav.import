@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bnvbee1forsm6"
-path="res://.godot/imported/WinGrandPiano.wav-4629b932251e0539f9f4f7756287881f.sample"
+path="res://.godot/imported/WinGrandPiano.wav-0731cc6089c63ec06cfd6cf7afd51ad4.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinGrandPiano.wav"
-dest_files=["res://.godot/imported/WinGrandPiano.wav-4629b932251e0539f9f4f7756287881f.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinGrandPiano.wav"
+dest_files=["res://.godot/imported/WinGrandPiano.wav-0731cc6089c63ec06cfd6cf7afd51ad4.sample"]
 
 [params]
 

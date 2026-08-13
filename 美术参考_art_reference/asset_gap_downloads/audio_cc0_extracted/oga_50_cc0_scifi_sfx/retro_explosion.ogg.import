@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://bybp8jk0tjdr7"
-path="res://.godot/imported/retro_explosion.ogg-de3f9843feb02c480604f27db1ada5ed.oggvorbisstr"
+path="res://.godot/imported/retro_explosion.ogg-514ab1d496a26af792d5389c161e6ab6.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_50_cc0_scifi_sfx/retro_explosion.ogg"
-dest_files=["res://.godot/imported/retro_explosion.ogg-de3f9843feb02c480604f27db1ada5ed.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_50_cc0_scifi_sfx/retro_explosion.ogg"
+dest_files=["res://.godot/imported/retro_explosion.ogg-514ab1d496a26af792d5389c161e6ab6.oggvorbisstr"]
 
 [params]
 

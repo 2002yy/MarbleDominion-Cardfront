@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://c45ixofoqynvi"
-path="res://.godot/imported/roulette_tick_02.ogg-5b419a52922b08234ca779e8dd05d0cb.oggvorbisstr"
+path="res://.godot/imported/roulette_tick_02.ogg-395e63c3d4904adede77b1f5559fc20f.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/event_roulette/roulette_tick_02.ogg"
-dest_files=["res://.godot/imported/roulette_tick_02.ogg-5b419a52922b08234ca779e8dd05d0cb.oggvorbisstr"]
+source_file="res://assets/音效_sfx/event_roulette/roulette_tick_02.ogg"
+dest_files=["res://.godot/imported/roulette_tick_02.ogg-395e63c3d4904adede77b1f5559fc20f.oggvorbisstr"]
 
 [params]
 

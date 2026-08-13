@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://b1wake6sd6r18"
-path="res://.godot/imported/WinDoot.wav-fb36b2d1908b8238a102201a67fe4e14.sample"
+path="res://.godot/imported/WinDoot.wav-f0321786996499e309e12acf02463b18.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinDoot.wav"
-dest_files=["res://.godot/imported/WinDoot.wav-fb36b2d1908b8238a102201a67fe4e14.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinDoot.wav"
+dest_files=["res://.godot/imported/WinDoot.wav-f0321786996499e309e12acf02463b18.sample"]
 
 [params]
 

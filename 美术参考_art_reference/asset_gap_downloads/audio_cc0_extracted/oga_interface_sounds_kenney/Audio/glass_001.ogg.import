@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dieimftuomlaf"
-path="res://.godot/imported/glass_001.ogg-9f94d80ad0e04a44f5844adda15eaa36.oggvorbisstr"
+path="res://.godot/imported/glass_001.ogg-e412ee6c4109d6e24d6bb6ad1d878cc0.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_interface_sounds_kenney/Audio/glass_001.ogg"
-dest_files=["res://.godot/imported/glass_001.ogg-9f94d80ad0e04a44f5844adda15eaa36.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_interface_sounds_kenney/Audio/glass_001.ogg"
+dest_files=["res://.godot/imported/glass_001.ogg-e412ee6c4109d6e24d6bb6ad1d878cc0.oggvorbisstr"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://k3rxmmp26ami"
-path="res://.godot/imported/battle_loop_space_dungeon_bpm100.mp3-0028c340aff8c3aca8491555b3d5a0bc.mp3str"
+path="res://.godot/imported/battle_loop_space_dungeon_bpm100.mp3-e38f58f1441da4ec2c2d8f0ac49b5e1f.mp3str"
 
 [deps]
 
-source_file="res://assets/sfx/music/battle_loop_space_dungeon_bpm100.mp3"
-dest_files=["res://.godot/imported/battle_loop_space_dungeon_bpm100.mp3-0028c340aff8c3aca8491555b3d5a0bc.mp3str"]
+source_file="res://assets/音效_sfx/music/battle_loop_space_dungeon_bpm100.mp3"
+dest_files=["res://.godot/imported/battle_loop_space_dungeon_bpm100.mp3-e38f58f1441da4ec2c2d8f0ac49b5e1f.mp3str"]
 
 [params]
 

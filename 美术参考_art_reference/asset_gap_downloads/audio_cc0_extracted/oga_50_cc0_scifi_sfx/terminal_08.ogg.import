@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://ct03xiy4edka7"
-path="res://.godot/imported/terminal_08.ogg-204dcff0dab8a45178670deac6cfd7f9.oggvorbisstr"
+path="res://.godot/imported/terminal_08.ogg-417419a23e73dcf6d1ba3432117dccc8.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_50_cc0_scifi_sfx/terminal_08.ogg"
-dest_files=["res://.godot/imported/terminal_08.ogg-204dcff0dab8a45178670deac6cfd7f9.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_50_cc0_scifi_sfx/terminal_08.ogg"
+dest_files=["res://.godot/imported/terminal_08.ogg-417419a23e73dcf6d1ba3432117dccc8.oggvorbisstr"]
 
 [params]
 
