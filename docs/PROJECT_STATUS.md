@@ -17,12 +17,12 @@ The P0 worktree also contains local visual-acceptance screenshots under ignored/
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-11A Final Evidence Manifest](cardfront_refactor_checkpoints/P0-11A_evidence_manifest.md)
+- Latest formal checkpoint: [P0-11B Parse / Import / Boot Gate](cardfront_refactor_checkpoints/P0-11B_parse_import_boot.md)
 - Decision: **GO**
-- Completed contract: all tests directly affected by P0-01 through P0-10 are classified against the four active workflows; manual, visual, performance and final-CI evidence requirements are frozen before execution.
-- Only allowed formal next step: **P0-11B - Parse / Import / Boot Gate**.
+- Completed contract: a clean detached checkout of `708c38a` completed a 702-item Godot 4.7.1 import, main boot, Cardfront boot and base-scene instantiation with zero formal log errors or warnings. The four active workflows now use Godot's dedicated `--import` mode after the old generic fresh-import/editor-quit path exposed a native access violation.
+- Only allowed formal next step: **P0-11C - New Frozen Contract Suite**.
 
-P0-11B is the first hard final-audit gate:
+P0-11B was the first hard final-audit gate:
 
 ```text
 Godot 4.7.1 parse/import
@@ -31,7 +31,7 @@ Godot 4.7.1 parse/import
  -> no parser or missing-resource/preload error
 ```
 
-Failure is Decision NO-GO; later unit success cannot override a parse/import/boot failure.
+It passed on the source-bound clean-checkout evidence above. Any later source repair still invalidates this evidence and requires P0-11B to be rerun on the new RC.
 
 ## Accepted Visual Work
 

@@ -5,9 +5,9 @@
 ## Current Progress / 当前进度
 
 - Current status authority: [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
-- Latest accepted checkpoint: [`P0-11A_evidence_manifest.md`](P0-11A_evidence_manifest.md)
+- Latest accepted checkpoint: [`P0-11B_parse_import_boot.md`](P0-11B_parse_import_boot.md)
 - Latest decision: **GO**
-- Only allowed formal next step: **P0-11B - Parse / Import / Boot Gate**
+- Only allowed formal next step: **P0-11C - New Frozen Contract Suite**
 - P1 status: **LOCKED** until `P0-11O_P0_FINAL_GO_NO_GO.md` records Final decision `GO` and a P1 allowed start commit.
 
 The historical bootstrap instructions below remain the audit chain for a fresh repository review. They are not permission to restart or skip the latest checkpoint.
