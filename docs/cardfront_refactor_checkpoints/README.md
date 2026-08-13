@@ -2,6 +2,16 @@
 
 状态：**MANDATORY START HERE FOR P0 IMPLEMENTATION**
 
+## Current Progress / 当前进度
+
+- Current status authority: [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
+- Latest accepted checkpoint: [`P0-09B3_offer_view_level_projection.md`](P0-09B3_offer_view_level_projection.md)
+- Latest decision: **GO**
+- Only allowed formal next step: **P0-09B4 - Minimal Player-Facing Level Feedback**
+- P1 status: **LOCKED** until `P0-11O_P0_FINAL_GO_NO_GO.md` records Final decision `GO` and a P1 allowed start commit.
+
+The historical bootstrap instructions below remain the audit chain for a fresh repository review. They are not permission to restart or skip the latest checkpoint.
+
 任何 Coding Agent 开始或继续 2026-08-07 Cardfront 战线/构筑重构前，必须按顺序阅读：
 
 1. `docs/CARDFRONT_ENGINEERING_SPEC_2026-08-07.md`
@@ -26,7 +36,7 @@
 
 ---
 
-## 当前合法起点
+## Bootstrap Gate / 首次实施起点
 
 如果本目录还没有 P0 checkpoint：
 
