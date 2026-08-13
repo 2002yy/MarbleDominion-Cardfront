@@ -24,6 +24,7 @@ func _run() -> void:
 	_test_echo_repeats_on_the_following_round()
 	_test_multiplier_does_not_stack_and_volley_is_capped()
 	_test_unknown_upgrade_fails_without_mutation()
+	_test_failed_selection_does_not_consume_queued_echo()
 
 	_assert.report("[CardfrontUpgradeResolverTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
@@ -120,6 +121,20 @@ func _test_unknown_upgrade_fails_without_mutation() -> void:
 	_assert.that(not bool(result.get("success", true)), "upgrade: unknown id should fail")
 	_assert.eq(fixture.state.snapshot(), before, "upgrade: failed resolution should not mutate state")
 	_assert.eq(fixture.state.get_selected_upgrade_level("missing_upgrade"), 0, "level authority: failed resolution cannot increase Level")
+
+
+func _test_failed_selection_does_not_consume_queued_echo() -> void:
+	var fixture: Dictionary = _make_fixture()
+	var queued_id: String = UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5
+	fixture.state.queue_echo_upgrade(queued_id)
+	var before_counts: Dictionary = fixture.state.applied_upgrade_counts.duplicate(true)
+	var result: Dictionary = fixture.upgrades.resolve(fixture.state, "missing_upgrade")
+
+	_assert.that(not bool(result.get("success", true)), "failure order: unknown selection fails")
+	_assert.eq(fixture.state.queued_echo_upgrade_id, queued_id, "failure order: invalid selection cannot consume queued Echo")
+	_assert.eq(fixture.state.applied_upgrade_counts, before_counts, "failure order: invalid selection cannot record any application")
+	_assert.eq(fixture.state.get_selected_upgrade_level("missing_upgrade"), 0, "failure order: invalid selection cannot gain Level")
+	_assert.eq(fixture.state.get_selected_upgrade_level(queued_id), 0, "failure order: unexecuted queued Echo cannot gain Level")
 
 
 func _make_fixture() -> Dictionary:
