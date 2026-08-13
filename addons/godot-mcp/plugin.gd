@@ -34,6 +34,7 @@ var _command_mutex: Mutex = null
 var _command_queue: Array = []
 var _running: bool = true
 var _stdio_mode: bool = false
+var _inactive_headless: bool = false
 
 # ---- TCP mode (direct Godot launch) ----
 var _tcp_server: TCPServer = null
@@ -50,6 +51,14 @@ var _auth_token: String = ""
 
 func _enter_tree() -> void:
 	_stdio_mode = OS.get_environment("MCP_STDIO") == "true"
+	# Headless imports/tests never consume the editor TCP bridge. Avoid creating
+	# native socket state that Godot must tear down immediately after a large
+	# first import; stdio MCP sessions remain fully enabled in headless mode.
+	_inactive_headless = DisplayServer.get_name() == "headless" and not _stdio_mode
+	if _inactive_headless:
+		set_process(false)
+		print("[Godot MCP] Editor TCP bridge skipped in headless non-stdio session")
+		return
 	_command_mutex = Mutex.new()
 	_running = true
 	_auth_token = ProjectSettings.get_setting("godot_mcp/auth_token", "")
@@ -71,6 +80,9 @@ func _enter_tree() -> void:
 
 
 func _exit_tree() -> void:
+	if _inactive_headless:
+		print("[Godot MCP] Plugin unloaded")
+		return
 	_running = false
 	set_process(false)
 
