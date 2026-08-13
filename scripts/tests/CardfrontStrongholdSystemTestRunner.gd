@@ -9,6 +9,7 @@ const StrongholdSystemScript = preload("res://scripts/cardfront/strongholds/Card
 const PRODUCTION_ROOT: String = "res://scripts/cardfront"
 const OUTER_PRODUCTION_FILES: Array[String] = [
 	"res://scripts/Main.gd",
+	"res://scripts/GameRuntimeContext.gd",
 ]
 const RETIRED_AUTHORITY_NEEDLES: Array[String] = [
 	"FACTORY_SHOT_BONUS",

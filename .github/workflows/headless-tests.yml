@@ -157,6 +157,7 @@ jobs:
               CardfrontSupportCaptureStateMachineTestRunner.gd
               CardfrontSupportCaptureOccupancyAdapterTestRunner.gd
               CardfrontSupportCaptureTerritoryPrototypeTestRunner.gd
+              CardfrontSupportCaptureLiveRuntimeTestRunner.gd
               CardfrontSupportSnapshotContractTestRunner.gd
           - batch: Cardfront P0 support graph pure
             scripts: |

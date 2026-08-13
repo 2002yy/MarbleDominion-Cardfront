@@ -91,6 +91,9 @@ static func capture(runtime) -> RefCounted:
 		var entity_runtime = runtime.battlefield.get_node_or_null("CardfrontBattlefieldEntityRuntime")
 		if entity_runtime != null and entity_runtime.has_method("snapshot"):
 			snap.entity_snapshot = entity_runtime.snapshot()
+		var support_capture_runtime = runtime.battlefield.get_meta("cardfront_support_capture_runtime", null)
+		if support_capture_runtime != null and support_capture_runtime.has_method("snapshot_states"):
+			snap.support_states = support_capture_runtime.snapshot_states()
 	var defense_system = runtime.territory_defense_system
 	if defense_system != null:
 		snap.territory_defense_state = _capture_defense_state(defense_system)
@@ -128,6 +131,9 @@ static func apply_to_runtime(runtime, data: Dictionary) -> void:
 		var entity_runtime = runtime.battlefield.get_node_or_null("CardfrontBattlefieldEntityRuntime")
 		if entity_runtime != null and entity_runtime.has_method("restore"):
 			entity_runtime.restore(data.get("entity_snapshot", {}))
+		var support_capture_runtime = runtime.battlefield.get_meta("cardfront_support_capture_runtime", null)
+		if support_capture_runtime != null and support_capture_runtime.has_method("restore_states"):
+			support_capture_runtime.restore_states(data.get("support_states", {}))
 	var defense_system = runtime.territory_defense_system
 	if defense_system != null:
 		_apply_defense_state(defense_system, data.get("territory_defense_state", {}))
