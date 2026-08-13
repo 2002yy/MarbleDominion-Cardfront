@@ -17,20 +17,21 @@ The P0 worktree also contains local visual-acceptance screenshots under ignored/
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-10B1-B5 AI Commander Observation Adapter](cardfront_refactor_checkpoints/P0-10B1_B5_ai_commander_observation_adapter.md)
+- Latest formal checkpoint: [P0-11A Final Evidence Manifest](cardfront_refactor_checkpoints/P0-11A_evidence_manifest.md)
 - Decision: **GO**
-- Completed contract: production Commander now consumes the current AI Offer plus allowlisted Observation; fixed ranking/scores are preserved, secret injection is invariant, public changes remain visible, and no difficulty cheats were introduced.
-- Only allowed formal next step: **P0-11A - Final Evidence Manifest / Test Classification Freeze**.
+- Completed contract: all tests directly affected by P0-01 through P0-10 are classified against the four active workflows; manual, visual, performance and final-CI evidence requirements are frozen before execution.
+- Only allowed formal next step: **P0-11B - Parse / Import / Boot Gate**.
 
-P0-11A is the start of the final audit sequence. It must classify the real active test/workflow inventory and bind every planned P0-11 evidence gate to a current runner or an explicitly missing evidence item:
+P0-11B is the first hard final-audit gate:
 
 ```text
-active runner/workflow
- -> Class A frozen contract / Class B current regression / Class C intentional replacement / manual-runtime evidence
- -> source-bound evidence manifest
+Godot 4.7.1 parse/import
+ -> Cardfront mode boot
+ -> base scene instantiation
+ -> no parser or missing-resource/preload error
 ```
 
-P0-11A is classification/documentation only. It must not claim the later parse, full integration, save/restore, performance, log, manual play, visual, CI, drift, or Final GO gates as complete.
+Failure is Decision NO-GO; later unit success cannot override a parse/import/boot failure.
 
 ## Accepted Visual Work
 
