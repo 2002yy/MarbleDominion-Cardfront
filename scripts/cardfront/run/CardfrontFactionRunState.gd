@@ -344,6 +344,7 @@ func snapshot() -> Dictionary:
 		"owned_defense_tower_count": owned_defense_tower_count,
 		"tower_levels": tower_levels.duplicate(true),
 		"first_capture_fortified_cells": first_capture_fortified_cells.duplicate(true),
+		"selected_upgrade_levels": selected_upgrade_levels.duplicate(),
 		"applied_upgrade_counts": applied_upgrade_counts.duplicate(),
 		"neutral_creature_summoned": neutral_creature_summoned,
 	}
@@ -382,6 +383,9 @@ static func restore(data: Dictionary) -> RefCounted:
 	state.owned_defense_tower_count = maxi(0, int(data.get("owned_defense_tower_count", 0)))
 	state.tower_levels = (data.get("tower_levels", {}) as Dictionary).duplicate(true)
 	state.first_capture_fortified_cells = (data.get("first_capture_fortified_cells", {}) as Dictionary).duplicate(true)
+	# Missing legacy data safely means unknown/no authoritative Selected Level.
+	# Never infer it from applied_upgrade_counts because Echo is included there.
+	state.selected_upgrade_levels = (data.get("selected_upgrade_levels", {}) as Dictionary).duplicate()
 	state.applied_upgrade_counts = (data.get("applied_upgrade_counts", {}) as Dictionary).duplicate()
 	return state
 
