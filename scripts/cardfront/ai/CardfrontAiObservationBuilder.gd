@@ -133,17 +133,29 @@ const FORBIDDEN_FIELD_NAMES: Array[String] = [
 	"callbacks",
 ]
 
+static var _build_count_for_test: int = 0
+
 
 static func build(
 	public_source: Dictionary = {},
 	own_source: Dictionary = {},
 	history_source: Array = []
 ) -> Dictionary:
+	if OS.has_feature("editor"):
+		_build_count_for_test += 1
 	return {
 		PUBLIC_BATTLE_STATE: _project_fields(public_source, PUBLIC_BATTLE_FIELDS),
 		OWN_PRIVATE_STATE: _project_fields(own_source, OWN_PRIVATE_FIELDS),
 		OBSERVED_ENEMY_HISTORY: _project_history(history_source),
 	}
+
+
+static func reset_build_count_for_test() -> void:
+	_build_count_for_test = 0
+
+
+static func get_build_count_for_test() -> int:
+	return _build_count_for_test
 
 
 static func project_own_state(state) -> Dictionary:

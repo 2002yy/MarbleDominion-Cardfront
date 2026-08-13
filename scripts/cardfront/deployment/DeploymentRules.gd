@@ -23,8 +23,12 @@ const REASON_OUTSIDE_DEPLOYMENT_ZONE: String = "outside_deployment_zone"
 const REASON_WRONG_DEPLOY_DIRECTION: String = "wrong_deploy_direction"
 const REASON_NO_VALID_DEPLOYMENT_SOURCE: String = "no_valid_deployment_source"
 
+static var _evaluation_count_for_test: int = 0
+
 
 static func evaluate(region_map, battlefield, query):
+	if OS.has_feature("editor"):
+		_evaluation_count_for_test += 1
 	if query == null:
 		return _make_result(false, REASON_INVALID_RULE_TYPE, -1, 0)
 	if not DeploymentRuleTypeScript.is_valid(query.rule_type):
@@ -46,6 +50,14 @@ static func evaluate(region_map, battlefield, query):
 			return _evaluate_support_network(region_map, battlefield, query, resolved_region_id)
 		_:
 			return _make_result(false, REASON_INVALID_RULE_TYPE, resolved_region_id, 0)
+
+
+static func reset_evaluation_count_for_test() -> void:
+	_evaluation_count_for_test = 0
+
+
+static func get_evaluation_count_for_test() -> int:
+	return _evaluation_count_for_test
 
 
 static func is_owned_cell(battlefield, cell: Vector2i, owner_id: int) -> bool:

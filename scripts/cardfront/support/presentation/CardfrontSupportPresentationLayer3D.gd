@@ -40,9 +40,9 @@ func sync_snapshots(snapshots: Array) -> void:
 			add_child(visual)
 			_visuals_by_support_id[support_id] = visual
 			visual_create_count += 1
-		visual.position = _cell_to_world.call(anchor_value as Vector2i, 0.18) as Vector3
-		visual.apply_snapshot(snapshot)
-		presentation_update_count += 1
+			visual.position = _cell_to_world.call(anchor_value as Vector2i, 0.18) as Vector3
+		if visual.apply_snapshot(snapshot):
+			presentation_update_count += 1
 
 	for raw_support_id in _visuals_by_support_id.keys():
 		var support_id: String = str(raw_support_id)

@@ -98,6 +98,7 @@ jobs:
           - batch: Cardfront performance budget
             scripts: |
               CardfrontPerformanceSmokeTestRunner.gd
+              CardfrontP0PerformanceCounterTestRunner.gd
           - batch: Cardfront v0.3 core loop
             scripts: |
               CardfrontUpgradeContentTestRunner.gd

@@ -170,6 +170,14 @@ func _test_repeated_toggle_and_resize_geometry() -> void:
 	var main = await _start_main()
 	var director = main.runtime.round_director
 	var panel = main.runtime.three_choice_panel
+	var support_authority = main.runtime.battlefield.get_meta("cardfront_support_deployment_authority", null)
+	_assert.that(support_authority != null, "resize: live Support authority is available for graph counter audit")
+	if support_authority == null:
+		main._cleanup_game_layer()
+		TestFixtures.cleanup_node(main)
+		await _flush()
+		return
+	var graph_before_ui: Dictionary = support_authority.debug_snapshot().cache.duplicate(true)
 
 	director.force_open_draft_for_test()
 	await process_frame
@@ -199,6 +207,7 @@ func _test_repeated_toggle_and_resize_geometry() -> void:
 	_assert.eq(panel.choice_shell.size, desktop_size, "resize: desktop shell returns to A1 golden size")
 	for signal_name in DIRECTOR_SIGNALS:
 		_assert.eq(_connection_count_for_object(director.get_signal_connection_list(signal_name), panel), 1, "resize: %s retains one panel connection" % signal_name)
+	_assert.eq(support_authority.debug_snapshot().cache, graph_before_ui, "resize: 40 preview toggles and two resizes do not mutate or recompute Support connectivity")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
