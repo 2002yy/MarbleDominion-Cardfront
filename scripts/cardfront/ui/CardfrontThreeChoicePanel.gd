@@ -39,6 +39,9 @@ const DISPLAY_MODE_BATTLEFIELD_PREVIEW: String = "battlefield_preview"
 var _display_mode: String = DISPLAY_MODE_DRAFT_VISIBLE
 const _NORMAL_DIMMER_ALPHA: float = 0.62
 const _PEEK_DIMMER_ALPHA: float = 0.12
+const _DESKTOP_SHELL_SIZE := Vector2(944.0, 488.0)
+const _NARROW_MARGIN: float = 8.0
+const _NARROW_TOP: float = 82.0
 
 
 func _ready() -> void:
@@ -82,7 +85,12 @@ func setup(new_director, view_size: Vector2 = Vector2(1120, 720)) -> bool:
 	dimmer.size = view_size
 	peek_chrome.position = Vector2.ZERO
 	peek_chrome.size = view_size
-	choice_shell.position = Vector2((view_size.x - choice_shell.size.x) * 0.5, 116.0)
+	var shell_scale: float = minf(1.0, (view_size.x - _NARROW_MARGIN * 2.0) / _DESKTOP_SHELL_SIZE.x)
+	choice_shell.scale = Vector2(shell_scale, shell_scale)
+	choice_shell.position = Vector2(
+		(view_size.x - _DESKTOP_SHELL_SIZE.x * shell_scale) * 0.5,
+		116.0 if shell_scale >= 0.999 else _NARROW_TOP
+	)
 	battle_status.position = Vector2(12.0, 68.0)
 	_connect_director()
 	_refresh_initial_status()
@@ -228,7 +236,7 @@ func _set_draft_display_mode(mode: String) -> void:
 	_peek_button.text = "返回选择" if is_preview else "查看战场"
 	_peek_button.position = Vector2(
 		clampf(
-			choice_shell.position.x + choice_shell.size.x - _peek_button.size.x - 12.0,
+			choice_shell.position.x + choice_shell.size.x * choice_shell.scale.x - _peek_button.size.x - 12.0,
 			8.0,
 			maxf(8.0, _view_size.x - _peek_button.size.x - 8.0)
 		),

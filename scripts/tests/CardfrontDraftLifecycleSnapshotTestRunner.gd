@@ -194,17 +194,22 @@ func _test_repeated_toggle_and_resize_geometry() -> void:
 	_assert.that(panel.setup(director, Vector2(760.0, 540.0)), "resize: narrow setup succeeds")
 	var narrow_position: Vector2 = panel.choice_shell.position
 	var narrow_size: Vector2 = panel.choice_shell.size
+	var narrow_scale: Vector2 = panel.choice_shell.scale
 	for index in range(20):
 		panel._toggle_peek()
 		_assert.eq(panel.choice_shell.position, narrow_position, "repeat narrow toggle %d: shell position stays fixed" % index)
 		_assert.eq(panel.choice_shell.size, narrow_size, "repeat narrow toggle %d: shell size stays fixed" % index)
-	_assert.eq(narrow_position, Vector2(-92.0, 116.0), "resize: narrow shell stays on A1 golden position")
+	_assert.eq(narrow_position, Vector2(8.0, 82.0), "resize: narrow shell stays within the viewport")
 	_assert.eq(narrow_size, Vector2(944.0, 488.0), "resize: narrow shell stays on A1 golden size")
+	_assert.eq(narrow_scale, Vector2(744.0 / 944.0, 744.0 / 944.0), "resize: narrow shell uses the frozen proportional scale")
+	for card in panel.get_choice_cards():
+		_assert.that(Rect2(Vector2.ZERO, Vector2(760.0, 540.0)).encloses(card.get_global_rect()), "resize: each narrow Draft card remains fully visible")
 	_assert.eq(_card_ids(panel), offer_ids, "resize: offer IDs stay unchanged")
 
 	_assert.that(panel.setup(director, Vector2(1120.0, 720.0)), "resize: desktop restore setup succeeds")
 	_assert.eq(panel.choice_shell.position, desktop_position, "resize: desktop shell returns to A1 golden position")
 	_assert.eq(panel.choice_shell.size, desktop_size, "resize: desktop shell returns to A1 golden size")
+	_assert.eq(panel.choice_shell.scale, Vector2.ONE, "resize: desktop shell returns to unit scale")
 	for signal_name in DIRECTOR_SIGNALS:
 		_assert.eq(_connection_count_for_object(director.get_signal_connection_list(signal_name), panel), 1, "resize: %s retains one panel connection" % signal_name)
 	_assert.eq(support_authority.debug_snapshot().cache, graph_before_ui, "resize: 40 preview toggles and two resizes do not mutate or recompute Support connectivity")

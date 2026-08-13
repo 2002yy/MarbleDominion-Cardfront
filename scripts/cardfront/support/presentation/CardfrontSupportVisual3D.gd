@@ -16,6 +16,7 @@ var _beacon: MeshInstance3D
 var _flag: MeshInstance3D
 var _progress_back: MeshInstance3D
 var _progress_fill: MeshInstance3D
+var _status_label: Label3D
 
 
 func setup(stable_support_id: String) -> bool:
@@ -36,10 +37,12 @@ func apply_snapshot(snapshot: Dictionary) -> bool:
 	var owner_id: int = int(snapshot.get("claim_owner", -1))
 	var capture_side: int = int(snapshot.get("capture_side", -1))
 	var color: Color = _state_color(view_state, owner_id, capture_side)
+	var progress: float = clampf(float(snapshot.get("capture_progress_normalized", 0.0)), 0.0, 1.0)
 	_set_material(_ground, color, 0.34, true)
 	_set_material(_beacon, color.lightened(0.18), 0.78, true)
 	_set_material(_flag, color, 0.96, false)
-	var progress: float = clampf(float(snapshot.get("capture_progress_normalized", 0.0)), 0.0, 1.0)
+	_status_label.text = _state_label(view_state, progress)
+	_status_label.modulate = color.lightened(0.28)
 	_progress_back.visible = view_state == ViewStateScript.CAPTURING or view_state == ViewStateScript.CONTESTED
 	_progress_fill.visible = _progress_back.visible and progress > 0.0
 	_progress_fill.scale.x = maxf(0.001, progress)
@@ -94,6 +97,18 @@ func _build_low_occlusion_visual() -> void:
 	fill_mesh.size = Vector3(0.84, 0.045, 0.075)
 	_progress_fill.position = Vector3.ZERO + _progress_back.position + Vector3(0.0, 0.03, 0.0)
 
+	_status_label = Label3D.new()
+	_status_label.name = "StatusLabel"
+	_status_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_status_label.no_depth_test = true
+	_status_label.font = ThemeDB.fallback_font
+	_status_label.font_size = 30
+	_status_label.outline_size = 8
+	_status_label.pixel_size = 0.018
+	_status_label.render_priority = 2
+	_status_label.position = Vector3(0.0, 1.08, 0.0)
+	add_child(_status_label)
+
 
 func _mesh(node_name: String, mesh: Mesh) -> MeshInstance3D:
 	var instance := MeshInstance3D.new()
@@ -136,3 +151,17 @@ func _owner_color(owner_id: int) -> Color:
 	if owner_id >= GameConfig.Faction.BLUE and owner_id <= GameConfig.Faction.YELLOW:
 		return GameConfig.faction_color(owner_id)
 	return Color(0.58, 0.60, 0.62)
+
+
+func _state_label(view_state: String, progress: float) -> String:
+	match view_state:
+		ViewStateScript.ACTIVE:
+			return "在线"
+		ViewStateScript.CAPTURING:
+			return "占领 %d%%" % roundi(progress * 100.0)
+		ViewStateScript.CONTESTED:
+			return "争夺中"
+		ViewStateScript.CAPTURED_OFFLINE:
+			return "离线"
+		_:
+			return "中立"
