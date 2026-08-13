@@ -104,6 +104,7 @@ jobs:
               CardfrontEchoLevelContractTestRunner.gd
               CardfrontLevelSemanticSeparationTestRunner.gd
               CardfrontSelectedLevelSnapshotTestRunner.gd
+              CardfrontOfferLevelProjectionTestRunner.gd
               CardfrontEntityCardRuntimeTestRunner.gd
               CardfrontArmoredGuardTestRunner.gd
               CardfrontSapperUnitTestRunner.gd

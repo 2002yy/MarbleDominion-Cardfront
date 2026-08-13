@@ -6,6 +6,7 @@ const DeckRegistryScript = preload("res://scripts/cardfront/draft/CardfrontUpgra
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const OfferContextScript = preload("res://scripts/cardfront/draft/CardfrontDraftOfferContext.gd")
+const OfferViewScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeOfferView.gd")
 
 const DEFAULT_OFFER_SIZE: int = 3
 # P0-05B/P0-08C: the formal gameplay draft is three-choice. A stale caller may
@@ -49,7 +50,10 @@ func draw_offer(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE, owner_id
 func draw_offer_for_context(context, offer_size: int = DEFAULT_OFFER_SIZE) -> Array:
 	var result: Array = []
 	for upgrade_id in draw_offer_ids_for_context(context, offer_size):
-		result.append(UpgradeManifestScript.get_definition(str(upgrade_id)))
+		result.append(OfferViewScript.project(
+			UpgradeManifestScript.get_definition(str(upgrade_id)),
+			context.run_state if context != null else null
+		))
 	return result
 
 
