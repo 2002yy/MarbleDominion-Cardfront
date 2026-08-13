@@ -63,14 +63,14 @@ func _run() -> void:
 	print("[CardfrontDraftGeometrySnapshotTest] Starting P0-07A1 geometry snapshot")
 	await process_frame
 
-	await _test_geometry_snapshot(DESKTOP_VIEWPORT, Vector2(88.0, 116.0), "desktop")
-	await _test_geometry_snapshot(NARROW_VIEWPORT, Vector2(-92.0, 116.0), "narrow")
+	await _test_geometry_snapshot(DESKTOP_VIEWPORT, Vector2(88.0, 116.0), 1.0, "desktop")
+	await _test_geometry_snapshot(NARROW_VIEWPORT, Vector2(8.0, 82.0), 744.0 / 944.0, "narrow")
 
 	_assert.report("[CardfrontDraftGeometrySnapshotTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
 
 
-func _test_geometry_snapshot(viewport_size: Vector2, expected_shell_position: Vector2, label: String) -> void:
+func _test_geometry_snapshot(viewport_size: Vector2, expected_shell_position: Vector2, expected_shell_scale: float, label: String) -> void:
 	var director := FakeDirector.new()
 	get_root().add_child(director)
 	var panel = PanelScene.instantiate()
@@ -94,8 +94,9 @@ func _test_geometry_snapshot(viewport_size: Vector2, expected_shell_position: Ve
 
 	_assert.eq(panel.choice_shell.position, expected_shell_position, "%s: ChoiceShell position snapshot" % label)
 	_assert.eq(panel.choice_shell.size, Vector2(944.0, 488.0), "%s: ChoiceShell size snapshot" % label)
+	_assert.eq(panel.choice_shell.scale, Vector2(expected_shell_scale, expected_shell_scale), "%s: ChoiceShell scale snapshot" % label)
 	_assert.eq(_anchors(panel.choice_shell), Vector4.ZERO, "%s: ChoiceShell anchors snapshot" % label)
-	_assert.eq(_offsets(panel.choice_shell), Vector4(expected_shell_position.x, 116.0, expected_shell_position.x + 944.0, 604.0), "%s: ChoiceShell offsets snapshot" % label)
+	_assert.eq(_offsets(panel.choice_shell), Vector4(expected_shell_position.x, expected_shell_position.y, expected_shell_position.x + 944.0, expected_shell_position.y + 488.0), "%s: ChoiceShell offsets snapshot" % label)
 
 	_assert.eq(panel.card_box.position, Vector2(18.0, 124.0), "%s: CardBox position snapshot" % label)
 	_assert.eq(panel.card_box.size, Vector2(908.0, 266.0), "%s: CardBox size snapshot" % label)
@@ -109,11 +110,12 @@ func _test_geometry_snapshot(viewport_size: Vector2, expected_shell_position: Ve
 		_assert.eq(str(card.upgrade_id), OFFER_IDS[index], "%s: card %d ID snapshot" % [label, index])
 		_assert.eq(card.position, Vector2(14.0 + 300.0 * index, 0.0), "%s: card %d position snapshot" % [label, index])
 		_assert.eq(card.size, Vector2(280.0, 266.0), "%s: card %d rect snapshot" % [label, index])
+		_assert.that(Rect2(Vector2.ZERO, viewport_size).encloses(card.get_global_rect()), "%s: card %d stays fully visible" % [label, index])
 
 	var peek_button: Button = panel.get_node("DraftRoot/PeekChrome/PeekButton")
 	_assert.eq(str(peek_button.get_parent().get_path()), str(panel.peek_chrome.get_path()), "%s: PeekButton stable parent path" % label)
-	var expected_peek_x: float = minf(expected_shell_position.x + 812.0, viewport_size.x - 128.0)
-	_assert.eq(peek_button.position, Vector2(expected_peek_x, 124.0), "%s: PeekButton position snapshot" % label)
+	var expected_peek_x: float = minf(expected_shell_position.x + 944.0 * expected_shell_scale - 132.0, viewport_size.x - 128.0)
+	_assert.eq(peek_button.position, Vector2(expected_peek_x, expected_shell_position.y + 8.0), "%s: PeekButton position snapshot" % label)
 	_assert.eq(peek_button.size, Vector2(120.0, 32.0), "%s: PeekButton size snapshot" % label)
 	_assert.that(peek_button.get_global_rect().end.x <= viewport_size.x - 8.0, "%s: PeekButton stays inside the right viewport edge" % label)
 	_assert.eq(panel.peek_chrome.position, Vector2.ZERO, "%s: PeekChrome position snapshot" % label)

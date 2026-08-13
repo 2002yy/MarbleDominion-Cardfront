@@ -990,7 +990,9 @@ func _check_winner() -> void:
 		counts = runtime.battlefield.count_cells_by_team()
 		current_score_counts = counts.duplicate()
 		if runtime.stronghold_system != null and is_instance_valid(runtime.stronghold_system):
-			stronghold_snapshot = runtime.stronghold_system.sample_bonuses()
+			# Strongholds are status/timeout telemetry only. Numeric Factory,
+			# Energy and Lab reward sampling was retired in P0-05.
+			stronghold_snapshot = runtime.stronghold_system.sample_status()
 
 	var result: Dictionary = WinConditionEvaluator.evaluate(
 		mode_name,

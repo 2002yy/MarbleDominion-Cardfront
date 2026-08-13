@@ -30,6 +30,7 @@ jobs:
               GameStateCoordinatorTestRunner.gd
               SaveFlowControllerTestRunner.gd
               RestorePlanTestRunner.gd
+              EndToEndContinueMainTestRunner.gd
           - batch: Cardfront map economy
             scripts: |
               RegionMapTestRunner.gd
@@ -87,6 +88,7 @@ jobs:
               CardfrontUiAssetRegistryTestRunner.gd
               CardfrontUiArtSceneTestRunner.gd
               CardfrontCardViewInteractionConfigTestRunner.gd
+              CardfrontCardHoverMotionTestRunner.gd
               CardfrontHandRealHitboxTestRunner.gd
               CardfrontHandCollapseLayoutTestRunner.gd
               CardfrontUiClickThroughTestRunner.gd
@@ -96,6 +98,7 @@ jobs:
           - batch: Cardfront performance budget
             scripts: |
               CardfrontPerformanceSmokeTestRunner.gd
+              CardfrontP0PerformanceCounterTestRunner.gd
           - batch: Cardfront v0.3 core loop
             scripts: |
               CardfrontUpgradeContentTestRunner.gd
@@ -104,6 +107,8 @@ jobs:
               CardfrontEchoLevelContractTestRunner.gd
               CardfrontLevelSemanticSeparationTestRunner.gd
               CardfrontSelectedLevelSnapshotTestRunner.gd
+              CardfrontOfferLevelProjectionTestRunner.gd
+              CardfrontNoDeckInflationTestRunner.gd
               CardfrontEntityCardRuntimeTestRunner.gd
               CardfrontArmoredGuardTestRunner.gd
               CardfrontSapperUnitTestRunner.gd
@@ -116,6 +121,7 @@ jobs:
               CardfrontArenaLayoutTestRunner.gd
               CardfrontGridExtentMatrixTestRunner.gd
               CardfrontDirectionControllerTestRunner.gd
+              CardfrontLaneAllocationTestRunner.gd
               CardfrontArenaRuntimeTestRunner.gd
               CardfrontOrthographicArenaTestRunner.gd
               CardfrontBattlefieldScaleTestRunner.gd
@@ -151,6 +157,7 @@ jobs:
               CardfrontSupportCaptureStateMachineTestRunner.gd
               CardfrontSupportCaptureOccupancyAdapterTestRunner.gd
               CardfrontSupportCaptureTerritoryPrototypeTestRunner.gd
+              CardfrontSupportCaptureLiveRuntimeTestRunner.gd
               CardfrontSupportSnapshotContractTestRunner.gd
           - batch: Cardfront P0 support graph pure
             scripts: |
@@ -172,6 +179,11 @@ jobs:
               CardfrontDeploymentAiParityTestRunner.gd
               CardfrontDeploymentAutomaticSpawnTestRunner.gd
               CardfrontDeploymentFourConsumerParityTestRunner.gd
+          - batch: Cardfront P0 AI observation boundary
+            scripts: |
+              CardfrontAiObservationBoundaryTestRunner.gd
+              CardfrontAiObservationProjectionTestRunner.gd
+              CardfrontAiCommanderObservationTestRunner.gd
           - batch: Cardfront hero numeric foundation
             scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
@@ -259,7 +271,7 @@ jobs:
       - name: Import Project
         shell: pwsh
         run: |
-          & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --import
 
       - name: Run ${{ matrix.batch }}
         shell: pwsh

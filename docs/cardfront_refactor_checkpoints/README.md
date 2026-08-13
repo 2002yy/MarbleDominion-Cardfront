@@ -2,6 +2,18 @@
 
 状态：**MANDATORY START HERE FOR P0 IMPLEMENTATION**
 
+## Current Progress / 当前进度
+
+- Current status authority: [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
+- Latest final seal: [`P0-11O_P0_FINAL_GO_NO_GO.md`](P0-11O_P0_FINAL_GO_NO_GO.md) — **NO-GO**
+- Automated final gates: [`P0-11L_visual_evidence.md`](P0-11L_visual_evidence.md), [`P0-11M_ci_gate.md`](P0-11M_ci_gate.md), and [`P0-11N_drift_reaudit.md`](P0-11N_drift_reaudit.md) — **GO**
+- Blocking human checkpoint: [`P0-11K_manual_playtest.md`](P0-11K_manual_playtest.md) — **NO-GO / AUDIT REQUIRED**
+- Current overall decision: **NO-GO**
+- Only a source-bound human P0-11K decision on RC `def95b5` can unlock final P0 GO. P1 and PR #24 merge remain locked.
+- P1 status: **LOCKED** until `P0-11O_P0_FINAL_GO_NO_GO.md` records Final decision `GO` and a P1 allowed start commit.
+
+The historical bootstrap instructions below remain the audit chain for a fresh repository review. They are not permission to restart or skip the latest checkpoint.
+
 任何 Coding Agent 开始或继续 2026-08-07 Cardfront 战线/构筑重构前，必须按顺序阅读：
 
 1. `docs/CARDFRONT_ENGINEERING_SPEC_2026-08-07.md`
@@ -26,7 +38,7 @@
 
 ---
 
-## 当前合法起点
+## Bootstrap Gate / 首次实施起点
 
 如果本目录还没有 P0 checkpoint：
 

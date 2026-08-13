@@ -19,6 +19,7 @@ var morale_system = null
 var fortify_layer = null
 var fortify_overlay = null
 var territory_defense_system = null
+var support_capture_runtime = null
 var target_bias_system = null
 var fire_director = null
 var card_system = null
@@ -82,6 +83,7 @@ func reset() -> void:
     fortify_layer = null
     fortify_overlay = null
     territory_defense_system = null
+    support_capture_runtime = null
     target_bias_system = null
     fire_director = null
     card_system = null

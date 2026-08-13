@@ -15,6 +15,11 @@ This folder keeps the detailed stage-by-stage BallWar history that used to live 
 
 ## 推荐入口 / Suggested entry points
 
+- `PROJECT_STATUS_pre_consolidation_2026-08-13.md`
+  - Pre-consolidation mixed current status, design notes, art plans, and progress history. Preserved verbatim; not current authority.
+- `README_cardfront_pre_p0_consolidation_2026-08-13.md`
+  - Pre-consolidation repository README with the long v0.2/v0.3 implementation narrative. Preserved verbatim; not current authority.
+
 - `README_v0_1_9_cardfront_engineering_closeout.md`
   - v0.1.9 engineering closeout / version sync, CI batch, snapshot audit, effect resolver split, doc alignment, performance smoke gate
 - `README_v0_1_7d_durable_pioneer_beacon.md`

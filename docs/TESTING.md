@@ -26,6 +26,8 @@ Baseline subtotal: **1093 expected checks** across 10 runners.
 
 `.github/workflows/headless-tests.yml` runs parse/import warmup plus the following batches on every push and pull request:
 
+> The workflow matrix is the live authority for exact batch membership. The table below is a subsystem guide and can intentionally summarize several workflow batches; it must not be used to claim that an omitted runner is inactive.
+
 | CI batch | Runners |
 |---|---|
 | Baseline runtime | `SmokeTestRunner`, `IntegrationTestRunner`, `LayoutSanityTestRunner`, scene wiring, state, save, restore |

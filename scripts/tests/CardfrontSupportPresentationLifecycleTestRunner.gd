@@ -68,6 +68,8 @@ func _test_visual_lifecycle(authority) -> void:
 		_assert.that(not visual.has_collision_nodes(), "support presentation lifecycle: visual has no collision authority")
 		_assert.that(visual.get_node_or_null("GroundMark") != null, "support presentation lifecycle: low ground mark exists")
 		_assert.that(visual.get_node_or_null("SmallFlag") != null, "support presentation lifecycle: small flag exists")
+		_assert.that(visual.get_node_or_null("StatusLabel") != null, "support presentation lifecycle: readable status label exists")
+		_assert.eq(visual.get_node("StatusLabel").text, "在线", "support presentation lifecycle: Active is explicitly labeled")
 		_assert.that(visual.get_node_or_null("CaptureProgressBack") != null, "support presentation lifecycle: compact progress exists")
 		var capturing: Dictionary = _snapshot_by_id(snapshots, SupportIdsScript.SUPPORT_LEFT_SOUTH).duplicate(true)
 		capturing["capture_side"] = RulesScript.AI_FACTION
@@ -76,6 +78,7 @@ func _test_visual_lifecycle(authority) -> void:
 		_assert.that(visual.apply_snapshot(capturing), "support presentation lifecycle: Capturing snapshot applies without runtime access")
 		_assert.that(visual.get_node("CaptureProgressBack").visible, "support presentation lifecycle: Capturing reveals compact progress")
 		_assert.that(visual.get_node("CaptureProgressFill").visible, "support presentation lifecycle: positive progress reveals fill")
+		_assert.eq(visual.get_node("StatusLabel").text, "占领 50%", "support presentation lifecycle: Capturing exposes normalized progress")
 		_assert.between(visual.get_node("CaptureProgressFill").scale.x, 0.49, 0.51, "support presentation lifecycle: fill scale projects normalized progress")
 		var active: Dictionary = capturing.duplicate(true)
 		active["capture_progress_normalized"] = 0.0
@@ -85,7 +88,28 @@ func _test_visual_lifecycle(authority) -> void:
 
 		layer.sync_snapshots(snapshots)
 		_assert.eq(layer.visual_create_count, 7, "support presentation lifecycle: repeated sync does not recreate")
+		_assert.eq(layer.presentation_update_count, 14, "support presentation lifecycle: repeated sync refreshes existing visual projections")
 		_assert.eq(layer.get_visual(SupportIdsScript.SUPPORT_LEFT_SOUTH).get_instance_id(), original_instance_id, "support presentation lifecycle: instance identity survives updates")
+
+		# Real downstream state changes must update the existing visual instance. Before
+		# this regression, sync_snapshots only applied data while creating a visual,
+		# leaving live Active/Offline transitions stale on screen.
+		authority.set_support_state(SupportIdsScript.SUPPORT_LEFT_NORTH, RulesScript.PLAYER_FACTION, true)
+		layer.sync_snapshots(authority.presentation_snapshots())
+		var front_visual = layer.get_visual(SupportIdsScript.SUPPORT_LEFT_NORTH)
+		_assert.eq(str(front_visual.last_snapshot.derived_view_state), ViewStateScript.ACTIVE, "support presentation lifecycle: connected front Support renders Active")
+		authority.set_operational(SupportIdsScript.SUPPORT_LEFT_SOUTH, false)
+		layer.sync_snapshots(authority.presentation_snapshots())
+		_assert.eq(str(front_visual.last_snapshot.derived_view_state), ViewStateScript.CAPTURED_OFFLINE, "support presentation lifecycle: severed front Support refreshes to CapturedOffline")
+		_assert.eq(front_visual.get_node("StatusLabel").text, "离线", "support presentation lifecycle: CapturedOffline cannot be mistaken for Active")
+		_assert.eq(front_visual.get_instance_id(), layer.get_visual(SupportIdsScript.SUPPORT_LEFT_NORTH).get_instance_id(), "support presentation lifecycle: Offline refresh preserves visual identity")
+
+		var authority_before_visual: Dictionary = authority.debug_snapshot()
+		front_visual.scale = Vector3(1.05, 1.05, 1.05)
+		front_visual.visible = false
+		front_visual.visible = true
+		_assert.eq(authority.debug_snapshot(), authority_before_visual, "support presentation lifecycle: visual scale/visibility animation cannot mutate Claim or graph truth")
+		authority.set_operational(SupportIdsScript.SUPPORT_LEFT_SOUTH, true)
 
 	var reduced: Array = snapshots.duplicate(true)
 	reduced = reduced.filter(func(snapshot): return str(snapshot.support_id) != SupportIdsScript.SUPPORT_CENTER)

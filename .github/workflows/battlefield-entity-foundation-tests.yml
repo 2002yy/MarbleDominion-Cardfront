@@ -75,7 +75,7 @@ jobs:
       - name: Import project
         shell: pwsh
         run: |
-          & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --import
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run ${{ matrix.test_name }}

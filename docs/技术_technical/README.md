@@ -10,7 +10,7 @@ Key entry points at `docs/` root: [`ARCHITECTURE.md`](../ARCHITECTURE.md), [`TES
 
 - `TECHNICAL_GUIDE.md` — engineering boundaries, editor workflow, validation policy / 工程边界、编辑器协作、验证规则
 - `README_TEST_MATRIX.md` — (superseded by `../TESTING.md`) superseded / 已被 `../TESTING.md` 替代
-- `AI_HANDOFF_CURRENT.md` — fast handoff card for the next AI/Codex session / AI/Codex 快速接管卡
+- `AI_HANDOFF_CURRENT.md` — archived handoff snapshot; use `../PROJECT_STATUS.md` for current work / 历史接管快照，当前工作只看 `../PROJECT_STATUS.md`
 - `README_ANDROID_EXPORT.md` — (superseded by `../ANDROID_EXPORT.md`) superseded / 已被 `../ANDROID_EXPORT.md` 替代
 - `PROJECT_PRINCIPLES.md` — short project-level maintenance rules / 项目级维护规则
 - `Godot素材导入与格式速查手册.docx` — Godot asset import reference / Godot 素材导入参考

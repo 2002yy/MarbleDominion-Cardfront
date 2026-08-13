@@ -231,7 +231,7 @@ The closeout batch runs:
 
 Legacy v0.2 integration runners enable `cardfront_legacy_compatibility_enabled` explicitly. Default Cardfront runtime tests leave that flag false and assert that retired card, economy, morale, device, debug, and old feedback systems are not constructed.
 
-CI status: [`.github/workflows/headless-tests.yml`](/.github/workflows/headless-tests.yml) — `Headless Tests` workflow.
+CI status: [`.github/workflows/headless-tests.yml`](../../.github/workflows/headless-tests.yml) — `Headless Tests` workflow.
 
 > These counts reflect the expected baseline values. If a runner's assertion count changes, update this table and `docs/TESTING.md` together.
 

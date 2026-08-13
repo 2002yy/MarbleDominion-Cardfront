@@ -38,4 +38,4 @@ Recorded on Godot 4.6.2, desktop (Windows).
 - Larger grid scenarios (beyond 60×60)
 - Mobile device performance data
 
-Full baseline data: [performance/PERFORMANCE_BASELINE_v2_1_9.md](performance/PERFORMANCE_BASELINE_v2_1_9.md)
+Full baseline data: [性能_performance/PERFORMANCE_BASELINE_v2_1_9.md](性能_performance/PERFORMANCE_BASELINE_v2_1_9.md)

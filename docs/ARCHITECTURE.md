@@ -49,4 +49,4 @@ These remain code-driven (editor scenes add little value):
 
 - [SAVE_SYSTEM.md](SAVE_SYSTEM.md) — save slots, backup, version checks, input sanitization
 - [TESTING.md](TESTING.md) — test matrix and run guidance
-- [TECHNICAL_GUIDE.md](technical/TECHNICAL_GUIDE.md) — editor workflow, validation policy, repo boundaries
+- [TECHNICAL_GUIDE.md](技术_technical/TECHNICAL_GUIDE.md) — editor workflow, validation policy, repo boundaries

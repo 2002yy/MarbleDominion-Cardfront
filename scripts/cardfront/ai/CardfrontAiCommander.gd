@@ -2,6 +2,7 @@ extends RefCounted
 class_name CardfrontAiCommander
 
 const AiPolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
+const ObservationBuilderScript = preload("res://scripts/cardfront/ai/CardfrontAiObservationBuilder.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 
 const ARCHETYPE_BALANCED = "balanced"
@@ -83,6 +84,12 @@ func choose(
 	if chosen_id == "" or not definitions_by_id.has(chosen_id):
 		return {}
 	return (definitions_by_id[chosen_id] as Dictionary).duplicate(true)
+
+
+func choose_from_observation(offer: Array, observation: Dictionary) -> Dictionary:
+	var own_state: Dictionary = observation.get(ObservationBuilderScript.OWN_PRIVATE_STATE, {}) as Dictionary
+	var valuation_context: Dictionary = ObservationBuilderScript.valuation_context(observation)
+	return choose(offer, own_state, valuation_context)
 
 func choose_id(
 	offer_ids: Array,

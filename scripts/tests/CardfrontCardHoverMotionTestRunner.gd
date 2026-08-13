@@ -92,7 +92,8 @@ func _sample_card() -> Dictionary:
 
 
 func _test_initial_collapsed_offset(view: Control) -> void:
-	_assert.that(view.position.y >= 58.0, "initial card position.y should be >= 58 (collapsed)")
+	_assert.gte(view.position.y, 30.0, "initial card position.y should retain the compact collapsed offset")
+	_assert.gte(48.0, view.position.y, "initial card position.y should keep name and costs visible")
 
 
 func _test_mouse_entered_expands(view: Control) -> void:
@@ -114,7 +115,8 @@ func _test_mouse_exited_collapses(view: Control) -> void:
 	_assert.eq(view.z_index, 0, "mouse_exited should reset z_index to 0")
 	_assert.that(view.scale.x == 1.0, "mouse_exited should reset scale.x to 1.0")
 	_assert.that(view.scale.y == 1.0, "mouse_exited should reset scale.y to 1.0")
-	_assert.gte(view.position.y, 58.0, "mouse_exited should move card back to collapsed offset")
+	_assert.gte(view.position.y, 30.0, "mouse_exited should restore the compact collapsed offset")
+	_assert.gte(48.0, view.position.y, "mouse_exited should keep name and costs visible")
 
 
 func _test_clicked_callback_unchanged(view: Control) -> void:

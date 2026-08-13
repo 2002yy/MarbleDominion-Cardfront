@@ -36,7 +36,10 @@ func _ready() -> void:
 func setup(new_definition: Dictionary) -> void:
 	definition = new_definition.duplicate(true)
 	upgrade_id = str(definition.get("id", ""))
-	rarity_label.text = _rarity_text(str(definition.get("rarity", "common")))
+	rarity_label.text = "%s · %s" % [
+		_rarity_text(str(definition.get("rarity", "common"))),
+		_level_feedback_text(definition),
+	]
 	symbol_label.text = str(definition.get("symbol", "?"))
 	symbol_label.add_theme_font_size_override("font_size", _symbol_font_size(symbol_label.text))
 	stats_label.text = str(definition.get("display_stats", ""))
@@ -57,6 +60,18 @@ func _symbol_font_size(symbol_text: String) -> int:
 	if glyph_count <= 5:
 		return 36
 	return 29
+
+
+func get_level_feedback_text_for_test() -> String:
+	return _level_feedback_text(definition)
+
+
+func _level_feedback_text(view_definition: Dictionary) -> String:
+	var current_level: int = maxi(0, int(view_definition.get("current_level", 0)))
+	var next_level: int = maxi(current_level + 1, int(view_definition.get("next_level", current_level + 1)))
+	if current_level <= 0:
+		return "获得 Lv.%d" % next_level
+	return "Lv.%d → Lv.%d" % [current_level, next_level]
 
 
 func set_locked(selected: bool) -> void:
