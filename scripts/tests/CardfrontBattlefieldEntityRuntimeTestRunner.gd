@@ -204,14 +204,17 @@ func _test_expiry_signal(fixture: Dictionary) -> void:
 	var expiring = runtime.registry.spawn_creature(
 		"expiring_unit",
 		"repair_unit",
-		RulesScript.PLAYER_FACTION,
-		Vector2i(1, 5),
+		RulesScript.NEUTRAL_OWNER,
+		Vector2i(1, 3),
 		1,
 		CreatureStateScript.ARMOR_NORMAL,
 		1,
 		"repair",
 		1
 	)
+	_assert.that(expiring != null, "expiry fixture is created independently of faction creature caps")
+	if expiring == null:
+		return
 	var removed_ids: Array = []
 	runtime.entity_removed.connect(
 		func(entity_id, _kind, _owner_id, _cell): removed_ids.append(str(entity_id))
