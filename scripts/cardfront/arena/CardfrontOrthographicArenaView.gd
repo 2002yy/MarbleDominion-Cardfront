@@ -1029,6 +1029,28 @@ func _build_skyline_silhouettes(arena_width: float, arena_depth: float) -> void:
 				hill.position = Vector3(x, h * 0.5 + SKYLINE_BASE_Y - 0.2, z_position)
 				hill.material_override = _make_material(base, 0.0)
 				skyline.add_child(hill)
+	_build_skyline_flanks(skyline, arena_width, arena_depth, base)
+
+
+func _build_skyline_flanks(skyline: Node3D, arena_width: float, arena_depth: float, base: Color) -> void:
+	for side in [-1.0, 1.0]:
+		for index in range(2):
+			var height: float = 3.2 + float(index) * 1.1
+			var silhouette := MeshInstance3D.new()
+			silhouette.name = "SkylineFlank"
+			var mesh := CylinderMesh.new()
+			mesh.top_radius = 0.55 if map_id == "central_lab" else 0.82
+			mesh.bottom_radius = 1.05
+			mesh.height = height
+			mesh.radial_segments = 6
+			silhouette.mesh = mesh
+			silhouette.position = Vector3(
+				side * (arena_width * 0.5 + 4.0 + float(index) * 2.1),
+				height * 0.5,
+				lerpf(-arena_depth * 0.18, arena_depth * 0.18, float(index))
+			)
+			silhouette.material_override = _make_material(base, 0.0)
+			skyline.add_child(silhouette)
 
 
 func _try_spawn_glb(asset_id: String, position_value: Vector3, scale_value: float, rotation_y: float) -> bool:
