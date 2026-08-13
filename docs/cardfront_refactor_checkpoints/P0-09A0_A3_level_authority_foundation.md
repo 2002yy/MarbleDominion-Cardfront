@@ -1,6 +1,6 @@
 # P0-09A0-A3 Level Authority Foundation
 
-Source commit: `acd9618ee26f1feff9f6dd69f99b23785eeacf83`
+Source commit: `6dbee92dbd0577b592033e265687376c06fd98cc`
 
 Decision: **GO**
 
@@ -62,7 +62,7 @@ Godot editor parse/import check exited `0`. The editor also emitted pre-existing
 ```text
 Mandatory audit gate touched: P0-09A0-A3 Duplicate -> Level Authority
 Audit status: PASS
-Evidence bound to source commit: YES — acd9618ee26f1feff9f6dd69f99b23785eeacf83
+Evidence bound to source commit: YES — 6dbee92dbd0577b592033e265687376c06fd98cc
 Selected Level authority: selected_upgrade_levels
 Effect application/history authority: applied_upgrade_counts
 Production Selected Level increment call sites: 1

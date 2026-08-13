@@ -1,6 +1,6 @@
 # P0-08C Stronghold Cutover Interaction
 
-Source commit: `1086a11b77e7d85f9ec27513cb69bd0bf1f043e7`
+Source commit: `735f2e24bb3300d54604ae9ed40b4ed9696c9322`
 
 Decision: **GO**
 
@@ -34,7 +34,7 @@ Total assertions: **2,528 passed** under Godot `4.7.1-stable`.
 ```text
 Mandatory audit gate touched: P0-08C Stronghold Cutover Interaction
 Audit status: PASS
-Evidence bound to source commit: YES — 1086a11b77e7d85f9ec27513cb69bd0bf1f043e7
+Evidence bound to source commit: YES — 735f2e24bb3300d54604ae9ed40b4ed9696c9322
 Formal Offer size: 3
 Player runtime Offer with all Strongholds active: 3
 AI runtime Offer with Player Strongholds active: 3

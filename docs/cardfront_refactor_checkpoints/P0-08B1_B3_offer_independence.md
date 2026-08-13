@@ -1,6 +1,6 @@
 # P0-08B1-B3 Side Context and Offer Independence
 
-Source commit: `7c10585401bd13f5893de03d96da3aa596b4a3a6`
+Source commit: `07dc91e76587e95384b9c561f0d2a74f04b29689`
 
 Decision: **GO**
 
@@ -58,7 +58,7 @@ Total assertions: **1,403 passed**.
 ```text
 Mandatory audit gate touched: P0-08B Per-side Offer Context / Containers
 Audit status: PASS
-Evidence bound to source commit: YES — 7c10585401bd13f5893de03d96da3aa596b4a3a6
+Evidence bound to source commit: YES — 07dc91e76587e95384b9c561f0d2a74f04b29689
 RoundDirector remains orchestration owner: YES
 Single DraftSystem retained: YES
 Minimal side context: YES
