@@ -266,7 +266,7 @@ jobs:
       - name: Import Project
         shell: pwsh
         run: |
-          & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --import
 
       - name: Run ${{ matrix.batch }}
         shell: pwsh

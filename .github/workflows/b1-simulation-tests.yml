@@ -91,7 +91,7 @@ jobs:
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --quit
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --import
           exit $LASTEXITCODE
       - name: Run ${{ matrix.batch }}
         shell: pwsh
