@@ -101,6 +101,9 @@ jobs:
               CardfrontUpgradeContentTestRunner.gd
               CardfrontMatchPhaseControllerTestRunner.gd
               CardfrontUpgradeResolverTestRunner.gd
+              CardfrontEchoLevelContractTestRunner.gd
+              CardfrontLevelSemanticSeparationTestRunner.gd
+              CardfrontSelectedLevelSnapshotTestRunner.gd
               CardfrontEntityCardRuntimeTestRunner.gd
               CardfrontArmoredGuardTestRunner.gd
               CardfrontSapperUnitTestRunner.gd
@@ -123,6 +126,7 @@ jobs:
             scripts: |
               CardfrontDraftGeometrySnapshotTestRunner.gd
               CardfrontDraftLifecycleSnapshotTestRunner.gd
+              CardfrontDraftOfferIndependenceTestRunner.gd
               CardfrontDraftSideRngIsolationTestRunner.gd
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd

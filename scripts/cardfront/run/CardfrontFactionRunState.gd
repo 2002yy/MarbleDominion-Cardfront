@@ -47,6 +47,9 @@ var owned_creature_count: int = 0
 var owned_defense_tower_count: int = 0
 var tower_levels: Dictionary = {}
 var first_capture_fortified_cells: Dictionary = {}
+# Authoritative player-facing Level: successful Draft selections only.
+var selected_upgrade_levels: Dictionary = {}
+# Compatibility/history counter: every effect application, including Echo.
 var applied_upgrade_counts: Dictionary = {}
 
 
@@ -86,6 +89,7 @@ func setup(new_owner_id: int, new_base_volley_count: int = DEFAULT_BASE_VOLLEY_C
 	owned_defense_tower_count = 0
 	tower_levels.clear()
 	first_capture_fortified_cells.clear()
+	selected_upgrade_levels.clear()
 	applied_upgrade_counts.clear()
 
 
@@ -280,11 +284,32 @@ func consume_next_volley_modifiers() -> Dictionary:
 	return modifiers
 
 
-func record_upgrade(upgrade_id: String, times: int = 1) -> void:
+func get_selected_upgrade_level(upgrade_id: String) -> int:
+	return maxi(0, int(selected_upgrade_levels.get(str(upgrade_id), 0)))
+
+
+func get_effect_application_count(upgrade_id: String) -> int:
+	return maxi(0, int(applied_upgrade_counts.get(str(upgrade_id), 0)))
+
+
+func record_selected_upgrade_resolved(upgrade_id: String) -> void:
+	var safe_id: String = str(upgrade_id)
+	if safe_id == "":
+		return
+	selected_upgrade_levels[safe_id] = get_selected_upgrade_level(safe_id) + 1
+
+
+func record_effect_application(upgrade_id: String, times: int = 1) -> void:
 	var safe_id: String = str(upgrade_id)
 	if safe_id == "" or times <= 0:
 		return
 	applied_upgrade_counts[safe_id] = int(applied_upgrade_counts.get(safe_id, 0)) + int(times)
+
+
+func record_upgrade(upgrade_id: String, times: int = 1) -> void:
+	# Compatibility wrapper. This API has always meant effect applications and
+	# must never be interpreted as player-facing Selected Level.
+	record_effect_application(upgrade_id, times)
 
 
 func snapshot() -> Dictionary:
@@ -319,6 +344,7 @@ func snapshot() -> Dictionary:
 		"owned_defense_tower_count": owned_defense_tower_count,
 		"tower_levels": tower_levels.duplicate(true),
 		"first_capture_fortified_cells": first_capture_fortified_cells.duplicate(true),
+		"selected_upgrade_levels": selected_upgrade_levels.duplicate(),
 		"applied_upgrade_counts": applied_upgrade_counts.duplicate(),
 		"neutral_creature_summoned": neutral_creature_summoned,
 	}
@@ -357,6 +383,9 @@ static func restore(data: Dictionary) -> RefCounted:
 	state.owned_defense_tower_count = maxi(0, int(data.get("owned_defense_tower_count", 0)))
 	state.tower_levels = (data.get("tower_levels", {}) as Dictionary).duplicate(true)
 	state.first_capture_fortified_cells = (data.get("first_capture_fortified_cells", {}) as Dictionary).duplicate(true)
+	# Missing legacy data safely means unknown/no authoritative Selected Level.
+	# Never infer it from applied_upgrade_counts because Echo is included there.
+	state.selected_upgrade_levels = (data.get("selected_upgrade_levels", {}) as Dictionary).duplicate()
 	state.applied_upgrade_counts = (data.get("applied_upgrade_counts", {}) as Dictionary).duplicate()
 	return state
 

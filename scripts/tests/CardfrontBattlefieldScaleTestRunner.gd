@@ -113,6 +113,7 @@ func _test_narrow_viewport_layout_and_chrome_bounds() -> void:
 	_assert.that(screen_rect.encloses(arena_rect), "narrow hierarchy: orthographic arena viewport should stay inside 760x540")
 	_assert.that(screen_rect.encloses(battlefield_rect), "narrow hierarchy: logical battlefield should stay inside 760x540")
 	_assert.that(arena_rect.encloses(battlefield_rect), "narrow hierarchy: logical battlefield should remain inside the orthographic arena viewport")
+	_assert.that(arena_rect.end.y >= NARROW_VIEWPORT.y - 12.0, "narrow hierarchy: arena should use the lower screen instead of leaving a broad empty band")
 
 	var narrow_viewport := SubViewport.new()
 	narrow_viewport.name = "NarrowHierarchyViewport"
@@ -129,6 +130,8 @@ func _test_narrow_viewport_layout_and_chrome_bounds() -> void:
 	await process_frame
 
 	hud.setup_static(null, NARROW_VIEWPORT, layout, true)
+	_assert.gte((hud.get_node("TopPanel") as Control).size.x, 420.0, "narrow hierarchy: top match HUD should retain a readable minimum width")
+	_assert.gte((hud.get_node("TopPanel/LeaderLabel") as Label).get_theme_font_size("font_size"), 14, "narrow hierarchy: top match HUD labels should retain a readable minimum font")
 	_assert.that(aim_control.setup(direction_controller, layout, GameConfig.GAME_MODE_CARDFRONT), "narrow hierarchy: aim control should configure in the narrow viewport")
 	await process_frame
 

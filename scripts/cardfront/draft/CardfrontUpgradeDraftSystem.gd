@@ -5,10 +5,11 @@ const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUp
 const DeckRegistryScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDeckRegistry.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
+const OfferContextScript = preload("res://scripts/cardfront/draft/CardfrontDraftOfferContext.gd")
 
 const DEFAULT_OFFER_SIZE: int = 3
-# P0-05B1: the formal gameplay draft is three-choice. Legacy Lab may still
-# produce draft_choice_count=4, but the draft consumer no longer accepts it.
+# P0-05B/P0-08C: the formal gameplay draft is three-choice. A stale caller may
+# still request four choices, but the draft consumer never accepts that request.
 const MAX_OFFER_SIZE: int = 3
 const COMMON_BASE_WEIGHT: float = 100.0
 const UNCOMMON_BASE_WEIGHT: float = 42.0
@@ -38,28 +39,38 @@ func randomize_seed() -> void:
 
 
 func draw_three(run_state = null, owner_id: int = RulesScript.PLAYER_FACTION) -> Array:
-	return draw_offer(run_state, DEFAULT_OFFER_SIZE, owner_id)
+	return draw_offer_for_context(OfferContextScript.create(owner_id, run_state), DEFAULT_OFFER_SIZE)
 
 
 func draw_offer(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE, owner_id: int = RulesScript.PLAYER_FACTION) -> Array:
+	return draw_offer_for_context(OfferContextScript.create(owner_id, run_state), offer_size)
+
+
+func draw_offer_for_context(context, offer_size: int = DEFAULT_OFFER_SIZE) -> Array:
 	var result: Array = []
-	for upgrade_id in draw_offer_ids(run_state, offer_size, owner_id):
+	for upgrade_id in draw_offer_ids_for_context(context, offer_size):
 		result.append(UpgradeManifestScript.get_definition(str(upgrade_id)))
 	return result
 
 
 func draw_offer_ids(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE, owner_id: int = RulesScript.PLAYER_FACTION) -> Array:
-	var side_rng: RandomNumberGenerator = _side_rng(owner_id)
+	return draw_offer_ids_for_context(OfferContextScript.create(owner_id, run_state), offer_size)
+
+
+func draw_offer_ids_for_context(context, offer_size: int = DEFAULT_OFFER_SIZE) -> Array:
+	if context == null:
+		return []
+	var side_rng: RandomNumberGenerator = _side_rng(int(context.owner_id))
 	var resolved_offer_size: int = clampi(int(offer_size), 1, MAX_OFFER_SIZE)
 	var candidate_ids: Array = []
-	for raw_upgrade_id in _deck_upgrade_ids(run_state):
+	for raw_upgrade_id in DeckRegistryScript.get_upgrade_ids(str(context.deck_id)):
 		var upgrade_id: String = str(raw_upgrade_id)
 		var definition: Dictionary = UpgradeManifestScript.get_definition(upgrade_id)
-		if is_upgrade_eligible(definition, run_state):
+		if is_upgrade_eligible(definition, context.run_state):
 			candidate_ids.append(upgrade_id)
 	var result: Array = []
 	while result.size() < resolved_offer_size and not candidate_ids.is_empty():
-		var selected_index: int = _weighted_index(candidate_ids, run_state, side_rng)
+		var selected_index: int = _weighted_index(candidate_ids, context.run_state, side_rng)
 		if selected_index < 0:
 			break
 		var upgrade_id: String = str(candidate_ids[selected_index])
@@ -124,15 +135,6 @@ func weight_for_definition(definition: Dictionary, run_state = null) -> float:
 		UpgradeManifestScript.RARITY_RARE:
 			return RARE_BASE_WEIGHT + float(rarity_level) * 8.0
 	return 0.0
-
-
-func _deck_upgrade_ids(run_state) -> Array:
-	var deck_id: String = DeckRegistryScript.DEFAULT_DECK_ID
-	if run_state != null:
-		var requested = run_state.get("deck_id")
-		if requested != null:
-			deck_id = str(requested)
-	return DeckRegistryScript.get_upgrade_ids(deck_id)
 
 
 func _weighted_index(candidate_ids: Array, run_state, side_rng: RandomNumberGenerator) -> int:

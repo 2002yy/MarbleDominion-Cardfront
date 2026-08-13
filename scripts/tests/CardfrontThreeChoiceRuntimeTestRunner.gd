@@ -119,6 +119,7 @@ func _test_strongholds_are_status_only() -> void:
 	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.ENERGY), "runtime stronghold status: Energy identity should remain observable")
 	_assert.that((player_status.get("active_types", []) as Array).has(RegionTypeScript.LAB), "runtime stronghold status: Lab identity should remain observable")
 	_assert.eq(director.get_player_offer().size(), 3, "runtime stronghold: player offer must remain exactly three")
+	_assert.eq(director.get_ai_offer().size(), 3, "runtime stronghold: AI offer must remain exactly three")
 	_assert.eq(main.runtime.three_choice_panel.get_visible_choice_count(), 3, "runtime stronghold: formal panel must remain three-choice")
 	for card in main.runtime.three_choice_panel.get_choice_cards():
 		_assert.eq(card.custom_minimum_size.x, 280.0, "runtime stronghold: cards should retain the formal three-column layout")

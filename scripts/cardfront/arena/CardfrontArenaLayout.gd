@@ -8,6 +8,8 @@ const MAX_CELL_SIZE: int = 18
 const MAP_TOP: float = 76.0
 const ARENA_VIEW_TOP: float = 72.0
 const ARENA_VIEW_BOTTOM_MARGIN: float = 32.0
+const NARROW_ARENA_VIEW_BOTTOM_MARGIN: float = 12.0
+const NARROW_VIEWPORT_WIDTH: float = 900.0
 const SIDE_GUTTER: float = 12.0
 const TURRET_OVERHANG_MIN: float = 8.0
 const AIM_PANEL_SIZE: Vector2 = Vector2(196.0, 62.0)
@@ -32,9 +34,14 @@ static func apply_to(base_layout: Dictionary, grid_extent_value, viewport_size: 
 	)
 	var battlefield_rect := Rect2(map_position, map_pixels)
 	var arena_view_top: float = minf(ARENA_VIEW_TOP, maxf(0.0, viewport_size.y * 0.16))
+	var arena_bottom_margin: float = (
+		NARROW_ARENA_VIEW_BOTTOM_MARGIN
+		if viewport_size.x < NARROW_VIEWPORT_WIDTH
+		else ARENA_VIEW_BOTTOM_MARGIN
+	)
 	var arena_view_rect := Rect2(
 		Vector2(0.0, arena_view_top),
-		Vector2(viewport_size.x, maxf(320.0, viewport_size.y - arena_view_top - ARENA_VIEW_BOTTOM_MARGIN))
+		Vector2(viewport_size.x, maxf(320.0, viewport_size.y - arena_view_top - arena_bottom_margin))
 	)
 	var turret_overhang: float = maxf(TURRET_OVERHANG_MIN, float(cell_size) * 0.72)
 	var center_x: float = battlefield_rect.get_center().x

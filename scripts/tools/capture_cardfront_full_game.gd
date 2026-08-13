@@ -5,6 +5,7 @@ const CreatureStateScript = preload(
 	"res://scripts/cardfront/entities/CardfrontCreatureState.gd"
 )
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
+const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 
 
 func _initialize() -> void:
@@ -24,6 +25,9 @@ func _capture() -> void:
 	var capture_label := extent_label
 	if not OS.get_environment("CARDFRONT_CAPTURE_VIEWPORT").strip_edges().is_empty():
 		capture_label = "%s-viewport-%s" % [extent_label, viewport_label]
+	var capture_map_id := _capture_map_id()
+	if not OS.get_environment("CARDFRONT_CAPTURE_MAP_ID").strip_edges().is_empty():
+		capture_label = "%s-map-%s" % [capture_label, capture_map_id]
 	GameConfig.reset_runtime_defaults()
 	paused = false
 	var scene: PackedScene = load("res://scenes/Main.tscn")
@@ -32,6 +36,7 @@ func _capture() -> void:
 	await process_frame
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_extent = capture_extent
+	main.selected_cardfront_map_id = capture_map_id
 	main._start_game(capture_extent, true, false)
 	Input.warp_mouse(
 		Vector2(float(capture_viewport.x - 10), float(capture_viewport.y) * 0.5)
@@ -104,6 +109,16 @@ func _capture_viewport() -> Vector2i:
 	var width: int = maxi(320, int(parts[0]))
 	var height: int = maxi(320, int(parts[1]))
 	return Vector2i(width, height)
+
+
+func _capture_map_id() -> String:
+	var value: String = OS.get_environment("CARDFRONT_CAPTURE_MAP_ID").strip_edges()
+	if value.is_empty():
+		return MapRegistryScript.DEFAULT_DUEL_MAP_ID
+	if MapRegistryScript.get_registered_map_ids().has(value):
+		return value
+	push_warning("Invalid CARDFRONT_CAPTURE_MAP_ID=%s; using default_duel" % value)
+	return MapRegistryScript.DEFAULT_DUEL_MAP_ID
 
 
 func _save_root_png(relative_path: String) -> int:

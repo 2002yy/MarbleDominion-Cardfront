@@ -1436,3 +1436,17 @@ No map is considered strategically complete until a player can describe its main
 - Additional creature, tower, or route-card batches beyond the confirmed
   eighteen-card live pool.
 - Rewriting projectile simulation as true 3D physics.
+
+## 2026-08-13 V-01 visual acceptance and P0-09B2
+
+- P0-09B2 is GO at `20fd895`: Selected Level now saves/restores separately
+  from Echo-inclusive application history, with a safe empty legacy default.
+- Approved V-01 is GO at `dabb076`: thin stronghold platforms, raised bridge
+  edges, stronger faction-readable chambers/towers, peripheral skyline framing,
+  and improved narrow composition are presentation-only.
+- Real-render acceptance covered all three maps at `1120x720` and `760x540`
+  with logical `40x50`; the final six runs emitted zero errors/warnings.
+- Default-map Draft was inspected at both viewports and remained readable; V-01
+  did not modify Draft geometry.
+- Formal P0 remains locked to the documented sequence. The only allowed next
+  formal step is P0-09B3 Offer / View Data Level Projection.
