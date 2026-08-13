@@ -45,6 +45,7 @@ const STRONGHOLD_PLATFORM_HEIGHT: float = 0.18
 const STRONGHOLD_RING_SCALE: float = 0.42
 const CHAMBER_GLB_SCALE: Vector3 = Vector3(1.78, 0.62, 1.05)
 const TOWER_GLB_SCALE: float = 1.16
+const SKYLINE_BASE_Y: float = 4.8
 
 var battlefield = null
 var region_map = null
@@ -231,6 +232,15 @@ func get_tile_instance_count_for_test() -> int:
 
 func get_turret_proxy_count_for_test() -> int:
 	return _turret_proxies.size()
+
+
+func get_faction_footprint_count_for_test() -> int:
+	var count: int = 0
+	for proxy_value in _turret_proxies.values():
+		var proxy: Node3D = proxy_value as Node3D
+		if proxy != null and proxy.get_node_or_null("FactionFootprint") != null:
+			count += 1
+	return count
 
 
 func get_region_label_count_for_test() -> int:
@@ -980,7 +990,7 @@ func _build_skyline_silhouettes(arena_width: float, arena_depth: float) -> void:
 				var mesh := BoxMesh.new()
 				mesh.size = Vector3(w, h, 2.0)
 				box.mesh = mesh
-				box.position = Vector3(x, h * 0.5 + 0.6, z_position)
+				box.position = Vector3(x, h * 0.5 + SKYLINE_BASE_Y, z_position)
 				box.material_override = _make_material(base, 0.0)
 				skyline.add_child(box)
 				if i % 3 == 0:
@@ -988,7 +998,7 @@ func _build_skyline_silhouettes(arena_width: float, arena_depth: float) -> void:
 					var chimney_mesh := BoxMesh.new()
 					chimney_mesh.size = Vector3(0.5, 1.2, 0.5)
 					chimney.mesh = chimney_mesh
-					chimney.position = Vector3(x + w * 0.25, h + 1.2, z_position)
+					chimney.position = Vector3(x + w * 0.25, h + SKYLINE_BASE_Y + 0.6, z_position)
 					chimney.material_override = _make_material(base, 0.0)
 					skyline.add_child(chimney)
 		"central_lab":
@@ -1002,7 +1012,7 @@ func _build_skyline_silhouettes(arena_width: float, arena_depth: float) -> void:
 				cone_mesh.height = h
 				cone_mesh.radial_segments = 6
 				cone.mesh = cone_mesh
-				cone.position = Vector3(x, h * 0.5 + 0.6, z_position)
+				cone.position = Vector3(x, h * 0.5 + SKYLINE_BASE_Y, z_position)
 				cone.material_override = _make_material(base, 0.0)
 				skyline.add_child(cone)
 		_:
@@ -1016,7 +1026,7 @@ func _build_skyline_silhouettes(arena_width: float, arena_depth: float) -> void:
 				hill_mesh.radial_segments = 12
 				hill_mesh.rings = 6
 				hill.mesh = hill_mesh
-				hill.position = Vector3(x, h * 0.5 + 0.4, z_position)
+				hill.position = Vector3(x, h * 0.5 + SKYLINE_BASE_Y - 0.2, z_position)
 				hill.material_override = _make_material(base, 0.0)
 				skyline.add_child(hill)
 
@@ -1614,6 +1624,19 @@ func _build_combatant_proxies() -> void:
 		var proxy := Node3D.new()
 		proxy.name = "Combatant_%s" % str(owner_id)
 		world_root.add_child(proxy)
+
+		var footprint := MeshInstance3D.new()
+		footprint.name = "FactionFootprint"
+		var footprint_mesh := TorusMesh.new()
+		footprint_mesh.inner_radius = 0.82
+		footprint_mesh.outer_radius = 1.0
+		footprint_mesh.rings = 18
+		footprint_mesh.ring_segments = 8
+		footprint.mesh = footprint_mesh
+		footprint.position.y = 0.24
+		footprint.scale = Vector3(2.65, 1.0, 1.95)
+		footprint.material_override = _get_faction_material(int(owner_id), 0.42)
+		proxy.add_child(footprint)
 
 		if not _try_spawn_chamber_glb(proxy, int(owner_id)):
 			_build_procedural_chamber(proxy, int(owner_id))
