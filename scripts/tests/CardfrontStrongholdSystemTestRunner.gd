@@ -7,6 +7,9 @@ const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgrad
 const StrongholdSystemScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdSystem.gd")
 
 const PRODUCTION_ROOT: String = "res://scripts/cardfront"
+const OUTER_PRODUCTION_FILES: Array[String] = [
+	"res://scripts/Main.gd",
+]
 const RETIRED_AUTHORITY_NEEDLES: Array[String] = [
 	"FACTORY_SHOT_BONUS",
 	"ENERGY_ATTACK_LEVEL_BONUS",
@@ -127,6 +130,7 @@ func _test_draft_contract_remains_three_choice() -> void:
 func _test_production_source_has_no_legacy_reward_authority() -> void:
 	var production_paths: Array[String] = []
 	_collect_gd_files(PRODUCTION_ROOT, production_paths)
+	production_paths.append_array(OUTER_PRODUCTION_FILES)
 	_assert.that(not production_paths.is_empty(), "legacy gate: production Cardfront scripts should be discoverable")
 	for path in production_paths:
 		var source: String = _read_source(path)
