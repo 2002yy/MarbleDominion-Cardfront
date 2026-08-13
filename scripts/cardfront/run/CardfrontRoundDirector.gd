@@ -21,6 +21,7 @@ const DraftOfferContextScript = preload("res://scripts/cardfront/draft/Cardfront
 const UpgradeResolverScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeResolver.gd")
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
 const AiCommanderScript = preload("res://scripts/cardfront/ai/CardfrontAiCommander.gd")
+const AiObservationBuilderScript = preload("res://scripts/cardfront/ai/CardfrontAiObservationBuilder.gd")
 const LaneAllocationScript = preload("res://scripts/cardfront/volley/CardfrontLaneAllocation.gd")
 const CommandPointSystemScript = preload("res://scripts/cardfront/run/CardfrontCommandPointSystem.gd")
 const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
@@ -189,6 +190,10 @@ func get_stronghold_status(owner_id: int) -> Dictionary:
 
 
 func get_upgrade_value_context(owner_id: int) -> Dictionary:
+	return AiObservationBuilderScript.valuation_context(get_ai_observation(owner_id))
+
+
+func get_ai_observation(owner_id: int) -> Dictionary:
 	var safe_owner_id: int = int(owner_id)
 	var opponent_id: int = _opponent_id(safe_owner_id)
 	var own_defense: Dictionary = {}
@@ -206,8 +211,7 @@ func get_upgrade_value_context(owner_id: int) -> Dictionary:
 	var enemy_cap: int = maxi(1, int(enemy_defense.get("cap", 1)))
 	var own_state = get_run_state(safe_owner_id)
 	var enemy_state = get_run_state(opponent_id)
-	return {
-		"source": "live",
+	var public_source: Dictionary = {
 		"round_number": maxi(1, round_number),
 		"rounds_remaining": maxi(1, VALUE_PLANNING_MAX_ROUNDS - maxi(1, round_number) + 1),
 		"pre_multiplier_shot_bonus": 0,
@@ -227,10 +231,14 @@ func get_upgrade_value_context(owner_id: int) -> Dictionary:
 		"enemy_health_ratio": _turret_health_ratio(opponent_id),
 		"route_pressure": clampf(0.85 + enemy_defended_ratio * 0.50, 0.5, 1.5),
 		"future_offer_size": DraftSystemScript.DEFAULT_OFFER_SIZE,
-		"owned_creature_count": int(own_state.owned_creature_count) if own_state != null else 0,
-		"owned_defense_tower_count": int(own_state.owned_defense_tower_count) if own_state != null else 0,
 		"enemy_defense_tower_count": int(enemy_state.owned_defense_tower_count) if enemy_state != null else 0,
 	}
+	var own_source: Dictionary = AiObservationBuilderScript.project_own_state(own_state)
+	own_source["pre_multiplier_shot_bonus"] = 0
+	own_source["post_multiplier_shot_bonus"] = 0
+	own_source["temporary_attack_level_bonus"] = 0
+	own_source["future_offer_size"] = DraftSystemScript.DEFAULT_OFFER_SIZE
+	return AiObservationBuilderScript.build(public_source, own_source, [])
 
 
 func get_last_ai_value_report() -> Array:

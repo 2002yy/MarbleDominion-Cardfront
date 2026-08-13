@@ -101,6 +101,18 @@ const STRING_VALUE_MAP_FIELDS: Array[String] = [
 	"applied_upgrade_counts",
 ]
 
+const VALUATION_PUBLIC_FIELDS: Array[String] = [
+	"round_number", "rounds_remaining", "estimated_chamber_hit_chance",
+	"enemy_defense_contact_chance", "siege_defense_contact_chance",
+	"enemy_defense_points", "repairable_frontline_cells", "owned_cell_count",
+	"defended_cell_count", "own_health_ratio", "enemy_health_ratio",
+	"route_pressure", "expected_frontline_captures", "enemy_defense_tower_count",
+]
+const VALUATION_OWN_FIELDS: Array[String] = [
+	"pre_multiplier_shot_bonus", "post_multiplier_shot_bonus",
+	"temporary_attack_level_bonus", "future_offer_size",
+]
+
 const FORBIDDEN_FIELD_NAMES: Array[String] = [
 	"player_offer",
 	"current_player_offer",
@@ -134,8 +146,38 @@ static func build(
 	}
 
 
+static func project_own_state(state) -> Dictionary:
+	var source: Dictionary = {}
+	if state == null:
+		return source
+	for field_name in OWN_PRIVATE_FIELDS:
+		var value = _read_source_value(state, field_name)
+		if value != null:
+			source[field_name] = value
+	return _project_fields(source, OWN_PRIVATE_FIELDS)
+
+
+static func valuation_context(observation: Dictionary) -> Dictionary:
+	var result: Dictionary = {}
+	var public_state: Dictionary = observation.get(PUBLIC_BATTLE_STATE, {}) as Dictionary
+	var own_state: Dictionary = observation.get(OWN_PRIVATE_STATE, {}) as Dictionary
+	for field_name in VALUATION_PUBLIC_FIELDS:
+		if public_state.has(field_name):
+			result[field_name] = public_state[field_name]
+	for field_name in VALUATION_OWN_FIELDS:
+		if own_state.has(field_name):
+			result[field_name] = own_state[field_name]
+	return result
+
+
 static func is_pure_observation(observation) -> bool:
 	return bool(_copy_pure_value(observation).get("accepted", false))
+
+
+static func _read_source_value(source, field_name: String):
+	if source is Dictionary:
+		return (source as Dictionary).get(field_name)
+	return source.get(field_name)
 
 
 static func _project_fields(source: Dictionary, allowed_fields: Array[String]) -> Dictionary:
