@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://cbe732w25r6b4"
-path="res://.godot/imported/WinSteelDrums.ogg-abf80bfbbd48341ae5e82c4e4cbaed09.oggvorbisstr"
+path="res://.godot/imported/WinSteelDrums.ogg-9252a1db744c4b760d83fbec2c96f493.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinSteelDrums.ogg"
-dest_files=["res://.godot/imported/WinSteelDrums.ogg-abf80bfbbd48341ae5e82c4e4cbaed09.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinSteelDrums.ogg"
+dest_files=["res://.godot/imported/WinSteelDrums.ogg-9252a1db744c4b760d83fbec2c96f493.oggvorbisstr"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://drt0oo771froo"
-path="res://.godot/imported/WinVibraphone.wav-2ce86ed045d982eb9833ca7216601309.sample"
+path="res://.godot/imported/WinVibraphone.wav-e9a1a88609601656582721f8f0adb7e1.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinVibraphone.wav"
-dest_files=["res://.godot/imported/WinVibraphone.wav-2ce86ed045d982eb9833ca7216601309.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinVibraphone.wav"
+dest_files=["res://.godot/imported/WinVibraphone.wav-e9a1a88609601656582721f8f0adb7e1.sample"]
 
 [params]
 

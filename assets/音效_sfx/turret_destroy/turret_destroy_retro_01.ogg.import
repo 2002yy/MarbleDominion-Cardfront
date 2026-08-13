@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://mn6c64ggkvd2"
-path="res://.godot/imported/turret_destroy_retro_01.ogg-a137346daf495442473cd41dac75b605.oggvorbisstr"
+path="res://.godot/imported/turret_destroy_retro_01.ogg-d9bcf02621453ec87d39941d6e6b6a80.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/turret_destroy/turret_destroy_retro_01.ogg"
-dest_files=["res://.godot/imported/turret_destroy_retro_01.ogg-a137346daf495442473cd41dac75b605.oggvorbisstr"]
+source_file="res://assets/音效_sfx/turret_destroy/turret_destroy_retro_01.ogg"
+dest_files=["res://.godot/imported/turret_destroy_retro_01.ogg-d9bcf02621453ec87d39941d6e6b6a80.oggvorbisstr"]
 
 [params]
 

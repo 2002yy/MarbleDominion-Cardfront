@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://m4cnfccmedyn"
-path="res://.godot/imported/scroll_003.ogg-b0983df79c2572966dcaeb7fdb5f1d43.oggvorbisstr"
+path="res://.godot/imported/scroll_003.ogg-12d5c90ef5b38e91451b28773274e3cc.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_interface_sounds_kenney/Audio/scroll_003.ogg"
-dest_files=["res://.godot/imported/scroll_003.ogg-b0983df79c2572966dcaeb7fdb5f1d43.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_interface_sounds_kenney/Audio/scroll_003.ogg"
+dest_files=["res://.godot/imported/scroll_003.ogg-12d5c90ef5b38e91451b28773274e3cc.oggvorbisstr"]
 
 [params]
 

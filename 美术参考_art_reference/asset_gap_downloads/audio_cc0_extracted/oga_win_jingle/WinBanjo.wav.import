@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dva2k7owjwt8n"
-path="res://.godot/imported/WinBanjo.wav-d9fd81af8885e0c0c61b1cee1318ceec.sample"
+path="res://.godot/imported/WinBanjo.wav-75d64fa35d2ecdffb7fbb3d18a40b247.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinBanjo.wav"
-dest_files=["res://.godot/imported/WinBanjo.wav-d9fd81af8885e0c0c61b1cee1318ceec.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinBanjo.wav"
+dest_files=["res://.godot/imported/WinBanjo.wav-75d64fa35d2ecdffb7fbb3d18a40b247.sample"]
 
 [params]
 

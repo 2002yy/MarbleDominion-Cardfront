@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://cbu1s6y730qhy"
-path="res://.godot/imported/beep-05.wav-4f6b5c6c400abe686b833a57c81ac8b6.sample"
+path="res://.godot/imported/beep-05.wav-a04be70f41f3c6237023d3d4560bc7f5.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_interface_beeps/Beeps/beep-05.wav"
-dest_files=["res://.godot/imported/beep-05.wav-4f6b5c6c400abe686b833a57c81ac8b6.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_interface_beeps/Beeps/beep-05.wav"
+dest_files=["res://.godot/imported/beep-05.wav-a04be70f41f3c6237023d3d4560bc7f5.sample"]
 
 [params]
 

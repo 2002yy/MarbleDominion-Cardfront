@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dgov0qkiy2mfm"
-path="res://.godot/imported/bubble-field.svg-1d247b275280e950319ebd566f886631.ctex"
+path="res://.godot/imported/bubble-field.svg-c7a52e71c922c2a970f2595ca6a06e39.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/game_icons_scifi/event_icons/bubble-field.svg"
-dest_files=["res://.godot/imported/bubble-field.svg-1d247b275280e950319ebd566f886631.ctex"]
+source_file="res://assets/ui/游戏图标_科幻_game_icons_scifi/event_icons/bubble-field.svg"
+dest_files=["res://.godot/imported/bubble-field.svg-c7a52e71c922c2a970f2595ca6a06e39.ctex"]
 
 [params]
 

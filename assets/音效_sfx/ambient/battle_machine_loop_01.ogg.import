@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://xbnwj0lgctmo"
-path="res://.godot/imported/battle_machine_loop_01.ogg-64ad715f8656bc53f596e1f2bb9d1785.oggvorbisstr"
+path="res://.godot/imported/battle_machine_loop_01.ogg-f1faf0711fa3f5e5ddbc326c3eabd8d4.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/ambient/battle_machine_loop_01.ogg"
-dest_files=["res://.godot/imported/battle_machine_loop_01.ogg-64ad715f8656bc53f596e1f2bb9d1785.oggvorbisstr"]
+source_file="res://assets/音效_sfx/ambient/battle_machine_loop_01.ogg"
+dest_files=["res://.godot/imported/battle_machine_loop_01.ogg-f1faf0711fa3f5e5ddbc326c3eabd8d4.oggvorbisstr"]
 
 [params]
 

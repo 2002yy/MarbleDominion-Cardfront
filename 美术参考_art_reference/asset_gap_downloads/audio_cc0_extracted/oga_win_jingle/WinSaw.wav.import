@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dcb3akfpf6v3t"
-path="res://.godot/imported/WinSaw.wav-de475006e3d5b1f87e915041394462b8.sample"
+path="res://.godot/imported/WinSaw.wav-26f159f388d3676b79f97f75d5f45645.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinSaw.wav"
-dest_files=["res://.godot/imported/WinSaw.wav-de475006e3d5b1f87e915041394462b8.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinSaw.wav"
+dest_files=["res://.godot/imported/WinSaw.wav-26f159f388d3676b79f97f75d5f45645.sample"]
 
 [params]
 

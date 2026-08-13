@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dcp8hse2vt1fj"
-path="res://.godot/imported/WinFantasia.ogg-d9429a7467e85f6b52ae89630621b75a.oggvorbisstr"
+path="res://.godot/imported/WinFantasia.ogg-54a4599208a734e1c864dbcf26a58147.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinFantasia.ogg"
-dest_files=["res://.godot/imported/WinFantasia.ogg-d9429a7467e85f6b52ae89630621b75a.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinFantasia.ogg"
+dest_files=["res://.godot/imported/WinFantasia.ogg-54a4599208a734e1c864dbcf26a58147.oggvorbisstr"]
 
 [params]
 

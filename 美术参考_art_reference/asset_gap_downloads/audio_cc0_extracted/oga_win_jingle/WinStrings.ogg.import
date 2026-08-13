@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dn6r06woc4oxj"
-path="res://.godot/imported/WinStrings.ogg-ade609830fd3620a1f45e4e45ffe3610.oggvorbisstr"
+path="res://.godot/imported/WinStrings.ogg-eb6b18b7bed857fc303811a9fb3fc68c.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinStrings.ogg"
-dest_files=["res://.godot/imported/WinStrings.ogg-ade609830fd3620a1f45e4e45ffe3610.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinStrings.ogg"
+dest_files=["res://.godot/imported/WinStrings.ogg-eb6b18b7bed857fc303811a9fb3fc68c.oggvorbisstr"]
 
 [params]
 

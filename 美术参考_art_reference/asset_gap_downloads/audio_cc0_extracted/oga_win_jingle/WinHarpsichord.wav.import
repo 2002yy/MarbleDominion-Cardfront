@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://28363jkf5pm7"
-path="res://.godot/imported/WinHarpsichord.wav-33929a3e0123fa4437a03bf854553b25.sample"
+path="res://.godot/imported/WinHarpsichord.wav-5daff17ade964135d06445ae257ead66.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinHarpsichord.wav"
-dest_files=["res://.godot/imported/WinHarpsichord.wav-33929a3e0123fa4437a03bf854553b25.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinHarpsichord.wav"
+dest_files=["res://.godot/imported/WinHarpsichord.wav-5daff17ade964135d06445ae257ead66.sample"]
 
 [params]
 

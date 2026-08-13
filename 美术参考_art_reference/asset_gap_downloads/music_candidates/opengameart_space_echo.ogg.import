@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://clj0iv7dkfbs6"
-path="res://.godot/imported/opengameart_space_echo.ogg-2215ca2379e227d70bc0eedeafede872.oggvorbisstr"
+path="res://.godot/imported/opengameart_space_echo.ogg-594e944c66c433d0100c8f27bb9afe0d.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/music_candidates/opengameart_space_echo.ogg"
-dest_files=["res://.godot/imported/opengameart_space_echo.ogg-2215ca2379e227d70bc0eedeafede872.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/music_candidates/opengameart_space_echo.ogg"
+dest_files=["res://.godot/imported/opengameart_space_echo.ogg-594e944c66c433d0100c8f27bb9afe0d.oggvorbisstr"]
 
 [params]
 

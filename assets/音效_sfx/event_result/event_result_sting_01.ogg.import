@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://vb54mx17s15i"
-path="res://.godot/imported/event_result_sting_01.ogg-28fe1130e0200654945b87fcfcb6d520.oggvorbisstr"
+path="res://.godot/imported/event_result_sting_01.ogg-9653e94ec007356d750cc73d50d9d279.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/event_result/event_result_sting_01.ogg"
-dest_files=["res://.godot/imported/event_result_sting_01.ogg-28fe1130e0200654945b87fcfcb6d520.oggvorbisstr"]
+source_file="res://assets/音效_sfx/event_result/event_result_sting_01.ogg"
+dest_files=["res://.godot/imported/event_result_sting_01.ogg-9653e94ec007356d750cc73d50d9d279.oggvorbisstr"]
 
 [params]
 

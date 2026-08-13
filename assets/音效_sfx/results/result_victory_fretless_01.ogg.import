@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dcjlt3abcltvr"
-path="res://.godot/imported/result_victory_fretless_01.ogg-456db69c89bd67638c19f08ac4df5672.oggvorbisstr"
+path="res://.godot/imported/result_victory_fretless_01.ogg-48a5826eee8661f3ada18b7a3e9cfcbb.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/results/result_victory_fretless_01.ogg"
-dest_files=["res://.godot/imported/result_victory_fretless_01.ogg-456db69c89bd67638c19f08ac4df5672.oggvorbisstr"]
+source_file="res://assets/音效_sfx/results/result_victory_fretless_01.ogg"
+dest_files=["res://.godot/imported/result_victory_fretless_01.ogg-48a5826eee8661f3ada18b7a3e9cfcbb.oggvorbisstr"]
 
 [params]
 

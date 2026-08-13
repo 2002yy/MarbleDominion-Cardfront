@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://j8yo2bpkntwk"
-path="res://.godot/imported/WinNylon.ogg-6ebf44171467b31138f7d61c0b9ac853.oggvorbisstr"
+path="res://.godot/imported/WinNylon.ogg-506b4487c2ed2293967eae2b1bedb32b.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinNylon.ogg"
-dest_files=["res://.godot/imported/WinNylon.ogg-6ebf44171467b31138f7d61c0b9ac853.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinNylon.ogg"
+dest_files=["res://.godot/imported/WinNylon.ogg-506b4487c2ed2293967eae2b1bedb32b.oggvorbisstr"]
 
 [params]
 
