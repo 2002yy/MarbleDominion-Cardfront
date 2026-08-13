@@ -30,6 +30,7 @@ jobs:
               GameStateCoordinatorTestRunner.gd
               SaveFlowControllerTestRunner.gd
               RestorePlanTestRunner.gd
+              EndToEndContinueMainTestRunner.gd
           - batch: Cardfront map economy
             scripts: |
               RegionMapTestRunner.gd
@@ -87,6 +88,7 @@ jobs:
               CardfrontUiAssetRegistryTestRunner.gd
               CardfrontUiArtSceneTestRunner.gd
               CardfrontCardViewInteractionConfigTestRunner.gd
+              CardfrontCardHoverMotionTestRunner.gd
               CardfrontHandRealHitboxTestRunner.gd
               CardfrontHandCollapseLayoutTestRunner.gd
               CardfrontUiClickThroughTestRunner.gd
@@ -118,6 +120,7 @@ jobs:
               CardfrontArenaLayoutTestRunner.gd
               CardfrontGridExtentMatrixTestRunner.gd
               CardfrontDirectionControllerTestRunner.gd
+              CardfrontLaneAllocationTestRunner.gd
               CardfrontArenaRuntimeTestRunner.gd
               CardfrontOrthographicArenaTestRunner.gd
               CardfrontBattlefieldScaleTestRunner.gd
