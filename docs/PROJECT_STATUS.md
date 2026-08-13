@@ -17,20 +17,20 @@ The P0 worktree also contains local visual-acceptance screenshots under ignored/
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-09B5 No Deck Inflation Test](cardfront_refactor_checkpoints/P0-09B5_no_deck_inflation_test.md)
+- Latest formal checkpoint: [P0-10A1 Current AI Read-Set Audit](cardfront_refactor_checkpoints/P0-10A1_current_ai_read_set_audit.md)
 - Decision: **GO**
-- Completed contract: repeated selection advances one stable upgrade ID's Selected Level without adding Manifest, deck, eligible-candidate, or runtime card identities.
-- Only allowed formal next step: **P0-10A1 - Current AI Read-Set Audit**.
+- Completed contract: the live Commander -> Tactical -> Deck -> Base policy read set, broad full-RunState input, and free-form context escape surface are source-bound and enumerated.
+- Only allowed formal next step: **P0-10A2 through P0-10A5 - explicit allowlist buckets, forbidden fields, and no-object-escape contract**.
 
-P0-10A1 is a source-bound audit of the current AI input/read surface. It must classify:
+The next batch must build from an empty data container and explicitly copy only allowed primitive/value data into:
 
 ```text
-AI currently reads
-AI currently could read because a full object or free-form context is passed
-AI does not need
+PublicBattleState
+OwnPrivateState
+ObservedEnemyHistory
 ```
 
-It must not redesign scoring, change archetype weights, pass full RunState/GameState/Node into a new DTO, or infer future fields merely because they may be useful.
+The schema/tests must reject Player Offer/choice, future Offer, RNG/seed, hidden tactical/route data, Node/runtime objects, RoundDirector/full RunState references, and callbacks. This contract batch does not yet adapt Commander or change scoring.
 
 ## Accepted Visual Work
 
