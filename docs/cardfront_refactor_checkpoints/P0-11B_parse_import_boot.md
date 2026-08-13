@@ -1,6 +1,6 @@
 # P0-11B Parse / Import / Boot Gate
 
-Source commit: `085ed1205af2bdb948fe73edb54bce09530bf3ce`
+P0 RC source commit: `34ca4b518ec846b3f50e2988d288a83da74dd498`
 
 Godot version: `4.7.1-stable.official.a13da4feb`
 
@@ -10,9 +10,11 @@ Only allowed next step: **P0-11C - New Frozen Contract Suite**.
 
 ## Result
 
-A detached, clean checkout of the source commit was created three times under `D:\CardfrontWorktrees\P0-11B-serialized-085ed12-*`. Each `.godot` cache did not exist before its run.
+A detached, clean checkout of the final C/D source commit was created at `D:\CardfrontWorktrees\P0-11BCD-34ca4b5`. Its `.godot` cache did not exist before the run. The serialized-import correction had already been stress-checked in three independent cache-free checkouts on its introducing commit.
 
-Evidence root: `D:\CardfrontEvidence\P0-11B-serialized-import-085ed12-20260813`
+Final-RC evidence root: `D:\CardfrontEvidence\P0-11BCD-34ca4b5-20260813`
+
+Serialized-import stress evidence root: `D:\CardfrontEvidence\P0-11B-serialized-import-085ed12-20260813`
 
 | Run | Exit | PASS | FAIL | Errors | Warnings |
 |---|---:|---:|---:|---:|---:|
@@ -47,7 +49,7 @@ Godot documents `editor/import/use_multiple_threads` as the project setting cont
 ```text
 Mandatory audit gate touched: P0-11B parse/import/boot
 Audit status: PASS
-Evidence bound to source commit: YES - 085ed1205af2bdb948fe73edb54bce09530bf3ce
+Evidence bound to source commit: YES - 34ca4b518ec846b3f50e2988d288a83da74dd498
 Clean detached checkout: YES - three independent checkouts
 Fresh Godot cache: YES - three independent caches
 Godot 4.7.1 dedicated serialized project import: PASS - 3/3 at 702/702, exit 0

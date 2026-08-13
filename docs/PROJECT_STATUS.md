@@ -17,10 +17,10 @@ The P0 worktree also contains local visual-acceptance screenshots under ignored/
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-11B Parse / Import / Boot Gate](cardfront_refactor_checkpoints/P0-11B_parse_import_boot.md)
+- Latest formal checkpoint: [P0-11D Existing Class A/B Regression](cardfront_refactor_checkpoints/P0-11D_existing_regression.md)
 - Decision: **GO**
-- Completed contract: three clean detached checkouts of `085ed12` each completed a serialized 702-item Godot 4.7.1 import, followed by main/Cardfront/base-scene boot with zero formal log errors or warnings. The four active workflows use Godot's dedicated `--import` mode, and project imports are serialized after the previous parallel first-import path exposed nondeterministic native access violations on the 16 GB audit machine.
-- Only allowed formal next step: **P0-11C - New Frozen Contract Suite**.
+- Completed contract: final RC source `34ca4b5` passed clean import/boot, every new P0 domain contract, and 156 workflow-equivalent Class A/B cases across 153 unique active runners with zero fail markers, errors or warnings. All 158 source runners are classified; five historical/non-authoritative inventory runners are explicitly excluded rather than misreported as passes.
+- Only allowed formal next step: **P0-11E - Intentional Semantic Replacement Audit**.
 
 P0-11B was the first hard final-audit gate:
 
