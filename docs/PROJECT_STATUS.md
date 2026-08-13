@@ -9,28 +9,28 @@ This is the repository's only current status page. It records state and routing;
 - Remote repository: `2002yy/MarbleDominion-Cardfront`
 - Remote `main`: `c38a190f5a6ecd10693e1458f9c586e6d0470373`
 - Active P0 branch: `agent/p0-09b3`
-- Latest implementation commit: `c769de1439fe9e36d73a6b7a25cc23c11e7218f2`
-- The P0 branch contains the accepted P0-09B3 through P0-09B5 work plus the documentation consolidation. Verify live ahead/behind counts with Git instead of copying this line into reports.
+- Latest implementation commit: `549b995c8789c0f613546084d9563c8ac64c8d36`
+- The P0 branch contains the accepted P0-09B3 through P0-09B5 work, P0-10A1 audit, and P0-10A2-A5 observation contract. Verify live ahead/behind counts with Git instead of copying this line into reports.
 - Engine baseline: Godot `4.7.1-stable.official`
 
 The P0 worktree also contains local visual-acceptance screenshots under ignored/untracked evidence paths. They are intentionally excluded from broad clean/stage operations.
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-10A1 Current AI Read-Set Audit](cardfront_refactor_checkpoints/P0-10A1_current_ai_read_set_audit.md)
+- Latest formal checkpoint: [P0-10A2-A5 AI Observation Allowlist Contract](cardfront_refactor_checkpoints/P0-10A2_A5_ai_observation_allowlist_contract.md)
 - Decision: **GO**
-- Completed contract: the live Commander -> Tactical -> Deck -> Base policy read set, broad full-RunState input, and free-form context escape surface are source-bound and enumerated.
-- Only allowed formal next step: **P0-10A2 through P0-10A5 - explicit allowlist buckets, forbidden fields, and no-object-escape contract**.
+- Completed contract: an empty-source, three-bucket AI observation builder now applies top-level and nested allowlists, rejects object/callback escape hatches, and defaults future fields to invisible.
+- Only allowed formal next step: **P0-10A6 - Own-State Projection, Do Not Pass Full RunState**.
 
-The next batch must build from an empty data container and explicitly copy only allowed primitive/value data into:
+P0-10A6 must project only the own-state fields proven necessary by P0-10A1 into `OwnPrivateState`:
 
 ```text
-PublicBattleState
-OwnPrivateState
-ObservedEnemyHistory
+full AI RunState object
+ -> explicit primitive/value own-state source
+ -> AI observation own_private_state
 ```
 
-The schema/tests must reject Player Offer/choice, future Offer, RNG/seed, hidden tactical/route data, Node/runtime objects, RoundDirector/full RunState references, and callbacks. This contract batch does not yet adapt Commander or change scoring.
+It must not yet rewrite policy formulas or archetype weights. The legacy Commander call remains until the projected own state and approved context are both ready for the B1 adapter.
 
 ## Accepted Visual Work
 
