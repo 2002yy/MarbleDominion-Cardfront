@@ -9,28 +9,28 @@ This is the repository's only current status page. It records state and routing;
 - Remote repository: `2002yy/MarbleDominion-Cardfront`
 - Remote `main`: `c38a190f5a6ecd10693e1458f9c586e6d0470373`
 - Active P0 branch: `agent/p0-09b3`
-- Latest implementation commit: `549b995c8789c0f613546084d9563c8ac64c8d36`
-- The P0 branch contains the accepted P0-09B3 through P0-09B5 work, P0-10A1 audit, and P0-10A2-A5 observation contract. Verify live ahead/behind counts with Git instead of copying this line into reports.
+- Latest implementation commit: `cad7954885078b28ad1d17f91c8b3436ee2669e1`
+- The P0 branch contains the accepted P0-09B3 through P0-09B5 work and P0-10A1 through P0-10A7 observation-boundary foundation. Verify live ahead/behind counts with Git instead of copying this line into reports.
 - Engine baseline: Godot `4.7.1-stable.official`
 
 The P0 worktree also contains local visual-acceptance screenshots under ignored/untracked evidence paths. They are intentionally excluded from broad clean/stage operations.
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-10A2-A5 AI Observation Allowlist Contract](cardfront_refactor_checkpoints/P0-10A2_A5_ai_observation_allowlist_contract.md)
+- Latest formal checkpoint: [P0-10A6-A7 AI State and Context Projection](cardfront_refactor_checkpoints/P0-10A6_A7_ai_state_context_projection.md)
 - Decision: **GO**
-- Completed contract: an empty-source, three-bucket AI observation builder now applies top-level and nested allowlists, rejects object/callback escape hatches, and defaults future fields to invisible.
-- Only allowed formal next step: **P0-10A6 - Own-State Projection, Do Not Pass Full RunState**.
+- Completed contract: RoundDirector produces a pure allowlisted Observation, own RunState is projected to detached values, and the legacy valuation-context facade derives only from Observation.
+- Only allowed formal next step: **P0-10B1 - Commander Adapter First, No Policy Rewrite**.
 
-P0-10A6 must project only the own-state fields proven necessary by P0-10A1 into `OwnPrivateState`:
+P0-10B1 must change the Commander boundary, not its scoring:
 
 ```text
-full AI RunState object
- -> explicit primitive/value own-state source
- -> AI observation own_private_state
+AI Offer + allowlisted Observation
+ -> projected own state + approved valuation context
+ -> existing Commander / ValuePolicy ranking
 ```
 
-It must not yet rewrite policy formulas or archetype weights. The legacy Commander call remains until the projected own state and approved context are both ready for the B1 adapter.
+The pre/post ranking for fixed Offer and legal Observation must be frozen in B2. No archetype or score weight tuning is permitted to hide migration differences.
 
 ## Accepted Visual Work
 
