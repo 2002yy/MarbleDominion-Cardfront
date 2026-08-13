@@ -40,6 +40,11 @@ const DEFAULT_PRESENTATION_SCALE: float = 1.20
 const SCALE_TWEEN_SECONDS: float = 0.18
 const COMBAT_ENTITY_VISUAL_SCALE: float = 1.48
 const PROJECTILE_VISUAL_SCALE: float = 1.45
+const STRONGHOLD_PLATFORM_FOOTPRINT_SCALE: float = 0.86
+const STRONGHOLD_PLATFORM_HEIGHT: float = 0.18
+const STRONGHOLD_RING_SCALE: float = 0.42
+const CHAMBER_GLB_SCALE: Vector3 = Vector3(1.78, 0.62, 1.05)
+const TOWER_GLB_SCALE: float = 1.16
 
 var battlefield = null
 var region_map = null
@@ -76,10 +81,11 @@ var _labels_force_visible: bool = false
 const LABEL_FADE_DURATION: float = 0.35
 const LABEL_AUTO_HIDE_DELAY: float = 2.8
 const LABEL_CHANGE_THRESHOLD: int = 10
-const GLB_DARKEN_FACTOR: float = 0.70
-const GLB_FACTION_TINT_STRENGTH: float = 0.30
-const SKYLINE_DISTANCE: float = 12.0
+const GLB_DARKEN_FACTOR: float = 0.78
+const GLB_FACTION_TINT_STRENGTH: float = 0.42
+const SKYLINE_DISTANCE: float = 5.5
 var _bridge_tops: Array[MeshInstance3D] = []
+var _bridge_edges: Array[MeshInstance3D] = []
 var _gate_bars: Array[MeshInstance3D] = []
 var _gate_labels: Array[Label3D] = []
 var _gate_openness: Array[float] = []
@@ -237,6 +243,24 @@ func get_stronghold_platform_count_for_test() -> int:
 
 func get_bridge_count_for_test() -> int:
 	return _bridge_tops.size()
+
+
+func get_bridge_edge_count_for_test() -> int:
+	return _bridge_edges.size()
+
+
+func get_stronghold_platform_height_for_test() -> float:
+	var max_height: float = 0.0
+	for platform_value in _region_platforms.values():
+		var platform: MeshInstance3D = platform_value as MeshInstance3D
+		if platform != null and platform.mesh is BoxMesh:
+			max_height = maxf(max_height, (platform.mesh as BoxMesh).size.y)
+	return max_height
+
+
+func get_skyline_visual_count_for_test() -> int:
+	var skyline: Node = world_root.get_node_or_null("Skyline") if world_root != null else null
+	return skyline.get_child_count() if skyline != null else 0
 
 
 func get_gate_count_for_test() -> int:
@@ -412,6 +436,12 @@ func get_region_badge_metrics_for_test(region_id: int) -> Dictionary:
 
 func get_command_chamber_width_for_test() -> float:
 	return COMMAND_CHAMBER_SIZE.x
+
+
+func get_command_chamber_model_scale_for_test(owner_id: int) -> Vector3:
+	var proxy: Node3D = _turret_proxies.get(owner_id, null)
+	var chamber: Node3D = proxy.get_node_or_null("ChamberTower") as Node3D if proxy != null else null
+	return chamber.scale if chamber != null else Vector3.ZERO
 
 
 func get_bridge_visual_width_for_test() -> float:
@@ -939,7 +969,7 @@ func _build_skyline_silhouettes(arena_width: float, arena_depth: float) -> void:
 	skyline.name = "Skyline"
 	world_root.add_child(skyline)
 	var z_position: float = -(arena_depth * 0.5 + SKYLINE_DISTANCE)
-	var base: Color = _theme_color("backdrop").darkened(0.10)
+	var base: Color = _theme_color("backdrop").darkened(0.04)
 	match map_id:
 		"cross_resource":
 			for i in range(9):
@@ -1127,6 +1157,16 @@ func _build_river_and_bridges(width: float, arena_width: float) -> void:
 		bridge_top.material_override = _make_material(Color(0.62, 0.43, 0.24), 0.0)
 		world_root.add_child(bridge_top)
 		_bridge_tops.append(bridge_top)
+		for edge_offset in [-1.60, 1.60]:
+			var bridge_edge := MeshInstance3D.new()
+			bridge_edge.name = "BridgeEdge"
+			var bridge_edge_mesh := BoxMesh.new()
+			bridge_edge_mesh.size = Vector3(0.18, 0.32, 2.78 * _z_scale)
+			bridge_edge.mesh = bridge_edge_mesh
+			bridge_edge.position = Vector3(bridge_x + edge_offset, 0.79, 0.0)
+			bridge_edge.material_override = _make_material(Color(0.32, 0.24, 0.17), 0.0)
+			world_root.add_child(bridge_edge)
+			_bridge_edges.append(bridge_edge)
 		if _environment_builder != null:
 			_environment_builder.build_bridge_dressing(bridge_x, _z_scale)
 			_environment_builder.build_gate_foundations(bridge_x, _z_scale)
@@ -1235,19 +1275,27 @@ func _build_stronghold_platforms() -> void:
 		var platform_shadow := MeshInstance3D.new()
 		platform_shadow.name = "StrongholdShadow_%s" % region_id
 		var shadow_mesh := BoxMesh.new()
-		shadow_mesh.size = Vector3(bounds.size.x * ARENA_X_SCALE + 0.36, 0.34, bounds.size.y * _z_scale + 0.36)
+		shadow_mesh.size = Vector3(
+			bounds.size.x * ARENA_X_SCALE * 0.90,
+			0.14,
+			bounds.size.y * _z_scale * 0.90
+		)
 		platform_shadow.mesh = shadow_mesh
-		platform_shadow.position = center_world + Vector3(0.0, 0.22, 0.0)
-		platform_shadow.material_override = _make_material(Color(0.20, 0.28, 0.24), 0.0)
+		platform_shadow.position = center_world + Vector3(0.0, 0.10, 0.0)
+		platform_shadow.material_override = _make_material(Color(0.16, 0.22, 0.20), 0.0)
 		world_root.add_child(platform_shadow)
 
 		var platform := MeshInstance3D.new()
 		platform.name = "StrongholdPlatform_%s" % region_id
 		var platform_mesh := BoxMesh.new()
-		platform_mesh.size = Vector3(bounds.size.x * ARENA_X_SCALE + 0.08, 0.34, bounds.size.y * _z_scale + 0.08)
+		platform_mesh.size = Vector3(
+			bounds.size.x * ARENA_X_SCALE * STRONGHOLD_PLATFORM_FOOTPRINT_SCALE,
+			STRONGHOLD_PLATFORM_HEIGHT,
+			bounds.size.y * _z_scale * STRONGHOLD_PLATFORM_FOOTPRINT_SCALE
+		)
 		platform.mesh = platform_mesh
-		platform.position = center_world + Vector3(0.0, 0.46, 0.0)
-		platform.material_override = _make_material(_region_accent(str(region_map.get_region_type_by_id(region_id))).lightened(0.08), 0.06)
+		platform.position = center_world + Vector3(0.0, 0.24, 0.0)
+		platform.material_override = _make_material(_region_accent(str(region_map.get_region_type_by_id(region_id))), 0.04)
 		world_root.add_child(platform)
 		_region_platforms[region_id] = platform
 
@@ -1259,11 +1307,11 @@ func _build_stronghold_platforms() -> void:
 		ring_mesh.rings = 12
 		ring_mesh.ring_segments = 8
 		ring.mesh = ring_mesh
-		ring.position = center_world + Vector3(0.0, 0.72, 0.0)
+		ring.position = center_world + Vector3(0.0, 0.47, 0.0)
 		ring.scale = Vector3(
-			maxf(1.0, bounds.size.x * ARENA_X_SCALE * 0.52),
+			maxf(1.0, bounds.size.x * ARENA_X_SCALE * STRONGHOLD_RING_SCALE),
 			1.0,
-			maxf(1.0, bounds.size.y * _z_scale * 0.52)
+			maxf(1.0, bounds.size.y * _z_scale * STRONGHOLD_RING_SCALE)
 		)
 		ring.material_override = _make_material(Color(0.82, 0.88, 0.70, 0.90), 0.16)
 		world_root.add_child(ring)
@@ -1476,7 +1524,7 @@ func _try_spawn_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
 	if instance == null:
 		return false
 	instance.name = "ChamberTower"
-	instance.scale = Vector3(1.7, 0.5, 1.0)
+	instance.scale = CHAMBER_GLB_SCALE
 	instance.position = Vector3.ZERO
 	instance.set_meta("presentation_only", true)
 	proxy.add_child(instance)
@@ -1880,7 +1928,7 @@ func _try_spawn_tower_glb(proxy: Node3D, entity) -> bool:
 	if instance == null:
 		return false
 	instance.name = "TowerGlb"
-	instance.scale = Vector3.ONE * 1.05
+	instance.scale = Vector3.ONE * TOWER_GLB_SCALE
 	instance.position.y = TILE_HEIGHT + 0.35
 	instance.set_meta("presentation_only", true)
 	proxy.add_child(instance)
@@ -1894,6 +1942,9 @@ func _try_spawn_tower_glb(proxy: Node3D, entity) -> bool:
 		core.name = "PowerCore"
 		instance.add_child(core)
 		for child in instance.find_children("IntTip*", "", true, false):
+			# Imported scene ownership still points at TowerGlb. Clear it before
+			# runtime regrouping so Godot does not emit an inconsistent-owner warning.
+			child.owner = null
 			child.reparent(core, false)
 	return true
 
