@@ -17,10 +17,10 @@ The P0 worktree also contains local visual-acceptance screenshots under ignored/
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-11D Existing Class A/B Regression](cardfront_refactor_checkpoints/P0-11D_existing_regression.md)
+- Latest formal checkpoint: [P0-11E Intentional Semantic Replacement Audit](cardfront_refactor_checkpoints/P0-11E_semantic_replacement.md)
 - Decision: **GO**
-- Completed contract: final RC source `34ca4b5` passed clean import/boot, every new P0 domain contract, and 156 workflow-equivalent Class A/B cases across 153 unique active runners with zero fail markers, errors or warnings. All 158 source runners are classified; five historical/non-authoritative inventory runners are explicitly excluded rather than misreported as passes.
-- Only allowed formal next step: **P0-11E - Intentional Semantic Replacement Audit**.
+- Completed contract: Stronghold semantic replacement and snapshot migration gates pass on `6e4b287`. The audit found and repaired a reachable Main timeout call to the removed `sample_bonuses()` API; timeout now consumes status-only telemetry, and the reverse source gate includes `Main.gd`. Twelve focused runners pass cleanly. Because source changed after C/D, their complete suite must be rerun once on the final P0-11 RC before seal.
+- Only allowed formal next step: **P0-11F - Full Integration Scenario Matrix**.
 
 P0-11B was the first hard final-audit gate:
 
