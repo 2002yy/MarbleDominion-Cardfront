@@ -5,9 +5,9 @@
 ## Current Progress / 当前进度
 
 - Current status authority: [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
-- Latest accepted checkpoint: [`P0-10A6_A7_ai_state_context_projection.md`](P0-10A6_A7_ai_state_context_projection.md)
+- Latest accepted checkpoint: [`P0-10B1_B5_ai_commander_observation_adapter.md`](P0-10B1_B5_ai_commander_observation_adapter.md)
 - Latest decision: **GO**
-- Only allowed formal next step: **P0-10B1 - Commander Adapter First, No Policy Rewrite**
+- Only allowed formal next step: **P0-11A - Final Evidence Manifest / Test Classification Freeze**
 - P1 status: **LOCKED** until `P0-11O_P0_FINAL_GO_NO_GO.md` records Final decision `GO` and a P1 allowed start commit.
 
 The historical bootstrap instructions below remain the audit chain for a fresh repository review. They are not permission to restart or skip the latest checkpoint.

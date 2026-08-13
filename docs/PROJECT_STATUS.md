@@ -9,28 +9,28 @@ This is the repository's only current status page. It records state and routing;
 - Remote repository: `2002yy/MarbleDominion-Cardfront`
 - Remote `main`: `c38a190f5a6ecd10693e1458f9c586e6d0470373`
 - Active P0 branch: `agent/p0-09b3`
-- Latest implementation commit: `cad7954885078b28ad1d17f91c8b3436ee2669e1`
-- The P0 branch contains the accepted P0-09B3 through P0-09B5 work and P0-10A1 through P0-10A7 observation-boundary foundation. Verify live ahead/behind counts with Git instead of copying this line into reports.
+- Latest implementation commit: `509aea4d5fd8ac95eb23ce87c00c9007c02a559d`
+- The P0 branch contains the accepted P0-09B3 through P0-09B5 work and the completed P0-10 AI observation boundary/Commander migration. Verify live ahead/behind counts with Git instead of copying this line into reports.
 - Engine baseline: Godot `4.7.1-stable.official`
 
 The P0 worktree also contains local visual-acceptance screenshots under ignored/untracked evidence paths. They are intentionally excluded from broad clean/stage operations.
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-10A6-A7 AI State and Context Projection](cardfront_refactor_checkpoints/P0-10A6_A7_ai_state_context_projection.md)
+- Latest formal checkpoint: [P0-10B1-B5 AI Commander Observation Adapter](cardfront_refactor_checkpoints/P0-10B1_B5_ai_commander_observation_adapter.md)
 - Decision: **GO**
-- Completed contract: RoundDirector produces a pure allowlisted Observation, own RunState is projected to detached values, and the legacy valuation-context facade derives only from Observation.
-- Only allowed formal next step: **P0-10B1 - Commander Adapter First, No Policy Rewrite**.
+- Completed contract: production Commander now consumes the current AI Offer plus allowlisted Observation; fixed ranking/scores are preserved, secret injection is invariant, public changes remain visible, and no difficulty cheats were introduced.
+- Only allowed formal next step: **P0-11A - Final Evidence Manifest / Test Classification Freeze**.
 
-P0-10B1 must change the Commander boundary, not its scoring:
+P0-11A is the start of the final audit sequence. It must classify the real active test/workflow inventory and bind every planned P0-11 evidence gate to a current runner or an explicitly missing evidence item:
 
 ```text
-AI Offer + allowlisted Observation
- -> projected own state + approved valuation context
- -> existing Commander / ValuePolicy ranking
+active runner/workflow
+ -> Class A frozen contract / Class B current regression / Class C intentional replacement / manual-runtime evidence
+ -> source-bound evidence manifest
 ```
 
-The pre/post ranking for fixed Offer and legal Observation must be frozen in B2. No archetype or score weight tuning is permitted to hide migration differences.
+P0-11A is classification/documentation only. It must not claim the later parse, full integration, save/restore, performance, log, manual play, visual, CI, drift, or Final GO gates as complete.
 
 ## Accepted Visual Work
 
