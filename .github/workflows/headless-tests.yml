@@ -102,6 +102,7 @@ jobs:
               CardfrontMatchPhaseControllerTestRunner.gd
               CardfrontUpgradeResolverTestRunner.gd
               CardfrontEchoLevelContractTestRunner.gd
+              CardfrontLevelSemanticSeparationTestRunner.gd
               CardfrontEntityCardRuntimeTestRunner.gd
               CardfrontArmoredGuardTestRunner.gd
               CardfrontSapperUnitTestRunner.gd
