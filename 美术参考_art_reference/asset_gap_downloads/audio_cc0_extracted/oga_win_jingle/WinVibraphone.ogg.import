@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dgm0rtlir17em"
-path="res://.godot/imported/WinVibraphone.ogg-2ac36dca8d0a02e977cc871019011a8e.oggvorbisstr"
+path="res://.godot/imported/WinVibraphone.ogg-19306f72d4f5937cb5d6e78ebecd124c.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinVibraphone.ogg"
-dest_files=["res://.godot/imported/WinVibraphone.ogg-2ac36dca8d0a02e977cc871019011a8e.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinVibraphone.ogg"
+dest_files=["res://.godot/imported/WinVibraphone.ogg-19306f72d4f5937cb5d6e78ebecd124c.oggvorbisstr"]
 
 [params]
 

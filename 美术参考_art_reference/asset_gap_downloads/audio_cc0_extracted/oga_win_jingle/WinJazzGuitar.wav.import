@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bq0dq1u0pg730"
-path="res://.godot/imported/WinJazzGuitar.wav-4eb68bfadde35956c6df09fdd55e8cd4.sample"
+path="res://.godot/imported/WinJazzGuitar.wav-40528c4a856686cdd1dcfee449f6d5e5.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinJazzGuitar.wav"
-dest_files=["res://.godot/imported/WinJazzGuitar.wav-4eb68bfadde35956c6df09fdd55e8cd4.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinJazzGuitar.wav"
+dest_files=["res://.godot/imported/WinJazzGuitar.wav-40528c4a856686cdd1dcfee449f6d5e5.sample"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bmqp4sf0uht7u"
-path="res://.godot/imported/WinNylon.wav-e72dd6e977d1cd3bbb0e1c966280cd24.sample"
+path="res://.godot/imported/WinNylon.wav-b6ae381c488f05e84920a9eecfc2c648.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinNylon.wav"
-dest_files=["res://.godot/imported/WinNylon.wav-e72dd6e977d1cd3bbb0e1c966280cd24.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinNylon.wav"
+dest_files=["res://.godot/imported/WinNylon.wav-b6ae381c488f05e84920a9eecfc2c648.sample"]
 
 [params]
 

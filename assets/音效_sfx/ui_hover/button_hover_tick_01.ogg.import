@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://o5opgyuviwju"
-path="res://.godot/imported/button_hover_tick_01.ogg-934bf0bcc2f9b481c19393d4f3a0360b.oggvorbisstr"
+path="res://.godot/imported/button_hover_tick_01.ogg-06c30028607f4b28d1b9b0e6628a1acd.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/ui_hover/button_hover_tick_01.ogg"
-dest_files=["res://.godot/imported/button_hover_tick_01.ogg-934bf0bcc2f9b481c19393d4f3a0360b.oggvorbisstr"]
+source_file="res://assets/音效_sfx/ui_hover/button_hover_tick_01.ogg"
+dest_files=["res://.godot/imported/button_hover_tick_01.ogg-06c30028607f4b28d1b9b0e6628a1acd.oggvorbisstr"]
 
 [params]
 

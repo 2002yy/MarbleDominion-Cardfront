@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bjrvq4jwbj5l3"
-path="res://.godot/imported/WinPizzicato.wav-c4f6e887aee76d75ed5281438dc71362.sample"
+path="res://.godot/imported/WinPizzicato.wav-1fe9cfeb40fc5708557434d1730b3b4a.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinPizzicato.wav"
-dest_files=["res://.godot/imported/WinPizzicato.wav-c4f6e887aee76d75ed5281438dc71362.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinPizzicato.wav"
+dest_files=["res://.godot/imported/WinPizzicato.wav-1fe9cfeb40fc5708557434d1730b3b4a.sample"]
 
 [params]
 

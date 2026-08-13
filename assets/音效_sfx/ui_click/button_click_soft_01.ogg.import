@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://hjow2xar1tmy"
-path="res://.godot/imported/button_click_soft_01.ogg-47c9ce53dd202bf0ecf7dbeb86345304.oggvorbisstr"
+path="res://.godot/imported/button_click_soft_01.ogg-fdf5471c03616bdd76ef7cee9058513b.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/ui_click/button_click_soft_01.ogg"
-dest_files=["res://.godot/imported/button_click_soft_01.ogg-47c9ce53dd202bf0ecf7dbeb86345304.oggvorbisstr"]
+source_file="res://assets/音效_sfx/ui_click/button_click_soft_01.ogg"
+dest_files=["res://.godot/imported/button_click_soft_01.ogg-fdf5471c03616bdd76ef7cee9058513b.oggvorbisstr"]
 
 [params]
 

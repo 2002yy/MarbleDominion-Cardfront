@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://igfr077rwalu"
-path="res://.godot/imported/PanelTitleSettings.png-99a1fe22abfe481a4e1910e66c718545.ctex"
+path="res://.godot/imported/PanelTitleSettings.png-0d6b9b71864f552ab6fc3337a9b47a78.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/wenrexa_scifi_minimalism_01/elements/PanelTitleSettings.png"
-dest_files=["res://.godot/imported/PanelTitleSettings.png-99a1fe22abfe481a4e1910e66c718545.ctex"]
+source_file="res://assets/ui/Wenrexa极简科幻_wenrexa_scifi_minimalism_01/elements/PanelTitleSettings.png"
+dest_files=["res://.godot/imported/PanelTitleSettings.png-0d6b9b71864f552ab6fc3337a9b47a78.ctex"]
 
 [params]
 

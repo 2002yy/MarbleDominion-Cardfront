@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://b0cfqvheeqc0q"
-path="res://.godot/imported/retro_beep_06.ogg-aa080260ddac9f4deda18b8ad258564b.oggvorbisstr"
+path="res://.godot/imported/retro_beep_06.ogg-d10df9d2df69e1191f27713a61568cc1.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_50_cc0_scifi_sfx/retro_beep_06.ogg"
-dest_files=["res://.godot/imported/retro_beep_06.ogg-aa080260ddac9f4deda18b8ad258564b.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_50_cc0_scifi_sfx/retro_beep_06.ogg"
+dest_files=["res://.godot/imported/retro_beep_06.ogg-d10df9d2df69e1191f27713a61568cc1.oggvorbisstr"]
 
 [params]
 

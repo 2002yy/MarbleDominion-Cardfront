@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://d1elyrwdxh04t"
-path="res://.godot/imported/roulette_tick_beep_01.wav-201c35e54df9f4e6d06b0c1e89256f62.sample"
+path="res://.godot/imported/roulette_tick_beep_01.wav-47d69dc41e07b42c6c014cef9c0f1ea5.sample"
 
 [deps]
 
-source_file="res://assets/sfx/event_roulette/roulette_tick_beep_01.wav"
-dest_files=["res://.godot/imported/roulette_tick_beep_01.wav-201c35e54df9f4e6d06b0c1e89256f62.sample"]
+source_file="res://assets/音效_sfx/event_roulette/roulette_tick_beep_01.wav"
+dest_files=["res://.godot/imported/roulette_tick_beep_01.wav-47d69dc41e07b42c6c014cef9c0f1ea5.sample"]
 
 [params]
 

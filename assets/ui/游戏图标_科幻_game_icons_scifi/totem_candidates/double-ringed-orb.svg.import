@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://nigbabgk3pi3"
-path="res://.godot/imported/double-ringed-orb.svg-20818feba1d721009516b71379ab007a.ctex"
+path="res://.godot/imported/double-ringed-orb.svg-e93ad2a019d8f04526e4cef2dbd86c0c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/game_icons_scifi/totem_candidates/double-ringed-orb.svg"
-dest_files=["res://.godot/imported/double-ringed-orb.svg-20818feba1d721009516b71379ab007a.ctex"]
+source_file="res://assets/ui/游戏图标_科幻_game_icons_scifi/totem_candidates/double-ringed-orb.svg"
+dest_files=["res://.godot/imported/double-ringed-orb.svg-e93ad2a019d8f04526e4cef2dbd86c0c.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4txbnplx0t1w"
-path="res://.godot/imported/事件画面.png-56bf0c521724aaf6a9e5783c583cfafb.ctex"
+path="res://.godot/imported/事件画面.png-7a4a580324ebb0a5877327a4aabadaa9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://screenshots/事件画面.png"
-dest_files=["res://.godot/imported/事件画面.png-56bf0c521724aaf6a9e5783c583cfafb.ctex"]
+source_file="res://截图_screenshots/事件画面.png"
+dest_files=["res://.godot/imported/事件画面.png-7a4a580324ebb0a5877327a4aabadaa9.ctex"]
 
 [params]
 

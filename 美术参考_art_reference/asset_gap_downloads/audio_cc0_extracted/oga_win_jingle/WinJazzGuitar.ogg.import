@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://c34ku23dis44y"
-path="res://.godot/imported/WinJazzGuitar.ogg-d7d60a494a291e9084dc41bc7f455ec3.oggvorbisstr"
+path="res://.godot/imported/WinJazzGuitar.ogg-e655ea2a4c43622b3e0f40647e73402e.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinJazzGuitar.ogg"
-dest_files=["res://.godot/imported/WinJazzGuitar.ogg-d7d60a494a291e9084dc41bc7f455ec3.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinJazzGuitar.ogg"
+dest_files=["res://.godot/imported/WinJazzGuitar.ogg-e655ea2a4c43622b3e0f40647e73402e.oggvorbisstr"]
 
 [params]
 

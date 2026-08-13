@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://cga32vjk2fa4y"
-path="res://.godot/imported/cell_capture_positive_01.wav-10ae140743a0abb9d16509b30719ed8a.sample"
+path="res://.godot/imported/cell_capture_positive_01.wav-5f38f78c7c8a2670e9a1dd164a038bfe.sample"
 
 [deps]
 
-source_file="res://assets/sfx/capture/cell_capture_positive_01.wav"
-dest_files=["res://.godot/imported/cell_capture_positive_01.wav-10ae140743a0abb9d16509b30719ed8a.sample"]
+source_file="res://assets/音效_sfx/capture/cell_capture_positive_01.wav"
+dest_files=["res://.godot/imported/cell_capture_positive_01.wav-5f38f78c7c8a2670e9a1dd164a038bfe.sample"]
 
 [params]
 

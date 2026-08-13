@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://yjckj3h7157b"
-path="res://.godot/imported/rocket-thruster.svg-645b0cef434a810568f9ad7875156a53.ctex"
+path="res://.godot/imported/rocket-thruster.svg-c92eb346648e68bd0911e73b4d5dea92.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/game_icons_scifi/event_icons/rocket-thruster.svg"
-dest_files=["res://.godot/imported/rocket-thruster.svg-645b0cef434a810568f9ad7875156a53.ctex"]
+source_file="res://assets/ui/游戏图标_科幻_game_icons_scifi/event_icons/rocket-thruster.svg"
+dest_files=["res://.godot/imported/rocket-thruster.svg-c92eb346648e68bd0911e73b4d5dea92.ctex"]
 
 [params]
 

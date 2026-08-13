@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://15tt55d8nx8j"
-path="res://.godot/imported/WinFretless.wav-ae9a087b42bc0db4aee7908f6fce97c2.sample"
+path="res://.godot/imported/WinFretless.wav-21b921ec9f4f7ee2a3a1d3da30474ee6.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinFretless.wav"
-dest_files=["res://.godot/imported/WinFretless.wav-ae9a087b42bc0db4aee7908f6fce97c2.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinFretless.wav"
+dest_files=["res://.godot/imported/WinFretless.wav-21b921ec9f4f7ee2a3a1d3da30474ee6.sample"]
 
 [params]
 

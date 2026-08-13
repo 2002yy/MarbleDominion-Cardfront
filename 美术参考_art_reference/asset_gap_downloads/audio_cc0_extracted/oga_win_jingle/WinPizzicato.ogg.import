@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://ca45pg166m8pm"
-path="res://.godot/imported/WinPizzicato.ogg-807799365ac1258f1f1afc3a65197061.oggvorbisstr"
+path="res://.godot/imported/WinPizzicato.ogg-625683e30844c8cca0e4ea7060e8ee92.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinPizzicato.ogg"
-dest_files=["res://.godot/imported/WinPizzicato.ogg-807799365ac1258f1f1afc3a65197061.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinPizzicato.ogg"
+dest_files=["res://.godot/imported/WinPizzicato.ogg-625683e30844c8cca0e4ea7060e8ee92.oggvorbisstr"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://d25bh6jh5epg5"
-path="res://.godot/imported/WinBanjo.ogg-c73de6c7072e7b29eea0719e44108c72.oggvorbisstr"
+path="res://.godot/imported/WinBanjo.ogg-85ff62c40ad42ea475ce53b736a8f6d1.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinBanjo.ogg"
-dest_files=["res://.godot/imported/WinBanjo.ogg-c73de6c7072e7b29eea0719e44108c72.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinBanjo.ogg"
+dest_files=["res://.godot/imported/WinBanjo.ogg-85ff62c40ad42ea475ce53b736a8f6d1.oggvorbisstr"]
 
 [params]
 

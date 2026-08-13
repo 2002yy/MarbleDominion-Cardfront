@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://dhhfkswpvqeql"
-path="res://.godot/imported/bullet_fire_light_02.ogg-9a645ff24ab5f65101aab53395c54868.oggvorbisstr"
+path="res://.godot/imported/bullet_fire_light_02.ogg-7a06f617c549055d5c330fd51563e7d4.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/bullets/bullet_fire_light_02.ogg"
-dest_files=["res://.godot/imported/bullet_fire_light_02.ogg-9a645ff24ab5f65101aab53395c54868.oggvorbisstr"]
+source_file="res://assets/音效_sfx/bullets/bullet_fire_light_02.ogg"
+dest_files=["res://.godot/imported/bullet_fire_light_02.ogg-7a06f617c549055d5c330fd51563e7d4.oggvorbisstr"]
 
 [params]
 

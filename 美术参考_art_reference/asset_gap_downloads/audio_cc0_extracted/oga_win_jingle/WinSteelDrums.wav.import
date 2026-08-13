@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dmbrfo0qgxndx"
-path="res://.godot/imported/WinSteelDrums.wav-1018ce0763b3a370d1af371be89f7dbe.sample"
+path="res://.godot/imported/WinSteelDrums.wav-3d24a4ebb864b564d48cc0febdf9ae92.sample"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinSteelDrums.wav"
-dest_files=["res://.godot/imported/WinSteelDrums.wav-1018ce0763b3a370d1af371be89f7dbe.sample"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_win_jingle/WinSteelDrums.wav"
+dest_files=["res://.godot/imported/WinSteelDrums.wav-3d24a4ebb864b564d48cc0febdf9ae92.sample"]
 
 [params]
 

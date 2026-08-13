@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://bfmvjvnirlvg8"
-path="res://.godot/imported/opengameart_scifi_background_noise.ogg-45fd4c3179fbdc63a72d8b581f6724e3.oggvorbisstr"
+path="res://.godot/imported/opengameart_scifi_background_noise.ogg-f5c46cf02c556c62da405ad381a7533d.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/music_candidates/opengameart_scifi_background_noise.ogg"
-dest_files=["res://.godot/imported/opengameart_scifi_background_noise.ogg-45fd4c3179fbdc63a72d8b581f6724e3.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/music_candidates/opengameart_scifi_background_noise.ogg"
+dest_files=["res://.godot/imported/opengameart_scifi_background_noise.ogg-f5c46cf02c556c62da405ad381a7533d.oggvorbisstr"]
 
 [params]
 

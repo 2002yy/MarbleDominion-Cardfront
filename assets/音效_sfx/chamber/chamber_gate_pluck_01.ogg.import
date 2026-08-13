@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://58hky327103y"
-path="res://.godot/imported/chamber_gate_pluck_01.ogg-0a5244bb74a1dabf9f236f7e92b10128.oggvorbisstr"
+path="res://.godot/imported/chamber_gate_pluck_01.ogg-044d44913fc627a41a58a5cedcf25977.oggvorbisstr"
 
 [deps]
 
-source_file="res://assets/sfx/chamber/chamber_gate_pluck_01.ogg"
-dest_files=["res://.godot/imported/chamber_gate_pluck_01.ogg-0a5244bb74a1dabf9f236f7e92b10128.oggvorbisstr"]
+source_file="res://assets/音效_sfx/chamber/chamber_gate_pluck_01.ogg"
+dest_files=["res://.godot/imported/chamber_gate_pluck_01.ogg-044d44913fc627a41a58a5cedcf25977.oggvorbisstr"]
 
 [params]
 

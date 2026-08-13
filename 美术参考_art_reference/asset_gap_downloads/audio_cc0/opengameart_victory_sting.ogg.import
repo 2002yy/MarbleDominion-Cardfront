@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://bphj2dct64ch2"
-path="res://.godot/imported/opengameart_victory_sting.ogg-9d8ba22152e5397aed44cd8f3465312a.oggvorbisstr"
+path="res://.godot/imported/opengameart_victory_sting.ogg-6c66103ad1a9fbebc8033d0e261f9f5a.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0/opengameart_victory_sting.ogg"
-dest_files=["res://.godot/imported/opengameart_victory_sting.ogg-9d8ba22152e5397aed44cd8f3465312a.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0/opengameart_victory_sting.ogg"
+dest_files=["res://.godot/imported/opengameart_victory_sting.ogg-6c66103ad1a9fbebc8033d0e261f9f5a.oggvorbisstr"]
 
 [params]
 

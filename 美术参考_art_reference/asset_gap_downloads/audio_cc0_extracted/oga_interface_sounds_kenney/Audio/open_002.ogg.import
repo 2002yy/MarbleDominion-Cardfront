@@ -3,12 +3,12 @@
 importer="oggvorbisstr"
 type="AudioStreamOggVorbis"
 uid="uid://clf5yowsto4nt"
-path="res://.godot/imported/open_002.ogg-2dc310ea9fb828864cf57e4ccf31ec96.oggvorbisstr"
+path="res://.godot/imported/open_002.ogg-8a41b096ea720aa01caa0c99133891f3.oggvorbisstr"
 
 [deps]
 
-source_file="res://art_reference/asset_gap_downloads/audio_cc0_extracted/oga_interface_sounds_kenney/Audio/open_002.ogg"
-dest_files=["res://.godot/imported/open_002.ogg-2dc310ea9fb828864cf57e4ccf31ec96.oggvorbisstr"]
+source_file="res://美术参考_art_reference/asset_gap_downloads/audio_cc0_extracted/oga_interface_sounds_kenney/Audio/open_002.ogg"
+dest_files=["res://.godot/imported/open_002.ogg-8a41b096ea720aa01caa0c99133891f3.oggvorbisstr"]
 
 [params]
 
