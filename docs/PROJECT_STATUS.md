@@ -9,28 +9,29 @@ This is the repository's only current status page. It records state and routing;
 - Remote repository: `2002yy/MarbleDominion-Cardfront`
 - Remote `main`: `c38a190f5a6ecd10693e1458f9c586e6d0470373`
 - Active P0 branch: `agent/p0-09b3`
-- Latest checkpoint commit: `971d41b2583eb809cc350a85d5e77e434ddcf7d6`
-- P0 implementation commit: `32ce9af20cd213993acdee1fd9cc0f422a2201c7`
-- P0 branch relation to `origin/main`: ahead 2, behind 0
+- Latest implementation commit: `6826c8310eef6a8f2fe68dcf1f2d450980700c16`
+- P0 branch relation to `origin/main`: ahead 4, behind 0 before this checkpoint commit
 - Engine baseline: Godot `4.7.1-stable.official`
 
 The P0 worktree also contains local visual-acceptance screenshots under ignored/untracked evidence paths. They are intentionally excluded from broad clean/stage operations.
 
 ## Current Formal Phase
 
-- Latest formal checkpoint: [P0-09B3 Offer / View Data Level Projection](cardfront_refactor_checkpoints/P0-09B3_offer_view_level_projection.md)
+- Latest formal checkpoint: [P0-09B4 Minimal Player-Facing Level Feedback](cardfront_refactor_checkpoints/P0-09B4_minimal_player_facing_level_feedback.md)
 - Decision: **GO**
-- Completed contract: Offer/View data now carries side-isolated `current_level` and `next_level` derived from Selected Level, without reading Echo-inclusive application history or mutating the Manifest.
-- Only allowed formal next step: **P0-09B4 - Minimal Player-Facing Level Feedback**.
+- Completed contract: Draft cards show `获得 Lv.1` for a first selection and `Lv.N → Lv.N+1` for repeat selection by reading detached P0-09B3 Offer/View data only.
+- Only allowed formal next step: **P0-09B5 - No Deck Inflation Test**.
 
-P0-09B4 is limited to displaying:
+P0-09B5 is limited to proving that repeated selection increments one stable upgrade identity instead of adding duplicate card/deck identities:
 
 ```text
-first selection: obtain / Lv.1
-repeat selection: Lv.N -> Lv.N+1
+one upgrade ID in the eligible/Manifest identity set
+Selected Level increments N times
+Manifest definition count does not grow
+no N runtime card identities are created
 ```
 
-It must not invent complete Lv2/Lv3 numeric tracks, modify rarity or Offer RNG, change gameplay effects, or start P0-09B5/P0-10 work.
+It must not redesign the deck model, change Offer/RNG/rarity, tune effects, or start P0-10 work.
 
 ## Accepted Visual Work
 
