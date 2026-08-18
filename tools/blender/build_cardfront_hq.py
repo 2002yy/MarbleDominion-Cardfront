@@ -207,7 +207,7 @@ def make_materials():
         "metal": make_material("MAT_METAL_DARK", (0.12, 0.16, 0.18), 0.34, 0.78),
         "faction": make_material("MAT_FACTION_PRIMARY", (0.10, 0.42, 0.68), 0.46, 0.18),
         "faction_secondary": make_material("MAT_FACTION_SECONDARY", (0.07, 0.23, 0.38), 0.54, 0.25),
-        "core": make_material("MAT_CORE", (0.92, 0.58, 0.12), 0.24, 0.12, (1.0, 0.42, 0.05)),
+        "core": make_material("MAT_CORE", (1.0, 0.56, 0.10), 0.20, 0.0, (1.0, 0.48, 0.06)),
         "damage": make_material("MAT_DAMAGE_DARK", (0.08, 0.07, 0.07), 0.92),
     }
 
@@ -266,9 +266,11 @@ def build_common(collection, sockets, damage_collection, mats):
     add_box("Damage_03_Crack", damage_collection, (0.22, 0.10, 1.10), (0.80, -1.02, 2.30), mats["damage"], bevel=0.015, parent=damage_root)
     add_box("Armor_L", damage_collection, (0.20, 1.16, 0.62), (-1.88, 0.0, 1.64), mats["stone_light"], bevel=0.025, parent=damage_root)
     add_box("Armor_R", damage_collection, (0.20, 1.16, 0.62), (1.88, 0.0, 1.64), mats["stone_light"], bevel=0.025, parent=damage_root)
-    # D3: exposed core - bright emissive inner structure replacing cover
-    add_cylinder("CoreCover", damage_collection, 0.42, 0.30, (0.0, -1.10, 1.72), mats["core"], vertices=10, rotation=(math.radians(90.0), 0.0, 0.0), bevel=0.02, parent=damage_root)
-    add_ico("CoreExposed", damage_collection, 0.28, (0.0, -1.22, 1.72), mats["core"], subdivisions=2, parent=damage_root)
+    # D3: exposed core - large bright emissive structure
+    add_cylinder("CoreCover", damage_collection, 0.72, 0.44, (0.0, -1.10, 1.72), mats["core"], vertices=12, rotation=(math.radians(90.0), 0.0, 0.0), bevel=0.03, parent=damage_root)
+    add_ico("CoreExposed", damage_collection, 0.68, (0.0, -1.28, 1.72), mats["core"], subdivisions=2, parent=damage_root)
+    # Broad emissive halo disc - visible at game scale as orange glow
+    add_cylinder("CoreHalo", damage_collection, 1.10, 0.08, (0.0, -1.05, 1.72), mats["core"], vertices=14, rotation=(math.radians(90.0), 0.0, 0.0), bevel=0.01, parent=damage_root)
 
     return root
 

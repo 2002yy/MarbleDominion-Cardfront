@@ -78,6 +78,7 @@ var _turret_proxies: Dictionary = {}
 var _turret_barrels: Dictionary = {}
 var _chamber_labels: Dictionary = {}
 var _chamber_damage_modules: Dictionary = {}
+var _chamber_core_glows: Dictionary = {}
 var _region_labels: Dictionary = {}
 var _region_platforms: Dictionary = {}
 var _region_control_rings: Dictionary = {}
@@ -1813,10 +1814,10 @@ func _apply_building_material_pass(instance: Node3D, faction_id: int) -> void:
 				elif apply_tint and material_name.contains("MAT_FACTION_SECONDARY"):
 					dup.albedo_color = tint.darkened(0.35)
 				elif material_name.contains("MAT_CORE"):
-					dup.albedo_color = Color(1.0, 0.62, 0.16)
+					dup.albedo_color = Color(1.0, 0.56, 0.10)
 					dup.emission_enabled = true
-					dup.emission = Color(1.0, 0.52, 0.10)
-					dup.emission_energy_multiplier = 2.2
+					dup.emission = Color(1.0, 0.48, 0.06)
+					dup.emission_energy_multiplier = 3.0
 				elif material_name.contains("MAT_DAMAGE"):
 					dup.albedo_color = darkened.darkened(0.15)
 				elif material_name.contains("MAT_METAL"):
@@ -2000,6 +2001,7 @@ func _update_hq_damage_state(owner_id: int, health: int, max_health: int) -> voi
 	var ratio: float = clampf(float(health) / float(maxi(1, max_health)), 0.0, 1.0)
 	if ratio > 0.70:
 		damage_module.visible = false
+		_set_core_glow_visible(owner_id, false)
 		return
 	damage_module.visible = true
 	var show_d1 := true
@@ -2013,13 +2015,52 @@ func _update_hq_damage_state(owner_id: int, health: int, max_health: int) -> voi
 			child.visible = show_d1
 		elif mesh_name.contains("DAMAGE_02"):
 			child.visible = show_d2
-		elif mesh_name.contains("DAMAGE_03") or mesh_name.contains("CORECOVER") or mesh_name.contains("COREEXPOSED"):
+		elif mesh_name.contains("DAMAGE_03") or mesh_name.contains("CORE"):
 			child.visible = show_d3
-			if show_d3 and (mesh_name.contains("CORE")):
+			if show_d3 and mesh_name.contains("CORE"):
 				_apply_core_pulse(child)
 		else:
 			push_warning("Unknown HQ damage mesh role: %s" % child.name)
 			child.visible = show_d3
+	_set_core_glow_visible(owner_id, show_d3)
+
+
+func _set_core_glow_visible(owner_id: int, visible: bool) -> void:
+	var proxy: Node3D = _turret_proxies.get(owner_id, null)
+	if proxy == null or not is_instance_valid(proxy):
+		return
+	var glow: MeshInstance3D = _chamber_core_glows.get(owner_id, null)
+	if visible:
+		if glow == null or not is_instance_valid(glow):
+			glow = MeshInstance3D.new()
+			glow.name = "HQCoreGlow"
+			var glow_mesh := SphereMesh.new()
+			glow_mesh.radius = 2.20
+			glow_mesh.height = 0.70
+			glow_mesh.radial_segments = 14
+			glow_mesh.rings = 6
+			glow.mesh = glow_mesh
+			var glow_mat := StandardMaterial3D.new()
+			glow_mat.albedo_color = Color(1.0, 0.50, 0.08)
+			glow_mat.emission_enabled = true
+			glow_mat.emission = Color(1.0, 0.42, 0.04)
+			glow_mat.emission_energy_multiplier = 5.0
+			glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			glow_mat.no_depth_test = true
+			glow.material_override = glow_mat
+			glow.position = Vector3(0.0, 2.2, 0.0)
+			proxy.add_child(glow)
+			_chamber_core_glows[owner_id] = glow
+		glow.visible = true
+		var t: float = Time.get_ticks_msec() * 0.001
+		var pulse: float = 0.7 + 0.3 * sin(t * 3.8)
+		var mat: StandardMaterial3D = glow.material_override as StandardMaterial3D
+		if mat != null:
+			mat.emission_energy_multiplier = 4.0 + pulse * 4.0
+		glow.scale = Vector3.ONE * (0.90 + pulse * 0.25)
+	else:
+		if glow != null and is_instance_valid(glow):
+			glow.visible = false
 
 
 func _apply_core_pulse(mesh_instance: MeshInstance3D) -> void:
@@ -2030,7 +2071,7 @@ func _apply_core_pulse(mesh_instance: MeshInstance3D) -> void:
 		if mat is StandardMaterial3D:
 			var s: StandardMaterial3D = mat as StandardMaterial3D
 			if s.emission_enabled:
-				s.emission_energy_multiplier = 1.4 + pulse * 1.6
+				s.emission_energy_multiplier = 2.0 + pulse * 2.5
 
 
 func _sync_bullets() -> void:
