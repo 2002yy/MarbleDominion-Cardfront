@@ -1,28 +1,24 @@
 # Performance Docs / 性能文档
 
-Performance baselines, probes, and historical performance appendices.  
-性能基线、性能探针与历史性能附录。
+这里集中性能基线、性能探针、画质档位与历史性能附录。
 
-- `PERFORMANCE_BASELINE_v2_1_9.md` — current baseline snapshot / 当前性能基线快照
-- `TerritoryWar_V3_v1_9_21_performance_appendix.docx` — historical performance appendix / 历史性能附录
+## 当前入口
 
-## Current Performance Gate Status / 当前性能预算状态
+- [`PERFORMANCE.md`](PERFORMANCE.md) — 当前性能说明与优化边界。
+- [`画质档位参数速查表.md`](画质档位参数速查表.md) — 画质/性能档位参数速查。
+- [`PERFORMANCE_BASELINE_v2_1_9.md`](PERFORMANCE_BASELINE_v2_1_9.md) — 已有性能基线快照。
+- `TerritoryWar_V3_v1_9_21_performance_appendix.docx` — 历史性能附录。
 
-`CardfrontPerformanceSmokeTestRunner.gd` is the current performance **smoke** gate, not a strict budget gate.
-当前 `CardfrontPerformanceSmokeTestRunner.gd` 是性能冒烟关卡，不是严格性能预算关卡。
+## 当前性能门槛状态
 
-Current checks (smoke-level):
-- Overlay dirty-redraw protection does not crash.
-- Shot guide layer is present without debug text.
-- 40×40 battlefield launches successfully.
-- 50×50 battlefield loads successfully.
+`CardfrontPerformanceSmokeTestRunner.gd` 仍是性能 **smoke gate**，不是完整预算门。
 
-These verify that Cardfront runtime is structurally sound under scale, not that it meets specific frame-budget or object-count limits.
+美术 v0.2 新增的性能/可读性要求包括：
+- Shadow HIGH / MEDIUM / LOW 的 graceful degradation；
+- VFX HIGH / MEDIUM / LOW，但 HIGH 也必须启用 Readability LOD；
+- Projectile Density Compensation；
+- VFX Effect Pool / Coalescing；
+- 外围 Diorama 在窄屏/低档位优先裁装饰，不裁 gameplay core 信息；
+- `default_duel` 的 Shadow Baseline/C1/C2 与 Quiet/Normal/Stress VFX benchmark。
 
-A strict budget test (`CardfrontPerformanceBudgetTestRunner.gd`) is planned for a later slice. It should measure:
-- FireDirector intent rate per second.
-- Active bullet cap under sustained fire.
-- VFX active count cap.
-- Device instance count cap.
-- Overlay redraw triggered only by dirty markers (not per-frame).
-- Object-count stability over a 10-second simulation window.
+后续严格预算测试应继续覆盖 active bullet cap、VFX active count、shadow cost、draw-call/object-count stability 与 10 秒持续战斗稳定性。
