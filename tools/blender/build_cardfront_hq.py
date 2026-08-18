@@ -26,10 +26,10 @@ RENDERS = os.path.join(BASE, "renders")
 
 HQ_WIDTH = 6.20
 HQ_DEPTH = 3.45
-HQ_BASE_HEIGHT = 0.86
+HQ_BASE_HEIGHT = 1.00
 TOWER_REFERENCE_HEIGHT = 3.00
-HQ_TARGET_HEIGHT = 4.10
-HQ_PIVOT_Z = 2.75
+HQ_TARGET_HEIGHT = 4.30
+HQ_PIVOT_Z = 2.85
 BEVEL = 0.055
 
 
@@ -215,23 +215,25 @@ def make_materials():
 def build_common(collection, sockets, damage_collection, mats):
     root = add_empty("HQ_Root", collection)
     base = add_empty("Base", collection, parent=root)
-    add_box("Base_Main", collection, (HQ_WIDTH, HQ_DEPTH, 0.44), (0.0, 0.0, 0.22), mats["stone"], parent=base)
-    add_box("Base_Trim", collection, (HQ_WIDTH - 0.26, HQ_DEPTH - 0.22, 0.18), (0.0, 0.0, 0.53), mats["stone_dark"], bevel=0.04, parent=base)
-    add_box("Base_Top", collection, (HQ_WIDTH - 0.58, HQ_DEPTH - 0.48, 0.24), (0.0, 0.0, 0.74), mats["stone_light"], bevel=0.045, parent=base)
+    add_box("Base_Skirt", collection, (HQ_WIDTH + 0.36, HQ_DEPTH + 0.26, 0.16), (0.0, 0.0, 0.08), mats["stone_dark"], bevel=0.03, parent=base)
+    add_box("Base_Main", collection, (HQ_WIDTH, HQ_DEPTH, 0.56), (0.0, 0.0, 0.36), mats["stone"], bevel=0.06, parent=base)
+    add_box("Base_Trim", collection, (HQ_WIDTH - 0.26, HQ_DEPTH - 0.22, 0.22), (0.0, 0.0, 0.75), mats["stone_dark"], bevel=0.04, parent=base)
+    add_box("Base_Top", collection, (HQ_WIDTH - 0.58, HQ_DEPTH - 0.48, 0.28), (0.0, 0.0, 1.00), mats["stone_light"], bevel=0.045, parent=base)
 
-    # Faction panels are deliberately small; runtime recolors these by material name.
-    add_box("FactionPanel_Front", collection, (3.7, 0.07, 0.42), (0.0, -HQ_DEPTH * 0.5 - 0.04, 0.47), mats["faction"], bevel=0.015, parent=base)
-    add_box("FactionPanel_Back", collection, (3.7, 0.07, 0.42), (0.0, HQ_DEPTH * 0.5 + 0.04, 0.47), mats["faction_secondary"], bevel=0.015, parent=base)
+    add_box("FactionPanel_Front", collection, (4.6, 0.10, 0.56), (0.0, -HQ_DEPTH * 0.5 - 0.05, 0.66), mats["faction"], bevel=0.02, parent=base)
+    add_box("FactionPanel_Back", collection, (4.6, 0.10, 0.56), (0.0, HQ_DEPTH * 0.5 + 0.05, 0.66), mats["faction_secondary"], bevel=0.02, parent=base)
+    add_box("FactionPanel_Left", collection, (0.10, 2.4, 0.56), (-HQ_WIDTH * 0.5 - 0.05, 0.0, 0.66), mats["faction_secondary"], bevel=0.02, parent=base)
+    add_box("FactionPanel_Right", collection, (0.10, 2.4, 0.56), (HQ_WIDTH * 0.5 + 0.05, 0.0, 0.66), mats["faction_secondary"], bevel=0.02, parent=base)
 
     core = add_empty("Core", collection, parent=root)
-    add_box("Core_Housing", collection, (3.45, 1.84, 0.92), (0.0, 0.0, 1.28), mats["stone_dark"], bevel=0.075, parent=core)
-    add_box("Core_Frame_Front", collection, (2.15, 0.12, 0.84), (0.0, -0.98, 1.36), mats["stone_light"], bevel=0.035, parent=core)
-    add_box("Core_Frame_Left", collection, (0.22, 1.92, 0.92), (-1.72, 0.0, 1.34), mats["stone_light"], bevel=0.025, parent=core)
-    add_box("Core_Frame_Right", collection, (0.22, 1.92, 0.92), (1.72, 0.0, 1.34), mats["stone_light"], bevel=0.025, parent=core)
-    add_box("Core_UpperHousing", collection, (2.72, 1.48, 0.92), (0.0, 0.04, 2.08), mats["stone_dark"], bevel=0.065, parent=core)
-    add_box("Core_UpperTrim", collection, (2.92, 1.58, 0.18), (0.0, 0.04, 2.57), mats["stone_light"], bevel=0.035, parent=core)
-    add_cylinder("Core_Emitter", collection, 0.54, 0.20, (0.0, -1.08, 1.72), mats["core"], vertices=12, rotation=(math.radians(90.0), 0.0, 0.0), parent=core)
-    add_ico("Core_Glow", collection, 0.33, (0.0, -1.22, 1.72), mats["core"], subdivisions=2, parent=core)
+    add_box("Core_Housing", collection, (3.45, 1.84, 0.92), (0.0, 0.0, 1.56), mats["stone_dark"], bevel=0.075, parent=core)
+    add_box("Core_Frame_Front", collection, (2.15, 0.12, 0.84), (0.0, -0.98, 1.64), mats["stone_light"], bevel=0.035, parent=core)
+    add_box("Core_Frame_Left", collection, (0.22, 1.92, 0.92), (-1.72, 0.0, 1.62), mats["stone_light"], bevel=0.025, parent=core)
+    add_box("Core_Frame_Right", collection, (0.22, 1.92, 0.92), (1.72, 0.0, 1.62), mats["stone_light"], bevel=0.025, parent=core)
+    add_box("Core_UpperHousing", collection, (2.72, 1.48, 0.92), (0.0, 0.04, 2.36), mats["stone_dark"], bevel=0.065, parent=core)
+    add_box("Core_UpperTrim", collection, (2.92, 1.58, 0.18), (0.0, 0.04, 2.85), mats["stone_light"], bevel=0.035, parent=core)
+    add_cylinder("Core_Emitter", collection, 0.54, 0.20, (0.0, -1.08, 2.00), mats["core"], vertices=12, rotation=(math.radians(90.0), 0.0, 0.0), parent=core)
+    add_ico("Core_Glow", collection, 0.33, (0.0, -1.22, 2.00), mats["core"], subdivisions=2, parent=core)
 
     # The pivot is a real separate node. Its local children rotate with it in Godot.
     pivot = add_empty("TurretPivot", collection, (0.0, 0.0, HQ_PIVOT_Z), root, size=0.22)
@@ -241,24 +243,24 @@ def build_common(collection, sockets, damage_collection, mats):
     # Matching anchors are exported in both common and module files.
     add_empty("Socket_Weapon", sockets, (0.0, 0.0, 0.0), pivot)
     add_empty("Socket_HeroModule_Top", sockets, (0.0, 0.0, HQ_PIVOT_Z), root)
-    add_empty("Socket_HeroModule_Shoulder_L", sockets, (-1.62, -0.06, 1.54), root)
-    add_empty("Socket_HeroModule_Shoulder_R", sockets, (1.62, -0.06, 1.54), root)
+    add_empty("Socket_HeroModule_Shoulder_L", sockets, (-1.62, -0.06, 1.82), root)
+    add_empty("Socket_HeroModule_Shoulder_R", sockets, (1.62, -0.06, 1.82), root)
     add_empty("Socket_ThemeModule", sockets, (0.0, 0.0, 0.0), root)
     add_empty("Socket_Muzzle", sockets, (0.0, -1.78, 0.58), pivot)
-    add_empty("Socket_Hit_L", sockets, (-1.90, -0.90, 1.40), root)
-    add_empty("Socket_Hit_R", sockets, (1.90, -0.90, 1.40), root)
-    add_empty("Socket_Smoke_L", sockets, (-2.10, 0.0, 2.10), root)
-    add_empty("Socket_Smoke_R", sockets, (2.10, 0.0, 2.10), root)
-    add_empty("Socket_Destroy_Core", sockets, (0.0, -1.25, 1.72), root)
+    add_empty("Socket_Hit_L", sockets, (-1.90, -0.90, 1.68), root)
+    add_empty("Socket_Hit_R", sockets, (1.90, -0.90, 1.68), root)
+    add_empty("Socket_Smoke_L", sockets, (-2.10, 0.0, 2.38), root)
+    add_empty("Socket_Smoke_R", sockets, (2.10, 0.0, 2.38), root)
+    add_empty("Socket_Destroy_Core", sockets, (0.0, -1.25, 2.00), root)
 
     # Damage geometry is a separate export, but uses the same HQ coordinates.
     damage_root = add_empty("Damage", damage_collection)
-    add_box("Damage_01", damage_collection, (0.52, 0.12, 0.68), (-1.12, -1.04, 1.25), mats["damage"], bevel=0.02, parent=damage_root)
-    add_box("Damage_02", damage_collection, (0.44, 0.14, 0.56), (1.15, -1.05, 1.16), mats["damage"], bevel=0.02, parent=damage_root)
-    add_box("Damage_03", damage_collection, (0.34, 0.18, 0.42), (0.0, -1.12, 1.78), mats["damage"], bevel=0.02, parent=damage_root)
-    add_box("Armor_L", damage_collection, (0.20, 1.16, 0.62), (-1.88, 0.0, 1.36), mats["stone_light"], bevel=0.025, parent=damage_root)
-    add_box("Armor_R", damage_collection, (0.20, 1.16, 0.62), (1.88, 0.0, 1.36), mats["stone_light"], bevel=0.025, parent=damage_root)
-    add_torus("CoreCover", damage_collection, 0.61, 0.075, (0.0, -1.13, 1.48), mats["stone_light"], rotation=(math.radians(90.0), 0.0, 0.0), parent=damage_root)
+    add_box("Damage_01", damage_collection, (0.52, 0.12, 0.68), (-1.12, -1.04, 1.53), mats["damage"], bevel=0.02, parent=damage_root)
+    add_box("Damage_02", damage_collection, (0.44, 0.14, 0.56), (1.15, -1.05, 1.44), mats["damage"], bevel=0.02, parent=damage_root)
+    add_box("Damage_03", damage_collection, (0.34, 0.18, 0.42), (0.0, -1.12, 2.06), mats["damage"], bevel=0.02, parent=damage_root)
+    add_box("Armor_L", damage_collection, (0.20, 1.16, 0.62), (-1.88, 0.0, 1.64), mats["stone_light"], bevel=0.025, parent=damage_root)
+    add_box("Armor_R", damage_collection, (0.20, 1.16, 0.62), (1.88, 0.0, 1.64), mats["stone_light"], bevel=0.025, parent=damage_root)
+    add_torus("CoreCover", damage_collection, 0.61, 0.075, (0.0, -1.13, 1.76), mats["stone_light"], rotation=(math.radians(90.0), 0.0, 0.0), parent=damage_root)
 
     return root
 
@@ -267,20 +269,20 @@ def build_balanced(collection, sockets, mats):
     root = add_empty("HeroModuleRoot", collection)
     # Module sockets live inside this GLB so their parent transforms survive export.
     top = add_empty("HeroModuleSocket_Top", collection, (0.0, 0.0, HQ_PIVOT_Z), root)
-    left = add_empty("HeroModuleSocket_Shoulder_L", collection, (-1.62, -0.06, 1.54), root)
-    right = add_empty("HeroModuleSocket_Shoulder_R", collection, (1.62, -0.06, 1.54), root)
+    left = add_empty("HeroModuleSocket_Shoulder_L", collection, (-1.62, -0.06, 1.82), root)
+    right = add_empty("HeroModuleSocket_Shoulder_R", collection, (1.62, -0.06, 1.82), root)
 
     # Balanced commander: symmetric, chunky, medium-length single cannon.
-    add_box("Balanced_TurretMount", collection, (1.18, 0.84, 0.32), (0.0, 0.0, 0.22), mats["stone_light"], bevel=0.055, parent=top)
+    add_box("Balanced_TurretMount", collection, (1.28, 0.94, 0.38), (0.0, 0.0, 0.22), mats["stone_light"], bevel=0.055, parent=top)
     barrel_rot = (math.radians(90.0), 0.0, 0.0)
-    add_cylinder("Balanced_Cannon", collection, 0.17, 1.48, (0.0, -0.78, 0.34), mats["metal"], vertices=12, rotation=barrel_rot, bevel=0.025, parent=top)
-    add_cylinder("Balanced_CannonBand", collection, 0.21, 0.12, (0.0, -0.40, 0.34), mats["faction"], vertices=12, rotation=barrel_rot, bevel=0.015, parent=top)
-    add_cylinder("Balanced_Muzzle", collection, 0.23, 0.14, (0.0, -1.54, 0.34), mats["stone_dark"], vertices=12, rotation=barrel_rot, bevel=0.02, parent=top)
-    add_torus("Balanced_MuzzleRing", collection, 0.23, 0.045, (0.0, -1.62, 0.34), mats["faction"], rotation=barrel_rot, parent=top)
-    add_box("Balanced_CommandCrest", collection, (1.45, 0.62, 0.62), (0.0, 0.12, 1.00), mats["stone_light"], bevel=0.05, parent=top)
-    add_cylinder("Balanced_CrestCore", collection, 0.18, 0.18, (0.0, -0.22, 1.00), mats["core"], vertices=12, rotation=(math.radians(90.0), 0.0, 0.0), parent=top)
-    add_box("Balanced_Shoulder_L", collection, (0.54, 1.28, 0.62), (0.0, 0.0, 0.0), mats["faction_secondary"], bevel=0.045, parent=left)
-    add_box("Balanced_Shoulder_R", collection, (0.54, 1.28, 0.62), (0.0, 0.0, 0.0), mats["faction_secondary"], bevel=0.045, parent=right)
+    add_cylinder("Balanced_Cannon", collection, 0.22, 1.68, (0.0, -0.86, 0.34), mats["metal"], vertices=12, rotation=barrel_rot, bevel=0.025, parent=top)
+    add_cylinder("Balanced_CannonBand", collection, 0.26, 0.14, (0.0, -0.44, 0.34), mats["faction"], vertices=12, rotation=barrel_rot, bevel=0.015, parent=top)
+    add_cylinder("Balanced_Muzzle", collection, 0.28, 0.16, (0.0, -1.72, 0.34), mats["stone_dark"], vertices=12, rotation=barrel_rot, bevel=0.02, parent=top)
+    add_torus("Balanced_MuzzleRing", collection, 0.28, 0.055, (0.0, -1.82, 0.34), mats["faction"], rotation=barrel_rot, parent=top)
+    add_box("Balanced_CommandCrest", collection, (1.65, 0.72, 0.72), (0.0, 0.12, 1.05), mats["stone_light"], bevel=0.05, parent=top)
+    add_cylinder("Balanced_CrestCore", collection, 0.22, 0.22, (0.0, -0.24, 1.05), mats["core"], vertices=12, rotation=(math.radians(90.0), 0.0, 0.0), parent=top)
+    add_box("Balanced_Shoulder_L", collection, (0.62, 1.38, 0.72), (0.0, 0.0, 0.0), mats["faction_secondary"], bevel=0.045, parent=left)
+    add_box("Balanced_Shoulder_R", collection, (0.62, 1.38, 0.72), (0.0, 0.0, 0.0), mats["faction_secondary"], bevel=0.045, parent=right)
     add_empty("Socket_Muzzle", collection, (0.0, -1.70, 0.34), top)
     return root
 
@@ -289,23 +291,23 @@ def build_castle(collection, sockets, mats):
     root = add_empty("ThemeModuleRoot", collection)
     add_empty("ThemeModuleSocket", sockets, (0.0, 0.0, 0.0), root)
 
-    # Low castle language: broad shoulders, short crenels, and flags.
+    # Low castle language: broad shoulders, short crenels, and large flags.
     for x in (-2.36, 2.36):
-        add_box("Castle_Shoulder_%s" % ("L" if x < 0 else "R"), collection, (0.72, 1.42, 0.76), (x, 0.02, 1.10), mats["stone"], bevel=0.06, parent=root)
+        add_box("Castle_Shoulder_%s" % ("L" if x < 0 else "R"), collection, (0.72, 1.42, 0.76), (x, 0.02, 1.38), mats["stone"], bevel=0.06, parent=root)
         for y in (-0.50, 0.0, 0.50):
-            add_box("Castle_Merlon", collection, (0.20, 0.24, 0.26), (x, y, 1.62), mats["stone_light"], bevel=0.025, parent=root)
-        add_cylinder("Castle_FlagPole", collection, 0.035, 1.18, (x, -0.35, 2.30), mats["wood"], vertices=8, parent=root)
-        add_box("Castle_Flag", collection, (0.56, 0.045, 0.30), (x + (0.26 if x < 0 else -0.26), -0.35, 2.68), mats["faction"], bevel=0.015, parent=root)
+            add_box("Castle_Merlon", collection, (0.20, 0.24, 0.26), (x, y, 1.90), mats["stone_light"], bevel=0.025, parent=root)
+        add_cylinder("Castle_FlagPole", collection, 0.04, 1.40, (x, -0.35, 2.58), mats["wood"], vertices=8, parent=root)
+        add_box("Castle_Flag", collection, (0.72, 0.05, 0.42), (x + (0.32 if x < 0 else -0.32), -0.35, 3.04), mats["faction"], bevel=0.015, parent=root)
 
-    add_box("Castle_CommandCrown", collection, (2.55, 1.20, 0.56), (0.0, 0.08, 3.22), mats["stone"], bevel=0.055, parent=root)
-    add_box("Castle_CommandCrownTrim", collection, (1.90, 1.30, 0.16), (0.0, -0.02, 3.53), mats["stone_light"], bevel=0.025, parent=root)
-    add_cylinder("Castle_CommandStandard", collection, 0.045, 0.90, (0.0, 0.12, 3.82), mats["wood"], vertices=8, parent=root)
-    add_box("Castle_CommandFlag", collection, (0.82, 0.05, 0.34), (0.35, 0.12, 4.08), mats["faction"], bevel=0.015, parent=root)
+    add_box("Castle_CommandCrown", collection, (2.55, 1.20, 0.56), (0.0, 0.08, 3.50), mats["stone"], bevel=0.055, parent=root)
+    add_box("Castle_CommandCrownTrim", collection, (1.90, 1.30, 0.16), (0.0, -0.02, 3.81), mats["stone_light"], bevel=0.025, parent=root)
+    add_cylinder("Castle_CommandStandard", collection, 0.05, 1.10, (0.0, 0.12, 4.10), mats["wood"], vertices=8, parent=root)
+    add_box("Castle_CommandFlag", collection, (1.05, 0.055, 0.48), (0.42, 0.12, 4.44), mats["faction"], bevel=0.015, parent=root)
 
     for x in (-1.82, -0.91, 0.0, 0.91, 1.82):
-        add_box("Castle_FrontCrenel", collection, (0.48, 0.22, 0.24), (x, -1.62, 1.03), mats["stone_light"], bevel=0.025, parent=root)
-    add_box("Castle_WoodBeam_Front", collection, (4.15, 0.16, 0.16), (0.0, -1.56, 1.00), mats["wood"], bevel=0.02, parent=root)
-    add_box("Castle_WoodBeam_Back", collection, (4.15, 0.16, 0.16), (0.0, 1.56, 1.00), mats["wood"], bevel=0.02, parent=root)
+        add_box("Castle_FrontCrenel", collection, (0.48, 0.22, 0.24), (x, -1.62, 1.31), mats["stone_light"], bevel=0.025, parent=root)
+    add_box("Castle_WoodBeam_Front", collection, (4.15, 0.16, 0.16), (0.0, -1.56, 1.28), mats["wood"], bevel=0.02, parent=root)
+    add_box("Castle_WoodBeam_Back", collection, (4.15, 0.16, 0.16), (0.0, 1.56, 1.28), mats["wood"], bevel=0.02, parent=root)
     return root
 
 
