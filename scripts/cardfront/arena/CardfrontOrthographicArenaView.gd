@@ -1812,7 +1812,10 @@ func _apply_building_material_pass(instance: Node3D, faction_id: int) -> void:
 				elif apply_tint and material_name.contains("MAT_FACTION_SECONDARY"):
 					dup.albedo_color = tint.darkened(0.35)
 				elif material_name.contains("MAT_CORE"):
-					dup.albedo_color = base.lightened(0.06)
+					dup.albedo_color = base.lightened(0.12)
+					dup.emission_enabled = true
+					dup.emission = base.lightened(0.30)
+					dup.emission_energy_multiplier = 1.8
 				elif material_name.contains("MAT_DAMAGE"):
 					dup.albedo_color = darkened.darkened(0.15)
 				elif material_name.contains("MAT_METAL"):
@@ -2009,9 +2012,9 @@ func _update_hq_damage_state(owner_id: int, health: int, max_health: int) -> voi
 			child.visible = show_d1
 		elif mesh_name.contains("DAMAGE_02"):
 			child.visible = show_d2
-		elif mesh_name.contains("DAMAGE_03"):
+		elif mesh_name.contains("DAMAGE_03") or mesh_name.contains("CORECOVER") or mesh_name.contains("COREEXPOSED"):
 			child.visible = show_d3
-		elif mesh_name.contains("CORECOVER"):
+		else:
 			child.visible = show_d3
 
 

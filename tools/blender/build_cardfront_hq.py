@@ -220,10 +220,13 @@ def build_common(collection, sockets, damage_collection, mats):
     add_box("Base_Trim", collection, (HQ_WIDTH - 0.26, HQ_DEPTH - 0.22, 0.22), (0.0, 0.0, 0.75), mats["stone_dark"], bevel=0.04, parent=base)
     add_box("Base_Top", collection, (HQ_WIDTH - 0.58, HQ_DEPTH - 0.48, 0.28), (0.0, 0.0, 1.00), mats["stone_light"], bevel=0.045, parent=base)
 
-    add_box("FactionPanel_Front", collection, (4.6, 0.10, 0.56), (0.0, -HQ_DEPTH * 0.5 - 0.05, 0.66), mats["faction"], bevel=0.02, parent=base)
-    add_box("FactionPanel_Back", collection, (4.6, 0.10, 0.56), (0.0, HQ_DEPTH * 0.5 + 0.05, 0.66), mats["faction_secondary"], bevel=0.02, parent=base)
-    add_box("FactionPanel_Left", collection, (0.10, 2.4, 0.56), (-HQ_WIDTH * 0.5 - 0.05, 0.0, 0.66), mats["faction_secondary"], bevel=0.02, parent=base)
-    add_box("FactionPanel_Right", collection, (0.10, 2.4, 0.56), (HQ_WIDTH * 0.5 + 0.05, 0.0, 0.66), mats["faction_secondary"], bevel=0.02, parent=base)
+    add_box("FactionPanel_Front", collection, (5.8, 0.12, 0.72), (0.0, -HQ_DEPTH * 0.5 - 0.06, 0.76), mats["faction"], bevel=0.025, parent=base)
+    add_box("FactionPanel_Back", collection, (5.8, 0.12, 0.72), (0.0, HQ_DEPTH * 0.5 + 0.06, 0.76), mats["faction_secondary"], bevel=0.025, parent=base)
+    add_box("FactionPanel_Left", collection, (0.12, 3.2, 0.72), (-HQ_WIDTH * 0.5 - 0.06, 0.0, 0.76), mats["faction_secondary"], bevel=0.025, parent=base)
+    add_box("FactionPanel_Right", collection, (0.12, 3.2, 0.72), (HQ_WIDTH * 0.5 + 0.05, 0.0, 0.76), mats["faction_secondary"], bevel=0.025, parent=base)
+    # Upper faction trim - mid-body accent band
+    add_box("FactionTrim_Front", collection, (4.2, 0.08, 0.28), (0.0, -HQ_DEPTH * 0.5 - 0.04, 1.72), mats["faction"], bevel=0.015, parent=base)
+    add_box("FactionTrim_Back", collection, (4.2, 0.08, 0.28), (0.0, HQ_DEPTH * 0.5 + 0.04, 1.72), mats["faction_secondary"], bevel=0.015, parent=base)
 
     core = add_empty("Core", collection, parent=root)
     add_box("Core_Housing", collection, (3.45, 1.84, 0.92), (0.0, 0.0, 1.56), mats["stone_dark"], bevel=0.075, parent=core)
@@ -257,10 +260,15 @@ def build_common(collection, sockets, damage_collection, mats):
     damage_root = add_empty("Damage", damage_collection)
     add_box("Damage_01", damage_collection, (0.52, 0.12, 0.68), (-1.12, -1.04, 1.53), mats["damage"], bevel=0.02, parent=damage_root)
     add_box("Damage_02", damage_collection, (0.44, 0.14, 0.56), (1.15, -1.05, 1.44), mats["damage"], bevel=0.02, parent=damage_root)
-    add_box("Damage_03", damage_collection, (0.34, 0.18, 0.42), (0.0, -1.12, 2.06), mats["damage"], bevel=0.02, parent=damage_root)
+    # D3: large breach structure - occupies significant HQ frontal area
+    add_box("Damage_03", damage_collection, (1.80, 0.14, 0.72), (0.0, -1.10, 1.50), mats["damage"], bevel=0.025, parent=damage_root)
+    add_box("Damage_03_Breach", damage_collection, (0.90, 0.12, 0.56), (-0.70, -1.06, 1.88), mats["damage"], bevel=0.02, parent=damage_root)
+    add_box("Damage_03_Crack", damage_collection, (0.22, 0.10, 1.10), (0.80, -1.02, 2.30), mats["damage"], bevel=0.015, parent=damage_root)
     add_box("Armor_L", damage_collection, (0.20, 1.16, 0.62), (-1.88, 0.0, 1.64), mats["stone_light"], bevel=0.025, parent=damage_root)
     add_box("Armor_R", damage_collection, (0.20, 1.16, 0.62), (1.88, 0.0, 1.64), mats["stone_light"], bevel=0.025, parent=damage_root)
-    add_torus("CoreCover", damage_collection, 0.61, 0.075, (0.0, -1.13, 1.76), mats["stone_light"], rotation=(math.radians(90.0), 0.0, 0.0), parent=damage_root)
+    # D3: exposed core - bright emissive inner structure replacing cover
+    add_cylinder("CoreCover", damage_collection, 0.42, 0.30, (0.0, -1.10, 1.72), mats["core"], vertices=10, rotation=(math.radians(90.0), 0.0, 0.0), bevel=0.02, parent=damage_root)
+    add_ico("CoreExposed", damage_collection, 0.28, (0.0, -1.22, 1.72), mats["core"], subdivisions=2, parent=damage_root)
 
     return root
 
