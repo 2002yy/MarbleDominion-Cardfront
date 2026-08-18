@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://bjoa15dh6fvoe"
-path="res://.godot/imported/hq_theme_castle.glb-c9fb8ce9adb2d5c4fff83982b8e3dd8c.scn"
+uid="uid://c7qp27270m6h2"
+path="res://.godot/imported/hq_hero_balanced.glb-00cc14679d3b8ff7276362cde60dd8dc.scn"
 
 [deps]
 
-source_file="res://assets/cardfront_environment/source/custom/hq_theme_castle.glb"
-dest_files=["res://.godot/imported/hq_theme_castle.glb-c9fb8ce9adb2d5c4fff83982b8e3dd8c.scn"]
+source_file="res://assets/cardfront_environment/formal/hq/hq_hero_balanced.glb"
+dest_files=["res://.godot/imported/hq_hero_balanced.glb-00cc14679d3b8ff7276362cde60dd8dc.scn"]
 
 [params]
 

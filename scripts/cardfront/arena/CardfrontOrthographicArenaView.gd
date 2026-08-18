@@ -1562,10 +1562,10 @@ func _get_region_leader(control: Dictionary) -> Dictionary:
 
 
 func _try_spawn_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
-	var common_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("custom_hq_common")
-	var hero_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("custom_hq_hero_balanced")
-	var theme_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("custom_hq_theme_castle")
-	var damage_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("custom_hq_damage")
+	var common_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_hq_common")
+	var hero_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_hq_hero_balanced")
+	var theme_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_hq_theme_castle")
+	var damage_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_hq_damage")
 	if common_scene != null and hero_scene != null and theme_scene != null:
 		var hq: Node3D = common_scene.instantiate() as Node3D
 		if hq == null:

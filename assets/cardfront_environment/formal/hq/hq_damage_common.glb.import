@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://dswlcsx1cai6f"
-path="res://.godot/imported/hq_damage.glb-504169778468752b1ba00bd5c8898dd8.scn"
+uid="uid://bns4krwel6m4y"
+path="res://.godot/imported/hq_damage_common.glb-49819c5265c6f0504c3fd03f731b25b5.scn"
 
 [deps]
 
-source_file="res://assets/cardfront_environment/source/custom/hq_damage.glb"
-dest_files=["res://.godot/imported/hq_damage.glb-504169778468752b1ba00bd5c8898dd8.scn"]
+source_file="res://assets/cardfront_environment/formal/hq/hq_damage_common.glb"
+dest_files=["res://.godot/imported/hq_damage_common.glb-49819c5265c6f0504c3fd03f731b25b5.scn"]
 
 [params]
 
