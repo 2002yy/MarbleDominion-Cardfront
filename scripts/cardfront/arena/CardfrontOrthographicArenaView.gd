@@ -105,6 +105,7 @@ var _entity_hp_fills: Dictionary = {}
 var _entity_status_labels: Dictionary = {}
 var _bullet_meshes: Dictionary = {}
 var _bullet_trails: Dictionary = {}
+var _bullet_rims: Dictionary = {}
 var _combat_effects: Array = []
 var _faction_materials: Dictionary = {}
 var _aim_mesh := ImmediateMesh.new()
@@ -2096,16 +2097,23 @@ func _sync_bullets() -> void:
 		proxy.position = _simulation_to_world(bullet.global_position, 0.58)
 		proxy.mesh = _projectile_mesh(str(spec.get("shape", "round")))
 		proxy.material_override = _make_material(
-			spec.get("color", faction_color) as Color,
-			float(spec.get("emission", 0.8))
+			spec.get("body_color", faction_color) as Color,
+			float(spec.get("emission", 0.5))
 		)
 		var radius: float = float(spec.get("radius", 0.42)) * PROJECTILE_VISUAL_SCALE
 		proxy.scale = Vector3.ONE * radius
+		# Faction rim - always faction color, high emission
+		var rim: MeshInstance3D = _bullet_rims.get(proxy.get_instance_id(), null)
+		if rim != null and is_instance_valid(rim):
+			rim.material_override = _make_material(
+				spec.get("rim_color", faction_color) as Color,
+				float(spec.get("rim_emission", 1.0))
+			)
 		var direction: Vector2 = bullet.direction if bullet.get("direction") is Vector2 else Vector2.RIGHT
 		if direction.length_squared() > 0.001:
 			var direction_3d := Vector3(direction.x, 0.0, direction.y).normalized()
 			proxy.look_at(proxy.position + direction_3d, Vector3.UP)
-		_sync_projectile_trail(proxy, spec, radius)
+		_sync_projectile_trail(proxy, spec, radius, faction_color)
 
 
 func _ensure_bullet_proxies(required_count: int) -> void:
@@ -2113,6 +2121,24 @@ func _ensure_bullet_proxies(required_count: int) -> void:
 		var proxy := MeshInstance3D.new()
 		proxy.name = "BulletProxy_%03d" % _bullet_proxies.size()
 		proxy.mesh = _projectile_mesh("round")
+		# Faction rim - slightly larger shell, high emission, always faction color
+		var rim := MeshInstance3D.new()
+		rim.name = "FactionRim"
+		var rim_mesh := SphereMesh.new()
+		rim_mesh.radius = 1.12
+		rim_mesh.height = 1.80
+		rim_mesh.radial_segments = 10
+		rim_mesh.rings = 4
+		rim.mesh = rim_mesh
+		var rim_mat := StandardMaterial3D.new()
+		rim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		rim_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		rim_mat.albedo_color = Color.WHITE
+		rim_mat.albedo_color.a = 0.35
+		rim_mat.no_depth_test = true
+		rim.material_override = rim_mat
+		proxy.add_child(rim)
+		_bullet_rims[proxy.get_instance_id()] = rim
 		var trail := MeshInstance3D.new()
 		trail.name = "Trail"
 		var trail_mesh := BoxMesh.new()
@@ -2154,7 +2180,7 @@ func _projectile_mesh(shape: String) -> PrimitiveMesh:
 	return mesh
 
 
-func _sync_projectile_trail(proxy: MeshInstance3D, spec: Dictionary, radius: float) -> void:
+func _sync_projectile_trail(proxy: MeshInstance3D, spec: Dictionary, radius: float, faction_color: Color) -> void:
 	var trail: MeshInstance3D = _bullet_trails.get(proxy.get_instance_id(), null)
 	if trail == null or not is_instance_valid(trail):
 		return
@@ -2162,9 +2188,9 @@ func _sync_projectile_trail(proxy: MeshInstance3D, spec: Dictionary, radius: flo
 	var width: float = float(spec.get("trail_width", 0.12))
 	trail.position = Vector3(0.0, 0.0, length * 0.5 + radius)
 	trail.scale = Vector3(width, width, length)
-	var color: Color = spec.get("color", Color.WHITE) as Color
-	color.a = 0.52
-	trail.material_override = _make_material(color, float(spec.get("emission", 0.8)) * 0.72)
+	var trail_color: Color = spec.get("trail_color", faction_color) as Color
+	trail_color.a = 0.52
+	trail.material_override = _make_material(trail_color, float(spec.get("rim_emission", 1.0)) * 0.65)
 
 
 func _sync_entities() -> void:

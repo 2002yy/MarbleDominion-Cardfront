@@ -11,29 +11,38 @@ static func projectile_spec(projectile_type: String, faction_color: Color) -> Di
 	match ProjectileTypeScript.sanitize(projectile_type):
 		ProjectileTypeScript.SIEGE:
 			return {
-				"color": faction_color.lerp(Color(1.0, 0.50, 0.08), 0.78),
+				"body_color": Color(0.38, 0.30, 0.22),
+				"rim_color": faction_color,
+				"trail_color": faction_color,
 				"radius": 0.62,
 				"trail_length": 1.45,
 				"trail_width": 0.24,
-				"emission": 1.05,
+				"emission": 0.30,
+				"rim_emission": 1.20,
 				"shape": "heavy",
 			}
 		ProjectileTypeScript.SUPPRESSION:
 			return {
-				"color": faction_color.lerp(Color(0.12, 0.92, 1.0), 0.80),
+				"body_color": Color(0.50, 0.56, 0.58),
+				"rim_color": faction_color,
+				"trail_color": faction_color,
 				"radius": 0.46,
 				"trail_length": 2.15,
 				"trail_width": 0.16,
-				"emission": 1.30,
+				"emission": 0.45,
+				"rim_emission": 1.40,
 				"shape": "disc",
 			}
 		_:
 			return {
-				"color": faction_color.lightened(0.18),
+				"body_color": faction_color.lightened(0.22),
+				"rim_color": faction_color,
+				"trail_color": faction_color,
 				"radius": 0.42,
 				"trail_length": 1.05,
 				"trail_width": 0.12,
-				"emission": 0.82,
+				"emission": 0.72,
+				"rim_emission": 0.90,
 				"shape": "round",
 			}
 

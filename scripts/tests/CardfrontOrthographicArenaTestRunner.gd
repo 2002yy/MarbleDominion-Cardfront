@@ -125,14 +125,18 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.that(float(siege_spec.get("radius", 0.0)) > float(standard_spec.get("radius", 0.0)), "orthographic arena: siege projectile should read heavier than standard")
 	_assert.that(float(suppression_spec.get("trail_length", 0.0)) > float(standard_spec.get("trail_length", 0.0)), "orthographic arena: suppression projectile should carry the longest trail")
 	_assert.gte(
-		_color_distance(standard_spec.get("color", Color.WHITE), siege_spec.get("color", Color.WHITE)),
+		_color_distance(standard_spec.get("body_color", Color.WHITE), siege_spec.get("body_color", Color.WHITE)),
 		0.18,
-		"orthographic arena: standard and siege projectile colors should be distinct"
+		"orthographic arena: standard and siege projectile body colors should be distinct"
 	)
 	_assert.gte(
-		_color_distance(siege_spec.get("color", Color.WHITE), suppression_spec.get("color", Color.WHITE)),
+		_color_distance(siege_spec.get("body_color", Color.WHITE), suppression_spec.get("body_color", Color.WHITE)),
 		0.18,
-		"orthographic arena: siege and suppression projectile colors should be distinct"
+		"orthographic arena: siege and suppression projectile body colors should be distinct"
+	)
+	_assert.that(
+		str(standard_spec.get("rim_color", Color.WHITE)) == str(siege_spec.get("rim_color", Color.WHITE)),
+		"orthographic arena: faction rim color should be consistent across projectile types"
 	)
 	entity_runtime.entity_contact_resolved.emit({
 		"cell": Vector2i(20, 20),
