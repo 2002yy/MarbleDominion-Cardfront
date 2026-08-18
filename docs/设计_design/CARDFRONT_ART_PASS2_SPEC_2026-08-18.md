@@ -42,6 +42,24 @@
 5. 破损四档（100-70 / 69-40 / 39-15 / 14-1 / 0 解体），Blender 拆件：Base / Core / Turret / LeftArmor / RightArmor / Banner / DamagePiece_A / DamagePiece_B；Godot 按血量隐藏护板、显示裂痕 Decal、加烟、改 Emission、装甲飞出。
 6. 预算 3k-6k triangles。资源投入：大倒角、清晰轮廓、6-8 个大色块、炮口、门/核心、旗帜、破损模块。不雕砖缝/螺丝/窗框。
 
+### B2 装配契约
+
+HQ 不是一个按英雄/地图复制的完整 GLB，而是一个共享根节点上的受控装配体：
+
+```
+ChamberTower / HQ_Root
+├─ hq_common.glb
+├─ hq_hero_balanced.glb
+├─ hq_theme_castle.glb
+└─ hq_damage.glb（默认隐藏，按 HP 状态启用）
+```
+
+- Common、Hero、Theme 模块都以 HQ 根原点导出，socket 坐标在模块之间保持一致；这样 Godot 只需统一缩放和挂接，不需要为每个组合重新校正位置。
+- Common 必须包含 `TurretPivot`、`Socket_Muzzle`、`Socket_Hit_L/R`、`Socket_Smoke_L/R`、`Socket_Destroy_Core`；Hero 模块内部保留自己的 socket parent，避免 GLB 分离导出丢失父变换。
+- Godot 运行时按模块名挂接 `HQHeroBalanced`、`HQThemeCastle`、`HQDamageModule`，并只让 `TurretPivot` 跟随瞄准旋转；HQ 根和 Core 不旋转。
+- `MAT_FACTION_PRIMARY` / `MAT_FACTION_SECONDARY` 是唯一阵营换色入口；蓝红共享 mesh，其他材质只做 darken，不被全体 tint 成阵营色。
+- 第一 benchmark 只交付 `Common + Balanced + Castle + Blue/Red`；Rapid、Engineer、Industrial、Lab 等模块等 default_duel 112% 验收通过后再扩展。
+
 ## D3 尺寸层级 = 三级战术轮廓体系（塔 = 1.0 基准）
 
 | 资产 | 视觉高度 (x塔) | 占地 | 备注 |

@@ -43,7 +43,8 @@ const PROJECTILE_VISUAL_SCALE: float = 1.45
 const STRONGHOLD_PLATFORM_FOOTPRINT_SCALE: float = 0.86
 const STRONGHOLD_PLATFORM_HEIGHT: float = 0.18
 const STRONGHOLD_RING_SCALE: float = 0.42
-const CHAMBER_GLB_SCALE: Vector3 = Vector3(1.78, 0.62, 1.05)
+const LEGACY_CHAMBER_GLB_SCALE: Vector3 = Vector3(1.78, 0.62, 1.05)
+const HQ_MODULE_SCALE: float = 1.0
 const TOWER_GLB_SCALE: float = 1.16
 const SKYLINE_BASE_Y: float = 4.8
 
@@ -452,6 +453,18 @@ func get_command_chamber_model_scale_for_test(owner_id: int) -> Vector3:
 	var proxy: Node3D = _turret_proxies.get(owner_id, null)
 	var chamber: Node3D = proxy.get_node_or_null("ChamberTower") as Node3D if proxy != null else null
 	return chamber.scale if chamber != null else Vector3.ZERO
+
+
+func get_command_chamber_module_count_for_test(owner_id: int) -> int:
+	var proxy: Node3D = _turret_proxies.get(owner_id, null)
+	var chamber: Node3D = proxy.get_node_or_null("ChamberTower") as Node3D if proxy != null else null
+	if chamber == null:
+		return 0
+	var count := 0
+	for module_name in ["HQHeroBalanced", "HQThemeCastle", "HQDamageModule"]:
+		if chamber.get_node_or_null(module_name) != null:
+			count += 1
+	return count
 
 
 func get_bridge_visual_width_for_test() -> float:
@@ -1549,6 +1562,45 @@ func _get_region_leader(control: Dictionary) -> Dictionary:
 
 
 func _try_spawn_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
+	var common_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("custom_hq_common")
+	var hero_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("custom_hq_hero_balanced")
+	var theme_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("custom_hq_theme_castle")
+	var damage_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("custom_hq_damage")
+	if common_scene != null and hero_scene != null and theme_scene != null:
+		var hq: Node3D = common_scene.instantiate() as Node3D
+		if hq == null:
+			return false
+		hq.name = "ChamberTower"
+		hq.scale = Vector3.ONE * HQ_MODULE_SCALE
+		hq.position = Vector3.ZERO
+		hq.set_meta("presentation_only", true)
+		hq.set_meta("uses_named_materials", true)
+		proxy.add_child(hq)
+		for module_spec in [
+			{"scene": hero_scene, "name": "HQHeroBalanced"},
+			{"scene": theme_scene, "name": "HQThemeCastle"},
+		]:
+			var module: Node3D = (module_spec["scene"] as PackedScene).instantiate() as Node3D
+			if module == null:
+				hq.queue_free()
+				return false
+			module.name = str(module_spec["name"])
+			module.scale = Vector3.ONE
+			hq.add_child(module)
+		if damage_scene != null:
+			var damage_module: Node3D = damage_scene.instantiate() as Node3D
+			if damage_module != null:
+				damage_module.name = "HQDamageModule"
+				damage_module.visible = false
+				hq.add_child(damage_module)
+		_apply_building_material_pass(hq, owner_id)
+		proxy.set_meta("modular_hq", true)
+		return true
+
+	return _try_spawn_legacy_chamber_glb(proxy, owner_id)
+
+
+func _try_spawn_legacy_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
 	var scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("custom_defense_tower")
 	if scene == null:
 		return false
@@ -1556,7 +1608,7 @@ func _try_spawn_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
 	if instance == null:
 		return false
 	instance.name = "ChamberTower"
-	instance.scale = CHAMBER_GLB_SCALE
+	instance.scale = LEGACY_CHAMBER_GLB_SCALE
 	instance.position = Vector3.ZERO
 	instance.set_meta("presentation_only", true)
 	proxy.add_child(instance)
@@ -1586,7 +1638,16 @@ func _apply_building_material_pass(instance: Node3D, faction_id: int) -> void:
 				base.b * GLB_DARKEN_FACTOR,
 				base.a
 			)
-			dup.albedo_color = darkened.lerp(tint, GLB_FACTION_TINT_STRENGTH) if apply_tint else darkened
+			if bool(instance.get_meta("uses_named_materials", false)):
+				var material_name: String = source.resource_name.to_upper()
+				if apply_tint and material_name.contains("MAT_FACTION_PRIMARY"):
+					dup.albedo_color = tint
+				elif apply_tint and material_name.contains("MAT_FACTION_SECONDARY"):
+					dup.albedo_color = tint.darkened(0.35)
+				else:
+					dup.albedo_color = darkened
+			else:
+				dup.albedo_color = darkened.lerp(tint, GLB_FACTION_TINT_STRENGTH) if apply_tint else darkened
 			mesh_instance.set_surface_override_material(surface_idx, dup)
 
 
@@ -1663,38 +1724,43 @@ func _build_combatant_proxies() -> void:
 		if not _try_spawn_chamber_glb(proxy, int(owner_id)):
 			_build_procedural_chamber(proxy, int(owner_id))
 
-		var turret_pivot := Node3D.new()
-		turret_pivot.name = "TurretPivot"
-		turret_pivot.position.y = 2.05
-		proxy.add_child(turret_pivot)
+		var modular_hq: bool = bool(proxy.get_meta("modular_hq", false))
+		var turret_pivot: Node3D = null
+		if modular_hq:
+			turret_pivot = proxy.find_child("TurretPivot", true, false) as Node3D
+		if turret_pivot == null:
+			turret_pivot = Node3D.new()
+			turret_pivot.name = "TurretPivot"
+			turret_pivot.position.y = 2.05
+			proxy.add_child(turret_pivot)
 
-		var turret_base := MeshInstance3D.new()
-		var base_mesh := CylinderMesh.new()
-		base_mesh.top_radius = 0.66
-		base_mesh.bottom_radius = 0.82
-		base_mesh.height = 0.54
-		base_mesh.radial_segments = 10
-		turret_base.mesh = base_mesh
-		turret_base.material_override = _make_material(Color(0.22, 0.25, 0.24), 0.10)
-		turret_pivot.add_child(turret_base)
+			var turret_base := MeshInstance3D.new()
+			var base_mesh := CylinderMesh.new()
+			base_mesh.top_radius = 0.66
+			base_mesh.bottom_radius = 0.82
+			base_mesh.height = 0.54
+			base_mesh.radial_segments = 10
+			turret_base.mesh = base_mesh
+			turret_base.material_override = _make_material(Color(0.22, 0.25, 0.24), 0.10)
+			turret_pivot.add_child(turret_base)
 
-		var barrel := MeshInstance3D.new()
-		barrel.name = "Barrel"
-		var barrel_mesh := BoxMesh.new()
-		barrel_mesh.size = Vector3(1.62, 0.30, 0.42)
-		barrel.mesh = barrel_mesh
-		barrel.position = Vector3(0.82, 0.08, 0.0)
-		barrel.material_override = _make_material(Color(0.95, 0.97, 0.98), 0.22)
-		turret_pivot.add_child(barrel)
+			var barrel := MeshInstance3D.new()
+			barrel.name = "Barrel"
+			var barrel_mesh := BoxMesh.new()
+			barrel_mesh.size = Vector3(1.62, 0.30, 0.42)
+			barrel.mesh = barrel_mesh
+			barrel.position = Vector3(0.82, 0.08, 0.0)
+			barrel.material_override = _make_material(Color(0.95, 0.97, 0.98), 0.22)
+			turret_pivot.add_child(barrel)
 
-		var faction_banner := MeshInstance3D.new()
-		faction_banner.name = "FactionBanner"
-		var banner_mesh := BoxMesh.new()
-		banner_mesh.size = Vector3(1.22, 0.62, 0.08)
-		faction_banner.mesh = banner_mesh
-		faction_banner.position = Vector3(0.0, 1.18, -1.18)
-		faction_banner.material_override = _get_faction_material(int(owner_id), 0.32)
-		proxy.add_child(faction_banner)
+			var faction_banner := MeshInstance3D.new()
+			faction_banner.name = "FactionBanner"
+			var banner_mesh := BoxMesh.new()
+			banner_mesh.size = Vector3(1.22, 0.62, 0.08)
+			faction_banner.mesh = banner_mesh
+			faction_banner.position = Vector3(0.0, 1.18, -1.18)
+			faction_banner.material_override = _get_faction_material(int(owner_id), 0.32)
+			proxy.add_child(faction_banner)
 
 		var label := Label3D.new()
 		label.name = "HealthLabel"
@@ -1704,7 +1770,7 @@ func _build_combatant_proxies() -> void:
 		label.font_size = 36
 		label.outline_size = 9
 		label.pixel_size = 0.017
-		label.position = Vector3(0.0, 3.15, 0.0)
+		label.position = Vector3(0.0, 4.55 if modular_hq else 3.15, 0.0)
 		label.modulate = Color.WHITE
 		proxy.add_child(label)
 		_turret_proxies[int(owner_id)] = proxy

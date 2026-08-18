@@ -52,6 +52,30 @@ const ASSETS: Dictionary = {
 		"source_pack": "cardfront_custom_blender",
 		"fallback": "primitive_chamber",
 	},
+	"custom_hq_common": {
+		"path": "res://assets/cardfront_environment/source/custom/hq_common.glb",
+		"role": "command_chamber_common",
+		"source_pack": "cardfront_custom_blender_hq_v1",
+		"fallback": "primitive_chamber",
+	},
+	"custom_hq_hero_balanced": {
+		"path": "res://assets/cardfront_environment/source/custom/hq_hero_balanced.glb",
+		"role": "command_chamber_hero_module",
+		"source_pack": "cardfront_custom_blender_hq_v1",
+		"fallback": "none",
+	},
+	"custom_hq_theme_castle": {
+		"path": "res://assets/cardfront_environment/source/custom/hq_theme_castle.glb",
+		"role": "command_chamber_theme_module",
+		"source_pack": "cardfront_custom_blender_hq_v1",
+		"fallback": "none",
+	},
+	"custom_hq_damage": {
+		"path": "res://assets/cardfront_environment/source/custom/hq_damage.glb",
+		"role": "command_chamber_damage_module",
+		"source_pack": "cardfront_custom_blender_hq_v1",
+		"fallback": "none",
+	},
 	"custom_industrial_stack": {
 		"path": "res://assets/cardfront_environment/source/custom/industrial_stack.glb",
 		"role": "map_landmark",

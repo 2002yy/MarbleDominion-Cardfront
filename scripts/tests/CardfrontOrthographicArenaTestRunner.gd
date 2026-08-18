@@ -72,6 +72,7 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.gte(view.get_checker_cell_span_for_test(), 4, "orthographic arena: background checker should read as broad quiet color fields")
 	_assert.eq(view.get_turret_proxy_count_for_test(), 2, "orthographic arena: player and AI should each have one visual proxy")
 	_assert.eq(view.get_faction_footprint_count_for_test(), 2, "orthographic arena: both command chambers should retain a faction-readable footprint")
+	_assert.eq(view.get_command_chamber_module_count_for_test(CardfrontRulesScript.PLAYER_FACTION), 3, "orthographic arena: modular HQ should assemble hero, theme, and damage modules")
 	var chamber_scale: Vector3 = view.get_command_chamber_model_scale_for_test(CardfrontRulesScript.PLAYER_FACTION)
 	_assert.gte(chamber_scale.y, 0.60, "orthographic arena: imported command chamber silhouette should stay vertically readable")
 	var background: Color = view.get_background_color_for_test()
