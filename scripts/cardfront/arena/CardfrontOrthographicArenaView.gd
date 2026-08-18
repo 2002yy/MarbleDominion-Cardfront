@@ -21,6 +21,9 @@ const CANVAS_LAYER: int = 4
 const MAX_BULLET_PROXIES: int = 256
 const TILE_GAP: float = 0.012
 const TILE_HEIGHT: float = 0.16
+const TILE_ELEVATION_OCCUPIED: float = 0.05
+const RIVER_BED_Y: float = 0.02
+const RIVER_BANK_Y: float = 0.22
 const ARENA_X_SCALE: float = 1.18
 const ARENA_Z_SCALE: float = 1.28
 const OUTER_FLOOR_WIDTH_PADDING: float = 32.0
@@ -677,7 +680,7 @@ func _build_tiles() -> void:
 	tile_multimesh = MultiMeshInstance3D.new()
 	tile_multimesh.name = "TerritoryTiles"
 	var tile_mesh := BoxMesh.new()
-	tile_mesh.size = Vector3(ARENA_X_SCALE - TILE_GAP, TILE_HEIGHT, _z_scale - TILE_GAP)
+	tile_mesh.size = Vector3(ARENA_X_SCALE - TILE_GAP, 1.0, _z_scale - TILE_GAP)
 	var tile_material := StandardMaterial3D.new()
 	tile_material.vertex_color_use_as_albedo = true
 	tile_material.roughness = 0.72
@@ -696,11 +699,14 @@ func _build_tiles() -> void:
 	for x in range(extent.x):
 		for y in range(extent.y):
 			var index: int = x * extent.y + y
-			var instance_transform := Transform3D(Basis.IDENTITY, Vector3(
-				(float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE,
-				TILE_HEIGHT * 0.5,
-				(float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
-			))
+			var instance_transform := Transform3D(
+				Basis.IDENTITY.scaled(Vector3(1.0, TILE_HEIGHT, 1.0)),
+				Vector3(
+					(float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE,
+					TILE_HEIGHT * 0.5,
+					(float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
+				)
+			)
 			multimesh.set_instance_transform(index, instance_transform)
 
 
@@ -1150,7 +1156,7 @@ func _build_river_and_bridges(width: float, arena_width: float) -> void:
 	var river_mesh := BoxMesh.new()
 	river_mesh.size = Vector3(arena_width + 3.5, 0.13, 2.0 * _z_scale)
 	river.mesh = river_mesh
-	river.position.y = 0.13
+	river.position.y = RIVER_BED_Y
 	river.material_override = _make_material(Color(0.20, 0.58, 0.68), 0.10)
 	world_root.add_child(river)
 
@@ -1158,9 +1164,9 @@ func _build_river_and_bridges(width: float, arena_width: float) -> void:
 		var bank := MeshInstance3D.new()
 		bank.name = "RiverBank"
 		var bank_mesh := BoxMesh.new()
-		bank_mesh.size = Vector3(arena_width + 3.5, 0.20, 0.36 * _z_scale)
+		bank_mesh.size = Vector3(arena_width + 3.5, 0.28, 0.36 * _z_scale)
 		bank.mesh = bank_mesh
-		bank.position = Vector3(0.0, 0.18, bank_z)
+		bank.position = Vector3(0.0, RIVER_BANK_Y, bank_z)
 		bank.material_override = _make_material(Color(0.30, 0.40, 0.23), 0.0)
 		world_root.add_child(bank)
 		for stone_index in range(7):
@@ -1391,7 +1397,19 @@ func _refresh_tile_colors() -> void:
 		for y in range(extent.y):
 			var owner_id: int = int(battlefield.owners[x][y])
 			var region_type: String = str(region_map.get_region_type(Vector2i(x, y)))
-			tile_multimesh.multimesh.set_instance_color(x * extent.y + y, _tile_color(owner_id, region_type, Vector2i(x, y)))
+			var index: int = x * extent.y + y
+			tile_multimesh.multimesh.set_instance_color(index, _tile_color(owner_id, region_type, Vector2i(x, y)))
+			var tile_h: float = TILE_HEIGHT
+			if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
+				tile_h = TILE_HEIGHT + TILE_ELEVATION_OCCUPIED
+			tile_multimesh.multimesh.set_instance_transform(index, Transform3D(
+				Basis.IDENTITY.scaled(Vector3(1.0, tile_h, 1.0)),
+				Vector3(
+					(float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE,
+					tile_h * 0.5,
+					(float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
+				)
+			))
 	_refresh_territory_boundaries()
 	_refresh_sparse_claim_markers()
 	_refresh_stronghold_platforms()
@@ -2380,6 +2398,14 @@ func _resolve_z_scale(extent: Vector2i) -> float:
 func _tile_color(owner_id: int, region_type: String, cell: Vector2i) -> Color:
 	var checker_index: int = floori(float(cell.x) / float(CHECKER_CELL_SPAN)) + floori(float(cell.y) / float(CHECKER_CELL_SPAN))
 	var owner_color: Color = _theme_color("tile_a") if checker_index % 2 == 0 else _theme_color("tile_b")
+	var micro_noise: int = (cell.x * 7 + cell.y * 13) % 5
+	var grass_shift: float = 0.0
+	match micro_noise:
+		0: grass_shift = 0.022
+		1: grass_shift = -0.012
+		2: grass_shift = 0.016
+		_: grass_shift = 0.0
+	owner_color = owner_color.lightened(grass_shift)
 	if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
 		owner_color = owner_color.lerp(_arena_faction_color(owner_id), 0.60)
 	var accent: Color = _region_accent(region_type)
