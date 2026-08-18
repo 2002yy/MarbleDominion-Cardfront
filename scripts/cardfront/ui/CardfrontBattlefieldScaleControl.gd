@@ -66,7 +66,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_sync_selected_state()
 		get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_0 or event.keycode == KEY_KP_0:
-		select_scale(1.12)
+		select_scale(arena_view.DEFAULT_PRESENTATION_SCALE)
 		get_viewport().set_input_as_handled()
 
 

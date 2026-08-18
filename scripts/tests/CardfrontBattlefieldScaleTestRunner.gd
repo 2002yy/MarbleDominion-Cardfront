@@ -43,7 +43,7 @@ func _test_cardfront_scale_presets_and_authority_isolation() -> void:
 		await _flush()
 		return
 
-	_assert.eq(view.get_presentation_scale(), 1.20, "scale: match should begin at the close 120 percent combat framing")
+	_assert.eq(view.get_presentation_scale(), 1.12, "scale: match should begin at the default 112 percent combat framing")
 	var authority_snapshot: String = JSON.stringify(main.runtime.battlefield.owners, "", true, true)
 	var base_size: float = view.get_camera_for_test().size
 
@@ -54,11 +54,11 @@ func _test_cardfront_scale_presets_and_authority_isolation() -> void:
 
 	view.set_presentation_scale(1.20, false)
 	_assert.eq(view.get_presentation_scale(), 1.20, "scale: 120 percent detail preset should be selected")
-	_assert.eq(view.get_camera_for_test().size, base_size, "scale: 120 percent should restore the close default framing")
+	_assert.that(view.get_camera_for_test().size < base_size, "scale: 120 percent should tighten beyond the default framing")
 	_assert.eq(JSON.stringify(main.runtime.battlefield.owners, "", true, true), authority_snapshot, "scale: zooming in must not mutate authoritative cells")
 
 	_assert.eq(view.set_presentation_scale(1.14, false), 1.12, "scale: arbitrary values should snap to the nearest approved preset")
-	_assert.that(view.get_camera_for_test().size > base_size, "scale: snapped 112 percent should widen the close default framing")
+	_assert.between(view.get_camera_for_test().size, base_size - 0.001, base_size + 0.001, "scale: snapped 112 percent should restore the default framing")
 	_assert.that(main.runtime.battlefield is Node2D, "scale: authoritative battlefield remains 2D")
 	_assert.that(main.runtime.bullet_pool is Node2D, "scale: authoritative projectile pool remains 2D")
 	_assert.eq(view.get_gate_count_for_test(), 2, "scale: gate presentation should remain intact")
