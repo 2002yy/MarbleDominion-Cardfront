@@ -6,7 +6,7 @@
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — 代码与系统架构。
 - [`B1_SIMULATION_MODEL.md`](B1_SIMULATION_MODEL.md) — B1 模拟模型与权威边界。
-- [`CARDFRONT_ENGINEERING_SPEC_2026-08-07.md`](CARDFRONT_ENGINEERING_SPEC_2026-08-07.md) — 大规模工程整改冻结基线。
+- [`CARDFRONT_ENGINEERING_SPEC_2026-08-07.md`](CARDFRONT_ENGINEERING_SPEC_2026-08-07.md) — 大规模工程整改冻结基线（P0/P1 已完成，留作历史参考）。
 - [`TESTING.md`](TESTING.md) — 测试策略、runner 与验收规则。
 - [`SAVE_SYSTEM.md`](SAVE_SYSTEM.md) — 存档系统。
 - [`ANDROID_EXPORT.md`](ANDROID_EXPORT.md) — Android 导出。

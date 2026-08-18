@@ -6,6 +6,7 @@
 
 - [`BATTLEFIELD_ENTITIES_AND_DEFENSE_TOWERS_PLAN.md`](BATTLEFIELD_ENTITIES_AND_DEFENSE_TOWERS_PLAN.md) — 战场实体与防御塔方案。
 - [`CARDFRONT_STRATEGIC_MAP_DESIGN.md`](CARDFRONT_STRATEGIC_MAP_DESIGN.md) — 三张战略地图与路线设计。
+- [`CARDFRONT_ART_PASS2_SPEC_2026-08-18.md`](CARDFRONT_ART_PASS2_SPEC_2026-08-18.md) — Art Pass 2 锁定决策（A3 沙盘 / 模块化 HQ / 三级轮廓 / B2 装配契约）。
 - [`GRILLME_GAME_DESIGN_INTERVIEW.md`](GRILLME_GAME_DESIGN_INTERVIEW.md) — 已形成的游戏设计压力测试/决策访谈记录。
 - [`ASSET_GAP_PLAN.md`](ASSET_GAP_PLAN.md) — 素材缺口与接入方向。
 - `领土战争_美术UI升级设计文档_v2_按钮与锁定特效补充.docx` — 早期 UI 美术升级资料。

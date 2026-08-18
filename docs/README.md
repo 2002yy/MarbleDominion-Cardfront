@@ -7,12 +7,12 @@
 | 入口 | 用途 | 权威级别 |
 |---|---|---|
 | [`PROJECT_STATUS.md`](PROJECT_STATUS.md) | 当前版本、已完成项、当前实施切片、下一步与暂缓范围 | **当前状态唯一入口** |
-| [`art/README.md`](art/README.md) | 当前美术 / 3D / VFX 生产规范 | **美术生产入口** |
-| [`ROADMAP.md`](ROADMAP.md) | 中长期路线与未完成方向 | 路线参考 |
+| [`art/README.md`](art/README.md) | 当前美术 / 3D / VFX 生产规范（v0.4 冻结） | **美术生产入口** |
+| [`ROADMAP.md`](ROADMAP.md) | 中长期路线与未完成方案 | 路线参考 |
 | [`设计_design/README.md`](设计_design/README.md) | 玩法、地图、实体、素材与 UI 设计 | 设计参考 |
 | [`技术_technical/README.md`](技术_technical/README.md) | 架构、模拟、测试、导出、存档、工程规范 | 工程参考 |
 | [`性能_performance/README.md`](性能_performance/README.md) | 性能基线、画质档位与性能附录 | 性能参考 |
-| [`cardfront_refactor_checkpoints/`](cardfront_refactor_checkpoints/) | P0/P1 检查点、事实证据与验收记录 | 实施证据 |
+| [`cardfront_refactor_checkpoints/`](cardfront_refactor_checkpoints/) | P0/P1 检查点（已完成，留作实施证据） | 历史证据 |
 | [`历史_history/README.md`](历史_history/README.md) | 已完成阶段、旧施工批次与迁移记录 | 历史证据 |
 
 ## 2. 阅读规则
@@ -26,22 +26,25 @@
 ## 3. 当前目录职责
 
 ### `art/`
-正式美术与 3D 生产规范、版本化 DOCX。当前冻结稿为 **v0.2**。
+正式美术与 3D 生产规范、版本化 DOCX。当前冻结稿为 **v0.4**（D01–D22 完整冻结）。
 
 ### `设计_design/`
-玩法设计、地图策略、战场实体/防御塔方案、素材缺口、UI/音效设计资料。
+玩法设计、地图策略、战场实体/防御塔方案、Art Pass 2 spec、素材缺口、UI/音效设计资料。
 
 ### `技术_technical/`
-当前仍有执行价值的架构与工程文档，包括 architecture、B1 simulation model、engineering spec、testing、save、Android export、release process。
+当前仍有执行价值的架构与工程文档。P0 engineering spec 已完成整改，留作历史参考。
 
 ### `性能_performance/`
 性能基线、性能说明、画质档位与历史性能附录。
 
 ### `cardfront_refactor_checkpoints/`
-按检查点保存可追溯的实施证据。原则上不再把这里的文件重新改写成“当前状态”。
+P0/P1 重构检查点（已完成）。按检查点保存可追溯的实施证据，不再更新。
 
 ### `历史_history/`
 阶段历史、旧版本说明、已完成 P0/P1 施工包、文档迁移与仓库整理记录。
+
+### 仓库根目录 `art_source/`
+Blender 可编辑母版区，通过 `.gdignore` 与 Godot import scan 隔离。详见 [`../art_source/README.md`](../art_source/README.md)。
 
 ## 4. 文档新增规则
 

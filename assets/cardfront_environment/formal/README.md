@@ -2,14 +2,16 @@
 
 本目录从 Cardfront D21/D22 起承接新的正式 runtime 3D 资产。不要把现有 `source/` 资产批量搬进来；只有真正通过新合同的资产才进入这里。
 
-## 第一套 Admission Target
+## 第一套 Admission Target — 已导入，待 Benchmark GO
 
-首轮只验证 `default_duel + Balanced HQ + Castle Theme`：
+首轮验证 `default_duel + Balanced HQ + Castle Theme`。4 个 HQ GLB 已导入并通过测试（Arena 67 / Scale 57 / Smoke 38），等待 fixed-camera screenshot 人工验收：
 
-- `hq/hq_common.glb`
-- `hq/hq_hero_balanced.glb`
-- `hq/hq_theme_castle.glb`
-- `hq/hq_damage_common.glb`
+- `hq/hq_common.glb` ✅ imported
+- `hq/hq_hero_balanced.glb` ✅ imported
+- `hq/hq_theme_castle.glb` ✅ imported
+- `hq/hq_damage_common.glb` ✅ imported
+
+Blender 母版：`art_source/cardfront_3d/Cardfront_HQ_Master.blend`
 
 Bridge / Gate / Tower / Stronghold 在 HQ production contract 验证前可以继续使用现有 primitive / legacy 资产。
 

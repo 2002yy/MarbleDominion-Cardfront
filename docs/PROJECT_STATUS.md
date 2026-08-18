@@ -1,6 +1,6 @@
 # Project Status / 项目状态
 
-Last updated: 2026-08-03
+Last updated: 2026-08-18
 
 This is the only document that tracks the current version, completed work, active implementation slice, next step, and deferred scope.
 本文件是项目当前版本、已完成内容、正在实施内容、下一步和暂缓范围的唯一状态入口。
@@ -1450,3 +1450,39 @@ No map is considered strategically complete until a player can describe its main
   did not modify Draft geometry.
 - Formal P0 remains locked to the documented sequence. The only allowed next
   formal step is P0-09B3 Offer / View Data Level Projection.
+
+## 2026-08-18 Art Pass 2 — modular HQ benchmark and production contract freeze
+
+### Locked decisions (GrillMe interview → spec)
+
+- **D1 (A3):** 连续沙盘 + 弱格纹 + 强状态块 — 5 visual layers L0–L4.
+- **D2 (C):** HQ = 模块化战争棋子 — 1 common skeleton + hero modules + theme modules + damage modules; grayscale-readable; faction color 20–30% only; 3–6k tris.
+- **D3 (B):** 三级战术轮廓 — Tower = 1.0 baseline; HQ 2.2–2.6× wide, 1.35–1.55× tall (wide not tall).
+- **D4 (B2):** Full modular assembly — Common Skeleton + Hero Module + Theme Module + Faction Material + Damage Module; sockets as named empties; `MAT_` prefix materials for runtime faction recolor.
+
+Full spec: `docs/设计_design/CARDFRONT_ART_PASS2_SPEC_2026-08-18.md`
+Production contract v0.4 (D01–D22): `docs/art/Cardfront_Art_3D_Production_Spec_v0.4_2026-08-18.docx`
+
+### Modular HQ benchmark v1 — imported, pending screenshot GO
+
+4 GLBs built in Blender, exported, imported into Godot, and integrated into the arena view:
+
+| Module | File | Tris | Dimensions (m) |
+|---|---|---|---|
+| Common skeleton | `formal/hq/hq_common.glb` | 1048 | 6.2×3.6×3.17 |
+| Hero: Balanced | `formal/hq/hq_hero_balanced.glb` | 960 | 3.78×2.24×2.83 |
+| Theme: Castle | `formal/hq/hq_theme_castle.glb` | 1156 | 5.44×3.37×3.55 |
+| Damage | `formal/hq/hq_damage_common.glb` | 412 | 3.96×1.79×1.37 |
+| **Total** | | **3576** | assembled height ~4.27m (1.42× tower) |
+
+Blender master: `art_source/cardfront_3d/Cardfront_HQ_Master.blend`
+
+Tests: Arena 67 / Scale 57 / Smoke 38 — all PASS.
+Screenshots: `截图_screenshots/01-05_*_2026-08-18.png` — pending human review.
+
+### Asset pipeline reorganization
+
+- `assets/cardfront_environment/formal/hq/` — new formal runtime area (D22 contract).
+- `assets/cardfront_environment/source/custom/` — legacy compatibility zone, unchanged.
+- `art_source/cardfront_3d/` — Blender source masters, `.gdignore` isolated.
+- Registry keys: `formal_hq_common/hero_balanced/theme_castle/damage`.
