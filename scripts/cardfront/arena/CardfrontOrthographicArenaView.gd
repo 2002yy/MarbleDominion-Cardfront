@@ -45,7 +45,7 @@ const COMBAT_ENTITY_VISUAL_SCALE: float = 1.48
 const PROJECTILE_VISUAL_SCALE: float = 1.45
 const STRONGHOLD_PLATFORM_FOOTPRINT_SCALE: float = 0.86
 const STRONGHOLD_PLATFORM_HEIGHT: float = 0.18
-const STRONGHOLD_RING_SCALE: float = 0.42
+const STRONGHOLD_RING_SCALE: float = 0.32
 const LEGACY_CHAMBER_GLB_SCALE: Vector3 = Vector3(1.78, 0.62, 1.05)
 const HQ_MODULE_SCALE: float = 1.0
 const TOWER_GLB_SCALE: float = 1.16
@@ -71,6 +71,7 @@ var arena_environment: Environment
 var tile_multimesh: MultiMeshInstance3D
 var territory_boundary_multimesh: MultiMeshInstance3D
 var sparse_claim_multimesh: MultiMeshInstance3D
+var boundary_skirt_multimesh: MultiMeshInstance3D
 var aim_mesh_instance: MeshInstance3D
 
 var _turret_proxies: Dictionary = {}
@@ -679,8 +680,9 @@ func _disconnect_deployment_zone_source() -> void:
 func _build_tiles() -> void:
 	tile_multimesh = MultiMeshInstance3D.new()
 	tile_multimesh.name = "TerritoryTiles"
-	var tile_mesh := BoxMesh.new()
-	tile_mesh.size = Vector3(ARENA_X_SCALE - TILE_GAP, 1.0, _z_scale - TILE_GAP)
+	var tile_mesh := PlaneMesh.new()
+	tile_mesh.orientation = PlaneMesh.FACE_Y
+	tile_mesh.size = Vector2(ARENA_X_SCALE - TILE_GAP, _z_scale - TILE_GAP)
 	var tile_material := StandardMaterial3D.new()
 	tile_material.vertex_color_use_as_albedo = true
 	tile_material.roughness = 0.72
@@ -700,14 +702,97 @@ func _build_tiles() -> void:
 		for y in range(extent.y):
 			var index: int = x * extent.y + y
 			var instance_transform := Transform3D(
-				Basis.IDENTITY.scaled(Vector3(1.0, TILE_HEIGHT, 1.0)),
+				Basis.IDENTITY,
 				Vector3(
 					(float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE,
-					TILE_HEIGHT * 0.5,
+					TILE_HEIGHT,
 					(float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
 				)
 			)
 			multimesh.set_instance_transform(index, instance_transform)
+
+	_build_boundary_skirts()
+
+
+func _build_boundary_skirts() -> void:
+	boundary_skirt_multimesh = MultiMeshInstance3D.new()
+	boundary_skirt_multimesh.name = "BoundarySkirts"
+	var skirt_mesh := BoxMesh.new()
+	skirt_mesh.size = Vector3.ONE
+	var skirt_material := StandardMaterial3D.new()
+	skirt_material.vertex_color_use_as_albedo = true
+	skirt_material.roughness = 0.76
+	skirt_mesh.material = skirt_material
+
+	var extent: Vector2i = battlefield.grid_extent
+	var multimesh := MultiMesh.new()
+	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.use_colors = true
+	multimesh.mesh = skirt_mesh
+	multimesh.instance_count = 2 * extent.x * extent.y
+	multimesh.visible_instance_count = 0
+	boundary_skirt_multimesh.multimesh = multimesh
+	world_root.add_child(boundary_skirt_multimesh)
+
+
+func _refresh_boundary_skirts() -> void:
+	if boundary_skirt_multimesh == null or boundary_skirt_multimesh.multimesh == null:
+		return
+	var extent: Vector2i = battlefield.grid_extent
+	if not (battlefield.owners is Array) or battlefield.owners.size() != extent.x:
+		return
+	var index: int = 0
+	var skirt_thickness: float = 0.06
+	var base_top: float = TILE_HEIGHT
+
+	for x in range(extent.x):
+		if not (battlefield.owners[x] is Array):
+			continue
+		for y in range(extent.y):
+			var owner_id: int = int(battlefield.owners[x][y])
+			var elev: float = TILE_ELEVATION_OCCUPIED if owner_id != CardfrontRulesScript.NEUTRAL_OWNER else 0.0
+
+			# Right neighbor boundary (x -> x+1)
+			if x + 1 < extent.x and battlefield.owners[x + 1] is Array:
+				var n_owner: int = int(battlefield.owners[x + 1][y])
+				var n_elev: float = TILE_ELEVATION_OCCUPIED if n_owner != CardfrontRulesScript.NEUTRAL_OWNER else 0.0
+				if abs(elev - n_elev) > 0.001:
+					var skirt_h: float = abs(elev - n_elev)
+					var boundary_x: float = (float(x) + 1.0 - float(extent.x) * 0.5) * ARENA_X_SCALE
+					var cell_z: float = (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
+					var skirt_y: float = base_top + minf(elev, n_elev) + skirt_h * 0.5
+					var higher_owner: int = owner_id if elev > n_elev else n_owner
+					boundary_skirt_multimesh.multimesh.set_instance_transform(index, Transform3D(
+						Basis.IDENTITY.scaled(Vector3(skirt_thickness, skirt_h, _z_scale - TILE_GAP)),
+						Vector3(boundary_x, skirt_y, cell_z)
+					))
+					boundary_skirt_multimesh.multimesh.set_instance_color(
+						index,
+						_arena_faction_color(higher_owner).darkened(0.15)
+					)
+					index += 1
+
+			# Down neighbor boundary (y -> y+1)
+			if y + 1 < extent.y:
+				var n_owner: int = int(battlefield.owners[x][y + 1])
+				var n_elev: float = TILE_ELEVATION_OCCUPIED if n_owner != CardfrontRulesScript.NEUTRAL_OWNER else 0.0
+				if abs(elev - n_elev) > 0.001:
+					var skirt_h: float = abs(elev - n_elev)
+					var cell_x: float = (float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE
+					var boundary_z: float = (float(y) + 1.0 - float(extent.y) * 0.5) * _z_scale
+					var skirt_y: float = base_top + minf(elev, n_elev) + skirt_h * 0.5
+					var higher_owner: int = owner_id if elev > n_elev else n_owner
+					boundary_skirt_multimesh.multimesh.set_instance_transform(index, Transform3D(
+						Basis.IDENTITY.scaled(Vector3(ARENA_X_SCALE - TILE_GAP, skirt_h, skirt_thickness)),
+						Vector3(cell_x, skirt_y, boundary_z)
+					))
+					boundary_skirt_multimesh.multimesh.set_instance_color(
+						index,
+						_arena_faction_color(higher_owner).darkened(0.15)
+					)
+					index += 1
+
+	boundary_skirt_multimesh.multimesh.visible_instance_count = index
 
 
 func _build_territory_boundaries() -> void:
@@ -860,6 +945,7 @@ func _build_lane_paths(width: float, height: float) -> void:
 
 
 func _build_edge_landscape(height: float, arena_width: float) -> void:
+	var dressing_casts_shadow: bool = GameConfig.get_quality_name() == GameConfig.QUALITY_HIGH
 	if _environment_builder != null:
 		var built_count: int = _environment_builder.build_edge_dressing(height, arena_width, _z_scale)
 		if built_count > 0:
@@ -883,6 +969,7 @@ func _build_edge_landscape(height: float, arena_width: float) -> void:
 			bush.scale = Vector3(1.05, 0.90 + float(index % 2) * 0.08, 0.94)
 			var bush_color: Color = _theme_color("foliage_a") if index % 2 == 0 else _theme_color("foliage_b")
 			bush.material_override = _make_material(bush_color, 0.0)
+			bush.cast_shadow = 1 if dressing_casts_shadow else 0
 			world_root.add_child(bush)
 			var trunk := MeshInstance3D.new()
 			trunk.name = "EdgeTreeTrunk"
@@ -894,6 +981,7 @@ func _build_edge_landscape(height: float, arena_width: float) -> void:
 			trunk.mesh = trunk_mesh
 			trunk.position = bush.position - Vector3(0.0, 0.62, 0.0)
 			trunk.material_override = _make_material(Color(0.38, 0.25, 0.13), 0.0)
+			trunk.cast_shadow = 1 if dressing_casts_shadow else 0
 			world_root.add_child(trunk)
 
 
@@ -1154,17 +1242,17 @@ func _build_river_and_bridges(width: float, arena_width: float) -> void:
 	var river := MeshInstance3D.new()
 	river.name = "CentralRiver"
 	var river_mesh := BoxMesh.new()
-	river_mesh.size = Vector3(arena_width + 3.5, 0.13, 2.0 * _z_scale)
+	river_mesh.size = Vector3(arena_width + 3.5, 0.13, 3.2 * _z_scale)
 	river.mesh = river_mesh
 	river.position.y = RIVER_BED_Y
 	river.material_override = _make_material(Color(0.20, 0.58, 0.68), 0.10)
 	world_root.add_child(river)
 
-	for bank_z in [-1.18 * _z_scale, 1.18 * _z_scale]:
+	for bank_z in [-1.62 * _z_scale, 1.62 * _z_scale]:
 		var bank := MeshInstance3D.new()
 		bank.name = "RiverBank"
 		var bank_mesh := BoxMesh.new()
-		bank_mesh.size = Vector3(arena_width + 3.5, 0.28, 0.36 * _z_scale)
+		bank_mesh.size = Vector3(arena_width + 3.5, 0.24, 0.28 * _z_scale)
 		bank.mesh = bank_mesh
 		bank.position = Vector3(0.0, RIVER_BANK_Y, bank_z)
 		bank.material_override = _make_material(Color(0.30, 0.40, 0.23), 0.0)
@@ -1368,7 +1456,7 @@ func _build_stronghold_platforms() -> void:
 			1.0,
 			maxf(1.0, bounds.size.y * _z_scale * STRONGHOLD_RING_SCALE)
 		)
-		ring.material_override = _make_material(Color(0.82, 0.88, 0.70, 0.90), 0.16)
+		ring.material_override = _make_material(Color(0.72, 0.78, 0.62, 0.60), 0.06)
 		world_root.add_child(ring)
 		_region_control_rings[region_id] = ring
 
@@ -1399,17 +1487,18 @@ func _refresh_tile_colors() -> void:
 			var region_type: String = str(region_map.get_region_type(Vector2i(x, y)))
 			var index: int = x * extent.y + y
 			tile_multimesh.multimesh.set_instance_color(index, _tile_color(owner_id, region_type, Vector2i(x, y)))
-			var tile_h: float = TILE_HEIGHT
+			var tile_y: float = TILE_HEIGHT
 			if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
-				tile_h = TILE_HEIGHT + TILE_ELEVATION_OCCUPIED
+				tile_y = TILE_HEIGHT + TILE_ELEVATION_OCCUPIED
 			tile_multimesh.multimesh.set_instance_transform(index, Transform3D(
-				Basis.IDENTITY.scaled(Vector3(1.0, tile_h, 1.0)),
+				Basis.IDENTITY,
 				Vector3(
 					(float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE,
-					tile_h * 0.5,
+					tile_y,
 					(float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
 				)
 			))
+	_refresh_boundary_skirts()
 	_refresh_territory_boundaries()
 	_refresh_sparse_claim_markers()
 	_refresh_stronghold_platforms()
@@ -1431,8 +1520,8 @@ func _refresh_stronghold_platforms() -> void:
 		var ring: MeshInstance3D = _region_control_rings.get(region_id, null)
 		if ring != null and is_instance_valid(ring):
 			var control_ratio: float = clampf(float(leader.percent) / 100.0, 0.0, 1.0)
-			var ring_color: Color = color.lightened(0.26)
-			ring.material_override = _make_material(ring_color, lerpf(0.08, 0.32, control_ratio))
+			var ring_color: Color = color.lightened(0.14)
+			ring.material_override = _make_material(ring_color, lerpf(0.04, 0.16, control_ratio))
 			ring.scale.y = 1.0 + (1.0 - control_ratio) * 0.18
 
 

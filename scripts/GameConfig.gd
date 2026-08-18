@@ -40,6 +40,7 @@ enum Faction { BLUE, RED, GREEN, YELLOW }
 static var _game_mode_name: String = GAME_MODE_BASIC
 static var _timed_mode_minutes: int = DEFAULT_TIMED_MODE_MINUTES
 static var _quality_name: String = QUALITY_MEDIUM
+static var _shadow_override: String = ""
 static var _palette_name: String = "经典"
 static var _palette_colors: Array = [
 	Color(0.20, 0.49, 1.00),
@@ -251,11 +252,21 @@ static func get_emblem_alpha_mul() -> float:
 			return 0.65
 
 static func get_shadow_enabled() -> bool:
+	if _shadow_override == "off":
+		return false
+	if _shadow_override == "on":
+		return true
 	match _quality_name:
 		QUALITY_LOW:
 			return false
 		_:
 			return true
+
+static func set_shadow_override(value: String) -> void:
+	_shadow_override = value
+
+static func reset_shadow_override() -> void:
+	_shadow_override = ""
 
 static func get_shadow_max_distance() -> float:
 	match _quality_name:
@@ -397,6 +408,7 @@ static func reset_runtime_defaults() -> void:
 	_game_mode_name = GAME_MODE_BASIC
 	_timed_mode_minutes = DEFAULT_TIMED_MODE_MINUTES
 	_quality_name = QUALITY_MEDIUM
+	_shadow_override = ""
 	set_palette_by_name("经典")
 
 static func _normalize_palette_name(name: String) -> String:

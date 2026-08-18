@@ -32,6 +32,9 @@ func _capture() -> void:
 	var capture_quality := OS.get_environment("CARDFRONT_CAPTURE_QUALITY").strip_edges()
 	if not capture_quality.is_empty():
 		GameConfig.set_quality_by_name(capture_quality)
+	var shadow_override := OS.get_environment("CARDFRONT_CAPTURE_SHADOW").strip_edges()
+	if not shadow_override.is_empty():
+		GameConfig.set_shadow_override(shadow_override)
 	paused = false
 	var scene: PackedScene = load("res://scenes/Main.tscn")
 	var main = scene.instantiate()
