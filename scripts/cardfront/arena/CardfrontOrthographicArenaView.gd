@@ -816,63 +816,104 @@ func _refresh_territory_boundaries() -> void:
 	if territory_boundary_multimesh == null or territory_boundary_multimesh.multimesh == null:
 		return
 	var extent: Vector2i = battlefield.grid_extent
+	if not (battlefield.owners is Array) or battlefield.owners.size() != extent.x:
+		return
 	var index: int = 0
-	var edge_thickness: float = 0.36
-	var edge_z_thickness: float = 0.30
-	var edge_height: float = 0.24
-	var edge_y: float = TILE_HEIGHT + edge_height * 0.5
-	var lip_thickness: float = 0.06
-	var lip_height: float = 0.04
-	var lip_y: float = TILE_HEIGHT + TILE_ELEVATION_OCCUPIED + lip_height * 0.5
+
+	# --- Arena frame (L0 diorama frame, always thick) ---
+	var frame_t: float = 0.36
+	var frame_zt: float = 0.30
+	var frame_h: float = 0.24
+	var frame_y: float = TILE_HEIGHT + frame_h * 0.5
 
 	for x in range(extent.x):
-		index = _set_boundary_instance(
-			index,
-			Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, edge_y, -float(extent.y) * 0.5 * _z_scale),
-			Vector3(ARENA_X_SCALE + edge_thickness, edge_height, edge_z_thickness)
-		)
-		index = _set_boundary_instance(
-			index,
-			Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, edge_y, float(extent.y) * 0.5 * _z_scale),
-			Vector3(ARENA_X_SCALE + edge_thickness, edge_height, edge_z_thickness)
-		)
+		index = _set_boundary_instance(index,
+			Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, frame_y, -float(extent.y) * 0.5 * _z_scale),
+			Vector3(ARENA_X_SCALE + frame_t, frame_h, frame_zt))
+		index = _set_boundary_instance(index,
+			Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, frame_y, float(extent.y) * 0.5 * _z_scale),
+			Vector3(ARENA_X_SCALE + frame_t, frame_h, frame_zt))
 	for y in range(extent.y):
-		index = _set_boundary_instance(
-			index,
-			Vector3(-float(extent.x) * 0.5 * ARENA_X_SCALE, edge_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
-			Vector3(edge_thickness, edge_height, _z_scale + edge_z_thickness)
-		)
-		index = _set_boundary_instance(
-			index,
-			Vector3(float(extent.x) * 0.5 * ARENA_X_SCALE, edge_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
-			Vector3(edge_thickness, edge_height, _z_scale + edge_z_thickness)
-		)
+		index = _set_boundary_instance(index,
+			Vector3(-float(extent.x) * 0.5 * ARENA_X_SCALE, frame_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
+			Vector3(frame_t, frame_h, _z_scale + frame_zt))
+		index = _set_boundary_instance(index,
+			Vector3(float(extent.x) * 0.5 * ARENA_X_SCALE, frame_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
+			Vector3(frame_t, frame_h, _z_scale + frame_zt))
 
-	for x in range(extent.x):
-		for y in range(extent.y):
-			var owner_id: int = int(battlefield.owners[x][y])
-			if x + 1 < extent.x and int(battlefield.owners[x + 1][y]) != owner_id:
-				var n_id: int = int(battlefield.owners[x + 1][y])
-				var is_frontline: bool = owner_id != CardfrontRulesScript.NEUTRAL_OWNER and n_id != CardfrontRulesScript.NEUTRAL_OWNER
-				var b_t: float = lip_thickness if not is_frontline else edge_thickness
-				var b_h: float = lip_height if not is_frontline else edge_height
-				var b_y: float = lip_y if not is_frontline else edge_y
-				index = _set_boundary_instance(
-					index,
-					Vector3((float(x) + 1.0 - float(extent.x) * 0.5) * ARENA_X_SCALE, b_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
-					Vector3(b_t, b_h, _z_scale + edge_z_thickness)
-				)
-			if y + 1 < extent.y and int(battlefield.owners[x][y + 1]) != owner_id:
-				var n_id: int = int(battlefield.owners[x][y + 1])
-				var is_frontline: bool = owner_id != CardfrontRulesScript.NEUTRAL_OWNER and n_id != CardfrontRulesScript.NEUTRAL_OWNER
-				var b_t: float = lip_thickness if not is_frontline else edge_thickness
-				var b_h: float = lip_height if not is_frontline else edge_height
-				var b_y: float = lip_y if not is_frontline else edge_y
-				index = _set_boundary_instance(
-					index,
-					Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, b_y, (float(y) + 1.0 - float(extent.y) * 0.5) * _z_scale),
-					Vector3(ARENA_X_SCALE + edge_thickness, b_h, b_t if not is_frontline else edge_z_thickness)
-				)
+	# --- Macro territory contours (run-merged, not per-cell) ---
+	# T1 ordinary contour: low rim (height 0.02, thickness 0.08)
+	# T2 active frontline: keeps current thick style (height 0.24, thickness 0.36)
+	var contour_h_t1: float = 0.02
+	var contour_t_t1: float = 0.08
+	var contour_y_t1: float = TILE_HEIGHT + TILE_ELEVATION_OCCUPIED + contour_h_t1 * 0.5
+	var contour_h_t2: float = frame_h
+	var contour_t_t2: float = frame_t
+	var contour_zt_t2: float = frame_zt
+	var contour_y_t2: float = frame_y
+
+	# Horizontal edges: between row y and row y+1, scan along x
+	for y in range(extent.y - 1):
+		var x: int = 0
+		while x < extent.x:
+			var oa: int = int(battlefield.owners[x][y])
+			var ob: int = int(battlefield.owners[x][y + 1])
+			if oa == ob:
+				x += 1
+				continue
+			var is_frontline: bool = oa != CardfrontRulesScript.NEUTRAL_OWNER and ob != CardfrontRulesScript.NEUTRAL_OWNER
+			var run_start: int = x
+			while x < extent.x:
+				var na: int = int(battlefield.owners[x][y])
+				var nb: int = int(battlefield.owners[x][y + 1])
+				if na != nb and (na != CardfrontRulesScript.NEUTRAL_OWNER and nb != CardfrontRulesScript.NEUTRAL_OWNER) == is_frontline:
+					x += 1
+				else:
+					break
+			var run_len: int = x - run_start
+			var seg_w: float = float(run_len) * ARENA_X_SCALE
+			var cx: float = (float(run_start) + float(run_len) * 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE
+			var cz: float = (float(y) + 1.0 - float(extent.y) * 0.5) * _z_scale
+			if is_frontline:
+				index = _set_boundary_instance(index,
+					Vector3(cx, contour_y_t2, cz),
+					Vector3(seg_w + contour_t_t2, contour_h_t2, contour_zt_t2))
+			else:
+				index = _set_boundary_instance(index,
+					Vector3(cx, contour_y_t1, cz),
+					Vector3(seg_w + contour_t_t1, contour_h_t1, contour_t_t1))
+
+	# Vertical edges: between column x and column x+1, scan along y
+	for x in range(extent.x - 1):
+		var y: int = 0
+		while y < extent.y:
+			var oa: int = int(battlefield.owners[x][y])
+			var ob: int = int(battlefield.owners[x + 1][y])
+			if oa == ob:
+				y += 1
+				continue
+			var is_frontline: bool = oa != CardfrontRulesScript.NEUTRAL_OWNER and ob != CardfrontRulesScript.NEUTRAL_OWNER
+			var run_start: int = y
+			while y < extent.y:
+				var na: int = int(battlefield.owners[x][y])
+				var nb: int = int(battlefield.owners[x + 1][y])
+				if na != nb and (na != CardfrontRulesScript.NEUTRAL_OWNER and nb != CardfrontRulesScript.NEUTRAL_OWNER) == is_frontline:
+					y += 1
+				else:
+					break
+			var run_len: int = y - run_start
+			var seg_d: float = float(run_len) * _z_scale
+			var cx: float = (float(x) + 1.0 - float(extent.x) * 0.5) * ARENA_X_SCALE
+			var cz: float = (float(run_start) + float(run_len) * 0.5 - float(extent.y) * 0.5) * _z_scale
+			if is_frontline:
+				index = _set_boundary_instance(index,
+					Vector3(cx, contour_y_t2, cz),
+					Vector3(contour_t_t2, contour_h_t2, seg_d + contour_zt_t2))
+			else:
+				index = _set_boundary_instance(index,
+					Vector3(cx, contour_y_t1, cz),
+					Vector3(contour_t_t1, contour_h_t1, seg_d + contour_t_t1))
+
 	territory_boundary_multimesh.multimesh.visible_instance_count = index
 
 
