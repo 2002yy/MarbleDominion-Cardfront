@@ -1795,7 +1795,8 @@ func _apply_building_material_pass(instance: Node3D, faction_id: int) -> void:
 			if not (mat is StandardMaterial3D):
 				continue
 			var source: StandardMaterial3D = mat as StandardMaterial3D
-			if source.emission_enabled:
+			var uses_named: bool = bool(instance.get_meta("uses_named_materials", false))
+			if source.emission_enabled and not uses_named:
 				continue
 			var dup: StandardMaterial3D = source.duplicate() as StandardMaterial3D
 			var base: Color = dup.albedo_color
@@ -1812,10 +1813,10 @@ func _apply_building_material_pass(instance: Node3D, faction_id: int) -> void:
 				elif apply_tint and material_name.contains("MAT_FACTION_SECONDARY"):
 					dup.albedo_color = tint.darkened(0.35)
 				elif material_name.contains("MAT_CORE"):
-					dup.albedo_color = base.lightened(0.12)
+					dup.albedo_color = Color(1.0, 0.62, 0.16)
 					dup.emission_enabled = true
-					dup.emission = base.lightened(0.30)
-					dup.emission_energy_multiplier = 1.8
+					dup.emission = Color(1.0, 0.52, 0.10)
+					dup.emission_energy_multiplier = 2.2
 				elif material_name.contains("MAT_DAMAGE"):
 					dup.albedo_color = darkened.darkened(0.15)
 				elif material_name.contains("MAT_METAL"):
@@ -2014,8 +2015,22 @@ func _update_hq_damage_state(owner_id: int, health: int, max_health: int) -> voi
 			child.visible = show_d2
 		elif mesh_name.contains("DAMAGE_03") or mesh_name.contains("CORECOVER") or mesh_name.contains("COREEXPOSED"):
 			child.visible = show_d3
+			if show_d3 and (mesh_name.contains("CORE")):
+				_apply_core_pulse(child)
 		else:
+			push_warning("Unknown HQ damage mesh role: %s" % child.name)
 			child.visible = show_d3
+
+
+func _apply_core_pulse(mesh_instance: MeshInstance3D) -> void:
+	var t: float = Time.get_ticks_msec() * 0.001
+	var pulse: float = 0.7 + 0.3 * sin(t * 3.8)
+	for surface_idx in range(mesh_instance.mesh.get_surface_count()):
+		var mat: Material = mesh_instance.get_active_material(surface_idx)
+		if mat is StandardMaterial3D:
+			var s: StandardMaterial3D = mat as StandardMaterial3D
+			if s.emission_enabled:
+				s.emission_energy_multiplier = 1.4 + pulse * 1.6
 
 
 func _sync_bullets() -> void:
