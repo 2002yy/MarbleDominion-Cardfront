@@ -119,3 +119,21 @@ LOD 暂不做（固定镜头距离变化小）；优先控材质数、透明材�
 | HQ 形态 | A 纯城堡 / B 纯战争机械 / **C 模块化战争棋子** | C | 2026-08-18 |
 | 尺寸体系 | A 同尺度 / **B 三级战术轮廓** / C Boss 建筑 | B | 2026-08-18 |
 | 默认视野 | 100 / **112** / 120 | 112（已修 DEFAULT_PRESENTATION_SCALE，commit 30996ea） | 2026-08-18 |
+| 阴影方案 | **D07 SHD-C** 选择性实时阴影 | shadow_enabled=true, MEDIUM/HIGH on, LOW off; dressing cast_shadow only on HIGH | 2026-08-18 |
+| 地形低浮雕 | **D08 TER-C** 语义低浮雕 | PlaneMesh top full footprint (no physical gap); occupied +0.05m elevation; boundary skirt at ownership edges | 2026-08-18 |
+| Grid 工程规则 | **Grid Is Presentation, Not Geometry** | Terrain Top Surface 不得通过真实 cell 间隙表达网格；TILE_GAP 仅供 skirt/其他几何使用 | 2026-08-18 |
+| 领土边界 | **B1 Macro Territory Contour** | run-merged segments; T1 low rim (0.02×0.08); T2 frontline keeps thick (0.24×0.36); B2 connected-region perimeter 暂停 | 2026-08-18 |
+| 河流可读性 | 水面增宽 + 河岸外移 | z-extent 2.0→3.2×z_scale; banks ±1.18→±1.62×z_scale | 2026-08-18 |
+| 据点白环 | 削弱视觉竞争 | ring scale 0.42→0.32; brightness/opacity/emission 降低 | 2026-08-18 |
+
+---
+
+## P0 验收状态
+
+| 项目 | 结果 | 关键 commit |
+|---|---|---|
+| P0-1 阴影 | PASS | `d622300` shadow_enabled + ambient retune + selective caster |
+| P0-2 低浮雕地形 | PASS | `ff9ba1e` low-relief + `fc7e651` skirt system + `115d874` no physical tile gap |
+| P0-3 HQ 轮廓 | PASS | `6bafcdb` thicker base + 4-side faction panels + thicker cannon + larger flags |
+
+**下一步：Formal Benchmark** — Material Role (D21) / Faction Signal (D10) / HQ State (D13) / 首套正式资产集成。
