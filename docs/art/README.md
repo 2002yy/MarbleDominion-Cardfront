@@ -4,18 +4,14 @@
 
 ## 1. 当前生产权威
 
-- **完整基础冻结稿（D01–D17）：** [`Cardfront_Art_3D_Production_Spec_v0.3_2026-08-18.docx`](Cardfront_Art_3D_Production_Spec_v0.3_2026-08-18.docx)
-- **P0 生产合同 v0.4（D18–D22）：** [`CARDFRONT_P0_PRODUCTION_CONTRACT_V0.4_2026-08-18.md`](CARDFRONT_P0_PRODUCTION_CONTRACT_V0.4_2026-08-18.md)
+- **当前完整冻结稿（D01–D22）：** [`Cardfront_Art_3D_Production_Spec_v0.4_2026-08-18.docx`](Cardfront_Art_3D_Production_Spec_v0.4_2026-08-18.docx)
+- **P0 生产合同 v0.4（D18–D22 Markdown 镜像）：** [`CARDFRONT_P0_PRODUCTION_CONTRACT_V0.4_2026-08-18.md`](CARDFRONT_P0_PRODUCTION_CONTRACT_V0.4_2026-08-18.md)
+- **上一版基础冻结稿（D01–D17）：** [`Cardfront_Art_3D_Production_Spec_v0.3_2026-08-18.docx`](Cardfront_Art_3D_Production_Spec_v0.3_2026-08-18.docx)
 - **资产仓库整理 v1：** [`ASSET_REPOSITORY_ORGANIZATION_V1_2026-08-18.md`](ASSET_REPOSITORY_ORGANIZATION_V1_2026-08-18.md)
-- **上一版 DOCX：** [`Cardfront_Art_3D_Production_Spec_v0.2_2026-08-18.docx`](Cardfront_Art_3D_Production_Spec_v0.2_2026-08-18.docx)
-- **早期冻结稿：** [`Cardfront_Art_3D_Production_Spec_v0.1_2026-08-18.docx`](Cardfront_Art_3D_Production_Spec_v0.1_2026-08-18.docx)
+- **更早版本：** [`Cardfront_Art_3D_Production_Spec_v0.2_2026-08-18.docx`](Cardfront_Art_3D_Production_Spec_v0.2_2026-08-18.docx) / [`v0.1`](Cardfront_Art_3D_Production_Spec_v0.1_2026-08-18.docx)
 - **项目状态入口：** [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
 
-本轮完整排版 DOCX v0.4 已生成并交付，SHA-256：
-
-`1ac0c0f033088eaea132e72452f992cff95b55aa63d052858284f8c22c50a6d2`
-
-仓库连接器当前只写 UTF-8 文本，因此仓库内以 v0.4 Markdown 合同镜像承接 D18–D22；v0.3 DOCX 与旧版本继续保留，避免伪造/损坏二进制文件。
+v0.4 DOCX 原件已直接入库（D01–D22 完整冻结）。D18–D22 同时以 Markdown 合约镜像保留，便于 diff 与连接器读写；v0.3 DOCX 与旧版本继续保留作为历史。
 
 当前冻结链：
 
