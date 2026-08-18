@@ -742,7 +742,7 @@ func _refresh_boundary_skirts() -> void:
 	if not (battlefield.owners is Array) or battlefield.owners.size() != extent.x:
 		return
 	var index: int = 0
-	var skirt_thickness: float = 0.06
+	var skirt_thickness: float = 0.03
 	var base_top: float = TILE_HEIGHT
 
 	for x in range(extent.x):
@@ -817,48 +817,61 @@ func _refresh_territory_boundaries() -> void:
 		return
 	var extent: Vector2i = battlefield.grid_extent
 	var index: int = 0
-	var x_thickness: float = 0.36
-	var z_thickness: float = 0.30
-	var boundary_height: float = 0.24
-	var boundary_y: float = TILE_HEIGHT + boundary_height * 0.5
+	var edge_thickness: float = 0.36
+	var edge_z_thickness: float = 0.30
+	var edge_height: float = 0.24
+	var edge_y: float = TILE_HEIGHT + edge_height * 0.5
+	var lip_thickness: float = 0.06
+	var lip_height: float = 0.04
+	var lip_y: float = TILE_HEIGHT + TILE_ELEVATION_OCCUPIED + lip_height * 0.5
 
 	for x in range(extent.x):
 		index = _set_boundary_instance(
 			index,
-			Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, boundary_y, -float(extent.y) * 0.5 * _z_scale),
-			Vector3(ARENA_X_SCALE + x_thickness, boundary_height, z_thickness)
+			Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, edge_y, -float(extent.y) * 0.5 * _z_scale),
+			Vector3(ARENA_X_SCALE + edge_thickness, edge_height, edge_z_thickness)
 		)
 		index = _set_boundary_instance(
 			index,
-			Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, boundary_y, float(extent.y) * 0.5 * _z_scale),
-			Vector3(ARENA_X_SCALE + x_thickness, boundary_height, z_thickness)
+			Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, edge_y, float(extent.y) * 0.5 * _z_scale),
+			Vector3(ARENA_X_SCALE + edge_thickness, edge_height, edge_z_thickness)
 		)
 	for y in range(extent.y):
 		index = _set_boundary_instance(
 			index,
-			Vector3(-float(extent.x) * 0.5 * ARENA_X_SCALE, boundary_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
-			Vector3(x_thickness, boundary_height, _z_scale + z_thickness)
+			Vector3(-float(extent.x) * 0.5 * ARENA_X_SCALE, edge_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
+			Vector3(edge_thickness, edge_height, _z_scale + edge_z_thickness)
 		)
 		index = _set_boundary_instance(
 			index,
-			Vector3(float(extent.x) * 0.5 * ARENA_X_SCALE, boundary_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
-			Vector3(x_thickness, boundary_height, _z_scale + z_thickness)
+			Vector3(float(extent.x) * 0.5 * ARENA_X_SCALE, edge_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
+			Vector3(edge_thickness, edge_height, _z_scale + edge_z_thickness)
 		)
 
 	for x in range(extent.x):
 		for y in range(extent.y):
 			var owner_id: int = int(battlefield.owners[x][y])
 			if x + 1 < extent.x and int(battlefield.owners[x + 1][y]) != owner_id:
+				var n_id: int = int(battlefield.owners[x + 1][y])
+				var is_frontline: bool = owner_id != CardfrontRulesScript.NEUTRAL_OWNER and n_id != CardfrontRulesScript.NEUTRAL_OWNER
+				var b_t: float = lip_thickness if not is_frontline else edge_thickness
+				var b_h: float = lip_height if not is_frontline else edge_height
+				var b_y: float = lip_y if not is_frontline else edge_y
 				index = _set_boundary_instance(
 					index,
-					Vector3((float(x) + 1.0 - float(extent.x) * 0.5) * ARENA_X_SCALE, boundary_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
-					Vector3(x_thickness, boundary_height, _z_scale + z_thickness)
+					Vector3((float(x) + 1.0 - float(extent.x) * 0.5) * ARENA_X_SCALE, b_y, (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale),
+					Vector3(b_t, b_h, _z_scale + edge_z_thickness)
 				)
 			if y + 1 < extent.y and int(battlefield.owners[x][y + 1]) != owner_id:
+				var n_id: int = int(battlefield.owners[x][y + 1])
+				var is_frontline: bool = owner_id != CardfrontRulesScript.NEUTRAL_OWNER and n_id != CardfrontRulesScript.NEUTRAL_OWNER
+				var b_t: float = lip_thickness if not is_frontline else edge_thickness
+				var b_h: float = lip_height if not is_frontline else edge_height
+				var b_y: float = lip_y if not is_frontline else edge_y
 				index = _set_boundary_instance(
 					index,
-					Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, boundary_y, (float(y) + 1.0 - float(extent.y) * 0.5) * _z_scale),
-					Vector3(ARENA_X_SCALE + x_thickness, boundary_height, z_thickness)
+					Vector3((float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE, b_y, (float(y) + 1.0 - float(extent.y) * 0.5) * _z_scale),
+					Vector3(ARENA_X_SCALE + edge_thickness, b_h, b_t if not is_frontline else edge_z_thickness)
 				)
 	territory_boundary_multimesh.multimesh.visible_instance_count = index
 
