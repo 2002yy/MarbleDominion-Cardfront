@@ -29,6 +29,9 @@ func _capture() -> void:
 	if not OS.get_environment("CARDFRONT_CAPTURE_MAP_ID").strip_edges().is_empty():
 		capture_label = "%s-map-%s" % [capture_label, capture_map_id]
 	GameConfig.reset_runtime_defaults()
+	var capture_quality := OS.get_environment("CARDFRONT_CAPTURE_QUALITY").strip_edges()
+	if not capture_quality.is_empty():
+		GameConfig.set_quality_by_name(capture_quality)
 	paused = false
 	var scene: PackedScene = load("res://scenes/Main.tscn")
 	var main = scene.instantiate()

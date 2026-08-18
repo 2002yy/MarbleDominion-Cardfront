@@ -554,8 +554,8 @@ func _build_world() -> void:
 	arena_environment.background_mode = Environment.BG_COLOR
 	arena_environment.background_color = _theme_color("sky")
 	arena_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	arena_environment.ambient_light_color = Color(0.94, 0.95, 0.84)
-	arena_environment.ambient_light_energy = 0.94
+	arena_environment.ambient_light_color = Color(0.82, 0.86, 0.74)
+	arena_environment.ambient_light_energy = 0.72
 	environment_node.environment = arena_environment
 	world_root.add_child(environment_node)
 
@@ -564,7 +564,11 @@ func _build_world() -> void:
 	key_light.light_color = Color(1.0, 0.96, 0.84)
 	key_light.light_energy = 1.30
 	key_light.rotation_degrees = Vector3(-58.0, -28.0, 0.0)
-	key_light.shadow_enabled = false
+	key_light.shadow_enabled = GameConfig.get_shadow_enabled()
+	if key_light.shadow_enabled:
+		key_light.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+		key_light.directional_shadow_max_distance = GameConfig.get_shadow_max_distance()
+		key_light.shadow_blur = GameConfig.get_shadow_blur()
 	world_root.add_child(key_light)
 
 	var width: float = float(battlefield.grid_extent.x)

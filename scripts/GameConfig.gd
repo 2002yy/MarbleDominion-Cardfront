@@ -250,6 +250,31 @@ static func get_emblem_alpha_mul() -> float:
 		_:
 			return 0.65
 
+static func get_shadow_enabled() -> bool:
+	match _quality_name:
+		QUALITY_LOW:
+			return false
+		_:
+			return true
+
+static func get_shadow_max_distance() -> float:
+	match _quality_name:
+		QUALITY_HIGH:
+			return 36.0
+		QUALITY_MEDIUM:
+			return 28.0
+		_:
+			return 0.0
+
+static func get_shadow_blur() -> float:
+	match _quality_name:
+		QUALITY_HIGH:
+			return 1.0
+		QUALITY_MEDIUM:
+			return 1.5
+		_:
+			return 0.0
+
 static func get_palette_names() -> Array:
 	return ["经典", "霓虹", "糖果", "暗夜", "薄荷"]
 
