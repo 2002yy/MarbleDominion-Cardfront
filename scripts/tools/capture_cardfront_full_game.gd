@@ -59,6 +59,7 @@ func _capture() -> void:
 	_populate_entities(entity_runtime)
 	if main.runtime.orthographic_arena_view != null:
 		main.runtime.orthographic_arena_view.mark_tiles_dirty()
+	_apply_capture_damage_override(main)
 	_fire_preview_volleys(main)
 	await create_timer(0.32).timeout
 	await _flush(4)
@@ -226,3 +227,27 @@ func _fire_preview_volleys(main) -> void:
 func _flush(frame_count: int) -> void:
 	for _index in range(frame_count):
 		await process_frame
+
+
+func _apply_capture_damage_override(main) -> void:
+	var damage_state: String = OS.get_environment("CARDFRONT_CAPTURE_DAMAGE").strip_edges().to_lower()
+	if damage_state.is_empty():
+		return
+	var target_turret = null
+	if damage_state.begins_with("player"):
+		target_turret = main.runtime.turrets.get(RulesScript.PLAYER_FACTION, null)
+	elif damage_state.begins_with("ai"):
+		target_turret = main.runtime.turrets.get(RulesScript.AI_FACTION, null)
+	if target_turret == null or not is_instance_valid(target_turret):
+		return
+	var max_hp: int = maxi(1, int(target_turret.max_health))
+	var target_ratio: float = 1.0
+	if damage_state.contains("d2"):
+		target_ratio = 0.28
+	elif damage_state.contains("d3"):
+		target_ratio = 0.08
+	elif damage_state.contains("d1"):
+		target_ratio = 0.55
+	var target_hp: int = maxi(1, roundi(float(max_hp) * target_ratio))
+	target_turret.health = target_hp
+	target_turret.health_changed.emit(target_turret.faction_id, target_hp, max_hp)

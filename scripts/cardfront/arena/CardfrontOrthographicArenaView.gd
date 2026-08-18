@@ -77,6 +77,7 @@ var aim_mesh_instance: MeshInstance3D
 var _turret_proxies: Dictionary = {}
 var _turret_barrels: Dictionary = {}
 var _chamber_labels: Dictionary = {}
+var _chamber_damage_modules: Dictionary = {}
 var _region_labels: Dictionary = {}
 var _region_platforms: Dictionary = {}
 var _region_control_rings: Dictionary = {}
@@ -1758,6 +1759,7 @@ func _try_spawn_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
 				damage_module.name = "HQDamageModule"
 				damage_module.visible = false
 				hq.add_child(damage_module)
+				_chamber_damage_modules[int(owner_id)] = damage_module
 		_apply_building_material_pass(hq, owner_id)
 		proxy.set_meta("modular_hq", true)
 		return true
@@ -1809,6 +1811,23 @@ func _apply_building_material_pass(instance: Node3D, faction_id: int) -> void:
 					dup.albedo_color = tint
 				elif apply_tint and material_name.contains("MAT_FACTION_SECONDARY"):
 					dup.albedo_color = tint.darkened(0.35)
+				elif material_name.contains("MAT_CORE"):
+					dup.albedo_color = base.lightened(0.06)
+				elif material_name.contains("MAT_DAMAGE"):
+					dup.albedo_color = darkened.darkened(0.15)
+				elif material_name.contains("MAT_METAL"):
+					dup.albedo_color = darkened
+					dup.metallic = 0.72
+					dup.roughness = 0.38
+				elif material_name.contains("MAT_NEUTRAL_STONE_DARK"):
+					dup.albedo_color = darkened
+				elif material_name.contains("MAT_NEUTRAL_WOOD"):
+					dup.albedo_color = darkened
+					dup.roughness = 0.84
+				elif material_name.contains("MAT_NEUTRAL_CREAM"):
+					dup.albedo_color = base.lightened(0.02)
+				elif material_name.contains("MAT_NEUTRAL_STONE"):
+					dup.albedo_color = darkened
 				else:
 					dup.albedo_color = darkened
 			else:
@@ -1967,6 +1986,33 @@ func _sync_turrets() -> void:
 			max_health,
 		]
 		label.modulate = Color(1.0, 0.35, 0.26) if health * 3 < max_health else Color.WHITE
+		_update_hq_damage_state(int(owner_id), health, max_health)
+
+
+func _update_hq_damage_state(owner_id: int, health: int, max_health: int) -> void:
+	var damage_module: Node3D = _chamber_damage_modules.get(owner_id, null)
+	if damage_module == null or not is_instance_valid(damage_module):
+		return
+	var ratio: float = clampf(float(health) / float(maxi(1, max_health)), 0.0, 1.0)
+	if ratio > 0.70:
+		damage_module.visible = false
+		return
+	damage_module.visible = true
+	var show_d1 := true
+	var show_d2 := ratio <= 0.40
+	var show_d3 := ratio <= 0.15
+	for child in damage_module.find_children("*", "MeshInstance3D", true, false):
+		var mesh_name: String = child.name.to_upper()
+		if mesh_name.contains("ARMOR"):
+			child.visible = show_d1
+		elif mesh_name.contains("DAMAGE_01"):
+			child.visible = show_d1
+		elif mesh_name.contains("DAMAGE_02"):
+			child.visible = show_d2
+		elif mesh_name.contains("DAMAGE_03"):
+			child.visible = show_d3
+		elif mesh_name.contains("CORECOVER"):
+			child.visible = show_d3
 
 
 func _sync_bullets() -> void:
