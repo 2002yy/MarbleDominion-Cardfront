@@ -682,7 +682,7 @@ func _build_tiles() -> void:
 	tile_multimesh.name = "TerritoryTiles"
 	var tile_mesh := PlaneMesh.new()
 	tile_mesh.orientation = PlaneMesh.FACE_Y
-	tile_mesh.size = Vector2(ARENA_X_SCALE - TILE_GAP, _z_scale - TILE_GAP)
+	tile_mesh.size = Vector2(ARENA_X_SCALE, _z_scale)
 	var tile_material := StandardMaterial3D.new()
 	tile_material.vertex_color_use_as_albedo = true
 	tile_material.roughness = 0.72
