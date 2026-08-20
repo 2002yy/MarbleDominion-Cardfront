@@ -76,6 +76,30 @@ const ASSETS: Dictionary = {
 		"source_pack": "cardfront_formal_hq_v1",
 		"fallback": "none",
 	},
+	"formal_tower_common": {
+		"path": "res://assets/cardfront_environment/formal/tower/tower_common.glb",
+		"role": "defense_tower_common",
+		"source_pack": "cardfront_formal_tower_v1",
+		"fallback": "primitive_tower",
+	},
+	"formal_tower_interceptor": {
+		"path": "res://assets/cardfront_environment/formal/tower/tower_interceptor.glb",
+		"role": "defense_tower_function_module",
+		"source_pack": "cardfront_formal_tower_v1",
+		"fallback": "custom_interceptor_tower",
+	},
+	"formal_tower_theme_castle": {
+		"path": "res://assets/cardfront_environment/formal/tower/tower_theme_castle.glb",
+		"role": "defense_tower_theme_module",
+		"source_pack": "cardfront_formal_tower_v1",
+		"fallback": "none",
+	},
+	"formal_tower_damage": {
+		"path": "res://assets/cardfront_environment/formal/tower/tower_damage_common.glb",
+		"role": "defense_tower_damage_module",
+		"source_pack": "cardfront_formal_tower_v1",
+		"fallback": "none",
+	},
 	"custom_industrial_stack": {
 		"path": "res://assets/cardfront_environment/source/custom/industrial_stack.glb",
 		"role": "map_landmark",

@@ -55,6 +55,7 @@ const REGION_LABEL_REST_ALPHA: float = 0.80
 const LEGACY_CHAMBER_GLB_SCALE: Vector3 = Vector3(1.78, 0.62, 1.05)
 const HQ_MODULE_SCALE: float = 1.0
 const TOWER_GLB_SCALE: float = 1.16
+const FORMAL_TOWER_GLB_SCALE: float = 0.94
 const SKYLINE_BASE_Y: float = 4.8
 
 var battlefield = null
@@ -110,6 +111,9 @@ var _entity_proxies: Dictionary = {}
 var _entity_sprites: Dictionary = {}
 var _entity_hp_fills: Dictionary = {}
 var _entity_status_labels: Dictionary = {}
+var _tower_damage_modules: Dictionary = {}
+var _tower_function_modules: Dictionary = {}
+var _formal_tower_death_snapshots: Array[Node3D] = []
 var _bullet_meshes: Dictionary = {}
 var _bullet_trails: Dictionary = {}
 var _bullet_rims: Dictionary = {}
@@ -490,6 +494,108 @@ func get_entity_hp_visible_for_test(entity_id: String) -> bool:
 func get_entity_visual_scale_for_test(entity_id: String) -> float:
 	var proxy: Node3D = _entity_proxies.get(entity_id, null)
 	return proxy.scale.x if proxy != null and is_instance_valid(proxy) else -1.0
+
+
+func get_entity_screen_position_for_test(entity_id: String) -> Vector2:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	if (
+		proxy == null
+		or not is_instance_valid(proxy)
+		or camera == null
+		or viewport_container == null
+		or world_viewport == null
+	):
+		return Vector2(-1.0, -1.0)
+	var viewport_point := camera.unproject_position(proxy.global_position + Vector3(0.0, 1.25, 0.0))
+	var scale_ratio := Vector2(
+		viewport_container.size.x / maxf(1.0, float(world_viewport.size.x)),
+		viewport_container.size.y / maxf(1.0, float(world_viewport.size.y))
+	)
+	return viewport_container.global_position + viewport_point * scale_ratio
+
+
+func get_formal_tower_module_count_for_test(entity_id: String) -> int:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	return int(proxy.get_meta("formal_tower_module_count", 0)) if proxy != null and is_instance_valid(proxy) else 0
+
+
+func get_formal_tower_model_scale_for_test(entity_id: String) -> float:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	if proxy == null or not is_instance_valid(proxy):
+		return -1.0
+	return float(proxy.get_meta("formal_tower_target_scale", -1.0))
+
+
+func get_formal_tower_visible_interceptor_elements_for_test(entity_id: String) -> int:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	if proxy == null or not is_instance_valid(proxy):
+		return 0
+	var count := 0
+	for child in proxy.find_children("GEO_InterceptPlate_*", "MeshInstance3D", true, false):
+		if (child as MeshInstance3D).visible:
+			count += 1
+	return count
+
+
+func get_formal_tower_damage_state_for_test(entity_id: String) -> int:
+	var damage_module: Node3D = _tower_damage_modules.get(entity_id, null)
+	if damage_module == null or not is_instance_valid(damage_module):
+		return -1
+	for child in damage_module.find_children("DMG_*", "MeshInstance3D", true, false):
+		if (child as MeshInstance3D).visible:
+			return _formal_tower_damage_state(str(child.name))
+	return 4
+
+
+func get_formal_tower_upgrade_event_count_for_test(entity_id: String) -> int:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	return int(proxy.get_meta("upgrade_event_count", 0)) if proxy != null and is_instance_valid(proxy) else 0
+
+
+func get_formal_tower_intercept_pulse_count_for_test(entity_id: String) -> int:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	return int(proxy.get_meta("intercept_pulse_count", 0)) if proxy != null and is_instance_valid(proxy) else 0
+
+
+func get_formal_tower_counter_event_count_for_test(entity_id: String) -> int:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	return int(proxy.get_meta("counter_event_count", 0)) if proxy != null and is_instance_valid(proxy) else 0
+
+
+func get_formal_tower_counter_recoil_distance_for_test(entity_id: String) -> float:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	return float(proxy.get_meta("counter_recoil_distance", 0.0)) if proxy != null and is_instance_valid(proxy) else 0.0
+
+
+func get_formal_tower_counter_flash_count_for_test(entity_id: String) -> int:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	if proxy == null or not is_instance_valid(proxy):
+		return 0
+	return proxy.find_children("CounterMuzzleFlash*", "MeshInstance3D", true, false).size()
+
+
+func get_formal_tower_status_core_visible_for_test(entity_id: String) -> bool:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	if proxy == null or not is_instance_valid(proxy):
+		return false
+	var core := proxy.find_child("GEO_StatusCore", true, false) as MeshInstance3D
+	return core != null and core.visible
+
+
+func get_formal_tower_material_for_test(entity_id: String, mesh_name: String) -> Material:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	if proxy == null or not is_instance_valid(proxy):
+		return null
+	var mesh := proxy.find_child(mesh_name, true, false) as MeshInstance3D
+	return mesh.get_surface_override_material(0) if mesh != null and mesh.mesh != null else null
+
+
+func get_formal_tower_death_snapshot_count_for_test() -> int:
+	var count := 0
+	for snapshot in _formal_tower_death_snapshots:
+		if snapshot != null and is_instance_valid(snapshot):
+			count += 1
+	return count
 
 
 func get_chamber_health_label_visible_for_test(owner_id: int) -> bool:
@@ -1924,13 +2030,13 @@ func _apply_building_material_pass(instance: Node3D, faction_id: int) -> void:
 			continue
 		for surface_idx in range(mesh_instance.mesh.get_surface_count()):
 			var mat: Material = mesh_instance.get_active_material(surface_idx)
-			if not (mat is StandardMaterial3D):
+			if not (mat is BaseMaterial3D):
 				continue
-			var source: StandardMaterial3D = mat as StandardMaterial3D
+			var source: BaseMaterial3D = mat as BaseMaterial3D
 			var uses_named: bool = bool(instance.get_meta("uses_named_materials", false))
 			if source.emission_enabled and not uses_named:
 				continue
-			var dup: StandardMaterial3D = source.duplicate() as StandardMaterial3D
+			var dup: BaseMaterial3D = source.duplicate() as BaseMaterial3D
 			var base: Color = dup.albedo_color
 			var darkened := Color(
 				base.r * GLB_DARKEN_FACTOR,
@@ -1940,18 +2046,20 @@ func _apply_building_material_pass(instance: Node3D, faction_id: int) -> void:
 			)
 			if bool(instance.get_meta("uses_named_materials", false)):
 				var material_name: String = source.resource_name.to_upper()
-				if apply_tint and material_name.contains("MAT_FACTION_PRIMARY"):
+				if apply_tint and (material_name.contains("MAT_FACTION_PRIMARY") or material_name.ends_with("__FACTION_PRIMARY")):
 					dup.albedo_color = tint
-				elif apply_tint and material_name.contains("MAT_FACTION_SECONDARY"):
+				elif apply_tint and (material_name.contains("MAT_FACTION_SECONDARY") or material_name.ends_with("__FACTION_TRIM")):
 					dup.albedo_color = tint.darkened(0.35)
-				elif material_name.contains("MAT_CORE"):
-					dup.albedo_color = Color(1.0, 0.56, 0.10)
+				elif apply_tint and material_name.ends_with("__OWNERSHIP"):
+					dup.albedo_color = tint.lightened(0.08)
+				elif material_name.contains("MAT_CORE") or material_name.ends_with("__CORE"):
+					dup.albedo_color = Color(0.32, 0.90, 1.0)
 					dup.emission_enabled = true
-					dup.emission = Color(1.0, 0.48, 0.06)
+					dup.emission = Color(0.22, 0.82, 1.0)
 					dup.emission_energy_multiplier = 3.0
-				elif material_name.contains("MAT_DAMAGE"):
+				elif material_name.contains("MAT_DAMAGE") or material_name.ends_with("__DAMAGE"):
 					dup.albedo_color = darkened.darkened(0.15)
-				elif material_name.contains("MAT_METAL"):
+				elif material_name.contains("MAT_METAL") or material_name.begins_with("CF_METAL__"):
 					dup.albedo_color = darkened
 					dup.metallic = 0.72
 					dup.roughness = 0.38
@@ -2367,11 +2475,14 @@ func _sync_entities() -> void:
 			continue
 		var stale_proxy: Node3D = _entity_proxies[entity_id]
 		if stale_proxy != null and is_instance_valid(stale_proxy):
+			_spawn_formal_tower_death_snapshot(stale_proxy)
 			stale_proxy.queue_free()
 		_entity_proxies.erase(entity_id)
 		_entity_sprites.erase(entity_id)
 		_entity_hp_fills.erase(entity_id)
 		_entity_status_labels.erase(entity_id)
+		_tower_damage_modules.erase(entity_id)
+		_tower_function_modules.erase(entity_id)
 
 
 func _create_entity_proxy(entity) -> Node3D:
@@ -2461,7 +2572,7 @@ func _sync_entity_readability(entity) -> void:
 			backing.visible = show_hp
 	var status: Label3D = _entity_status_labels.get(entity_id, null)
 	if status != null and is_instance_valid(status):
-		status.visible = not bool(entity.powered)
+		status.visible = not bool(entity.can_act())
 		status.text = CombatReadabilityScript.entity_status_text(entity) if status.visible else ""
 		status.modulate = Color(0.58, 0.62, 0.66) if not bool(entity.powered) else Color.WHITE
 	var proxy: Node3D = _entity_proxies.get(entity_id, null)
@@ -2469,12 +2580,15 @@ func _sync_entity_readability(entity) -> void:
 		var power_node: Node3D = proxy.find_child("PowerCore", true, false) as Node3D
 		if power_node != null:
 			power_node.visible = bool(entity.powered)
+		_sync_formal_tower_state(proxy, entity)
 
 
 func _try_spawn_tower_glb(proxy: Node3D, entity) -> bool:
 	var tower_id: String = str(entity.tower_id)
 	var shape: String = CombatReadabilityScript.tower_shape(tower_id)
-	var asset_id: String = "custom_beacon_tower" if shape == "beacon" else "custom_interceptor_tower"
+	if shape == "interceptor":
+		return _try_spawn_formal_interceptor_tower(proxy, entity)
+	var asset_id: String = "custom_beacon_tower"
 	var scene: PackedScene = EnvironmentAssetRegistryScript.load_scene(asset_id)
 	if scene == null:
 		return false
@@ -2501,6 +2615,139 @@ func _try_spawn_tower_glb(proxy: Node3D, entity) -> bool:
 			child.owner = null
 			child.reparent(core, false)
 	return true
+
+
+func _try_spawn_formal_interceptor_tower(proxy: Node3D, entity) -> bool:
+	var common_scene := EnvironmentAssetRegistryScript.load_scene("formal_tower_common")
+	var function_scene := EnvironmentAssetRegistryScript.load_scene("formal_tower_interceptor")
+	var theme_scene := EnvironmentAssetRegistryScript.load_scene("formal_tower_theme_castle")
+	var damage_scene := EnvironmentAssetRegistryScript.load_scene("formal_tower_damage")
+	if common_scene == null or function_scene == null or theme_scene == null or damage_scene == null:
+		return false
+	var instance := common_scene.instantiate() as Node3D
+	if instance == null:
+		return false
+	instance.name = "TowerGlb"
+	instance.scale = Vector3.ONE * FORMAL_TOWER_GLB_SCALE
+	instance.position.y = TILE_HEIGHT + 0.35
+	instance.set_meta("presentation_only", true)
+	instance.set_meta("uses_named_materials", true)
+	proxy.add_child(instance)
+	var module_specs := [
+		{"scene": function_scene, "name": "TowerInterceptorModule"},
+		{"scene": theme_scene, "name": "TowerThemeCastleModule"},
+		{"scene": damage_scene, "name": "TowerDamageModule"},
+	]
+	for module_spec in module_specs:
+		var module := (module_spec["scene"] as PackedScene).instantiate() as Node3D
+		if module == null:
+			instance.queue_free()
+			return false
+		module.name = str(module_spec["name"])
+		module.scale = Vector3.ONE
+		instance.add_child(module)
+		if module.name == "TowerInterceptorModule":
+			_tower_function_modules[str(entity.entity_id)] = module
+		elif module.name == "TowerDamageModule":
+			_tower_damage_modules[str(entity.entity_id)] = module
+	_apply_building_material_pass(instance, int(entity.owner_id))
+	proxy.set_meta("formal_interceptor_tower", true)
+	proxy.set_meta("formal_tower_module_count", 4)
+	proxy.set_meta("formal_tower_target_scale", FORMAL_TOWER_GLB_SCALE)
+	proxy.set_meta("formal_tower_owner_id", int(entity.owner_id))
+	proxy.set_meta("formal_tower_entity_id", str(entity.entity_id))
+	_sync_formal_tower_state(proxy, entity)
+	return true
+
+
+func _sync_formal_tower_state(proxy: Node3D, entity) -> void:
+	if not bool(proxy.get_meta("formal_interceptor_tower", false)):
+		return
+	_start_formal_tower_build_animation(proxy)
+	var level := clampi(int(entity.tower_level), 1, 3)
+	for child in proxy.find_children("GEO_*", "MeshInstance3D", true, false):
+		var mesh := child as MeshInstance3D
+		var min_level := _formal_tower_min_level(str(mesh.name))
+		if min_level > 1:
+			mesh.visible = level >= min_level
+	var damage_module: Node3D = _tower_damage_modules.get(str(entity.entity_id), null)
+	if damage_module == null or not is_instance_valid(damage_module):
+		return
+	var hp_state := clampi(int(entity.hp), 0, 4)
+	damage_module.visible = hp_state < 4
+	for child in damage_module.find_children("DMG_*", "MeshInstance3D", true, false):
+		(child as MeshInstance3D).visible = _formal_tower_damage_state(str(child.name)) == hp_state
+	var can_intercept := bool(entity.can_act()) and int(entity.intercepts_remaining) > 0
+	var interceptor_suffixes: Array[String] = ["A", "B", "C"]
+	for suffix_index in range(interceptor_suffixes.size()):
+		var suffix: String = interceptor_suffixes[suffix_index]
+		var plate := proxy.find_child("GEO_InterceptPlate_%s" % suffix, true, false) as MeshInstance3D
+		if plate != null:
+			plate.visible = can_intercept and level >= _formal_tower_min_level(str(plate.name)) and suffix_index < int(entity.intercepts_remaining)
+	var status_core := proxy.find_child("GEO_StatusCore", true, false) as MeshInstance3D
+	if status_core != null:
+		status_core.visible = bool(entity.powered) and entity.get_status_rounds("disabled") <= 0
+
+
+func _start_formal_tower_build_animation(proxy: Node3D) -> void:
+	if not proxy.is_inside_tree() or bool(proxy.get_meta("build_animation_started", false)):
+		return
+	var model := proxy.find_child("TowerGlb", true, false) as Node3D
+	if model == null:
+		return
+	proxy.set_meta("build_animation_started", true)
+	var target_scale := float(proxy.get_meta("formal_tower_target_scale", FORMAL_TOWER_GLB_SCALE))
+	model.scale = Vector3.ONE * target_scale * 0.72
+	var tween := model.create_tween()
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(model, "scale", Vector3.ONE * target_scale, 0.72)
+
+
+func _formal_tower_min_level(node_name: String) -> int:
+	if node_name.begins_with("GEO_Counter"):
+		return 3
+	if node_name in ["GEO_InterceptArm_C", "GEO_InterceptPlate_C"]:
+		return 2
+	return 1
+
+
+func _formal_tower_damage_state(node_name: String) -> int:
+	if node_name.begins_with("DMG_Light_"):
+		return 3
+	if node_name.begins_with("DMG_Heavy_"):
+		return 2
+	if node_name.begins_with("DMG_Critical_"):
+		return 1
+	if node_name.begins_with("DMG_Rubble_"):
+		return 0
+	return -1
+
+
+func _spawn_formal_tower_death_snapshot(proxy: Node3D) -> void:
+	if not bool(proxy.get_meta("formal_interceptor_tower", false)):
+		return
+	var scene := EnvironmentAssetRegistryScript.load_scene("formal_tower_damage")
+	if scene == null:
+		return
+	var snapshot := scene.instantiate() as Node3D
+	if snapshot == null:
+		return
+	snapshot.name = "TowerDeathSnapshot_%s" % str(proxy.get_meta("formal_tower_entity_id", "unknown"))
+	snapshot.position = proxy.position + Vector3(0.0, TILE_HEIGHT + 0.35, 0.0)
+	snapshot.scale = proxy.scale * float(proxy.get_meta("formal_tower_target_scale", FORMAL_TOWER_GLB_SCALE))
+	snapshot.set_meta("presentation_only", true)
+	snapshot.set_meta("death_snapshot", true)
+	snapshot.set_meta("uses_named_materials", true)
+	world_root.add_child(snapshot)
+	for child in snapshot.find_children("DMG_*", "MeshInstance3D", true, false):
+		(child as MeshInstance3D).visible = _formal_tower_damage_state(str(child.name)) == 0
+	_apply_building_material_pass(snapshot, int(proxy.get_meta("formal_tower_owner_id", -1)))
+	_formal_tower_death_snapshots.append(snapshot)
+	var timer := get_tree().create_timer(1.0)
+	timer.timeout.connect(func():
+		if snapshot != null and is_instance_valid(snapshot):
+			snapshot.queue_free()
+	)
 
 
 func _build_tower_proxy(proxy: Node3D, entity, owner_color: Color) -> void:
@@ -2611,6 +2858,8 @@ func _connect_entity_runtime() -> void:
 		"entity_contact_resolved": "_on_entity_contact_resolved",
 		"projectile_guided": "_on_projectile_guided",
 		"tower_power_changed": "_on_tower_power_changed",
+		"tower_level_changed": "_on_tower_level_changed",
+		"tower_counter_fired": "_on_tower_counter_fired",
 		"heavy_charge_exploded": "_on_heavy_charge_exploded",
 	}
 	for signal_name in bindings.keys():
@@ -2628,6 +2877,8 @@ func _disconnect_entity_runtime() -> void:
 		"entity_contact_resolved": "_on_entity_contact_resolved",
 		"projectile_guided": "_on_projectile_guided",
 		"tower_power_changed": "_on_tower_power_changed",
+		"tower_level_changed": "_on_tower_level_changed",
+		"tower_counter_fired": "_on_tower_counter_fired",
 		"heavy_charge_exploded": "_on_heavy_charge_exploded",
 	}
 	for signal_name in bindings.keys():
@@ -2639,6 +2890,8 @@ func _disconnect_entity_runtime() -> void:
 
 
 func _on_entity_contact_resolved(result: Dictionary) -> void:
+	if bool(result.get("intercepted", false)):
+		_pulse_formal_tower_intercept(str(result.get("target_id", "")))
 	var cell: Vector2i = result.get("cell", Vector2i(-1, -1)) as Vector2i
 	if cell.x < 0:
 		return
@@ -2663,6 +2916,78 @@ func _on_tower_power_changed(entity_id: String, _powered: bool) -> void:
 	var tower = registry.get_entity(entity_id) if registry != null else null
 	if tower != null:
 		_add_combat_effect(tower.cell, Color(0.82, 0.88, 0.92), 0.42, 1.35)
+
+
+func _on_tower_level_changed(entity_id: String, _owner_id: int, _previous_level: int, new_level: int) -> void:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	var module: Node3D = _tower_function_modules.get(entity_id, null)
+	if proxy == null or not is_instance_valid(proxy) or module == null or not is_instance_valid(module):
+		return
+	proxy.set_meta("upgrade_event_count", int(proxy.get_meta("upgrade_event_count", 0)) + 1)
+	proxy.set_meta("last_presented_level", int(new_level))
+	module.scale = Vector3(1.0, 0.78, 1.0)
+	var tween := module.create_tween()
+	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(module, "scale", Vector3.ONE, 0.36)
+	var core := proxy.find_child("GEO_StatusCore", true, false) as MeshInstance3D
+	if core != null:
+		core.scale = Vector3.ONE * 1.18
+		var core_tween := core.create_tween()
+		core_tween.tween_property(core, "scale", Vector3.ONE, 0.30)
+
+
+func _on_tower_counter_fired(entity_id: String, _owner_id: int) -> void:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	if proxy == null or not is_instance_valid(proxy):
+		return
+	proxy.set_meta("counter_event_count", int(proxy.get_meta("counter_event_count", 0)) + 1)
+	const RECOIL_DISTANCE := 0.24
+	proxy.set_meta("counter_recoil_distance", RECOIL_DISTANCE)
+	var pivot := proxy.find_child("PIV_Turret", true, false) as Node3D
+	if pivot == null:
+		return
+	var rest := pivot.position
+	pivot.position.z -= RECOIL_DISTANCE
+	var tween := pivot.create_tween()
+	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(pivot, "position", rest, 0.24)
+	var socket := proxy.find_child("SOCKET_Muzzle", true, false) as Node3D
+	if socket == null:
+		return
+	var flash := MeshInstance3D.new()
+	flash.name = "CounterMuzzleFlash_%d" % int(proxy.get_meta("counter_event_count", 0))
+	var flash_mesh := SphereMesh.new()
+	flash_mesh.radius = 0.24
+	flash_mesh.height = 0.48
+	flash_mesh.radial_segments = 12
+	flash_mesh.rings = 4
+	flash.mesh = flash_mesh
+	var flash_color := Color(1.0, 0.72, 0.18, 0.94)
+	var flash_material := _make_material(flash_color, 5.4)
+	flash_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	flash.material_override = flash_material
+	flash.scale = Vector3.ONE * 0.58
+	socket.add_child(flash)
+	var flash_tween := flash.create_tween()
+	flash_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	flash_tween.tween_property(flash, "scale", Vector3.ONE * 1.75, 0.07)
+	flash_tween.tween_property(flash_material, "albedo_color:a", 0.0, 0.14)
+	flash_tween.parallel().tween_property(flash_material, "emission_energy_multiplier", 0.0, 0.14)
+	flash_tween.tween_callback(flash.queue_free)
+
+
+func _pulse_formal_tower_intercept(entity_id: String) -> void:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	if proxy == null or not is_instance_valid(proxy):
+		return
+	proxy.set_meta("intercept_pulse_count", int(proxy.get_meta("intercept_pulse_count", 0)) + 1)
+	for child in proxy.find_children("GEO_InterceptPlate_*", "MeshInstance3D", true, false):
+		var plate := child as MeshInstance3D
+		if not plate.visible:
+			continue
+		plate.scale = Vector3.ONE * 1.12
+		var tween := plate.create_tween()
+		tween.tween_property(plate, "scale", Vector3.ONE, 0.22)
 
 
 func _on_heavy_charge_exploded(owner_id: int, cell: Vector2i, _center_target_id: String) -> void:

@@ -153,12 +153,13 @@ func validate_instance(root: Node, contract: Dictionary = {}) -> Dictionary:
 		var ground_tolerance := float(contract.get("ground_tolerance", 0.001))
 		if absf(bounds_min.y) > ground_tolerance:
 			_add_error(errors, "GROUND_CONTACT_INVALID", root_path, "Visible bounds must touch root Y=0 ground plane")
-		var horizontal_center := Vector2(
-			(bounds_min.x + bounds_max.x) * 0.5,
-			(bounds_min.z + bounds_max.z) * 0.5
-		)
-		if horizontal_center.length() > float(contract.get("ground_center_tolerance", 0.001)):
-			_add_error(errors, "GROUND_CENTER_INVALID", root_path, "Ground-contact footprint must be centered on root X/Z")
+		if bool(contract.get("require_ground_center", true)):
+			var horizontal_center := Vector2(
+				(bounds_min.x + bounds_max.x) * 0.5,
+				(bounds_min.z + bounds_max.z) * 0.5
+			)
+			if horizontal_center.length() > float(contract.get("ground_center_tolerance", 0.001)):
+				_add_error(errors, "GROUND_CENTER_INVALID", root_path, "Ground-contact footprint must be centered on root X/Z")
 
 	return {
 		"valid": errors.is_empty(),

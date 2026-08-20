@@ -50,7 +50,14 @@ func build_or_upgrade(owner_id: int, tower_id: String) -> Dictionary:
 				"success": false,
 				"reason": "tower_max_level",
 			}
-		configure_level(existing, int(existing.tower_level) + 1)
+		var previous_level := int(existing.tower_level)
+		configure_level(existing, previous_level + 1)
+		runtime.tower_level_changed.emit(
+			str(existing.entity_id),
+			int(existing.owner_id),
+			previous_level,
+			int(existing.tower_level)
+		)
 		runtime._mark_visuals_dirty()
 		return {
 			"action": "build_or_upgrade_tower",

@@ -1,8 +1,8 @@
 # Project Status / 项目状态
 
-Last updated: 2026-08-20
+Last updated: 2026-08-21
 
-Current `main`: `56e896a`
+Current `main`: `10ddb48`
 Status authority: **this file**
 
 This document contains current truth, the active track, one next gate per
@@ -60,10 +60,12 @@ Documentation governance
 
 **Current gate:** `P0-FT1 Formal Interceptor Tower Cross-Asset Benchmark`
 
-**Source commit:** `56e896a`
+**Source commit:** `10ddb48`
 
-**Status:** Step 1 validator implemented in working tree; focused tests PASS;
-Tower reference kit not started
+**Status:** Step 1 validator committed and pushed; Steps 2–8 source, four GLBs,
+runtime binding, deterministic captures, save/performance regression, and clean
+logs PASS in the current working tree; Step 9 product-owner screenshot decision
+is pending, so P0-FT1 remains open
 
 **Checkpoint:**
 [`cardfront_refactor_checkpoints/P0-FT1_formal_interceptor_tower_benchmark.md`](cardfront_refactor_checkpoints/P0-FT1_formal_interceptor_tower_benchmark.md)
@@ -76,6 +78,26 @@ instead of healing invalid transforms, semantic nodes, material roles,
 forbidden authority nodes, and missing required sockets. The currently imported
 HQ remains usable as presentation evidence but is not yet D22-admitted because
 its legacy root/node/material names fail the frozen contract.
+
+The deterministic Tower source recipe builds a 2.0 m footprint, 2.7553 m high
+Formal Interceptor from separate Common, Interceptor, Castle, and mutually
+exclusive Damage collections. The four normalized production GLBs now pass
+the executable D21/D22 import gate, are registered, and assemble into isolated
+player/AI presentation instances. L1–L3, HP4–HP0, power, suppression, quota,
+intercept, counter, upgrade, build, and death presentation are bound without
+changing gameplay authority.
+
+The deterministic 12-card state board and desktop/narrow live capture matrix
+are under `artifacts/formal-tower-state-board/` and
+`artifacts/formal-tower-live/`. The state board is the close visual authority;
+the 40×50 live images verify battle hierarchy and coexistence with both HQs,
+bridges, and both factions' three projectile types. Product-owner screenshot
+GO / NO-GO is the only allowed next decision.
+
+The first screenshot review returned NO-GO for an undersized HP0 snapshot and
+weak L3 Counter focus. Revision 1 now uses five grounded rubble pieces and a
+0.24 m Snap-Recoil with one bounded emissive muzzle flash. Automated and visual
+evidence has been refreshed; the revised screenshot decision remains pending.
 
 The art track may not expand to Fire-Control Beacon, Gate, Stronghold, Rapid,
 Engineer, Industrial, Lab, formal audio, or D26 until P0-FT1 records GO.
@@ -245,6 +267,8 @@ Formal production authority:
 | 2026-08-20 | Projectile PG1 implementation/evidence formalized | `dc46d35`, `cdd128b`, `faa152d` |
 | 2026-08-20 | Layered strategic-region information accepted and pushed | `3f3c8a6`; 339 focused checks; desktop/narrow captures |
 | 2026-08-20 | Dual-track governance and Formal Interceptor Tower scope locked | current Grill decision record; implementation pending |
+| 2026-08-20 | P0-FT1 Step 1 validator committed; Step 2 Tower reference layout passes local admission | `10ddb48`; `artifacts/formal-tower-reference/validation.json`; P0-FT1 remains open |
+| 2026-08-21 | P0-FT1 Steps 3–8 production modules, runtime state binding, capture matrix, and regression PASS locally | source still `10ddb48`; evidence is dirty-working-tree and awaits product-owner screenshot decision |
 
 Generated captures under `artifacts/` are local review evidence unless a
 checkpoint explicitly admits them. They are not automatically release assets.

@@ -48,3 +48,20 @@
 必需节点至少包含 `PIV_Turret`、`SOCKET_Muzzle`、`VFX_Intercept`。
 
 只有通过 validator 和 fixed-camera benchmark 后才能登记为正式 GO 资产。
+
+### Formal Interceptor Tower（P0-FT1 Steps 2–7）
+
+- 母版：`Cardfront_Tower_Master.blend`
+- 通用构建/校验器：`../../tools/blender/cardfront_asset_runner.py`
+- 累积配方：`../../tools/blender/build_cardfront_tower_reference.py`
+- 紧凑复审证据：`../../artifacts/formal-tower-reference/`
+- 生产 GLB：`../../assets/cardfront_environment/formal/tower/`
+- 状态板：`../../artifacts/formal-tower-state-board/`
+- 实战证据：`../../artifacts/formal-tower-live/`
+
+当前参考布局为 2.0 × 2.0 × 2.7553 m，36 个独立 mesh、800 tris，
+Common / Interceptor / Castle / Damage 四层共享地面中心原点。L1/L2/L3
+使用 2/3/3 个大拦截构件，L3 另有反制炮口；HP3/2/1 裂纹簇互斥，HP0
+保留 5 块逐块贴地、无玩法权威的短时残骸。母版不保留 Camera/Light。四个生产
+GLB 已通过 Godot 的 D21/D22 validator，并以语义节点名绑定 L1–L3、HP、
+运行状态、拦截/反制和死亡快照。运行时模型不含碰撞、占位、存档或玩法权威。

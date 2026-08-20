@@ -197,6 +197,8 @@ func _test_repair_action(fixture: Dictionary) -> void:
 	var after: int = fortify.get_fortify_stack(target)
 	_assert.that(after >= before, "repair unit never reduces defense")
 	_assert.gte(after, 1, "repair unit restores a nearby frontline layer")
+	if repair_fixture != null:
+		runtime.registry.remove_entity(str(repair_fixture.entity_id))
 
 
 func _test_expiry_signal(fixture: Dictionary) -> void:
@@ -212,6 +214,9 @@ func _test_expiry_signal(fixture: Dictionary) -> void:
 		"repair",
 		1
 	)
+	_assert.that(expiring != null, "expiry fixture should spawn within the per-faction creature cap")
+	if expiring == null:
+		return
 	var removed_ids: Array = []
 	runtime.entity_removed.connect(
 		func(entity_id, _kind, _owner_id, _cell): removed_ids.append(str(entity_id))

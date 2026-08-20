@@ -1,0 +1,162 @@
+{
+	"experiment": "P0-FT1 Formal Interceptor Tower deterministic state board",
+	"status": "PASS",
+	"design_size": [
+		1600,
+		1400
+	],
+	"capture_size": [
+		1600,
+		1400
+	],
+	"card_count": 12,
+	"font_floor_px": 22,
+	"states": [
+		{
+			"row": "阵营 + 等级 / FACTION + LEVEL",
+			"title": "玩家  L1  HP4  ACTIVE",
+			"faction": 0,
+			"level": 1,
+			"hp": 4,
+			"state": "active",
+			"visible_intercept_plates": 2,
+			"visible_damage_meshes": 0,
+			"counter_flash_count": 0,
+			"module_count": 4
+		},
+		{
+			"row": "阵营 + 等级 / FACTION + LEVEL",
+			"title": "AI  L2  HP4  ACTIVE",
+			"faction": 1,
+			"level": 2,
+			"hp": 4,
+			"state": "active",
+			"visible_intercept_plates": 3,
+			"visible_damage_meshes": 0,
+			"counter_flash_count": 0,
+			"module_count": 4
+		},
+		{
+			"row": "阵营 + 等级 / FACTION + LEVEL",
+			"title": "玩家  L3  HP4  COUNTER",
+			"faction": 0,
+			"level": 3,
+			"hp": 4,
+			"state": "counter",
+			"visible_intercept_plates": 0,
+			"visible_damage_meshes": 0,
+			"counter_flash_count": 1,
+			"module_count": 4
+		},
+		{
+			"row": "损伤 / DAMAGE",
+			"title": "玩家  HP3  LIGHT",
+			"faction": 0,
+			"level": 2,
+			"hp": 3,
+			"state": "active",
+			"visible_intercept_plates": 3,
+			"visible_damage_meshes": 2,
+			"counter_flash_count": 0,
+			"module_count": 4
+		},
+		{
+			"row": "损伤 / DAMAGE",
+			"title": "AI  HP2  HEAVY",
+			"faction": 1,
+			"level": 2,
+			"hp": 2,
+			"state": "active",
+			"visible_intercept_plates": 3,
+			"visible_damage_meshes": 3,
+			"counter_flash_count": 0,
+			"module_count": 4
+		},
+		{
+			"row": "损伤 / DAMAGE",
+			"title": "玩家  HP1  CRITICAL",
+			"faction": 0,
+			"level": 2,
+			"hp": 1,
+			"state": "active",
+			"visible_intercept_plates": 3,
+			"visible_damage_meshes": 4,
+			"counter_flash_count": 0,
+			"module_count": 4
+		},
+		{
+			"row": "运行状态 / OPERATION",
+			"title": "玩家  ACTIVE",
+			"faction": 0,
+			"level": 2,
+			"hp": 4,
+			"state": "active",
+			"visible_intercept_plates": 3,
+			"visible_damage_meshes": 0,
+			"counter_flash_count": 0,
+			"module_count": 4
+		},
+		{
+			"row": "运行状态 / OPERATION",
+			"title": "AI  UNPOWERED",
+			"faction": 1,
+			"level": 2,
+			"hp": 4,
+			"state": "unpowered",
+			"visible_intercept_plates": 0,
+			"visible_damage_meshes": 0,
+			"counter_flash_count": 0,
+			"module_count": 4
+		},
+		{
+			"row": "运行状态 / OPERATION",
+			"title": "玩家  SUPPRESSED",
+			"faction": 0,
+			"level": 2,
+			"hp": 4,
+			"state": "suppressed",
+			"visible_intercept_plates": 0,
+			"visible_damage_meshes": 0,
+			"counter_flash_count": 0,
+			"module_count": 4
+		},
+		{
+			"row": "动作 / ACTION",
+			"title": "AI  QUOTA EMPTY",
+			"faction": 1,
+			"level": 2,
+			"hp": 4,
+			"state": "quota_empty",
+			"visible_intercept_plates": 0,
+			"visible_damage_meshes": 0,
+			"counter_flash_count": 0,
+			"module_count": 4
+		},
+		{
+			"row": "动作 / ACTION",
+			"title": "玩家  INTERCEPT PULSE",
+			"faction": 0,
+			"level": 2,
+			"hp": 4,
+			"state": "intercept",
+			"visible_intercept_plates": 3,
+			"visible_damage_meshes": 0,
+			"counter_flash_count": 0,
+			"module_count": 4
+		},
+		{
+			"row": "动作 / ACTION",
+			"title": "AI  HP0  DEATH SNAPSHOT",
+			"faction": 1,
+			"level": 3,
+			"hp": 0,
+			"state": "destroyed",
+			"visible_intercept_plates": 0,
+			"visible_damage_meshes": 5,
+			"counter_flash_count": 0,
+			"module_count": 4
+		}
+	],
+	"errors": [],
+	"image": "formal-tower-state-board.png"
+}

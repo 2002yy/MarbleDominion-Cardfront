@@ -1,9 +1,9 @@
 # P0-FT1 Formal Interceptor Tower Cross-Asset Benchmark
 
-Date: 2026-08-20
+Date: 2026-08-21
 
-Source commit: `56e896a`
-Decision: **STEP 1 GO / P0-FT1 OPEN**
+Source commit: `10ddb48`
+Decision: **STEPS 1–8 GO / PRODUCT-OWNER SCREENSHOT DECISION PENDING**
 
 ## Step Contract
 
@@ -147,13 +147,147 @@ Evidence:
 - current `hq_common.glb`: importable, but intentionally rejected by D22 due
   legacy root/node/material names. It is migration input, not Contract PASS.
 
-Current result: **STEP 1 GO / P0-FT1 REMAINS OPEN**
+### Step 2 Evidence — Tower Reference Kit
+
+Implemented in the current working tree:
+
+- `art_source/cardfront_3d/Cardfront_Tower_Master.blend`;
+- `tools/blender/cardfront_asset_runner.py` deterministic build, contact,
+  validation, seven-view inspection, and Camera/Light cleanup helper;
+- `tools/blender/build_cardfront_tower_reference.py` cumulative
+  Common → Interceptor → Castle → Damage recipe;
+- two compact review sheets and a machine-readable report under
+  `artifacts/formal-tower-reference/`.
+
+Admission evidence:
+
+- exact bounds: **2.0 × 2.0 × 2.7553 m**; no geometry below ground;
+- **36** single-user meshes, **800** triangles, applied mesh rotation/scale;
+- all node/material roles pass the recipe-side D21/D22 preflight;
+- required `PIV_Turret`, `SOCKET_Muzzle`, and `VFX_Intercept` present;
+- **16/16** grounded/interface/arm/muzzle/rubble contact assertions PASS;
+- Level grammar records 2/3/3 interception elements and an L3-only counter
+  muzzle without changing footprint or height class;
+- HP 4/3/2/1/0 are mutually exclusive complete/light/heavy/critical/rubble
+  states; HP0 uses five individually grounded presentation-only pieces;
+- six orthographic sides plus isometric inspection PASS; no Camera or Light is
+  retained in the `.blend` master.
+
+The first damage visualization was rejected during review because HP3/2/1
+overlays appeared simultaneously and obscured the faction/core band. The
+recipe now renders mutually exclusive crack clusters and keeps all damage
+objects hidden by default in the source master.
+
+### Steps 3–4 Evidence — Production Modules and Godot Admission
+
+Exported and imported:
+
+- `tower_common.glb` → `CF_TowerCommon`;
+- `tower_interceptor.glb` → `CF_TowerInterceptor`;
+- `tower_theme_castle.glb` → `CF_TowerThemeCastle`;
+- `tower_damage_common.glb` → `CF_TowerDamageCommon`.
+
+All four files pass the executable validator and import as independent
+`PackedScene` resources. Godot's GLTF import does not preserve the Blender
+custom properties used by the source recipe, so runtime state mapping uses the
+frozen semantic node names instead: `GEO_Intercept*`, `GEO_Counter*`, and
+`DMG_Light/Heavy/Critical/Rubble*`. This does not relax D21/D22 admission.
+
+Evidence:
+
+- `CardfrontFormalAssetValidatorTestRunner`: **32 PASS**;
+- `CardfrontFormalTowerAssetTestRunner`: **30 PASS**;
+- `CardfrontEnvironmentAssetTestRunner`: **165 PASS**;
+- no Collision, Camera, Light, invalid root, unknown material role, unapplied
+  visible transform, or missing required socket admitted.
+
+### Steps 5–6 Evidence — Registry, Runtime Assembly, and State Binding
+
+The environment registry now exposes the four Formal Tower modules. The 3D
+presenter assembles per-instance Common + Interceptor + Castle + Damage modules
+and applies faction materials without sharing overrides between player and AI.
+
+Bound presentation states:
+
+- L1/L2/L3 → 2/3/3 large interception plates; L3 counter module;
+- HP4/3/2/1 → complete/light/heavy/critical mutually exclusive geometry;
+- Active, Unpowered, Suppressed, and Quota Empty → core/plate visibility;
+- explicit level-change signal → upper-module Snap–Settle;
+- interception and counter results → bounded pulse plus **0.24 m**
+  Snap-Recoil and one short-lived emissive muzzle flash;
+- destruction → immediate Registry removal plus a one-second presentation
+  snapshot that never enters Registry authority.
+
+The build animation targets the model only and does not delay entity
+availability. The visual presenter reads current tower state and never writes
+HP, level, power, quota, occupancy, collision, targeting, or save authority.
+
+Focused evidence:
+
+- `CardfrontOrthographicArenaTestRunner`: **152 PASS**;
+- `CardfrontBattlefieldEntityRuntimeTestRunner`: **26 PASS** with its stale
+  expiry-fixture cap collision corrected, eliminating a prior false-green
+  script error;
+- player/AI material override isolation, suppressed/disabled plate shutdown,
+  explicit upgrade event, HP selection, and non-authoritative death snapshot
+  are asserted.
+
+### Step 7 Evidence — Deterministic Visual Matrix
+
+Capture tooling:
+
+- `scripts/tools/capture_cardfront_formal_tower_state_board.gd`;
+- `scripts/tools/capture_cardfront_formal_tower_live.gd`;
+- `scripts/tools/run_cardfront_formal_tower_capture.ps1`.
+
+Generated review evidence:
+
+- `artifacts/formal-tower-state-board/formal-tower-state-board.png`;
+- `artifacts/formal-tower-state-board/formal-tower-state-board-manifest.json`;
+- desktop and narrow live captures plus manifests under
+  `artifacts/formal-tower-live/`.
+
+The **12-card** board uses a **22 px minimum text floor** and covers faction,
+L1–L3, HP4/3/2/1/0, Active, Unpowered, Suppressed, Quota Empty, Intercept
+Pulse, L3 Counter, and Death Snapshot. Each live capture fails closed unless it
+contains both HQ proxies, both bridges, two four-module Formal Towers, all six
+faction/type projectile combinations, and both Towers inside the logical
+screen boundary. Desktop and 760×540 narrow captures both PASS.
+
+The full-arena captures are combat hierarchy/occlusion evidence, not close-up
+art evidence: the Tower is intentionally small in a 40×50 overview. The state
+board is the authoritative close visual review surface.
+
+The first product-owner review returned **NO-GO** because HP0 rubble read too
+small and the L3 Counter action lacked a strong instantaneous focus. Revision 1
+replaced three tiny pieces with a five-piece grounded rubble cluster and froze
+the Counter card on its brighter muzzle-flash/recoil frame. The refreshed board
+records `visible_damage_meshes=5` for HP0 and `counter_flash_count=1` for L3;
+the revised screenshots still require a new product-owner decision.
+
+### Step 8 Evidence — Regression, Save, Performance, and Logs
+
+All runs completed sequentially with non-zero exits and `SCRIPT ERROR`, parse
+errors, and runtime `ERROR` treated as failures:
+
+- Arena Layout **45**, Arena Runtime **24**, Battlefield Scale **57**, Click
+  Selection **16**;
+- Entity Animation **54**, Entity Card Runtime **27**, Entity Foundation **23**,
+  Entity Runtime Boundary **25**, Entity Presentation Feedback **161**;
+- Restore Plan **11**, Save Flow **190**;
+- Cardfront Performance Smoke **10**;
+- Formal validator/import/registry and Orthographic Arena counts listed above.
+
+No new parse, import, runtime, or performance-budget error remains in the
+accepted evidence run.
+
+Current result: **STEPS 1–8 GO / P0-FT1 REMAINS OPEN FOR STEP 9**
 
 GO evidence bound to source commit: **NO**
 Manual evidence required: **YES**
 
 Only allowed next step inside the Art Production track:
 
-> Author the Tower reference kit and normalized Common/Interceptor/Castle/Damage
-> module/socket layout against the executable validator contract. Do not
-> register production Tower GLBs until the reference kit passes admission.
+> Product owner reviews the deterministic state board together with desktop and
+> narrow live captures, then records explicit screenshot GO / NO-GO. Do not
+> start another Formal asset family or the queued gameplay drift audit first.

@@ -121,6 +121,59 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.that(not view.get_entity_hp_visible_for_test(repair_id), "orthographic arena: full-health entity bars should stay hidden")
 	_assert.gte(view.get_entity_visual_scale_for_test(repair_id), 1.45, "orthographic arena: combat creatures should receive the readability scale")
 	_assert.gte(view.get_entity_visual_scale_for_test(tower_id), 1.45, "orthographic arena: defense towers should receive the readability scale")
+	_assert.eq(view.get_formal_tower_module_count_for_test(tower_id), 4, "orthographic arena: Interceptor Tower should assemble four Formal modules")
+	_assert.between(view.get_formal_tower_model_scale_for_test(tower_id), 0.90, 1.0, "orthographic arena: Formal Tower should stay below HQ priority after entity readability scaling")
+	_assert.eq(view.get_formal_tower_visible_interceptor_elements_for_test(tower_id), 2, "orthographic arena: L1 should expose two large interception elements")
+	var upgrade_result: Dictionary = entity_runtime.build_or_upgrade_tower(CardfrontRulesScript.PLAYER_FACTION, "interceptor_tower")
+	await process_frame
+	_assert.that(bool(upgrade_result.get("success", false)) and not bool(upgrade_result.get("built", true)), "orthographic arena: fixture should upgrade the existing Formal Tower")
+	_assert.eq(view.get_formal_tower_upgrade_event_count_for_test(tower_id), 1, "orthographic arena: upgrade animation must originate from an explicit level-change event")
+	_assert.eq(view.get_formal_tower_visible_interceptor_elements_for_test(tower_id), 3, "orthographic arena: L2 should expose three large interception elements")
+	var level_three_result: Dictionary = entity_runtime.build_or_upgrade_tower(CardfrontRulesScript.PLAYER_FACTION, "interceptor_tower")
+	await process_frame
+	_assert.that(bool(level_three_result.get("success", false)), "orthographic arena: fixture should reach L3 before counter presentation")
+	_assert.eq(view.get_formal_tower_upgrade_event_count_for_test(tower_id), 2, "orthographic arena: each successful Formal Tower upgrade should emit exactly one presentation event")
+	tower.intercepts_remaining = 0
+	view._process(0.0)
+	_assert.eq(view.get_formal_tower_visible_interceptor_elements_for_test(tower_id), 0, "orthographic arena: exhausted quota should extinguish all large interception plates without tiny text")
+	entity_runtime.tower_counter_fired.emit(tower_id, CardfrontRulesScript.PLAYER_FACTION)
+	_assert.eq(view.get_formal_tower_counter_event_count_for_test(tower_id), 1, "orthographic arena: L3 counterfire should originate from the explicit runtime event")
+	_assert.gte(view.get_formal_tower_counter_recoil_distance_for_test(tower_id), 0.20, "orthographic arena: L3 counterfire recoil should be visually readable")
+	_assert.eq(view.get_formal_tower_counter_flash_count_for_test(tower_id), 1, "orthographic arena: L3 counterfire should create one bounded muzzle flash")
+	tower.configure_interceptor(3)
+	entity_runtime.entity_contact_resolved.emit({"target_id": tower_id, "intercepted": true, "cell": tower.cell})
+	_assert.eq(view.get_formal_tower_intercept_pulse_count_for_test(tower_id), 1, "orthographic arena: intercept result should pulse the Formal interception elements")
+	tower.powered = false
+	entity_runtime.tower_power_changed.emit(tower_id, false)
+	view._process(0.0)
+	_assert.that(not view.get_formal_tower_status_core_visible_for_test(tower_id), "orthographic arena: unpowered Tower should extinguish its persistent status core")
+	tower.powered = true
+	view._process(0.0)
+	tower.add_status("disabled", 1)
+	view._process(0.0)
+	_assert.eq(view.get_formal_tower_visible_interceptor_elements_for_test(tower_id), 0, "orthographic arena: suppressed Tower should extinguish all interception plates")
+	_assert.that(not view.get_formal_tower_status_core_visible_for_test(tower_id), "orthographic arena: suppressed Tower should extinguish its persistent status core")
+	tower.clear_status("disabled")
+	view._process(0.0)
+	tower.hp = 3
+	view._process(0.0)
+	_assert.eq(view.get_formal_tower_damage_state_for_test(tower_id), 3, "orthographic arena: 3 HP should select only the light-damage module")
+	tower.hp = tower.max_hp
+	view._process(0.0)
+	_assert.eq(view.get_formal_tower_damage_state_for_test(tower_id), 4, "orthographic arena: full HP should hide all damage geometry")
+	var ai_tower_result: Dictionary = entity_runtime.build_or_upgrade_tower(CardfrontRulesScript.AI_FACTION, "interceptor_tower")
+	await process_frame
+	var ai_tower = entity_runtime._find_owner_tower(CardfrontRulesScript.AI_FACTION, "interceptor_tower")
+	var ai_tower_id := str(ai_tower.entity_id) if ai_tower != null else ""
+	_assert.that(bool(ai_tower_result.get("success", false)), "orthographic arena: AI Formal Tower fixture should build")
+	var player_band := view.get_formal_tower_material_for_test(tower_id, "GEO_FactionBand") as BaseMaterial3D
+	var ai_band := view.get_formal_tower_material_for_test(ai_tower_id, "GEO_FactionBand") as BaseMaterial3D
+	_assert.that(player_band != null, "orthographic arena: player Formal Tower should expose an ownership-band material override")
+	_assert.that(ai_band != null, "orthographic arena: AI Formal Tower should expose an ownership-band material override")
+	if player_band != null and ai_band != null:
+		_assert.that(player_band != ai_band, "orthographic arena: player and AI Tower materials should be instance-isolated")
+	if player_band != null and ai_band != null:
+		_assert.gte(_color_distance(player_band.albedo_color, ai_band.albedo_color), 0.20, "orthographic arena: player and AI Tower ownership bands should be visibly distinct")
 	repair_units[0].max_hp = maxi(2, int(repair_units[0].hp) + 1)
 	view._process(0.0)
 	_assert.that(view.get_entity_hp_visible_for_test(repair_id), "orthographic arena: damaged entities should reveal their HP bar")
@@ -228,6 +281,12 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	view._process(0.0)
 	for visual in view.get_projectile_visuals_for_test():
 		_assert.that(bool(visual.get("trail_visible", false)), "orthographic arena: PG1 trail-on capture must restore faction trails")
+	tower.hp = 0
+	tower.active = false
+	view._process(0.0)
+	await process_frame
+	_assert.eq(view.get_formal_tower_death_snapshot_count_for_test(), 1, "orthographic arena: destroyed Formal Tower should leave one short-lived presentation snapshot")
+	_assert.eq(entity_runtime.registry.get_entity(tower_id), tower, "orthographic arena: presentation snapshot must never enter or replace Registry authority")
 
 	TestFixtures.cleanup_node(main)
 	await _flush()

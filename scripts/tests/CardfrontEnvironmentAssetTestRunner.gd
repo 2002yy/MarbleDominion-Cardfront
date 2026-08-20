@@ -38,7 +38,7 @@ func _test_registry_assets_are_loadable() -> void:
 			kaykit_ids.append(asset_id)
 	_assert.eq(kaykit_ids.size(), 7, "environment registry: KayKit benchmark batch should contain seven reviewed source models")
 	_assert.eq(custom_ids.size(), 10, "environment registry: custom Blender batch should contain ten building models")
-	_assert.eq(formal_ids.size(), 4, "environment registry: Formal HQ batch should contain four imported modules")
+	_assert.eq(formal_ids.size(), 8, "environment registry: Formal HQ and Interceptor Tower batches should contain eight imported modules")
 	for asset_id in ids:
 		var entry: Dictionary = AssetRegistryScript.get_entry(asset_id)
 		_assert.that(not str(entry.get("path", "")).is_empty(), "%s: path should be explicit" % asset_id)
