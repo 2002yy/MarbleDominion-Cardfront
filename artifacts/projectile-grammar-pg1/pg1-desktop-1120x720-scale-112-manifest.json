@@ -1,0 +1,947 @@
+{
+	"capture_label": "desktop-1120x720-scale-112",
+	"captures": [
+		{
+			"absolute_path": "C:\\Users\\Zhang\\Desktop\\《Marble Dominion Cardfront》 弹珠领土：卡牌前线\\BallWar_v2_（最新开发版本）\\BallWar\\artifacts\\projectile-grammar-pg1/pg1-desktop-1120x720-scale-112-trail-off.png",
+			"active_count": 6,
+			"counts_by_faction_and_type": {
+				"0:siege": 1,
+				"0:standard": 1,
+				"0:suppression": 1,
+				"1:siege": 1,
+				"1:standard": 1,
+				"1:suppression": 1
+			},
+			"errors": [],
+			"file": "pg1-desktop-1120x720-scale-112-trail-off.png",
+			"scenario": "trail-off",
+			"status": "PASS",
+			"visible_proxy_count": 6,
+			"visuals": [
+				{
+					"body_color": [
+						0.360400021076202,
+						0.578800022602081,
+						0.672399997711182
+					],
+					"faction_id": 0,
+					"footprint_aspect": 1.0,
+					"projectile_type": "standard",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						449.61279296875,
+						375.377410888672
+					],
+					"shape": "round",
+					"trail_visible": false
+				},
+				{
+					"body_color": [
+						0.379999995231628,
+						0.300000011920929,
+						0.219999998807907
+					],
+					"faction_id": 0,
+					"footprint_aspect": 1.34146344041477,
+					"projectile_type": "siege",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						560.0,
+						375.377410888672
+					],
+					"shape": "heavy",
+					"trail_visible": false
+				},
+				{
+					"body_color": [
+						0.5,
+						0.560000002384186,
+						0.579999983310699
+					],
+					"faction_id": 0,
+					"footprint_aspect": 2.16256745275228,
+					"projectile_type": "suppression",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						670.38720703125,
+						375.377410888672
+					],
+					"shape": "disc",
+					"trail_visible": false
+				},
+				{
+					"body_color": [
+						0.672399997711182,
+						0.422800004482269,
+						0.422800004482269
+					],
+					"faction_id": 1,
+					"footprint_aspect": 1.0,
+					"projectile_type": "standard",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						449.61279296875,
+						242.736221313477
+					],
+					"shape": "round",
+					"trail_visible": false
+				},
+				{
+					"body_color": [
+						0.379999995231628,
+						0.300000011920929,
+						0.219999998807907
+					],
+					"faction_id": 1,
+					"footprint_aspect": 1.34146344041477,
+					"projectile_type": "siege",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						560.0,
+						242.736221313477
+					],
+					"shape": "heavy",
+					"trail_visible": false
+				},
+				{
+					"body_color": [
+						0.5,
+						0.560000002384186,
+						0.579999983310699
+					],
+					"faction_id": 1,
+					"footprint_aspect": 2.16256745275228,
+					"projectile_type": "suppression",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						670.38720703125,
+						242.736221313477
+					],
+					"shape": "disc",
+					"trail_visible": false
+				}
+			]
+		},
+		{
+			"absolute_path": "C:\\Users\\Zhang\\Desktop\\《Marble Dominion Cardfront》 弹珠领土：卡牌前线\\BallWar_v2_（最新开发版本）\\BallWar\\artifacts\\projectile-grammar-pg1/pg1-desktop-1120x720-scale-112-trail-on.png",
+			"active_count": 6,
+			"counts_by_faction_and_type": {
+				"0:siege": 1,
+				"0:standard": 1,
+				"0:suppression": 1,
+				"1:siege": 1,
+				"1:standard": 1,
+				"1:suppression": 1
+			},
+			"errors": [],
+			"file": "pg1-desktop-1120x720-scale-112-trail-on.png",
+			"scenario": "trail-on",
+			"status": "PASS",
+			"visible_proxy_count": 6,
+			"visuals": [
+				{
+					"body_color": [
+						0.360400021076202,
+						0.578800022602081,
+						0.672399997711182
+					],
+					"faction_id": 0,
+					"footprint_aspect": 1.0,
+					"projectile_type": "standard",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						449.61279296875,
+						375.377410888672
+					],
+					"shape": "round",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.379999995231628,
+						0.300000011920929,
+						0.219999998807907
+					],
+					"faction_id": 0,
+					"footprint_aspect": 1.34146344041477,
+					"projectile_type": "siege",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						560.0,
+						375.377410888672
+					],
+					"shape": "heavy",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.5,
+						0.560000002384186,
+						0.579999983310699
+					],
+					"faction_id": 0,
+					"footprint_aspect": 2.16256745275228,
+					"projectile_type": "suppression",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						670.38720703125,
+						375.377410888672
+					],
+					"shape": "disc",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.672399997711182,
+						0.422800004482269,
+						0.422800004482269
+					],
+					"faction_id": 1,
+					"footprint_aspect": 1.0,
+					"projectile_type": "standard",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						449.61279296875,
+						242.736221313477
+					],
+					"shape": "round",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.379999995231628,
+						0.300000011920929,
+						0.219999998807907
+					],
+					"faction_id": 1,
+					"footprint_aspect": 1.34146344041477,
+					"projectile_type": "siege",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						560.0,
+						242.736221313477
+					],
+					"shape": "heavy",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.5,
+						0.560000002384186,
+						0.579999983310699
+					],
+					"faction_id": 1,
+					"footprint_aspect": 2.16256745275228,
+					"projectile_type": "suppression",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						670.38720703125,
+						242.736221313477
+					],
+					"shape": "disc",
+					"trail_visible": true
+				}
+			]
+		},
+		{
+			"absolute_path": "C:\\Users\\Zhang\\Desktop\\《Marble Dominion Cardfront》 弹珠领土：卡牌前线\\BallWar_v2_（最新开发版本）\\BallWar\\artifacts\\projectile-grammar-pg1/pg1-desktop-1120x720-scale-112-volley.png",
+			"active_count": 18,
+			"counts_by_faction_and_type": {
+				"0:siege": 3,
+				"0:standard": 3,
+				"0:suppression": 3,
+				"1:siege": 3,
+				"1:standard": 3,
+				"1:suppression": 3
+			},
+			"errors": [],
+			"file": "pg1-desktop-1120x720-scale-112-volley.png",
+			"scenario": "volley",
+			"status": "PASS",
+			"visible_proxy_count": 18,
+			"visuals": [
+				{
+					"body_color": [
+						0.360400021076202,
+						0.578800022602081,
+						0.672399997711182
+					],
+					"faction_id": 0,
+					"footprint_aspect": 1.0,
+					"projectile_type": "standard",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						419.256317138672,
+						317.346862792969
+					],
+					"shape": "round",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.360400021076202,
+						0.578800022602081,
+						0.672399997711182
+					],
+					"faction_id": 0,
+					"footprint_aspect": 1.0,
+					"projectile_type": "standard",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						438.574096679688,
+						331.163696289063
+					],
+					"shape": "round",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.360400021076202,
+						0.578800022602081,
+						0.672399997711182
+					],
+					"faction_id": 0,
+					"footprint_aspect": 1.0,
+					"projectile_type": "standard",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						457.891815185547,
+						344.98046875
+					],
+					"shape": "round",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.379999995231628,
+						0.300000011920929,
+						0.219999998807907
+					],
+					"faction_id": 0,
+					"footprint_aspect": 1.34146344041477,
+					"projectile_type": "siege",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						540.682250976563,
+						317.346862792969
+					],
+					"shape": "heavy",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.379999995231628,
+						0.300000011920929,
+						0.219999998807907
+					],
+					"faction_id": 0,
+					"footprint_aspect": 1.34146344041477,
+					"projectile_type": "siege",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						560.0,
+						331.163696289063
+					],
+					"shape": "heavy",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.379999995231628,
+						0.300000011920929,
+						0.219999998807907
+					],
+					"faction_id": 0,
+					"footprint_aspect": 1.34146344041477,
+					"projectile_type": "siege",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						579.317749023438,
+						344.98046875
+					],
+					"shape": "heavy",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.5,
+						0.560000002384186,
+						0.579999983310699
+					],
+					"faction_id": 0,
+					"footprint_aspect": 2.16256745275228,
+					"projectile_type": "suppression",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						662.108154296875,
+						317.346862792969
+					],
+					"shape": "disc",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.5,
+						0.560000002384186,
+						0.579999983310699
+					],
+					"faction_id": 0,
+					"footprint_aspect": 2.16256745275228,
+					"projectile_type": "suppression",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						681.425903320313,
+						331.163696289063
+					],
+					"shape": "disc",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.5,
+						0.560000002384186,
+						0.579999983310699
+					],
+					"faction_id": 0,
+					"footprint_aspect": 2.16256745275228,
+					"projectile_type": "suppression",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.180000007152557,
+						0.46000000834465,
+						0.579999983310699
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						700.743713378906,
+						344.98046875
+					],
+					"shape": "disc",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.672399997711182,
+						0.422800004482269,
+						0.422800004482269
+					],
+					"faction_id": 1,
+					"footprint_aspect": 1.0,
+					"projectile_type": "standard",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						419.256317138672,
+						300.766723632813
+					],
+					"shape": "round",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.672399997711182,
+						0.422800004482269,
+						0.422800004482269
+					],
+					"faction_id": 1,
+					"footprint_aspect": 1.0,
+					"projectile_type": "standard",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						438.574096679688,
+						286.949951171875
+					],
+					"shape": "round",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.672399997711182,
+						0.422800004482269,
+						0.422800004482269
+					],
+					"faction_id": 1,
+					"footprint_aspect": 1.0,
+					"projectile_type": "standard",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						457.891815185547,
+						273.133117675781
+					],
+					"shape": "round",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.379999995231628,
+						0.300000011920929,
+						0.219999998807907
+					],
+					"faction_id": 1,
+					"footprint_aspect": 1.34146344041477,
+					"projectile_type": "siege",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						540.682250976563,
+						300.766723632813
+					],
+					"shape": "heavy",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.379999995231628,
+						0.300000011920929,
+						0.219999998807907
+					],
+					"faction_id": 1,
+					"footprint_aspect": 1.34146344041477,
+					"projectile_type": "siege",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						560.0,
+						286.949951171875
+					],
+					"shape": "heavy",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.379999995231628,
+						0.300000011920929,
+						0.219999998807907
+					],
+					"faction_id": 1,
+					"footprint_aspect": 1.34146344041477,
+					"projectile_type": "siege",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						579.317749023438,
+						273.133117675781
+					],
+					"shape": "heavy",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.5,
+						0.560000002384186,
+						0.579999983310699
+					],
+					"faction_id": 1,
+					"footprint_aspect": 2.16256745275228,
+					"projectile_type": "suppression",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						662.108154296875,
+						300.766723632813
+					],
+					"shape": "disc",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.5,
+						0.560000002384186,
+						0.579999983310699
+					],
+					"faction_id": 1,
+					"footprint_aspect": 2.16256745275228,
+					"projectile_type": "suppression",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						681.425903320313,
+						286.949951171875
+					],
+					"shape": "disc",
+					"trail_visible": true
+				},
+				{
+					"body_color": [
+						0.5,
+						0.560000002384186,
+						0.579999983310699
+					],
+					"faction_id": 1,
+					"footprint_aspect": 2.16256745275228,
+					"projectile_type": "suppression",
+					"rim_alpha": 0.819999992847443,
+					"rim_color": [
+						0.579999983310699,
+						0.259999990463257,
+						0.259999990463257
+					],
+					"rim_cull_mode": 1,
+					"rim_matches_body_mesh": true,
+					"rim_no_depth_test": false,
+					"rim_shading_mode": 0,
+					"rim_transparency": 1,
+					"rim_visible": true,
+					"screen_position": [
+						700.743713378906,
+						273.133117675781
+					],
+					"shape": "disc",
+					"trail_visible": true
+				}
+			]
+		}
+	],
+	"commit_sha": "cdd128b97b0ae40497155f5b2eb5691077674200",
+	"errors": [],
+	"experiment": "P0-PG1 Projectile Grammar Prototype",
+	"grid_extent": [
+		40,
+		50
+	],
+	"map_id": "default_duel",
+	"presentation_scale": 1.12,
+	"quality": "medium",
+	"status": "PASS",
+	"viewport": [
+		1120,
+		720
+	],
+	"working_tree_changes": [
+		"docs/PROJECT_STATUS.md",
+		"scripts/cardfront/arena/CardfrontCombatReadabilityProfile.gd",
+		"scripts/cardfront/arena/CardfrontOrthographicArenaView.gd",
+		"scripts/tests/CardfrontOrthographicArenaTestRunner.gd",
+		"artifacts/projectile-grammar-pg1/pg1-desktop-1120x720-scale-100-manifest.json",
+		"artifacts/projectile-grammar-pg1/pg1-desktop-1120x720-scale-100-trail-off.png",
+		"artifacts/projectile-grammar-pg1/pg1-desktop-1120x720-scale-100-trail-on.png",
+		"artifacts/projectile-grammar-pg1/pg1-desktop-1120x720-scale-100-volley.png",
+		"artifacts/projectile-grammar-pg1/pg1-desktop-1120x720-scale-112-manifest.json",
+		"artifacts/projectile-grammar-pg1/pg1-desktop-1120x720-scale-112-trail-off.png",
+		"artifacts/projectile-grammar-pg1/pg1-desktop-1120x720-scale-112-trail-on.png",
+		"artifacts/projectile-grammar-pg1/pg1-desktop-1120x720-scale-112-volley.png",
+		"artifacts/projectile-grammar-pg1/pg1-narrow-760x540-scale-112-manifest.json",
+		"artifacts/projectile-grammar-pg1/pg1-narrow-760x540-scale-112-trail-off.png",
+		"artifacts/projectile-grammar-pg1/pg1-narrow-760x540-scale-112-trail-on.png",
+		"artifacts/projectile-grammar-pg1/pg1-narrow-760x540-scale-112-volley.png",
+		"docs/cardfront_refactor_checkpoints/P0-PG1_projectile_grammar_prototype.md",
+		"scripts/tools/capture_cardfront_projectile_grammar.gd",
+		"scripts/tools/run_cardfront_projectile_grammar_capture.ps1",
+		"截图_screenshots/06_战局_760x540_缩放112_2026-08-18.png.import",
+		"截图_screenshots/07_玩家HQ_D2受损_112_2026-08-18.png.import",
+		"截图_screenshots/07b_玩家HQ_D3濒毁_100_2026-08-18.png.import",
+		"截图_screenshots/08_玩家HQ_D3濒毁_112_2026-08-18.png.import",
+		"\"截图_screenshots/09_AI HQ_D2受损_112_2026-08-18.png.import\"",
+		"截图_screenshots/debug_d3_hq_crop.png",
+		"截图_screenshots/debug_d3_hq_crop.png.import",
+		"截图_screenshots/对比_shadow_off_中画质_112_2026-08-18.png.import"
+	],
+	"working_tree_dirty": true
+}

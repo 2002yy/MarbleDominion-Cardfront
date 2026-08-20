@@ -15,10 +15,13 @@ static func projectile_spec(projectile_type: String, faction_color: Color) -> Di
 				"rim_color": faction_color,
 				"trail_color": faction_color,
 				"radius": 0.62,
+				"shape_scale": Vector3(1.10, 0.94, 0.82),
 				"trail_length": 1.45,
 				"trail_width": 0.24,
 				"emission": 0.30,
 				"rim_emission": 1.20,
+				"rim_alpha": 0.82,
+				"rim_scale": 1.18,
 				"shape": "heavy",
 			}
 		ProjectileTypeScript.SUPPRESSION:
@@ -27,10 +30,13 @@ static func projectile_spec(projectile_type: String, faction_color: Color) -> Di
 				"rim_color": faction_color,
 				"trail_color": faction_color,
 				"radius": 0.46,
+				"shape_scale": Vector3(1.22, 0.72, 0.55),
 				"trail_length": 2.15,
 				"trail_width": 0.16,
 				"emission": 0.45,
 				"rim_emission": 1.40,
+				"rim_alpha": 0.82,
+				"rim_scale": 1.18,
 				"shape": "disc",
 			}
 		_:
@@ -39,10 +45,13 @@ static func projectile_spec(projectile_type: String, faction_color: Color) -> Di
 				"rim_color": faction_color,
 				"trail_color": faction_color,
 				"radius": 0.42,
+				"shape_scale": Vector3.ONE,
 				"trail_length": 1.05,
 				"trail_width": 0.12,
 				"emission": 0.72,
 				"rim_emission": 0.90,
+				"rim_alpha": 0.82,
+				"rim_scale": 1.18,
 				"shape": "round",
 			}
 

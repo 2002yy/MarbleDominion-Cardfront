@@ -106,6 +106,7 @@ var _entity_status_labels: Dictionary = {}
 var _bullet_meshes: Dictionary = {}
 var _bullet_trails: Dictionary = {}
 var _bullet_rims: Dictionary = {}
+var _projectile_trails_visible: bool = true
 var _combat_effects: Array = []
 var _faction_materials: Dictionary = {}
 var _aim_mesh := ImmediateMesh.new()
@@ -343,6 +344,74 @@ func get_checker_cell_span_for_test() -> int:
 
 func get_bullet_proxy_count_for_test() -> int:
 	return _bullet_proxies.size()
+
+
+func get_visible_bullet_proxy_count_for_test() -> int:
+	var count: int = 0
+	for proxy in _bullet_proxies:
+		if proxy != null and is_instance_valid(proxy) and proxy.visible:
+			count += 1
+	return count
+
+
+func set_projectile_trails_visible_for_capture(visible_value: bool) -> void:
+	_projectile_trails_visible = visible_value
+	for trail in _bullet_trails.values():
+		if trail != null and is_instance_valid(trail):
+			trail.visible = visible_value
+
+
+func get_projectile_visuals_for_test() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for proxy in _bullet_proxies:
+		if proxy == null or not is_instance_valid(proxy) or not proxy.visible:
+			continue
+		var rim: MeshInstance3D = _bullet_rims.get(proxy.get_instance_id(), null)
+		var trail: MeshInstance3D = _bullet_trails.get(proxy.get_instance_id(), null)
+		var rim_material: StandardMaterial3D = null
+		if rim != null and is_instance_valid(rim) and rim.material_override is StandardMaterial3D:
+			rim_material = rim.material_override as StandardMaterial3D
+		var body_material: StandardMaterial3D = null
+		if proxy.material_override is StandardMaterial3D:
+			body_material = proxy.material_override as StandardMaterial3D
+		var body_size := Vector3.ZERO
+		if proxy.mesh != null:
+			var body_aabb: AABB = proxy.mesh.get_aabb()
+			body_size = Vector3(
+				absf(body_aabb.size.x * proxy.scale.x),
+				absf(body_aabb.size.y * proxy.scale.y),
+				absf(body_aabb.size.z * proxy.scale.z)
+			)
+		var narrow_axis: float = maxf(0.001, minf(body_size.x, body_size.z))
+		var screen_position := Vector2.ZERO
+		if camera != null:
+			screen_position = camera.unproject_position(proxy.global_position)
+		result.append({
+			"projectile_type": str(proxy.get_meta("projectile_type", ProjectileTypeScript.STANDARD)),
+			"faction_id": int(proxy.get_meta("faction_id", CardfrontRulesScript.NEUTRAL_OWNER)),
+			"shape": str(proxy.get_meta("projectile_shape", "round")),
+			"footprint_aspect": maxf(body_size.x, body_size.z) / narrow_axis,
+			"rim_matches_body_mesh": rim != null and is_instance_valid(rim) and rim.mesh == proxy.mesh,
+			"rim_alpha": rim_material.albedo_color.a if rim_material != null else 0.0,
+			"rim_color": [
+				rim_material.albedo_color.r if rim_material != null else 0.0,
+				rim_material.albedo_color.g if rim_material != null else 0.0,
+				rim_material.albedo_color.b if rim_material != null else 0.0,
+			],
+			"body_color": [
+				body_material.albedo_color.r if body_material != null else 0.0,
+				body_material.albedo_color.g if body_material != null else 0.0,
+				body_material.albedo_color.b if body_material != null else 0.0,
+			],
+			"rim_transparency": rim_material.transparency if rim_material != null else -1,
+			"rim_shading_mode": rim_material.shading_mode if rim_material != null else -1,
+			"rim_cull_mode": rim_material.cull_mode if rim_material != null else -1,
+			"rim_no_depth_test": rim_material.no_depth_test if rim_material != null else true,
+			"rim_visible": rim != null and is_instance_valid(rim) and rim.visible,
+			"trail_visible": trail != null and is_instance_valid(trail) and trail.visible,
+			"screen_position": [screen_position.x, screen_position.y],
+		})
+	return result
 
 
 func get_entity_proxy_count_for_test() -> int:
@@ -2093,27 +2162,37 @@ func _sync_bullets() -> void:
 		var projectile_type: String = ProjectileTypeScript.sanitize(str(bullet.projectile_type))
 		var faction_color: Color = _arena_faction_color(int(bullet.faction_id))
 		var spec: Dictionary = CombatReadabilityScript.projectile_spec(projectile_type, faction_color)
+		var projectile_shape: String = str(spec.get("shape", "round"))
+		var shape_scale: Vector3 = spec.get("shape_scale", Vector3.ONE) as Vector3
 		proxy.visible = true
 		proxy.position = _simulation_to_world(bullet.global_position, 0.58)
-		proxy.mesh = _projectile_mesh(str(spec.get("shape", "round")))
+		proxy.mesh = _projectile_mesh(projectile_shape)
 		proxy.material_override = _make_material(
 			spec.get("body_color", faction_color) as Color,
 			float(spec.get("emission", 0.5))
 		)
 		var radius: float = float(spec.get("radius", 0.42)) * PROJECTILE_VISUAL_SCALE
-		proxy.scale = Vector3.ONE * radius
-		# Faction rim - always faction color, high emission
+		proxy.scale = shape_scale * radius
+		proxy.set_meta("projectile_type", projectile_type)
+		proxy.set_meta("projectile_shape", projectile_shape)
+		proxy.set_meta("faction_id", int(bullet.faction_id))
+		# Shape-matched back-face shell: only the faction-colored outer contour
+		# remains visible after the depth-tested type body occludes its center.
 		var rim: MeshInstance3D = _bullet_rims.get(proxy.get_instance_id(), null)
 		if rim != null and is_instance_valid(rim):
-			rim.material_override = _make_material(
+			rim.mesh = proxy.mesh
+			rim.scale = Vector3.ONE * float(spec.get("rim_scale", 1.18))
+			rim.material_override = _make_projectile_rim_material(
 				spec.get("rim_color", faction_color) as Color,
-				float(spec.get("rim_emission", 1.0))
+				float(spec.get("rim_emission", 1.0)),
+				float(spec.get("rim_alpha", 0.82))
 			)
+			rim.visible = true
 		var direction: Vector2 = bullet.direction if bullet.get("direction") is Vector2 else Vector2.RIGHT
 		if direction.length_squared() > 0.001:
 			var direction_3d := Vector3(direction.x, 0.0, direction.y).normalized()
 			proxy.look_at(proxy.position + direction_3d, Vector3.UP)
-		_sync_projectile_trail(proxy, spec, radius, faction_color)
+		_sync_projectile_trail(proxy, spec, radius, faction_color, shape_scale)
 
 
 func _ensure_bullet_proxies(required_count: int) -> void:
@@ -2124,19 +2203,10 @@ func _ensure_bullet_proxies(required_count: int) -> void:
 		# Faction rim - slightly larger shell, high emission, always faction color
 		var rim := MeshInstance3D.new()
 		rim.name = "FactionRim"
-		var rim_mesh := SphereMesh.new()
-		rim_mesh.radius = 1.12
-		rim_mesh.height = 1.80
-		rim_mesh.radial_segments = 10
-		rim_mesh.rings = 4
-		rim.mesh = rim_mesh
-		var rim_mat := StandardMaterial3D.new()
-		rim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		rim_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		rim_mat.albedo_color = Color.WHITE
-		rim_mat.albedo_color.a = 0.35
-		rim_mat.no_depth_test = true
-		rim.material_override = rim_mat
+		rim.mesh = proxy.mesh
+		rim.scale = Vector3.ONE * 1.18
+		rim.material_override = _make_projectile_rim_material(Color.WHITE, 1.0, 0.82)
+		rim.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		proxy.add_child(rim)
 		_bullet_rims[proxy.get_instance_id()] = rim
 		var trail := MeshInstance3D.new()
@@ -2180,14 +2250,30 @@ func _projectile_mesh(shape: String) -> PrimitiveMesh:
 	return mesh
 
 
-func _sync_projectile_trail(proxy: MeshInstance3D, spec: Dictionary, radius: float, faction_color: Color) -> void:
+func _sync_projectile_trail(
+	proxy: MeshInstance3D,
+	spec: Dictionary,
+	radius: float,
+	faction_color: Color,
+	shape_scale: Vector3
+) -> void:
 	var trail: MeshInstance3D = _bullet_trails.get(proxy.get_instance_id(), null)
 	if trail == null or not is_instance_valid(trail):
 		return
+	trail.visible = _projectile_trails_visible
 	var length: float = float(spec.get("trail_length", 1.0))
 	var width: float = float(spec.get("trail_width", 0.12))
-	trail.position = Vector3(0.0, 0.0, length * 0.5 + radius)
-	trail.scale = Vector3(width, width, length)
+	var safe_shape_scale := Vector3(
+		maxf(0.001, absf(shape_scale.x)),
+		maxf(0.001, absf(shape_scale.y)),
+		maxf(0.001, absf(shape_scale.z))
+	)
+	trail.position = Vector3(0.0, 0.0, (length * 0.5 + radius) / safe_shape_scale.z)
+	trail.scale = Vector3(
+		width / safe_shape_scale.x,
+		width / safe_shape_scale.y,
+		length / safe_shape_scale.z
+	)
 	var trail_color: Color = spec.get("trail_color", faction_color) as Color
 	trail_color.a = 0.52
 	trail.material_override = _make_material(trail_color, float(spec.get("rim_emission", 1.0)) * 0.65)
@@ -2768,4 +2854,22 @@ func _make_material(color: Color, emission_energy: float = 0.0) -> StandardMater
 		material.emission_enabled = true
 		material.emission = color
 		material.emission_energy_multiplier = emission_energy
+	return material
+
+
+func _make_projectile_rim_material(
+	color: Color,
+	emission_energy: float,
+	alpha: float
+) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	var rim_color := Color(color.r, color.g, color.b, clampf(alpha, 0.0, 1.0))
+	material.albedo_color = rim_color
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.cull_mode = BaseMaterial3D.CULL_FRONT
+	material.no_depth_test = false
+	material.emission_enabled = true
+	material.emission = Color(color.r, color.g, color.b)
+	material.emission_energy_multiplier = maxf(0.0, emission_energy)
 	return material

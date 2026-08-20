@@ -150,15 +150,75 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	await process_frame
 	_assert.eq(view.get_sparse_claim_marker_count_for_test(), 1, "orthographic arena: an isolated captured cell should receive one faction marker")
 
-	main.runtime.bullet_pool.spawn_bullet(
-		CardfrontRulesScript.PLAYER_FACTION,
-		player_turret.global_position,
-		Vector2.UP,
-		main.runtime.battlefield,
-		main.runtime.turrets
-	)
+	main.runtime.bullet_pool.clear_active()
+	var projectile_types: Array[String] = [
+		ProjectileTypeScript.STANDARD,
+		ProjectileTypeScript.SIEGE,
+		ProjectileTypeScript.SUPPRESSION,
+	]
+	var pixel_extent: Vector2 = main.runtime.battlefield.get_pixel_extent()
+	for faction_index in range(2):
+		var faction_id: int = (
+			CardfrontRulesScript.PLAYER_FACTION
+			if faction_index == 0
+			else CardfrontRulesScript.AI_FACTION
+		)
+		var y_ratio: float = 0.60 if faction_index == 0 else 0.40
+		var direction := Vector2.UP if faction_index == 0 else Vector2.DOWN
+		for type_index in range(projectile_types.size()):
+			var x_ratio: float = 0.32 + float(type_index) * 0.18
+			var bullet = main.runtime.bullet_pool.spawn_bullet(
+				faction_id,
+				main.runtime.battlefield.global_position + Vector2(pixel_extent.x * x_ratio, pixel_extent.y * y_ratio),
+				direction,
+				main.runtime.battlefield,
+				main.runtime.turrets,
+				1,
+				0,
+				{"projectile_type": projectile_types[type_index]}
+			)
+			bullet.set_physics_process(false)
 	await process_frame
-	_assert.gte(view.get_bullet_proxy_count_for_test(), 1, "orthographic arena: active 2D bullets should receive reusable 3D proxies")
+	view._process(0.0)
+	_assert.gte(view.get_bullet_proxy_count_for_test(), 6, "orthographic arena: active 2D bullets should receive reusable 3D proxies")
+	_assert.eq(view.get_visible_bullet_proxy_count_for_test(), 6, "orthographic arena: deterministic projectile fixture should expose all faction/type combinations")
+	var projectile_visuals: Array[Dictionary] = view.get_projectile_visuals_for_test()
+	var standard_aspect: float = 0.0
+	var siege_aspect: float = 0.0
+	var suppression_aspect: float = 0.0
+	var player_rim_color: Array = []
+	var ai_rim_color: Array = []
+	for visual in projectile_visuals:
+		_assert.that(bool(visual.get("rim_matches_body_mesh", false)), "orthographic arena: faction rim must preserve the projectile type silhouette")
+		_assert.between(float(visual.get("rim_alpha", 0.0)), 0.80, 0.84, "orthographic arena: faction rim should retain its authored transparency")
+		_assert.eq(int(visual.get("rim_transparency", -1)), BaseMaterial3D.TRANSPARENCY_ALPHA, "orthographic arena: faction rim must use alpha transparency")
+		_assert.eq(int(visual.get("rim_shading_mode", -1)), BaseMaterial3D.SHADING_MODE_UNSHADED, "orthographic arena: faction rim must remain unshaded")
+		_assert.eq(int(visual.get("rim_cull_mode", -1)), BaseMaterial3D.CULL_FRONT, "orthographic arena: faction rim should render as a back-face outline shell")
+		_assert.that(not bool(visual.get("rim_no_depth_test", true)), "orthographic arena: type body must depth-occlude the center of the faction rim")
+		var visual_type: String = str(visual.get("projectile_type", ""))
+		var aspect: float = float(visual.get("footprint_aspect", 0.0))
+		if visual_type == ProjectileTypeScript.STANDARD:
+			standard_aspect = maxf(standard_aspect, aspect)
+		elif visual_type == ProjectileTypeScript.SIEGE:
+			siege_aspect = maxf(siege_aspect, aspect)
+		elif visual_type == ProjectileTypeScript.SUPPRESSION:
+			suppression_aspect = maxf(suppression_aspect, aspect)
+		if int(visual.get("faction_id", CardfrontRulesScript.NEUTRAL_OWNER)) == CardfrontRulesScript.PLAYER_FACTION:
+			player_rim_color = visual.get("rim_color", []) as Array
+		elif int(visual.get("faction_id", CardfrontRulesScript.NEUTRAL_OWNER)) == CardfrontRulesScript.AI_FACTION:
+			ai_rim_color = visual.get("rim_color", []) as Array
+	_assert.that(standard_aspect <= 1.05, "orthographic arena: standard projectile should remain the round silhouette baseline")
+	_assert.gte(siege_aspect, 1.20, "orthographic arena: siege projectile should add a heavy non-round footprint")
+	_assert.gte(suppression_aspect, 2.15, "orthographic arena: suppression projectile should preserve the locked 2.2:1 screen-space experiment ratio")
+	_assert.that(player_rim_color != ai_rim_color, "orthographic arena: player and AI rims must retain distinct faction colors")
+	view.set_projectile_trails_visible_for_capture(false)
+	view._process(0.0)
+	for visual in view.get_projectile_visuals_for_test():
+		_assert.that(not bool(visual.get("trail_visible", true)), "orthographic arena: PG1 trail-off capture must isolate type silhouettes")
+	view.set_projectile_trails_visible_for_capture(true)
+	view._process(0.0)
+	for visual in view.get_projectile_visuals_for_test():
+		_assert.that(bool(visual.get("trail_visible", false)), "orthographic arena: PG1 trail-on capture must restore faction trails")
 
 	TestFixtures.cleanup_node(main)
 	await _flush()

@@ -1480,6 +1480,24 @@ Blender master: `art_source/cardfront_3d/Cardfront_HQ_Master.blend`
 Tests: Arena 67 / Scale 57 / Smoke 38 — all PASS.
 Screenshots: `截图_screenshots/01-05_*_2026-08-18.png` — pending human review.
 
+### P0-PG1 projectile grammar prototype — evidence ready, human GO pending
+
+- Locked GrillMe grammar is now represented directly in runtime meshes:
+  Standard stays round, Siege has a larger heavy footprint, and Suppression
+  keeps a screen-readable flat footprint.
+- Faction rims are shape-matched depth-tested outline shells; they no longer
+  replace their authored transparent material with an opaque generic material.
+- A dedicated deterministic capture tool emits the required `1120x720 @100%`,
+  `1120x720 @112%`, and `760x540 @112%` Trail OFF, Trail ON, and volley matrix,
+  with exact faction/type counts and JSON manifests.
+- Local evidence: Arena **121 PASS**, Scale **57 PASS**, Smoke **38 PASS**;
+  three manifests and nine screenshots pass their structural gates.
+- AI full-resolution review: **PASS** for the tested type/faction grammar.
+  Product-owner screenshot review remains the final GO; formal GLB, complex
+  particles, and hit-feedback grammar remain deferred.
+
+Checkpoint: `docs/cardfront_refactor_checkpoints/P0-PG1_projectile_grammar_prototype.md`
+
 ### Asset pipeline reorganization
 
 - `assets/cardfront_environment/formal/hq/` — new formal runtime area (D22 contract).
