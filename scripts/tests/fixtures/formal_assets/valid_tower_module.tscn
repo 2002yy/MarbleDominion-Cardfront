@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_valid"]
+resource_name = "CF_METAL__STATIC"
+
+[sub_resource type="BoxMesh" id="BoxMesh_valid"]
+material = SubResource("StandardMaterial3D_valid")
+
+[node name="CF_TowerRoot" type="Node3D"]
+
+[node name="GEO_Body" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.5, 0)
+mesh = SubResource("BoxMesh_valid")
+
+[node name="PIV_Turret" type="Node3D" parent="."]
+
+[node name="SOCKET_Muzzle" type="Node3D" parent="PIV_Turret"]
+
+[node name="VFX_Intercept" type="Node3D" parent="."]

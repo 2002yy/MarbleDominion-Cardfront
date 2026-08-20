@@ -20,8 +20,12 @@ P0-FT1 增加一条 Formal Interceptor Tower 垂直切片：
 - `tower/tower_theme_castle.glb`
 - `tower/tower_damage_common.glb`
 
-Tower 建模前必须先落地可复用 D22 validator。Fire-Control Beacon、Bridge、
-Gate、Stronghold 继续使用现有 primitive / legacy 资产，直到 P0-FT1 GO。
+可复用 D22 validator 已在
+`scripts/cardfront/environment/CardfrontFormalAssetValidator.gd` 落地并通过
+负例测试。下一步是按该合同制作 Tower reference kit；Fire-Control
+Beacon、Bridge、Gate、Stronghold 继续使用现有 primitive / legacy 资产，
+直到 P0-FT1 GO。当前 HQ GLB 可导入但仍使用 legacy 命名，因此尚未获得
+D22 Contract PASS。
 
 ## Contract
 

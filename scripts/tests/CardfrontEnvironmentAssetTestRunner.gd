@@ -28,13 +28,17 @@ func _test_registry_assets_are_loadable() -> void:
 	var ids: Array[String] = AssetRegistryScript.registered_ids()
 	var kaykit_ids: Array[String] = []
 	var custom_ids: Array[String] = []
+	var formal_ids: Array[String] = []
 	for asset_id in ids:
 		if asset_id.begins_with("custom_"):
 			custom_ids.append(asset_id)
+		elif asset_id.begins_with("formal_"):
+			formal_ids.append(asset_id)
 		else:
 			kaykit_ids.append(asset_id)
 	_assert.eq(kaykit_ids.size(), 7, "environment registry: KayKit benchmark batch should contain seven reviewed source models")
 	_assert.eq(custom_ids.size(), 10, "environment registry: custom Blender batch should contain ten building models")
+	_assert.eq(formal_ids.size(), 4, "environment registry: Formal HQ batch should contain four imported modules")
 	for asset_id in ids:
 		var entry: Dictionary = AssetRegistryScript.get_entry(asset_id)
 		_assert.that(not str(entry.get("path", "")).is_empty(), "%s: path should be explicit" % asset_id)

@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-20
 
-Current `main`: `3f3c8a6`
+Current `main`: `56e896a`
 Status authority: **this file**
 
 This document contains current truth, the active track, one next gate per
@@ -60,17 +60,22 @@ Documentation governance
 
 **Current gate:** `P0-FT1 Formal Interceptor Tower Cross-Asset Benchmark`
 
-**Source commit:** `3f3c8a6`
+**Source commit:** `56e896a`
 
-**Status:** decisions locked; implementation not started
+**Status:** Step 1 validator implemented in working tree; focused tests PASS;
+Tower reference kit not started
 
 **Checkpoint:**
 [`cardfront_refactor_checkpoints/P0-FT1_formal_interceptor_tower_benchmark.md`](cardfront_refactor_checkpoints/P0-FT1_formal_interceptor_tower_benchmark.md)
 
 The first Formal Benchmark is expanded from `default_duel + Balanced HQ +
 Castle Theme` to include one complete modular Interceptor Tower vertical slice.
-The reusable Formal GLB validator is a prerequisite because D22 requires
-machine-verifiable admission; successful import alone is not Contract PASS.
+The reusable Formal GLB validator is now executable at
+`scripts/cardfront/environment/CardfrontFormalAssetValidator.gd`. It rejects
+instead of healing invalid transforms, semantic nodes, material roles,
+forbidden authority nodes, and missing required sockets. The currently imported
+HQ remains usable as presentation evidence but is not yet D22-admitted because
+its legacy root/node/material names fail the frozen contract.
 
 The art track may not expand to Fire-Control Beacon, Gate, Stronghold, Rapid,
 Engineer, Industrial, Lab, formal audio, or D26 until P0-FT1 records GO.

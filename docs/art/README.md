@@ -81,9 +81,11 @@ Registry 仍直接引用这些路径，因此本轮保留原位；whole-model ma
 `Reference Kit → HQ Common → Balanced Hero → Castle Theme → D0/D2/D3 → Semantic Material → Export Validator → Godot Import → Shadow C → deterministic screenshots`
 
 第一座 Formal Tower 是跨资产合同验证，不是完整 Tower production pass。
-必须先实现可复用 D22 Formal GLB validator；`Godot 可导入` 不等于
-Contract PASS。Gate/Bridge/Stronghold 和 Fire-Control Beacon 继续使用
-现有 primitive/legacy，直到 P0-FT1 GO。
+可复用 D22 Formal GLB validator 已在
+`scripts/cardfront/environment/CardfrontFormalAssetValidator.gd` 落地；
+`Godot 可导入` 不等于 Contract PASS。现有 HQ 因 legacy 命名尚未通过该
+validator，后续重导不得放宽合同。Gate/Bridge/Stronghold 和 Fire-Control
+Beacon 继续使用现有 primitive/legacy，直到 P0-FT1 GO。
 
 Tower 模块：
 

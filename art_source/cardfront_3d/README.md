@@ -43,7 +43,8 @@
 - `assets/cardfront_environment/formal/tower/tower_theme_castle.glb`
 - `assets/cardfront_environment/formal/tower/tower_damage_common.glb`
 
-Tower 母版在建模前必须先通过可执行的 D22 validator fixture contract。
+可执行的 D22 validator fixture contract 已通过；Tower 母版下一步必须按
+同一合同建立 reference kit、四模块原点和语义 Socket，不得依赖导入后修复。
 必需节点至少包含 `PIV_Turret`、`SOCKET_Muzzle`、`VFX_Intercept`。
 
 只有通过 validator 和 fixed-camera benchmark 后才能登记为正式 GO 资产。

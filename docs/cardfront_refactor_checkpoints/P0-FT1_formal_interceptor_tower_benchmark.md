@@ -2,8 +2,8 @@
 
 Date: 2026-08-20
 
-Source commit: `3f3c8a6`
-Decision: **NOT STARTED**
+Source commit: `56e896a`
+Decision: **STEP 1 GO / P0-FT1 OPEN**
 
 ## Step Contract
 
@@ -121,13 +121,39 @@ Performance/log:
 
 ## Gate
 
-Current result: **NOT STARTED**
+### Step 1 Evidence — Reusable D22 Validator
+
+Implemented:
+
+- `scripts/cardfront/environment/CardfrontFormalAssetValidator.gd`;
+- `scripts/tests/CardfrontFormalAssetValidatorTestRunner.gd`;
+- nine positive/negative scene fixtures under
+  `scripts/tests/fixtures/formal_assets/`.
+
+Fail-closed coverage:
+
+- root identity and applied visible-mesh transforms;
+- frozen node prefixes and required Tower semantic nodes;
+- D21 `CF_<SURFACE>__<CHANNEL>` materials;
+- Collision, Camera, and Light rejection;
+- null/missing resources;
+- explicit proof that validation does not mutate or heal invalid input.
+
+Evidence:
+
+- `CardfrontFormalAssetValidatorTestRunner`: **32 PASS**;
+- `CardfrontEnvironmentAssetTestRunner`: **149 PASS** after correcting its
+  stale KayKit/Custom/Formal registry grouping assertion;
+- current `hq_common.glb`: importable, but intentionally rejected by D22 due
+  legacy root/node/material names. It is migration input, not Contract PASS.
+
+Current result: **STEP 1 GO / P0-FT1 REMAINS OPEN**
 
 GO evidence bound to source commit: **NO**
 Manual evidence required: **YES**
 
 Only allowed next step inside the Art Production track:
 
-> Implement the reusable D22 Formal GLB validator with negative fixtures and
-> focused tests. Do not start Tower modeling before the validator contract is
-> executable.
+> Author the Tower reference kit and normalized Common/Interceptor/Castle/Damage
+> module/socket layout against the executable validator contract. Do not
+> register production Tower GLBs until the reference kit passes admission.
