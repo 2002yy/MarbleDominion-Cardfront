@@ -70,17 +70,30 @@ Registry 仍直接引用这些路径，因此本轮保留原位；whole-model ma
 
 通过 `.gdignore` 与 Godot import scan 隔离。`.blend` 不当 runtime 资源使用。
 
-## 5. 第一 Formal Benchmark
+## 5. 当前 Formal Benchmark
 
-停止继续纯 Grill。第一轮只验证：
+2026-08-20 复审后，第一轮必须验证：
 
-`default_duel + Balanced HQ + Castle Theme`
+`default_duel + Balanced HQ + Castle Theme + Formal Interceptor Tower`
 
 生产链：
 
 `Reference Kit → HQ Common → Balanced Hero → Castle Theme → D0/D2/D3 → Semantic Material → Export Validator → Godot Import → Shadow C → deterministic screenshots`
 
-Bridge/Gate/Tower/Stronghold 暂可使用现有 primitive/legacy，避免合同未验证前批量返工。
+第一座 Formal Tower 是跨资产合同验证，不是完整 Tower production pass。
+必须先实现可复用 D22 Formal GLB validator；`Godot 可导入` 不等于
+Contract PASS。Gate/Bridge/Stronghold 和 Fire-Control Beacon 继续使用
+现有 primitive/legacy，直到 P0-FT1 GO。
+
+Tower 模块：
+
+- `tower/tower_common.glb`
+- `tower/tower_interceptor.glb`
+- `tower/tower_theme_castle.glb`
+- `tower/tower_damage_common.glb`
+
+完整冻结范围与状态矩阵见：
+[`../设计_design/CARDFRONT_DUAL_TRACK_AND_FORMAL_TOWER_GRILL_DECISIONS_2026-08-20.md`](../设计_design/CARDFRONT_DUAL_TRACK_AND_FORMAL_TOWER_GRILL_DECISIONS_2026-08-20.md)
 
 GO 条件至少覆盖：
 - Structural/Material contract PASS；
@@ -88,6 +101,8 @@ GO 条件至少覆盖：
 - 100/112/120% + 760×540；
 - Shadow / Occlusion / Footprint / Interaction honesty；
 - fixed-camera screenshot review。
+- Tower 蓝/红、L1–L3、HP 4–0、Active/Unpowered/Suppressed/Quota Empty/L3 Counter 状态板；
+- Tower 建造/升级/摧毁动画不改变 gameplay authority；死亡残骸无碰撞、无占位、无存档。
 
 ## 6. 已知 presentation 技术债
 

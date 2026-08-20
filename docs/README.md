@@ -12,14 +12,14 @@
 | [`设计_design/README.md`](设计_design/README.md) | 玩法、地图、实体、素材与 UI 设计 | 设计参考 |
 | [`技术_technical/README.md`](技术_technical/README.md) | 架构、模拟、测试、导出、存档、工程规范 | 工程参考 |
 | [`性能_performance/README.md`](性能_performance/README.md) | 性能基线、画质档位与性能附录 | 性能参考 |
-| [`cardfront_refactor_checkpoints/`](cardfront_refactor_checkpoints/) | P0/P1 检查点（已完成，留作实施证据） | 历史证据 |
+| [`cardfront_refactor_checkpoints/`](cardfront_refactor_checkpoints/) | 当前轨道检查点入口与 P0/P1 实施证据 | **轨道内 Gate** |
 | [`历史_history/README.md`](历史_history/README.md) | 已完成阶段、旧施工批次与迁移记录 | 历史证据 |
 
 ## 2. 阅读规则
 
 1. **当前状态只以 `PROJECT_STATUS.md` 为准。** roadmap、batch、amendment、plan、checkpoint 与历史 README 不会因为日期较新就自动获得更高权威。
 2. **专题规范只约束自己的专题。** 例如 `art/` 是美术生产冻结规范，不替代项目状态文档。
-3. **检查点是实施证据，不是第二状态库。** `cardfront_refactor_checkpoints/` 用于说明某一步做了什么、如何验收。
+3. **检查点是轨道内 Gate，不是第二状态库。** 它可以阻断/选择本轨下一步，但不能切换项目轨道或覆盖 `PROJECT_STATUS.md`。
 4. **历史施工稿已经归档。** 2026-08 的 P0/P1 batch、guardrail、freeze、amendment 与旧 refactor plan 位于 `历史_history/cardfront_refactor_2026-08/`。
 5. **运行时路径不跟文档目录一起整理。** `scripts/`、`scenes/`、`assets/`、Godot `res://`、GLB 路径不因本次文档重组改变。
 
@@ -38,7 +38,8 @@
 性能基线、性能说明、画质档位与历史性能附录。
 
 ### `cardfront_refactor_checkpoints/`
-P0/P1 重构检查点（已完成）。按检查点保存可追溯的实施证据，不再更新。
+保存当前轨道 checkpoint 和历史 P0/P1 实施证据。当前 Art checkpoint
+是 `P0-FT1`；Gameplay 轨道在切换前保持 queued。
 
 ### `历史_history/`
 阶段历史、旧版本说明、已完成 P0/P1 施工包、文档迁移与仓库整理记录。
@@ -57,3 +58,10 @@ Blender 可编辑母版区，通过 `.gdignore` 与 Godot import scan 隔离。�
 - 一次性施工/审计结束后 → 移入 `历史_history/` 或对应 checkpoint。
 
 禁止再次把一批 dated batch 直接堆回 `docs/` 根目录。
+
+## 5. 双轨与文档格式规则
+
+- 当前实行 Art Production / Gameplay Refactor 双轨，但同一时间只开发一轨。
+- `PROJECT_STATUS.md` 选择当前轨道；checkpoint 管本轨 Gate。
+- Grill 决策必须有 Markdown 权威版本。
+- DOCX 是排版镜像；内容冲突或文件损坏时从 Markdown 重建。

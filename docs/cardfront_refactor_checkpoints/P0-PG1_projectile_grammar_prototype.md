@@ -2,7 +2,7 @@
 
 Date: 2026-08-20
 Source baseline: `cdd128b`
-Evidence revision: `cdd128b + working tree` (manifests record dirty state and paths)
+Evidence revision: `faa152d`
 Decision: **AUTOMATED PASS / AI VISUAL PASS / PRODUCT-OWNER SCREENSHOT GO PENDING**
 
 ## Scope
@@ -82,6 +82,8 @@ AI inspection of all nine full-resolution captures found:
 - The eighteen-projectile pressure fixture preserves the grammar under the
   tested overlap, but does not waive future higher-density review.
 
-Product-owner review remains the final screenshot gate. Formal GLB production,
-complex particles, and hit-feedback grammar remain blocked until that review is
+Product-owner review remains the final projectile-only screenshot gate. It does
+not block the independently scoped Art Formal Benchmark recorded in
+`P0-FT1_formal_interceptor_tower_benchmark.md`. Complex projectile particles
+and projectile hit-feedback grammar remain blocked until that review is
 explicitly GO.

@@ -36,4 +36,14 @@
 - `assets/cardfront_environment/formal/hq/hq_theme_castle.glb`
 - `assets/cardfront_environment/formal/hq/hq_damage_common.glb`
 
+## P0-FT1 Tower 跨资产目标
+
+- `assets/cardfront_environment/formal/tower/tower_common.glb`
+- `assets/cardfront_environment/formal/tower/tower_interceptor.glb`
+- `assets/cardfront_environment/formal/tower/tower_theme_castle.glb`
+- `assets/cardfront_environment/formal/tower/tower_damage_common.glb`
+
+Tower 母版在建模前必须先通过可执行的 D22 validator fixture contract。
+必需节点至少包含 `PIV_Turret`、`SOCKET_Muzzle`、`VFX_Intercept`。
+
 只有通过 validator 和 fixed-camera benchmark 后才能登记为正式 GO 资产。

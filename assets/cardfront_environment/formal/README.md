@@ -2,7 +2,7 @@
 
 本目录从 Cardfront D21/D22 起承接新的正式 runtime 3D 资产。不要把现有 `source/` 资产批量搬进来；只有真正通过新合同的资产才进入这里。
 
-## 第一套 Admission Target — 已导入，待 Benchmark GO
+## 当前 Admission Target — HQ 已导入，跨资产 Benchmark 待实施
 
 首轮验证 `default_duel + Balanced HQ + Castle Theme`。4 个 HQ GLB 已导入并通过测试（Arena 67 / Scale 57 / Smoke 38），等待 fixed-camera screenshot 人工验收：
 
@@ -13,7 +13,15 @@
 
 Blender 母版：`art_source/cardfront_3d/Cardfront_HQ_Master.blend`
 
-Bridge / Gate / Tower / Stronghold 在 HQ production contract 验证前可以继续使用现有 primitive / legacy 资产。
+P0-FT1 增加一条 Formal Interceptor Tower 垂直切片：
+
+- `tower/tower_common.glb`
+- `tower/tower_interceptor.glb`
+- `tower/tower_theme_castle.glb`
+- `tower/tower_damage_common.glb`
+
+Tower 建模前必须先落地可复用 D22 validator。Fire-Control Beacon、Bridge、
+Gate、Stronghold 继续使用现有 primitive / legacy 资产，直到 P0-FT1 GO。
 
 ## Contract
 

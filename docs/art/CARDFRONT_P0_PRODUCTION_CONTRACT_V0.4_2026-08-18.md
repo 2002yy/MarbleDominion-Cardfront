@@ -106,3 +106,27 @@ GO 之后再扩 Tower / Gate / Stronghold / Rapid / Engineer / Industrial / Lab�
 - D26 Damage/VFX/Audio Timing Hooks
 
 Shadow 数值、Vertical Budget 绝对高度、Faction tint、Projectile density threshold、Damage Gap、Camera Bias 强度、G1/G2 外扩比例、Hidden Critical Frame、具体 pixel target 均交由 benchmark 标定。
+
+## 2026-08-20 Cross-Asset Benchmark Addendum
+
+本补充不改写 D18–D22；它更新 Formal Benchmark 的退出门。
+
+HQ 已证明首套模块可以导入和运行，但仓库尚无可复用的 D22 Formal GLB
+validator，也尚未证明合同能跨出 HQ。产品 Grill 因此锁定：首个 Formal
+Benchmark 在 GO 前必须再完成一条模块化 Interceptor Tower 垂直切片。
+
+新增范围：
+
+- `tower_common.glb`
+- `tower_interceptor.glb`
+- `tower_theme_castle.glb`
+- `tower_damage_common.glb`
+- 可复用、fail-closed 的 D22 validator；
+- 蓝/红、L1–L3、HP 4–0、Active/Unpowered/Suppressed/Quota Empty/L3 Counter 状态板；
+- desktop/narrow fixed-camera live battle review。
+
+在 validator executable 和 P0-FT1 GO 前，不扩 Fire-Control Beacon、Gate、
+Bridge、Stronghold、Rapid、Engineer、Industrial 或 Lab。
+
+本补充的完整决策与非目标：
+[`../设计_design/CARDFRONT_DUAL_TRACK_AND_FORMAL_TOWER_GRILL_DECISIONS_2026-08-20.md`](../设计_design/CARDFRONT_DUAL_TRACK_AND_FORMAL_TOWER_GRILL_DECISIONS_2026-08-20.md)

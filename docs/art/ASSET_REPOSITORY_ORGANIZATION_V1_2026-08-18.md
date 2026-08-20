@@ -80,11 +80,11 @@ D21/D22 后的新正式 GLB 才进入这里。
 
 ## 后续正式迁移顺序
 
-1. Formal HQ benchmark 打通 D21/D22 合同；
+1. Formal HQ + Interceptor Tower cross-asset benchmark 打通 D21/D22 合同；
 2. Registry 增加 `asset_contract/material_contract/module_role/...` 声明；
 3. 实现 Material Resolver / validator；
 4. HQ GO；
-5. 再按 Gameplay Constraint Gradient 迁移 Tower → Gate/Fortification → Stronghold → Major Landmark；
+5. P0-FT1 GO 后，再按 Gameplay Constraint Gradient 扩 Fire-Control Beacon → Gate/Fortification → Stronghold → Major Landmark；
 6. O4 第三方 dressing 可长期保留 legacy adapter，不强迫全部重制。
 
 ## 验收

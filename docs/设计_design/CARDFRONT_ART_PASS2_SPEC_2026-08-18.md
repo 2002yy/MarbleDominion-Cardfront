@@ -137,3 +137,16 @@ LOD 暂不做（固定镜头距离变化小）；优先控材质数、透明材�
 | P0-3 HQ 轮廓 | PASS | `6bafcdb` thicker base + 4-side faction panels + thicker cannon + larger flags |
 
 **下一步：Formal Benchmark** — Material Role (D21) / Faction Signal (D10) / HQ State (D13) / 首套正式资产集成。
+
+### 2026-08-20 Formal Benchmark 退出门补充
+
+HQ D21/D13 实现后，Formal Benchmark 仍未 GO。为验证生产合同可跨资产
+复用，退出门增加一条模块化 Interceptor Tower 垂直切片；先实现可复用
+D22 validator，再建模。
+
+Tower 保持 `1.0` 高度基准，使用 Common + Interceptor + Castle Theme +
+Damage 模块，覆盖 L1–L3、HP 4–0、供电/压制/额度耗尽/三级反击，且所有
+建造、升级、摧毁动画不得改变 gameplay authority。
+
+执行 checkpoint：
+[`../cardfront_refactor_checkpoints/P0-FT1_formal_interceptor_tower_benchmark.md`](../cardfront_refactor_checkpoints/P0-FT1_formal_interceptor_tower_benchmark.md)
