@@ -423,7 +423,9 @@ func _create_cardfront_region_info_panel() -> void:
 		runtime.region_map,
 		runtime.battlefield,
 		runtime.territory_defense_system,
-		runtime.stronghold_system
+		runtime.stronghold_system,
+		runtime.current_layout,
+		runtime.orthographic_arena_view
 	)
 	if not bool(panel_setup.get("configured", false)):
 		return
@@ -1222,6 +1224,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if game_layer == null or is_game_over or get_tree().paused:
 		return
+	_handle_region_info_pin_input(event)
 	if runtime.selection_controller == null:
 		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
@@ -1256,6 +1259,30 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	runtime.selection_controller.on_battlefield_clicked(cell)
 	get_viewport().set_input_as_handled()
+
+
+func _handle_region_info_pin_input(event: InputEvent) -> void:
+	if runtime.region_info_panel == null or not is_instance_valid(runtime.region_info_panel):
+		return
+	if runtime.battlefield == null or not is_instance_valid(runtime.battlefield):
+		return
+	if not runtime.battlefield.has_method("world_to_cell"):
+		return
+	var screen_position := Vector2.ZERO
+	if event is InputEventMouseButton:
+		if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+			return
+		screen_position = event.position
+	elif event is InputEventScreenTouch:
+		if not event.pressed:
+			return
+		screen_position = event.position
+	else:
+		return
+	var canvas_transform: Transform2D = get_viewport().get_canvas_transform()
+	var world_position: Vector2 = canvas_transform.affine_inverse() * screen_position
+	var cell: Vector2i = runtime.battlefield.world_to_cell(world_position)
+	runtime.region_info_panel.toggle_pinned_cell(cell)
 
 
 func _handle_priority_target_click(event: InputEvent) -> bool:

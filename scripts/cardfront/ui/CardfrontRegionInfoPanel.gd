@@ -11,6 +11,8 @@ var region_map = null
 var battlefield = null
 var territory_defense_system = null
 var stronghold_system = null
+var layout: Dictionary = {}
+var arena_view = null
 
 var _panel: Panel
 var _title_label: Label
@@ -21,11 +23,12 @@ var _stronghold_label: Label
 var _yield_label: Label
 var _status_label: Label
 var _no_region_label: Label
+var _pinned_region_id: int = -1
 
-const PANEL_W: float = 188.0
-const PANEL_H: float = 178.0
+const PANEL_W: float = 184.0
+const PANEL_H: float = 190.0
 const RIGHT_TOOL_RAIL_W: float = 86.0
-const MARGIN_RIGHT: float = 12.0
+const MARGIN_RIGHT: float = 8.0
 const MARGIN_TOP: float = 104.0
 const CONTENT_X: float = 11.0
 const CONTENT_W: float = PANEL_W - CONTENT_X * 2.0
@@ -36,11 +39,13 @@ func _init() -> void:
 	layer = 17
 
 
-func setup(new_region_map, new_battlefield, mode_name: String, new_territory_defense_system = null, new_stronghold_system = null) -> void:
+func setup(new_region_map, new_battlefield, mode_name: String, new_territory_defense_system = null, new_stronghold_system = null, new_layout: Dictionary = {}, new_arena_view = null) -> void:
 	region_map = new_region_map
 	battlefield = new_battlefield
 	territory_defense_system = new_territory_defense_system
 	stronghold_system = new_stronghold_system
+	layout = new_layout.duplicate(true)
+	arena_view = new_arena_view
 	visible = CardfrontRulesScript.is_cardfront_mode(mode_name)
 	if visible:
 		_ensure_ui()
@@ -65,25 +70,27 @@ func _ensure_ui() -> void:
 	bg.color = Color(0.05, 0.10, 0.18, 0.86 if CardfrontUiAssetRegistryScript.has_asset("region_info_panel") else 0.98)
 	_panel.add_child(bg)
 
-	_title_label = _make_label(_panel, Vector2(CONTENT_X, 7), Vector2(CONTENT_W, 21), "", 15, Color(1.0, 0.97, 0.76))
+	_title_label = _make_label(_panel, Vector2(CONTENT_X, 7), Vector2(CONTENT_W, 23), "", 16, Color(1.0, 0.97, 0.76))
 
-	var y: float = 31.0
+	var y: float = 34.0
 	for owner_id in [CardfrontRulesScript.PLAYER_FACTION, CardfrontRulesScript.AI_FACTION, CardfrontRulesScript.NEUTRAL_OWNER]:
 		var c := CardfrontRulesScript.owner_color(owner_id)
-		var label := _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 17), "", 12, c)
+		if owner_id == CardfrontRulesScript.NEUTRAL_OWNER:
+			c = Color(0.78, 0.84, 0.92)
+		var label := _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 18), "", 13, c)
 		_control_labels[owner_id] = label
-		y += 17.0
+		y += 19.0
 
 	y += 2.0
-	_threshold_50 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 15), "", 11, Color(0.68, 0.78, 0.92))
-	y += 16.0
-	_threshold_80 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 15), "", 11, Color(0.68, 0.78, 0.92))
-	y += 16.0
-	_stronghold_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 15), "", 11, Color(1.0, 0.82, 0.32))
-	y += 16.0
-	_yield_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 15), "", 11, Color(0.72, 0.94, 1.0))
-	y += 16.0
-	_status_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 15), "", 11, Color(0.94, 0.97, 1.0))
+	_threshold_50 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 17), "", 12, Color(0.78, 0.86, 0.96))
+	y += 18.0
+	_threshold_80 = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 17), "", 12, Color(0.78, 0.86, 0.96))
+	y += 18.0
+	_stronghold_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 17), "", 12, Color(1.0, 0.82, 0.32))
+	y += 18.0
+	_yield_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 17), "", 12, Color(0.72, 0.94, 1.0))
+	y += 18.0
+	_status_label = _make_label(_panel, Vector2(CONTENT_X, y), Vector2(CONTENT_W, 17), "", 12, Color(0.94, 0.97, 1.0))
 
 	_no_region_label = _make_label(_panel, Vector2(CONTENT_X, 55), Vector2(CONTENT_W, 28), "", 11, Color(0.74, 0.82, 0.92))
 
@@ -91,19 +98,52 @@ func _ensure_ui() -> void:
 func update_for_cell(cell: Vector2i) -> void:
 	if not visible or region_map == null:
 		return
-	if not region_map.has_method("is_inside") or not region_map.is_inside(cell):
-		_show_empty()
+	if _pinned_region_id >= 0:
+		_update_panel(_pinned_region_id)
 		return
-	var region_id: int = int(region_map.get_region_id(cell))
+	var region_id: int = _region_id_for_cell(cell)
 	if region_id < 0:
 		_show_empty()
 		return
+	_update_panel(region_id)
+
+
+func toggle_pinned_cell(cell: Vector2i) -> bool:
+	var region_id: int = _region_id_for_cell(cell)
+	if region_id < 0:
+		clear_pinned_region()
+		return false
+	if _pinned_region_id == region_id:
+		clear_pinned_region()
+		return false
+	_pinned_region_id = region_id
+	_update_panel(region_id)
+	return true
+
+
+func clear_pinned_region() -> void:
+	_pinned_region_id = -1
+
+
+func is_region_pinned_for_test() -> bool:
+	return _pinned_region_id >= 0
+
+
+func get_pinned_region_id_for_test() -> int:
+	return _pinned_region_id
+
+
+func _region_id_for_cell(cell: Vector2i) -> int:
+	if not region_map.has_method("is_inside") or not region_map.is_inside(cell):
+		return -1
+	var region_id: int = int(region_map.get_region_id(cell))
+	if region_id < 0:
+		return -1
 	if region_map.has_method("get_controllable_region_ids"):
 		var controllable_ids: Array = region_map.get_controllable_region_ids()
 		if not controllable_ids.has(region_id):
-			_show_empty()
-			return
-	_update_panel(region_id)
+			return -1
+	return region_id
 
 
 func _update_panel(region_id: int) -> void:
@@ -117,19 +157,19 @@ func _update_panel(region_id: int) -> void:
 	var leader_owner: int = _leading_owner(player_pct, ai_pct, neutral_pct)
 
 	var type_name: String = _region_type_name(region_type)
-	_title_label.text = "◆ %s" % type_name
+	_title_label.text = "◆ %s%s" % [type_name, " · 固定" if _pinned_region_id == region_id else ""]
 	_title_label.add_theme_color_override("font_color", _region_type_color(region_type))
 
-	_control_labels[CardfrontRulesScript.PLAYER_FACTION].text = "玩家占领　%d%%" % player_pct
-	_control_labels[CardfrontRulesScript.AI_FACTION].text = "AI 占领　%d%%" % ai_pct
-	_control_labels[CardfrontRulesScript.NEUTRAL_OWNER].text = "中立区域　%d%%" % neutral_pct
+	_control_labels[CardfrontRulesScript.PLAYER_FACTION].text = "玩家　%d%%" % player_pct
+	_control_labels[CardfrontRulesScript.AI_FACTION].text = "AI　%d%%" % ai_pct
+	_control_labels[CardfrontRulesScript.NEUTRAL_OWNER].text = "中立　%d%%" % neutral_pct
 
-	_threshold_50.text = "过半控制：%s" % ("已达成" if player_pct >= 50 else "还差 %d%%" % (50 - player_pct))
-	_threshold_50.add_theme_color_override("font_color", Color(0.45, 0.80, 0.50) if player_pct >= 50 else Color(0.55, 0.50, 0.45))
+	_threshold_50.text = "过半控制：%s" % ("已达成" if player_pct >= 50 else "还差%d%%" % (50 - player_pct))
+	_threshold_50.add_theme_color_override("font_color", Color(0.45, 0.80, 0.50) if player_pct >= 50 else Color(0.80, 0.72, 0.58))
 	# P0-05B3: 80% remains a real control/status threshold, but it no longer
 	# promises a Factory/Energy/Lab numeric ability.
-	_threshold_80.text = "据点控制：%s" % ("已达成" if player_pct >= StrongholdRulesScript.ACTIVATION_PERCENT else "还差 %d%%" % (StrongholdRulesScript.ACTIVATION_PERCENT - player_pct))
-	_threshold_80.add_theme_color_override("font_color", Color(0.80, 0.72, 0.30) if player_pct >= StrongholdRulesScript.ACTIVATION_PERCENT else Color(0.55, 0.50, 0.45))
+	_threshold_80.text = "据点控制：%s" % ("已达成" if player_pct >= StrongholdRulesScript.ACTIVATION_PERCENT else "还差%d%%" % (StrongholdRulesScript.ACTIVATION_PERCENT - player_pct))
+	_threshold_80.add_theme_color_override("font_color", Color(0.90, 0.80, 0.34) if player_pct >= StrongholdRulesScript.ACTIVATION_PERCENT else Color(0.80, 0.72, 0.58))
 	var active_owner: int = leader_owner if maxi(player_pct, ai_pct) >= StrongholdRulesScript.ACTIVATION_PERCENT else CardfrontRulesScript.NEUTRAL_OWNER
 	var sampled: Dictionary = {}
 	if stronghold_system != null and is_instance_valid(stronghold_system):
@@ -139,14 +179,14 @@ func _update_panel(region_id: int) -> void:
 		_stronghold_label.text = "据点状态：有效控制 · %s" % CardfrontRulesScript.owner_display_name(sampled_owner)
 		_stronghold_label.add_theme_color_override("font_color", CardfrontRulesScript.owner_color(sampled_owner).lightened(0.30))
 	elif active_owner == CardfrontRulesScript.NEUTRAL_OWNER:
-		_stronghold_label.text = "据点状态：未达控制阈值"
-		_stronghold_label.add_theme_color_override("font_color", Color(0.62, 0.64, 0.70))
+		_stronghold_label.text = "据点状态：未达阈值"
+		_stronghold_label.add_theme_color_override("font_color", Color(0.74, 0.78, 0.86))
 	else:
 		_stronghold_label.text = "据点状态：待本轮刷新 · %s" % CardfrontRulesScript.owner_display_name(active_owner)
 		_stronghold_label.add_theme_color_override("font_color", CardfrontRulesScript.owner_color(active_owner).lightened(0.30))
 
 	if leader_owner == CardfrontRulesScript.NEUTRAL_OWNER:
-		_yield_label.text = "阵地防守：中立区域无护盾"
+		_yield_label.text = "阵地防守：中立无护盾"
 		_yield_label.add_theme_color_override("font_color", Color(0.62, 0.68, 0.76))
 	elif territory_defense_system != null and is_instance_valid(territory_defense_system):
 		var defense: Dictionary = territory_defense_system.get_region_defense_summary(region_id, leader_owner)
@@ -188,9 +228,16 @@ func _show_empty() -> void:
 
 
 func _panel_x() -> float:
+	if arena_view != null and is_instance_valid(arena_view) and arena_view.has_method("get_playable_screen_rect_for_ui"):
+		var playable_rect: Rect2 = arena_view.get_playable_screen_rect_for_ui()
+		if playable_rect.size.x > 0.0:
+			return minf(playable_rect.end.x + 10.0, _view_width() - PANEL_W - MARGIN_RIGHT)
+	var battlefield_rect: Rect2 = layout.get("battlefield_rect", Rect2())
+	if battlefield_rect.size.x > 0.0:
+		return minf(battlefield_rect.end.x + 10.0, _view_width() - PANEL_W - MARGIN_RIGHT)
 	if battlefield != null and is_instance_valid(battlefield):
 		var battlefield_right: float = battlefield.global_position.x + battlefield.get_pixel_extent().x
-		return battlefield_right + 10.0
+		return minf(battlefield_right + 10.0, _view_width() - PANEL_W - MARGIN_RIGHT)
 	return _view_width() - PANEL_W - RIGHT_TOOL_RAIL_W - MARGIN_RIGHT
 
 

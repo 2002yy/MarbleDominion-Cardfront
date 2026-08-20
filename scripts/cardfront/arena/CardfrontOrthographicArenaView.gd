@@ -46,6 +46,12 @@ const PROJECTILE_VISUAL_SCALE: float = 1.45
 const STRONGHOLD_PLATFORM_FOOTPRINT_SCALE: float = 0.86
 const STRONGHOLD_PLATFORM_HEIGHT: float = 0.18
 const STRONGHOLD_RING_SCALE: float = 0.32
+const REGION_LABEL_FONT_SIZE: int = 44
+const REGION_LABEL_PIXEL_SIZE: float = 0.031
+const REGION_LABEL_WORLD_Y: float = 1.95
+const REGION_BADGE_COMPACT_SIZE: Vector2 = Vector2(4.6, 1.35)
+const REGION_BADGE_DETAIL_SIZE: Vector2 = Vector2(6.8, 1.55)
+const REGION_LABEL_REST_ALPHA: float = 0.80
 const LEGACY_CHAMBER_GLB_SCALE: Vector3 = Vector3(1.78, 0.62, 1.05)
 const HQ_MODULE_SCALE: float = 1.0
 const TOWER_GLB_SCALE: float = 1.16
@@ -86,6 +92,7 @@ var _region_badge_plates: Dictionary = {}
 var _region_label_tweens: Dictionary = {}
 var _last_region_leaders: Dictionary = {}
 var _labels_force_visible: bool = false
+var _region_labels_detailed: bool = false
 const LABEL_FADE_DURATION: float = 0.35
 const LABEL_AUTO_HIDE_DELAY: float = 2.8
 const LABEL_CHANGE_THRESHOLD: int = 10
@@ -231,6 +238,28 @@ func get_deployment_zone_cell_count_for_test() -> int:
 
 func get_camera_for_test() -> Camera3D:
 	return camera
+
+
+func get_playable_screen_rect_for_ui() -> Rect2:
+	if camera == null or viewport_container == null or world_viewport == null or battlefield == null:
+		return Rect2()
+	var half_width: float = float(battlefield.grid_extent.x) * ARENA_X_SCALE * 0.5
+	var half_depth: float = float(battlefield.grid_extent.y) * _z_scale * 0.5
+	var min_point := Vector2(INF, INF)
+	var max_point := Vector2(-INF, -INF)
+	for world_x in [-half_width, half_width]:
+		for world_z in [-half_depth, half_depth]:
+			var viewport_point: Vector2 = camera.unproject_position(Vector3(world_x, TILE_HEIGHT, world_z))
+			var scale_ratio := Vector2(
+				viewport_container.size.x / maxf(1.0, float(world_viewport.size.x)),
+				viewport_container.size.y / maxf(1.0, float(world_viewport.size.y))
+			)
+			var screen_point: Vector2 = viewport_container.global_position + viewport_point * scale_ratio
+			min_point.x = minf(min_point.x, screen_point.x)
+			min_point.y = minf(min_point.y, screen_point.y)
+			max_point.x = maxf(max_point.x, screen_point.x)
+			max_point.y = maxf(max_point.y, screen_point.y)
+	return Rect2(min_point, max_point - min_point)
 
 
 func get_tile_instance_count_for_test() -> int:
@@ -514,9 +543,17 @@ func get_region_badge_metrics_for_test(region_id: int) -> Dictionary:
 	var label: Label3D = _region_labels.get(region_id, null)
 	if label == null or not is_instance_valid(label):
 		return {}
+	var plate: MeshInstance3D = _region_badge_plates.get(region_id, null)
+	var plate_size := Vector2.ZERO
+	if plate != null and is_instance_valid(plate) and plate.mesh is QuadMesh:
+		plate_size = (plate.mesh as QuadMesh).size
 	return {
 		"font_size": label.font_size,
 		"pixel_size": label.pixel_size,
+		"world_text_height": float(label.font_size) * label.pixel_size,
+		"plate_size": plate_size,
+		"rest_alpha": REGION_LABEL_REST_ALPHA,
+		"detailed": _region_labels_detailed,
 		"line_count": label.text.count("\n") + 1,
 	}
 
@@ -1667,20 +1704,20 @@ func _build_region_labels() -> void:
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.no_depth_test = true
 		label.font = ThemeDB.fallback_font
-		label.font_size = 30
-		label.outline_size = 7
-		label.pixel_size = 0.013
+		label.font_size = REGION_LABEL_FONT_SIZE
+		label.outline_size = 8
+		label.pixel_size = REGION_LABEL_PIXEL_SIZE
 		label.render_priority = 1
 		label.position = Vector3(
 			(center.x - float(battlefield.grid_extent.x) * 0.5) * ARENA_X_SCALE,
-			1.42,
+			REGION_LABEL_WORLD_Y,
 			(center.y - float(battlefield.grid_extent.y) * 0.5) * _z_scale
 		)
 
 		var badge_plate := MeshInstance3D.new()
 		badge_plate.name = "BadgePlate"
 		var badge_mesh := QuadMesh.new()
-		badge_mesh.size = Vector2(3.2, 0.70)
+		badge_mesh.size = REGION_BADGE_COMPACT_SIZE
 		badge_plate.mesh = badge_mesh
 		var badge_material := StandardMaterial3D.new()
 		badge_material.albedo_color = Color(0.035, 0.055, 0.060, 0.92)
@@ -1691,10 +1728,10 @@ func _build_region_labels() -> void:
 		badge_plate.material_override = badge_material
 		badge_material.render_priority = -1
 		badge_plate.position = label.position + Vector3(0.0, 0.0, -0.06)
-		badge_material.albedo_color.a = 0.0
+		badge_material.albedo_color.a = REGION_LABEL_REST_ALPHA
 		world_root.add_child(badge_plate)
 
-		label.modulate.a = 0.0
+		label.modulate.a = REGION_LABEL_REST_ALPHA
 		world_root.add_child(label)
 		_region_labels[region_id] = label
 		_region_badge_plates[region_id] = badge_plate
@@ -1706,16 +1743,26 @@ func _refresh_region_labels() -> void:
 		var leader: Dictionary = _get_region_leader(control)
 		var region_type: String = str(control.get("region_type", RegionTypeScript.NORMAL))
 		var label: Label3D = _region_labels[region_id]
-		label.text = "%s  %d%%" % [
-			_region_badge_icon(region_type),
+		label.text = "%s %d%%" % [
+			_region_badge_title(region_type) if _region_labels_detailed else _region_badge_short(region_type),
 			int(leader.percent),
 		]
+		var plate: MeshInstance3D = _region_badge_plates.get(region_id, null)
+		if plate != null and is_instance_valid(plate) and plate.mesh is QuadMesh:
+			(plate.mesh as QuadMesh).size = (
+				REGION_BADGE_DETAIL_SIZE
+				if _region_labels_detailed
+				else REGION_BADGE_COMPACT_SIZE
+			)
 		var leader_id: int = int(leader.owner_id)
-		label.modulate = (
+		var current_alpha: float = label.modulate.a
+		var label_color: Color = (
 			Color.WHITE
 			if leader_id == CardfrontRulesScript.NEUTRAL_OWNER
 			else _arena_faction_color(leader_id).lightened(0.28)
 		)
+		label_color.a = current_alpha
+		label.modulate = label_color
 		if _labels_force_visible:
 			continue
 		var prev: Dictionary = _last_region_leaders.get(int(region_id), {})
@@ -1731,25 +1778,39 @@ func _refresh_region_labels() -> void:
 		}
 
 
-func _region_badge_icon(region_type: String) -> String:
+func _region_badge_title(region_type: String) -> String:
 	match region_type:
 		RegionTypeScript.ENERGY:
-			return "⚡"
+			return "能源"
 		RegionTypeScript.FACTORY:
-			return "◆"
+			return "工厂"
 		RegionTypeScript.LAB:
-			return "✦"
+			return "实验室"
 		_:
-			return "●"
+			return "区域"
+
+
+func _region_badge_short(region_type: String) -> String:
+	match region_type:
+		RegionTypeScript.ENERGY:
+			return "能"
+		RegionTypeScript.FACTORY:
+			return "工"
+		RegionTypeScript.LAB:
+			return "研"
+		_:
+			return "区"
 
 
 func set_stronghold_labels_visible(visible_flag: bool, auto_hide_delay: float = 0.0) -> void:
 	_labels_force_visible = visible_flag
+	_region_labels_detailed = visible_flag
+	_refresh_region_labels()
 	for region_id in _region_labels.keys():
 		if visible_flag:
 			_fade_label(int(region_id), 1.0, LABEL_FADE_DURATION, auto_hide_delay)
 		else:
-			_fade_label(int(region_id), 0.0, LABEL_FADE_DURATION, 0.0)
+			_fade_label(int(region_id), REGION_LABEL_REST_ALPHA, LABEL_FADE_DURATION, 0.0)
 
 
 func _fade_label(region_id: int, target_alpha: float, duration: float, auto_hide_delay: float) -> void:
@@ -1771,9 +1832,9 @@ func _fade_label(region_id: int, target_alpha: float, duration: float, auto_hide
 	_region_label_tweens[region_id] = tween
 	if auto_hide_delay > 0.0 and target_alpha > 0.5:
 		tween.chain().tween_interval(auto_hide_delay)
-		tween.chain().tween_property(label, "modulate:a", 0.0, LABEL_FADE_DURATION)
+		tween.chain().tween_property(label, "modulate:a", REGION_LABEL_REST_ALPHA, LABEL_FADE_DURATION)
 		if badge != null and is_instance_valid(badge) and badge.material_override != null:
-			tween.chain().tween_property(badge, "material_override:albedo_color:a", 0.0, LABEL_FADE_DURATION)
+			tween.chain().tween_property(badge, "material_override:albedo_color:a", REGION_LABEL_REST_ALPHA, LABEL_FADE_DURATION)
 
 
 func _nearest_presentation_scale(requested_scale: float) -> float:

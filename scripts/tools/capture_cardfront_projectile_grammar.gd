@@ -50,6 +50,8 @@ func _capture() -> void:
 		quit(2)
 		return
 	view.set_presentation_scale(presentation_scale, false)
+	var region_detail_mode := OS.get_environment("CARDFRONT_PG1_REGION_DETAIL_MODE").strip_edges().to_lower()
+	_configure_region_detail_mode(main, view, region_detail_mode)
 	await _flush(3)
 
 	var absolute_output_dir := _absolute_output_dir(output_dir)
@@ -71,6 +73,7 @@ func _capture() -> void:
 		"presentation_scale": presentation_scale,
 		"quality": "medium",
 		"capture_label": capture_label,
+		"region_detail_mode": region_detail_mode,
 		"captures": [],
 	}
 
@@ -137,6 +140,25 @@ func _capture() -> void:
 	main.queue_free()
 	await _flush(2)
 	quit(0 if _errors.is_empty() else 4)
+
+
+func _configure_region_detail_mode(main, view, mode: String) -> void:
+	if mode == "review":
+		view.set_stronghold_labels_visible(true)
+		return
+	if mode != "pinned":
+		return
+	var panel = main.runtime.region_info_panel
+	if panel == null or not is_instance_valid(panel):
+		_errors.append("region detail mode requested without a live info panel")
+		return
+	var region_ids: Array = main.runtime.region_map.get_controllable_region_ids()
+	if region_ids.is_empty():
+		_errors.append("region detail mode could not find a controllable region")
+		return
+	var region_cells: Array = main.runtime.region_map.get_region_cells(int(region_ids[0]))
+	if region_cells.is_empty() or not panel.toggle_pinned_cell(region_cells[0]):
+		_errors.append("region detail mode could not pin the first controllable region")
 
 
 func _spawn_diagnostic_projectiles(main) -> void:

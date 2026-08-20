@@ -59,7 +59,6 @@ func _test_visual_lifecycle(authority) -> void:
 	_assert.eq(layer.get_visual_count(), 7, "support presentation lifecycle: one visual per support_id")
 	_assert.eq(layer.visual_create_count, 7, "support presentation lifecycle: initial sync creates exactly once")
 	_assert.eq(layer.presentation_update_count, 7, "support presentation lifecycle: initial sync updates each visual once")
-
 	var visual = layer.get_visual(SupportIdsScript.SUPPORT_LEFT_SOUTH)
 	_assert.that(visual != null, "support presentation lifecycle: stable support visual is addressable")
 	if visual != null:
