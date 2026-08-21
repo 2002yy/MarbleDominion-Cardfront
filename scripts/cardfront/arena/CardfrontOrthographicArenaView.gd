@@ -547,6 +547,14 @@ func get_formal_tower_damage_state_for_test(entity_id: String) -> int:
 	return 4
 
 
+func get_formal_tower_mesh_visible_for_test(entity_id: String, mesh_name: String) -> bool:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	if proxy == null or not is_instance_valid(proxy):
+		return false
+	var mesh := proxy.find_child(mesh_name, true, false) as MeshInstance3D
+	return mesh != null and mesh.visible
+
+
 func get_formal_tower_upgrade_event_count_for_test(entity_id: String) -> int:
 	var proxy: Node3D = _entity_proxies.get(entity_id, null)
 	return int(proxy.get_meta("upgrade_event_count", 0)) if proxy != null and is_instance_valid(proxy) else 0
@@ -2665,15 +2673,18 @@ func _sync_formal_tower_state(proxy: Node3D, entity) -> void:
 		return
 	_start_formal_tower_build_animation(proxy)
 	var level := clampi(int(entity.tower_level), 1, 3)
+	var hp_state := clampi(int(entity.hp), 0, 4)
 	for child in proxy.find_children("GEO_*", "MeshInstance3D", true, false):
 		var mesh := child as MeshInstance3D
 		var min_level := _formal_tower_min_level(str(mesh.name))
-		if min_level > 1:
-			mesh.visible = level >= min_level
+		mesh.visible = (
+			hp_state > 0
+			and level >= min_level
+			and _formal_tower_structural_part_visible(str(mesh.name), hp_state)
+		)
 	var damage_module: Node3D = _tower_damage_modules.get(str(entity.entity_id), null)
 	if damage_module == null or not is_instance_valid(damage_module):
 		return
-	var hp_state := clampi(int(entity.hp), 0, 4)
 	damage_module.visible = hp_state < 4
 	for child in damage_module.find_children("DMG_*", "MeshInstance3D", true, false):
 		(child as MeshInstance3D).visible = _formal_tower_damage_state(str(child.name)) == hp_state
@@ -2683,10 +2694,15 @@ func _sync_formal_tower_state(proxy: Node3D, entity) -> void:
 		var suffix: String = interceptor_suffixes[suffix_index]
 		var plate := proxy.find_child("GEO_InterceptPlate_%s" % suffix, true, false) as MeshInstance3D
 		if plate != null:
-			plate.visible = can_intercept and level >= _formal_tower_min_level(str(plate.name)) and suffix_index < int(entity.intercepts_remaining)
+			plate.visible = (
+				can_intercept
+				and level >= _formal_tower_min_level(str(plate.name))
+				and suffix_index < int(entity.intercepts_remaining)
+				and _formal_tower_structural_part_visible(str(plate.name), hp_state)
+			)
 	var status_core := proxy.find_child("GEO_StatusCore", true, false) as MeshInstance3D
 	if status_core != null:
-		status_core.visible = bool(entity.powered) and entity.get_status_rounds("disabled") <= 0
+		status_core.visible = hp_state > 0 and bool(entity.powered) and entity.get_status_rounds("disabled") <= 0
 
 
 func _start_formal_tower_build_animation(proxy: Node3D) -> void:
@@ -2721,6 +2737,20 @@ func _formal_tower_damage_state(node_name: String) -> int:
 	if node_name.begins_with("DMG_Rubble_"):
 		return 0
 	return -1
+
+
+func _formal_tower_structural_part_visible(node_name: String, hp_state: int) -> bool:
+	if hp_state <= 0:
+		return false
+	if hp_state <= 2 and node_name == "GEO_CastleButtress_1":
+		return false
+	if hp_state <= 1 and node_name in [
+		"GEO_TopDome",
+		"GEO_InterceptArm_A",
+		"GEO_InterceptPlate_A",
+	]:
+		return false
+	return true
 
 
 func _spawn_formal_tower_death_snapshot(proxy: Node3D) -> void:

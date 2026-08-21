@@ -162,20 +162,24 @@ Implemented in the current working tree:
 Admission evidence:
 
 - exact bounds: **2.0 × 2.0 × 2.7553 m**; no geometry below ground;
-- **36** single-user meshes, **800** triangles, applied mesh rotation/scale;
+- **45** single-user meshes, **980** triangles, applied mesh rotation/scale;
 - all node/material roles pass the recipe-side D21/D22 preflight;
 - required `PIV_Turret`, `SOCKET_Muzzle`, and `VFX_Intercept` present;
-- **16/16** grounded/interface/arm/muzzle/rubble contact assertions PASS;
+- **23/23** grounded/interface/arm/muzzle/structural-damage/rubble contact
+  assertions PASS;
 - Level grammar records 2/3/3 interception elements and an L3-only counter
   muzzle without changing footprint or height class;
 - HP 4/3/2/1/0 are mutually exclusive complete/light/heavy/critical/rubble
-  states; HP0 uses five individually grounded presentation-only pieces;
+  states; HP2 removes one intact buttress, HP1 additionally removes the intact
+  dome and one arm/plate, and HP0 uses five individually grounded
+  presentation-only pieces;
 - six orthographic sides plus isometric inspection PASS; no Camera or Light is
   retained in the `.blend` master.
 
 The first damage visualization was rejected during review because HP3/2/1
 overlays appeared simultaneously and obscured the faction/core band. The
-recipe now renders mutually exclusive crack clusters and keeps all damage
+recipe now renders mutually exclusive damage states, applies the same intact
+part visibility contract to Blender evidence and Godot, and keeps all damage
 objects hidden by default in the source master.
 
 ### Steps 3–4 Evidence — Production Modules and Godot Admission
@@ -196,7 +200,7 @@ frozen semantic node names instead: `GEO_Intercept*`, `GEO_Counter*`, and
 Evidence:
 
 - `CardfrontFormalAssetValidatorTestRunner`: **32 PASS**;
-- `CardfrontFormalTowerAssetTestRunner`: **30 PASS**;
+- `CardfrontFormalTowerAssetTestRunner`: **34 PASS**;
 - `CardfrontEnvironmentAssetTestRunner`: **165 PASS**;
 - no Collision, Camera, Light, invalid root, unknown material role, unapplied
   visible transform, or missing required socket admitted.
@@ -210,7 +214,8 @@ and applies faction materials without sharing overrides between player and AI.
 Bound presentation states:
 
 - L1/L2/L3 → 2/3/3 large interception plates; L3 counter module;
-- HP4/3/2/1 → complete/light/heavy/critical mutually exclusive geometry;
+- HP4/3/2/1 → complete/light/heavy/critical mutually exclusive geometry,
+  including exact HP2 buttress loss and HP1 dome/arm/plate replacement;
 - Active, Unpowered, Suppressed, and Quota Empty → core/plate visibility;
 - explicit level-change signal → upper-module Snap–Settle;
 - interception and counter results → bounded pulse plus **0.24 m**
@@ -224,7 +229,7 @@ HP, level, power, quota, occupancy, collision, targeting, or save authority.
 
 Focused evidence:
 
-- `CardfrontOrthographicArenaTestRunner`: **152 PASS**;
+- `CardfrontOrthographicArenaTestRunner`: **166 PASS**;
 - `CardfrontBattlefieldEntityRuntimeTestRunner`: **26 PASS** with its stale
   expiry-fixture cap collision corrected, eliminating a prior false-green
   script error;
@@ -247,8 +252,8 @@ Generated review evidence:
 - desktop and narrow live captures plus manifests under
   `artifacts/formal-tower-live/`.
 
-The **12-card** board uses a **22 px minimum text floor** and covers faction,
-L1–L3, HP4/3/2/1/0, Active, Unpowered, Suppressed, Quota Empty, Intercept
+The **15-card Chinese board** uses a **22 px minimum text floor** and covers faction,
+L1–L3, a dedicated continuous HP4/3/2/1/0 damage sequence, Active, Unpowered, Suppressed, Quota Empty, Intercept
 Pulse, L3 Counter, and Death Snapshot. Each live capture fails closed unless it
 contains both HQ proxies, both bridges, two four-module Formal Towers, all six
 faction/type projectile combinations, and both Towers inside the logical
@@ -263,7 +268,36 @@ small and the L3 Counter action lacked a strong instantaneous focus. Revision 1
 replaced three tiny pieces with a five-piece grounded rubble cluster and froze
 the Counter card on its brighter muzzle-flash/recoil frame. The refreshed board
 records `visible_damage_meshes=5` for HP0 and `counter_flash_count=1` for L3;
-the revised screenshots still require a new product-owner decision.
+the revised screenshots still require a new product-owner decision. Revision 2
+responds to the follow-up readability review: all visible board copy is Chinese,
+the board expands without shrinking its 22 px text floor, and HP4/3/2/1/0 now
+form a dedicated two-row damage sequence instead of hiding HP4 under level
+coverage and HP0 under action coverage. A second HP1 card confirms the same
+critical-damage geometry remains readable with the opposing faction treatment.
+
+Revision 3 structural-damage decision is product-owner approved:
+
+- HP3 remains a surface-crack state;
+- HP2 hides one intact front buttress and exposes a breach plus one grounded
+  fallen buttress chunk;
+- HP1 additionally replaces the complete dome with seated collapsed roof
+  fragments and replaces one intact interception arm/plate with a connected
+  arm stub, a fallen arm section, and a grounded detached plate;
+- HP0 remains the five-piece grounded death snapshot;
+- all replacements are presentation-only and must not change HP, interception
+  quota, counter rules, collision, occupancy, Registry, save, or AI authority.
+
+Rejected implementation: dark overlays on top of the still-complete silhouette.
+Acceptance requires exact named-part visibility assertions, grounded/seated
+contact checks, mutually exclusive damage geometry, refreshed five-stage board,
+and unchanged gameplay/runtime regression results.
+
+Revision 3 implementation evidence now records HP2 with five visible damage
+meshes and exactly `GEO_CastleButtress_1` hidden; HP1 records eleven visible
+damage meshes with `GEO_CastleButtress_1`, `GEO_TopDome`,
+`GEO_InterceptArm_A`, and `GEO_InterceptPlate_A` hidden. Blender and Godot use
+the same deterministic visibility mapping, and the refreshed Chinese board,
+desktop capture, and narrow capture all PASS.
 
 ### Step 8 Evidence — Regression, Save, Performance, and Logs
 
@@ -279,7 +313,8 @@ errors, and runtime `ERROR` treated as failures:
 - Formal validator/import/registry and Orthographic Arena counts listed above.
 
 No new parse, import, runtime, or performance-budget error remains in the
-accepted evidence run.
+accepted evidence run. The refreshed focused matrix totals **17 suites / 1066
+PASS**.
 
 Current result: **STEPS 1–8 GO / P0-FT1 REMAINS OPEN FOR STEP 9**
 

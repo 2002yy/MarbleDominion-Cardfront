@@ -87,7 +87,7 @@ player/AI presentation instances. L1–L3, HP4–HP0, power, suppression, quota,
 intercept, counter, upgrade, build, and death presentation are bound without
 changing gameplay authority.
 
-The deterministic 12-card state board and desktop/narrow live capture matrix
+The deterministic 15-card Chinese state board and desktop/narrow live capture matrix
 are under `artifacts/formal-tower-state-board/` and
 `artifacts/formal-tower-live/`. The state board is the close visual authority;
 the 40×50 live images verify battle hierarchy and coexistence with both HQs,
@@ -97,7 +97,11 @@ GO / NO-GO is the only allowed next decision.
 The first screenshot review returned NO-GO for an undersized HP0 snapshot and
 weak L3 Counter focus. Revision 1 now uses five grounded rubble pieces and a
 0.24 m Snap-Recoil with one bounded emissive muzzle flash. Automated and visual
-evidence has been refreshed; the revised screenshot decision remains pending.
+evidence has been refreshed. Revision 2 localizes the entire 15-card state board
+to Chinese and gives HP4/3/2/1/0 a dedicated, continuous two-row comparison.
+Revision 3 adds true structural silhouette loss: HP2 drops one buttress, HP1
+collapses the dome and breaks one interception arm/plate, and HP0 retains the
+five-piece rubble snapshot. The revised screenshot decision remains pending.
 
 The art track may not expand to Fire-Control Beacon, Gate, Stronghold, Rapid,
 Engineer, Industrial, Lab, formal audio, or D26 until P0-FT1 records GO.

@@ -158,9 +158,27 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	tower.hp = 3
 	view._process(0.0)
 	_assert.eq(view.get_formal_tower_damage_state_for_test(tower_id), 3, "orthographic arena: 3 HP should select only the light-damage module")
+	_assert.that(view.get_formal_tower_mesh_visible_for_test(tower_id, "GEO_CastleButtress_1"), "orthographic arena: HP3 should retain the intact buttress silhouette")
+	tower.hp = 2
+	view._process(0.0)
+	_assert.eq(view.get_formal_tower_damage_state_for_test(tower_id), 2, "orthographic arena: 2 HP should select only the heavy structural-damage module")
+	_assert.that(not view.get_formal_tower_mesh_visible_for_test(tower_id, "GEO_CastleButtress_1"), "orthographic arena: HP2 should remove one intact buttress")
+	_assert.that(view.get_formal_tower_mesh_visible_for_test(tower_id, "DMG_Heavy_FallenButtress"), "orthographic arena: HP2 should expose the grounded fallen-buttress replacement")
+	_assert.that(view.get_formal_tower_mesh_visible_for_test(tower_id, "GEO_TopDome"), "orthographic arena: HP2 should retain the complete top dome")
+	tower.hp = 1
+	view._process(0.0)
+	_assert.eq(view.get_formal_tower_damage_state_for_test(tower_id), 1, "orthographic arena: 1 HP should select only the critical structural-damage module")
+	_assert.that(not view.get_formal_tower_mesh_visible_for_test(tower_id, "GEO_TopDome"), "orthographic arena: HP1 should remove the complete top dome")
+	_assert.that(not view.get_formal_tower_mesh_visible_for_test(tower_id, "GEO_InterceptArm_A"), "orthographic arena: HP1 should remove the intact interception arm A")
+	_assert.that(not view.get_formal_tower_mesh_visible_for_test(tower_id, "GEO_InterceptPlate_A"), "orthographic arena: HP1 should remove the intact interception plate A")
+	_assert.that(view.get_formal_tower_mesh_visible_for_test(tower_id, "DMG_Critical_RoofSlab_A"), "orthographic arena: HP1 should expose a seated collapsed-roof replacement")
+	_assert.that(view.get_formal_tower_mesh_visible_for_test(tower_id, "DMG_Critical_ArmStub_A"), "orthographic arena: HP1 should expose the connected broken-arm stub")
+	_assert.that(view.get_formal_tower_mesh_visible_for_test(tower_id, "DMG_Critical_DetachedPlate_A"), "orthographic arena: HP1 should expose the grounded detached plate")
 	tower.hp = tower.max_hp
 	view._process(0.0)
 	_assert.eq(view.get_formal_tower_damage_state_for_test(tower_id), 4, "orthographic arena: full HP should hide all damage geometry")
+	_assert.that(view.get_formal_tower_mesh_visible_for_test(tower_id, "GEO_CastleButtress_1"), "orthographic arena: returning to HP4 should restore the intact buttress")
+	_assert.that(view.get_formal_tower_mesh_visible_for_test(tower_id, "GEO_TopDome"), "orthographic arena: returning to HP4 should restore the complete dome")
 	var ai_tower_result: Dictionary = entity_runtime.build_or_upgrade_tower(CardfrontRulesScript.AI_FACTION, "interceptor_tower")
 	await process_frame
 	var ai_tower = entity_runtime._find_owner_tower(CardfrontRulesScript.AI_FACTION, "interceptor_tower")

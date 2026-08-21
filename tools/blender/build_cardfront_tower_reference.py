@@ -238,6 +238,104 @@ def build_damage(runner, collection, mats):
                 rotation=(0.0, math.radians(angle), 0.0),
             )
             crack["cf_hp_state"] = hp_state
+
+    # HP2 and HP1 use real silhouette loss: the intact front-left buttress is
+    # hidden by the presenter and replaced with a grounded horizontal chunk.
+    for state_name, hp_state, x_offset, angle in (
+        ("Heavy", 2, -0.55, -18.0),
+        ("Critical", 1, -0.50, -28.0),
+    ):
+        fallen_buttress = runner.box(
+            f"DMG_{state_name}_FallenButtress",
+            collection,
+            (0.70, 0.30, 0.24),
+            (x_offset, -0.62, 0.12),
+            mats["stone_theme"],
+            root,
+            rotation=(0.0, 0.0, math.radians(angle)),
+        )
+        fallen_buttress["cf_hp_state"] = hp_state
+        fallen_buttress["cf_replaces"] = "GEO_CastleButtress_1"
+        runner.contact(f"{state_name}.FallenButtress.bottom -> ground", 0.0, 0.0)
+        breach = runner.box(
+            f"DMG_{state_name}_ButtressBreach",
+            collection,
+            (0.30, 0.06, 0.62),
+            (-0.66, -0.705, 0.90),
+            mats["damage"],
+            root,
+            rotation=(0.0, 0.0, math.radians(-8.0 if hp_state == 2 else -14.0)),
+        )
+        breach["cf_hp_state"] = hp_state
+        breach["cf_replaces"] = "GEO_CastleButtress_1"
+
+    # HP1 replaces the intact dome with two low roof fragments seated directly
+    # on the TopCollar upper plane.
+    critical_roof_specs = (
+        ("A", (0.66, 0.42, 0.16), (-0.22, -0.08, 1.77), -13.0),
+        ("B", (0.48, 0.36, 0.14), (0.32, 0.12, 1.76), 21.0),
+    )
+    for suffix, dimensions, position, angle in critical_roof_specs:
+        slab = runner.box(
+            f"DMG_Critical_RoofSlab_{suffix}",
+            collection,
+            dimensions,
+            position,
+            mats["stone"],
+            root,
+            rotation=(0.0, 0.0, math.radians(angle)),
+        )
+        slab["cf_hp_state"] = 1
+        slab["cf_replaces"] = "GEO_TopDome"
+        runner.contact(
+            f"Critical.RoofSlab_{suffix}.bottom -> TopCollar.top",
+            position[2] - dimensions[2] * 0.5,
+            COLLAR_TOP,
+        )
+
+    arm_start, arm_end = arm_points(225.0)
+    arm_break = arm_start.lerp(arm_end, 0.42)
+    arm_stub = runner.cylinder_between(
+        "DMG_Critical_ArmStub_A",
+        collection,
+        arm_start,
+        arm_break,
+        0.105,
+        mats["metal"],
+        10,
+        root,
+    )
+    arm_stub["cf_hp_state"] = 1
+    arm_stub["cf_replaces"] = "GEO_InterceptArm_A"
+    runner.contact("Critical.ArmStub.start -> original Arm_A.start", 0.0, 0.0)
+
+    fallen_arm = runner.cylinder_between(
+        "DMG_Critical_FallenArm_A",
+        collection,
+        (-0.48, -0.18, 1.955),
+        (-0.80, -0.42, 1.955),
+        0.105,
+        mats["metal"],
+        10,
+        root,
+    )
+    fallen_arm["cf_hp_state"] = 1
+    fallen_arm["cf_replaces"] = "GEO_InterceptArm_A"
+    runner.contact("Critical.FallenArm.bottom -> collapsed roof top", 1.955 - 0.105, 1.85)
+
+    detached_plate = runner.cylinder_between(
+        "DMG_Critical_DetachedPlate_A",
+        collection,
+        (0.41, -0.58, 0.21),
+        (0.59, -0.58, 0.21),
+        0.21,
+        mats["core"],
+        10,
+        root,
+    )
+    detached_plate["cf_hp_state"] = 1
+    detached_plate["cf_replaces"] = "GEO_InterceptPlate_A"
+    runner.contact("Critical.DetachedPlate.bottom -> ground", 0.21 - 0.21, 0.0)
     rubble_specs = (
         ((0.58, 0.42, 0.34), (-0.48, -0.22, 0.17), 18.0),
         ((0.52, 0.38, 0.30), (0.46, -0.30, 0.15), -22.0),
@@ -261,7 +359,7 @@ def build_damage(runner, collection, mats):
     runner.empty("VFX_DamageSmoke", collection, (0.0, -0.58, 1.48), root)
     runner.log_step(
         "damage",
-        "mutually exclusive HP 3/2/1 crack clusters plus five grounded HP0 snapshot rubble anchors",
+        "mutually exclusive HP3 cracks, HP2 missing buttress, HP1 collapsed roof/broken arm, and five grounded HP0 rubble anchors",
     )
     return root
 
@@ -274,6 +372,30 @@ def set_damage_state(collection, hp_state):
         visible = state == hp_state
         obj.hide_render = not visible
         obj.hide_viewport = not visible
+
+
+def structural_part_visible(name, hp_state):
+    if hp_state <= 0:
+        return False
+    if hp_state <= 2 and name == "GEO_CastleButtress_1":
+        return False
+    if hp_state <= 1 and name in {
+        "GEO_TopDome",
+        "GEO_InterceptArm_A",
+        "GEO_InterceptPlate_A",
+    }:
+        return False
+    return True
+
+
+def set_structural_state(collections, hp_state):
+    for collection in collections:
+        for obj in collection.all_objects:
+            if obj.type != "MESH" or not obj.name.startswith("GEO_"):
+                continue
+            visible = structural_part_visible(obj.name, hp_state)
+            obj.hide_render = not visible
+            obj.hide_viewport = not visible
 
 
 def parse_args():
@@ -332,6 +454,29 @@ def main():
                         "1": "critical",
                         "0": "presentation_snapshot_rubble_only",
                     },
+                    "structural_damage": {
+                        "2": {
+                            "hide": ["GEO_CastleButtress_1"],
+                            "replace": ["DMG_Heavy_FallenButtress", "DMG_Heavy_ButtressBreach"],
+                        },
+                        "1": {
+                            "hide": [
+                                "GEO_CastleButtress_1",
+                                "GEO_TopDome",
+                                "GEO_InterceptArm_A",
+                                "GEO_InterceptPlate_A",
+                            ],
+                            "replace": [
+                                "DMG_Critical_FallenButtress",
+                                "DMG_Critical_ButtressBreach",
+                                "DMG_Critical_RoofSlab_A",
+                                "DMG_Critical_RoofSlab_B",
+                                "DMG_Critical_ArmStub_A",
+                                "DMG_Critical_FallenArm_A",
+                                "DMG_Critical_DetachedPlate_A",
+                            ],
+                        },
+                    },
                 },
                 indent=2,
                 sort_keys=True,
@@ -344,6 +489,7 @@ def main():
         damage_collection = collections["damage"]
         for hp_state in (4, 3, 2, 1):
             set_damage_state(damage_collection, hp_state)
+            set_structural_state(enabled, hp_state)
             runner.render_views(args.render_dir / f"hp{hp_state}", enabled)
         set_damage_state(damage_collection, 0)
         runner.render_views(
@@ -353,6 +499,7 @@ def main():
             ortho_scale=2.4,
         )
         set_damage_state(damage_collection, 4)
+        set_structural_state(enabled, 4)
     else:
         runner.render_views(args.render_dir / args.step, enabled)
 

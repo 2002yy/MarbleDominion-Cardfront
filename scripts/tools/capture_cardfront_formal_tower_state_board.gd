@@ -7,24 +7,27 @@ const EnvironmentAssetRegistryScript = preload(
 const OUTPUT_DIR := "res://artifacts/formal-tower-state-board"
 const OUTPUT_IMAGE := "formal-tower-state-board.png"
 const OUTPUT_MANIFEST := "formal-tower-state-board-manifest.json"
-const BOARD_DESIGN_SIZE := Vector2i(1600, 1400)
+const BOARD_DESIGN_SIZE := Vector2i(1600, 1720)
 const CARD_VIEWPORT_SIZE := Vector2i(500, 235)
 const PLAYER_COLOR := Color(0.18, 0.46, 0.58)
 const AI_COLOR := Color(0.58, 0.26, 0.26)
 
 const STATES: Array[Dictionary] = [
-	{"row": "阵营 + 等级 / FACTION + LEVEL", "title": "玩家  L1  HP4  ACTIVE", "faction": 0, "level": 1, "hp": 4, "state": "active"},
-	{"row": "阵营 + 等级 / FACTION + LEVEL", "title": "AI  L2  HP4  ACTIVE", "faction": 1, "level": 2, "hp": 4, "state": "active"},
-	{"row": "阵营 + 等级 / FACTION + LEVEL", "title": "玩家  L3  HP4  COUNTER", "faction": 0, "level": 3, "hp": 4, "state": "counter"},
-	{"row": "损伤 / DAMAGE", "title": "玩家  HP3  LIGHT", "faction": 0, "level": 2, "hp": 3, "state": "active"},
-	{"row": "损伤 / DAMAGE", "title": "AI  HP2  HEAVY", "faction": 1, "level": 2, "hp": 2, "state": "active"},
-	{"row": "损伤 / DAMAGE", "title": "玩家  HP1  CRITICAL", "faction": 0, "level": 2, "hp": 1, "state": "active"},
-	{"row": "运行状态 / OPERATION", "title": "玩家  ACTIVE", "faction": 0, "level": 2, "hp": 4, "state": "active"},
-	{"row": "运行状态 / OPERATION", "title": "AI  UNPOWERED", "faction": 1, "level": 2, "hp": 4, "state": "unpowered"},
-	{"row": "运行状态 / OPERATION", "title": "玩家  SUPPRESSED", "faction": 0, "level": 2, "hp": 4, "state": "suppressed"},
-	{"row": "动作 / ACTION", "title": "AI  QUOTA EMPTY", "faction": 1, "level": 2, "hp": 4, "state": "quota_empty"},
-	{"row": "动作 / ACTION", "title": "玩家  INTERCEPT PULSE", "faction": 0, "level": 2, "hp": 4, "state": "intercept"},
-	{"row": "动作 / ACTION", "title": "AI  HP0  DEATH SNAPSHOT", "faction": 1, "level": 3, "hp": 0, "state": "destroyed"},
+	{"row": "阵营与等级", "title": "玩家方 · 一级 · 正常", "faction": 0, "level": 1, "hp": 4, "state": "active"},
+	{"row": "阵营与等级", "title": "电脑方 · 二级 · 正常", "faction": 1, "level": 2, "hp": 4, "state": "active"},
+	{"row": "阵营与等级", "title": "玩家方 · 三级 · 反制", "faction": 0, "level": 3, "hp": 4, "state": "counter"},
+	{"row": "完整损伤阶段（一）", "title": "玩家方 · HP4 · 完好", "faction": 0, "level": 2, "hp": 4, "state": "active"},
+	{"row": "完整损伤阶段（一）", "title": "玩家方 · HP3 · 轻损", "faction": 0, "level": 2, "hp": 3, "state": "active"},
+	{"row": "完整损伤阶段（一）", "title": "玩家方 · HP2 · 重损", "faction": 0, "level": 2, "hp": 2, "state": "active"},
+	{"row": "完整损伤阶段（二）", "title": "玩家方 · HP1 · 濒毁", "faction": 0, "level": 2, "hp": 1, "state": "active"},
+	{"row": "完整损伤阶段（二）", "title": "电脑方 · HP1 · 濒毁", "faction": 1, "level": 2, "hp": 1, "state": "active"},
+	{"row": "完整损伤阶段（二）", "title": "电脑方 · HP0 · 摧毁残骸", "faction": 1, "level": 3, "hp": 0, "state": "destroyed"},
+	{"row": "运行状态", "title": "玩家方 · 正常运行", "faction": 0, "level": 2, "hp": 4, "state": "active"},
+	{"row": "运行状态", "title": "电脑方 · 失去供能", "faction": 1, "level": 2, "hp": 4, "state": "unpowered"},
+	{"row": "运行状态", "title": "玩家方 · 遭到压制", "faction": 0, "level": 2, "hp": 4, "state": "suppressed"},
+	{"row": "动作反馈", "title": "电脑方 · 拦截次数耗尽", "faction": 1, "level": 2, "hp": 4, "state": "quota_empty"},
+	{"row": "动作反馈", "title": "玩家方 · 拦截脉冲", "faction": 0, "level": 2, "hp": 4, "state": "intercept"},
+	{"row": "动作反馈", "title": "玩家方 · 三级反制开火", "faction": 0, "level": 3, "hp": 4, "state": "counter"},
 ]
 
 var _errors: Array[String] = []
@@ -45,6 +48,7 @@ func _capture() -> void:
 	root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_IGNORE
 	root.size = BOARD_DESIGN_SIZE
 	await _flush(2)
+	_validate_board_specifications()
 	_build_board()
 	await _flush(8)
 
@@ -65,6 +69,8 @@ func _capture() -> void:
 		"design_size": [BOARD_DESIGN_SIZE.x, BOARD_DESIGN_SIZE.y],
 		"capture_size": [image.get_width(), image.get_height()] if image != null else [0, 0],
 		"card_count": STATES.size(),
+		"locale": "zh-CN",
+		"damage_hp_sequence": [4, 3, 2, 1, 0],
 		"font_floor_px": 22,
 		"states": _manifest_entries,
 		"errors": _errors,
@@ -75,12 +81,28 @@ func _capture() -> void:
 		_errors.append("state-board manifest write failed: %s" % error_string(manifest_error))
 
 	if _errors.is_empty():
-		print("[CardfrontFormalTowerStateBoard] PASS (12 deterministic states)")
+		print("[CardfrontFormalTowerStateBoard] PASS (%d deterministic states)" % STATES.size())
 		print("[CardfrontFormalTowerStateBoard] Image: %s" % image_path)
 	else:
 		for message in _errors:
 			push_error(message)
 	quit(0 if _errors.is_empty() else 3)
+
+
+func _validate_board_specifications() -> void:
+	if STATES.size() != 15:
+		_errors.append("Chinese state board should contain exactly 15 cards")
+	var damage_states: Dictionary = {}
+	for specification in STATES:
+		var row := str(specification.get("row", ""))
+		var title := str(specification.get("title", ""))
+		if row.contains("/") or title.contains("ACTIVE") or title.contains("COUNTER"):
+			_errors.append("visible board copy should remain Chinese: %s / %s" % [row, title])
+		if row.begins_with("完整损伤阶段"):
+			damage_states[int(specification.get("hp", -1))] = true
+	for expected_hp in range(5):
+		if not damage_states.has(expected_hp):
+			_errors.append("dedicated damage sequence is missing HP%d" % expected_hp)
 
 
 func _build_board() -> void:
@@ -92,7 +114,7 @@ func _build_board() -> void:
 	var heading := Label.new()
 	heading.position = Vector2(24, 14)
 	heading.size = Vector2(1552, 42)
-	heading.text = "P0-FT1  正式拦截塔状态板 / FORMAL INTERCEPTOR TOWER"
+	heading.text = "P0-FT1  正式拦截塔全状态验收板"
 	heading.add_theme_font_size_override("font_size", 30)
 	heading.add_theme_color_override("font_color", Color("#f2f5e8"))
 	root.add_child(heading)
@@ -108,7 +130,7 @@ func _build_board() -> void:
 	var grid := GridContainer.new()
 	grid.columns = 3
 	grid.position = Vector2(20, 94)
-	grid.size = Vector2(1560, 1280)
+	grid.size = Vector2(1560, 1600)
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 12)
 	root.add_child(grid)
@@ -269,10 +291,15 @@ func _apply_state(tower: Node3D, specification: Dictionary) -> Dictionary:
 	var visible_plates := 0
 	var visible_damage := 0
 	var counter_flash_count := 0
+	var hidden_structural_parts: Array[String] = []
 	for child in tower.find_children("GEO_*", "MeshInstance3D", true, false):
 		var mesh := child as MeshInstance3D
 		var min_level := _minimum_level(str(mesh.name))
-		mesh.visible = min_level <= level and hp > 0
+		var level_visible := min_level <= level and hp > 0
+		var structure_visible := _structural_part_visible(str(mesh.name), hp)
+		mesh.visible = level_visible and structure_visible
+		if level_visible and not structure_visible:
+			hidden_structural_parts.append(str(mesh.name))
 		if str(mesh.name).begins_with("GEO_InterceptPlate_"):
 			mesh.visible = mesh.visible and operational
 			if state == "intercept" and mesh.visible:
@@ -294,12 +321,18 @@ func _apply_state(tower: Node3D, specification: Dictionary) -> Dictionary:
 	var expected_plates := 0
 	if operational:
 		expected_plates = 2 if level == 1 else 3
+		if hp == 1:
+			expected_plates -= 1
 	if visible_plates != expected_plates:
 		_errors.append("%s expected %d visible plates, got %d" % [specification["title"], expected_plates, visible_plates])
 	if hp < 4 and visible_damage == 0:
 		_errors.append("%s should expose one or more damage meshes" % specification["title"])
 	if hp == 0 and visible_damage < 5:
 		_errors.append("%s should expose the five-piece readable rubble cluster" % specification["title"])
+	if hp == 2 and hidden_structural_parts != ["GEO_CastleButtress_1"]:
+		_errors.append("%s should hide exactly the detached HP2 buttress" % specification["title"])
+	if hp == 1 and hidden_structural_parts.size() != 4:
+		_errors.append("%s should hide buttress, dome, arm A, and plate A" % specification["title"])
 	if state == "counter" and counter_flash_count != 1:
 		_errors.append("%s should expose one frozen counter muzzle flash" % specification["title"])
 	return {
@@ -311,6 +344,7 @@ func _apply_state(tower: Node3D, specification: Dictionary) -> Dictionary:
 		"state": state,
 		"visible_intercept_plates": visible_plates,
 		"visible_damage_meshes": visible_damage,
+		"hidden_structural_parts": hidden_structural_parts,
 		"counter_flash_count": counter_flash_count,
 		"module_count": 4,
 	}
@@ -334,6 +368,20 @@ func _damage_state(node_name: String) -> int:
 	if node_name.begins_with("DMG_Rubble"):
 		return 0
 	return 4
+
+
+func _structural_part_visible(node_name: String, hp_state: int) -> bool:
+	if hp_state <= 0:
+		return false
+	if hp_state <= 2 and node_name == "GEO_CastleButtress_1":
+		return false
+	if hp_state <= 1 and node_name in [
+		"GEO_TopDome",
+		"GEO_InterceptArm_A",
+		"GEO_InterceptPlate_A",
+	]:
+		return false
+	return true
 
 
 func _boost_emission(mesh: MeshInstance3D, energy: float) -> void:
