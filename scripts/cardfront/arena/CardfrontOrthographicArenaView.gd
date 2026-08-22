@@ -101,7 +101,7 @@ const LABEL_CHANGE_THRESHOLD: int = 10
 const GLB_DARKEN_FACTOR: float = 0.78
 const GLB_FACTION_TINT_STRENGTH: float = 0.42
 const SKYLINE_DISTANCE: float = 5.5
-var _bridge_tops: Array[MeshInstance3D] = []
+var _bridge_tops: Array[Node3D] = []
 var _bridge_edges: Array[MeshInstance3D] = []
 var _gate_bars: Array[MeshInstance3D] = []
 var _gate_labels: Array[Label3D] = []
@@ -1583,6 +1583,10 @@ func _build_river_and_bridges(width: float, arena_width: float) -> void:
 	var bridge_positions: Array[float] = [-bridge_offset, bridge_offset]
 	for bridge_index in range(BRIDGE_COUNT):
 		var bridge_x: float = bridge_positions[bridge_index]
+		if _try_spawn_formal_bridge(bridge_x):
+			_environment_builder_build_dressing(bridge_x)
+			_build_gate_visual(bridge_x)
+			continue
 		var bridge_base := MeshInstance3D.new()
 		bridge_base.name = "BridgeBase"
 		var bridge_base_mesh := BoxMesh.new()
@@ -1617,7 +1621,37 @@ func _build_river_and_bridges(width: float, arena_width: float) -> void:
 		_build_gate_visual(bridge_x)
 
 
+func _environment_builder_build_dressing(bridge_x: float) -> void:
+	if _environment_builder != null:
+		_environment_builder.build_bridge_dressing(bridge_x, _z_scale)
+		_environment_builder.build_gate_foundations(bridge_x, _z_scale)
+
+
+func _try_spawn_formal_bridge(bridge_x: float) -> bool:
+	var scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_bridge")
+	if scene == null:
+		return false
+	var instance: Node3D = scene.instantiate() as Node3D
+	if instance == null:
+		return false
+	instance.name = "BridgeGlb"
+	instance.position = Vector3(bridge_x, 0.12, 0.0)
+	instance.set_meta("presentation_only", true)
+	instance.set_meta("uses_named_materials", true)
+	world_root.add_child(instance)
+	_apply_building_material_pass(instance, CardfrontRulesScript.NEUTRAL_OWNER)
+	_bridge_tops.append(instance)
+	for rail_name in ["GEO_Rail_L", "GEO_Rail_R"]:
+		var rail: MeshInstance3D = instance.find_child(rail_name, true, false) as MeshInstance3D
+		if rail != null:
+			_bridge_edges.append(rail)
+	return true
+
+
 func _build_gate_visual(bridge_x: float) -> void:
+	if _try_spawn_formal_gate_frame(bridge_x):
+		_build_gate_bar_and_label(bridge_x)
+		return
 	for post_offset in [-1.72, 1.72]:
 		var post := MeshInstance3D.new()
 		post.name = "GatePost"
@@ -1637,6 +1671,26 @@ func _build_gate_visual(bridge_x: float) -> void:
 		cap.material_override = _make_material(Color(1.0, 0.72, 0.20), 0.08)
 		world_root.add_child(cap)
 
+	_build_gate_bar_and_label(bridge_x)
+
+
+func _try_spawn_formal_gate_frame(bridge_x: float) -> bool:
+	var scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_gate_frame")
+	if scene == null:
+		return false
+	var instance: Node3D = scene.instantiate() as Node3D
+	if instance == null:
+		return false
+	instance.name = "GateFrameGlb"
+	instance.position = Vector3(bridge_x, 0.37, 0.0)
+	instance.set_meta("presentation_only", true)
+	instance.set_meta("uses_named_materials", true)
+	world_root.add_child(instance)
+	_apply_building_material_pass(instance, CardfrontRulesScript.NEUTRAL_OWNER)
+	return true
+
+
+func _build_gate_bar_and_label(bridge_x: float) -> void:
 	var bar := MeshInstance3D.new()
 	bar.name = "GateBar"
 	var bar_mesh := BoxMesh.new()

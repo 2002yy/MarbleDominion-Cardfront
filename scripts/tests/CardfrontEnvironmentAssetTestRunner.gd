@@ -19,6 +19,7 @@ func _run() -> void:
 	await _test_builder_creates_presentation_only_nodes()
 	await _test_cardfront_runtime_uses_imported_environment()
 	await _test_ballwar_does_not_create_environment()
+	_test_formal_bridge_gate_pass_validator()
 
 	_assert.report("[CardfrontEnvironmentAssetTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
@@ -38,13 +39,33 @@ func _test_registry_assets_are_loadable() -> void:
 			kaykit_ids.append(asset_id)
 	_assert.eq(kaykit_ids.size(), 7, "environment registry: KayKit benchmark batch should contain seven reviewed source models")
 	_assert.eq(custom_ids.size(), 10, "environment registry: custom Blender batch should contain ten building models")
-	_assert.eq(formal_ids.size(), 8, "environment registry: Formal HQ and Interceptor Tower batches should contain eight imported modules")
+	_assert.eq(formal_ids.size(), 10, "environment registry: Formal HQ, Tower, Bridge, and Gate batches should contain ten imported modules")
 	for asset_id in ids:
 		var entry: Dictionary = AssetRegistryScript.get_entry(asset_id)
 		_assert.that(not str(entry.get("path", "")).is_empty(), "%s: path should be explicit" % asset_id)
 		_assert.that(not str(entry.get("fallback", "")).is_empty(), "%s: fallback should be explicit" % asset_id)
 		_assert.that(AssetRegistryScript.is_available(asset_id), "%s: imported source model should exist" % asset_id)
 		_assert.that(AssetRegistryScript.load_scene(asset_id) != null, "%s: source model should load as PackedScene" % asset_id)
+
+
+func _test_formal_bridge_gate_pass_validator() -> void:
+	var validator := CardfrontFormalAssetValidator.new()
+	var bridge_result: Dictionary = validator.validate_resource_path(
+		"res://assets/cardfront_environment/formal/bridge/bridge.glb",
+		CardfrontFormalAssetValidator.bridge_contract()
+	)
+	_assert.that(
+		bool(bridge_result.get("valid", false)),
+		"formal bridge should pass fail-closed validator: %s" % str(bridge_result.get("errors", []))
+	)
+	var gate_result: Dictionary = validator.validate_resource_path(
+		"res://assets/cardfront_environment/formal/gate/gate_frame.glb",
+		CardfrontFormalAssetValidator.gate_frame_contract()
+	)
+	_assert.that(
+		bool(gate_result.get("valid", false)),
+		"formal gate frame should pass fail-closed validator: %s" % str(gate_result.get("errors", []))
+	)
 
 
 func _test_builder_creates_presentation_only_nodes() -> void:

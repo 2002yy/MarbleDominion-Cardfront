@@ -100,6 +100,18 @@ const ASSETS: Dictionary = {
 		"source_pack": "cardfront_formal_tower_v1",
 		"fallback": "none",
 	},
+	"formal_bridge": {
+		"path": "res://assets/cardfront_environment/formal/bridge/bridge.glb",
+		"role": "river_bridge",
+		"source_pack": "cardfront_formal_bridge_v1",
+		"fallback": "primitive_bridge",
+	},
+	"formal_gate_frame": {
+		"path": "res://assets/cardfront_environment/formal/gate/gate_frame.glb",
+		"role": "gate_frame",
+		"source_pack": "cardfront_formal_gate_v1",
+		"fallback": "primitive_gate",
+	},
 	"custom_industrial_stack": {
 		"path": "res://assets/cardfront_environment/source/custom/industrial_stack.glb",
 		"role": "map_landmark",
