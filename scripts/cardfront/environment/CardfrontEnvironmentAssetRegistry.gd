@@ -88,6 +88,12 @@ const ASSETS: Dictionary = {
 		"source_pack": "cardfront_formal_tower_v1",
 		"fallback": "custom_interceptor_tower",
 	},
+	"formal_tower_beacon": {
+		"path": "res://assets/cardfront_environment/formal/tower/tower_beacon.glb",
+		"role": "defense_tower_function_module",
+		"source_pack": "cardfront_formal_tower_v1",
+		"fallback": "custom_beacon_tower",
+	},
 	"formal_tower_theme_castle": {
 		"path": "res://assets/cardfront_environment/formal/tower/tower_theme_castle.glb",
 		"role": "defense_tower_theme_module",

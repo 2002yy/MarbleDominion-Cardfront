@@ -39,7 +39,7 @@ func _test_registry_assets_are_loadable() -> void:
 			kaykit_ids.append(asset_id)
 	_assert.eq(kaykit_ids.size(), 7, "environment registry: KayKit benchmark batch should contain seven reviewed source models")
 	_assert.eq(custom_ids.size(), 10, "environment registry: custom Blender batch should contain ten building models")
-	_assert.eq(formal_ids.size(), 10, "environment registry: Formal HQ, Tower, Bridge, and Gate batches should contain ten imported modules")
+	_assert.eq(formal_ids.size(), 11, "environment registry: Formal HQ, Tower (incl. Beacon), Bridge, and Gate batches should contain eleven imported modules")
 	for asset_id in ids:
 		var entry: Dictionary = AssetRegistryScript.get_entry(asset_id)
 		_assert.that(not str(entry.get("path", "")).is_empty(), "%s: path should be explicit" % asset_id)
@@ -65,6 +65,14 @@ func _test_formal_bridge_gate_pass_validator() -> void:
 	_assert.that(
 		bool(gate_result.get("valid", false)),
 		"formal gate frame should pass fail-closed validator: %s" % str(gate_result.get("errors", []))
+	)
+	var beacon_result: Dictionary = validator.validate_resource_path(
+		"res://assets/cardfront_environment/formal/tower/tower_beacon.glb",
+		CardfrontFormalAssetValidator.beacon_function_contract()
+	)
+	_assert.that(
+		bool(beacon_result.get("valid", false)),
+		"formal beacon module should pass fail-closed validator: %s" % str(beacon_result.get("errors", []))
 	)
 
 

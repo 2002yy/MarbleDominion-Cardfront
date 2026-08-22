@@ -2718,6 +2718,8 @@ func _try_spawn_tower_glb(proxy: Node3D, entity) -> bool:
 	var shape: String = CombatReadabilityScript.tower_shape(tower_id)
 	if shape == "interceptor":
 		return _try_spawn_formal_interceptor_tower(proxy, entity)
+	if _try_spawn_formal_beacon_tower(proxy, entity):
+		return true
 	var asset_id: String = "custom_beacon_tower"
 	var scene: PackedScene = EnvironmentAssetRegistryScript.load_scene(asset_id)
 	if scene == null:
@@ -2779,6 +2781,47 @@ func _try_spawn_formal_interceptor_tower(proxy: Node3D, entity) -> bool:
 		if module.name == "TowerInterceptorModule":
 			_tower_function_modules[str(entity.entity_id)] = module
 		elif module.name == "TowerDamageModule":
+			_tower_damage_modules[str(entity.entity_id)] = module
+	_apply_building_material_pass(instance, int(entity.owner_id))
+	proxy.set_meta("formal_interceptor_tower", true)
+	proxy.set_meta("formal_tower_module_count", 4)
+	proxy.set_meta("formal_tower_target_scale", FORMAL_TOWER_GLB_SCALE)
+	proxy.set_meta("formal_tower_owner_id", int(entity.owner_id))
+	proxy.set_meta("formal_tower_entity_id", str(entity.entity_id))
+	_sync_formal_tower_state(proxy, entity)
+	return true
+
+
+func _try_spawn_formal_beacon_tower(proxy: Node3D, entity) -> bool:
+	var common_scene := EnvironmentAssetRegistryScript.load_scene("formal_tower_common")
+	var function_scene := EnvironmentAssetRegistryScript.load_scene("formal_tower_beacon")
+	var theme_scene := EnvironmentAssetRegistryScript.load_scene("formal_tower_theme_castle")
+	var damage_scene := EnvironmentAssetRegistryScript.load_scene("formal_tower_damage")
+	if common_scene == null or function_scene == null or theme_scene == null or damage_scene == null:
+		return false
+	var instance := common_scene.instantiate() as Node3D
+	if instance == null:
+		return false
+	instance.name = "TowerGlb"
+	instance.scale = Vector3.ONE * FORMAL_TOWER_GLB_SCALE
+	instance.position.y = TILE_HEIGHT + 0.35
+	instance.set_meta("presentation_only", true)
+	instance.set_meta("uses_named_materials", true)
+	proxy.add_child(instance)
+	var module_specs := [
+		{"scene": function_scene, "name": "TowerBeaconModule"},
+		{"scene": theme_scene, "name": "TowerThemeCastleModule"},
+		{"scene": damage_scene, "name": "TowerDamageModule"},
+	]
+	for module_spec in module_specs:
+		var module := (module_spec["scene"] as PackedScene).instantiate() as Node3D
+		if module == null:
+			instance.queue_free()
+			return false
+		module.name = str(module_spec["name"])
+		module.scale = Vector3.ONE
+		instance.add_child(module)
+		if module.name == "TowerDamageModule":
 			_tower_damage_modules[str(entity.entity_id)] = module
 	_apply_building_material_pass(instance, int(entity.owner_id))
 	proxy.set_meta("formal_interceptor_tower", true)
