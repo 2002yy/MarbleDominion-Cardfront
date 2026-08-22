@@ -24,6 +24,7 @@ const TILE_HEIGHT: float = 0.16
 const TILE_ELEVATION_OCCUPIED: float = 0.05
 const RIVER_BED_Y: float = 0.02
 const RIVER_BANK_Y: float = 0.22
+const RIVER_CUT_HALF_SCALE: float = 1.78
 const ARENA_X_SCALE: float = 1.18
 const ARENA_Z_SCALE: float = 1.28
 const OUTER_FLOOR_WIDTH_PADDING: float = 32.0
@@ -37,7 +38,7 @@ const GRASS_DARK: Color = Color(0.45, 0.56, 0.49)
 const PLAYER_TINT: Color = Color(0.18, 0.46, 0.58)
 const AI_TINT: Color = Color(0.58, 0.26, 0.26)
 const OUTLINE_COLOR: Color = Color(0.10, 0.18, 0.17)
-const PATH_COLOR: Color = Color(0.56, 0.44, 0.32, 0.62)
+const PATH_COLOR: Color = Color(0.56, 0.44, 0.32, 0.42)
 const PRESENTATION_SCALE_PRESETS: Array[float] = [1.0, 1.12, 1.20]
 const DEFAULT_PRESENTATION_SCALE: float = 1.12
 const SCALE_TWEEN_SECONDS: float = 0.18
@@ -51,7 +52,7 @@ const REGION_LABEL_PIXEL_SIZE: float = 0.031
 const REGION_LABEL_WORLD_Y: float = 1.95
 const REGION_BADGE_COMPACT_SIZE: Vector2 = Vector2(4.6, 1.35)
 const REGION_BADGE_DETAIL_SIZE: Vector2 = Vector2(6.8, 1.55)
-const REGION_LABEL_REST_ALPHA: float = 0.80
+const REGION_LABEL_REST_ALPHA: float = 0.0
 const LEGACY_CHAMBER_GLB_SCALE: Vector3 = Vector3(1.78, 0.62, 1.05)
 const HQ_MODULE_SCALE: float = 1.0
 const TOWER_GLB_SCALE: float = 1.16
@@ -900,6 +901,14 @@ func _disconnect_deployment_zone_source() -> void:
 		deployment_zone_source.disconnect("deployment_zone_changed", changed)
 
 
+func _cell_world_z(y: int, extent: Vector2i) -> float:
+	return (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
+
+
+func _in_river_band(world_z: float) -> bool:
+	return absf(world_z) < RIVER_CUT_HALF_SCALE * _z_scale
+
+
 func _build_tiles() -> void:
 	tile_multimesh = MultiMeshInstance3D.new()
 	tile_multimesh.name = "TerritoryTiles"
@@ -924,12 +933,19 @@ func _build_tiles() -> void:
 	for x in range(extent.x):
 		for y in range(extent.y):
 			var index: int = x * extent.y + y
+			var world_z: float = _cell_world_z(y, extent)
+			if _in_river_band(world_z):
+				multimesh.set_instance_transform(index, Transform3D(
+					Basis.IDENTITY.scaled(Vector3.ONE * 0.001),
+					Vector3(0.0, -50.0, 0.0)
+				))
+				continue
 			var instance_transform := Transform3D(
 				Basis.IDENTITY,
 				Vector3(
 					(float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE,
 					TILE_HEIGHT,
-					(float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
+					world_z
 				)
 			)
 			multimesh.set_instance_transform(index, instance_transform)
@@ -974,6 +990,8 @@ func _refresh_boundary_skirts() -> void:
 		for y in range(extent.y):
 			var owner_id: int = int(battlefield.owners[x][y])
 			var elev: float = TILE_ELEVATION_OCCUPIED if owner_id != CardfrontRulesScript.NEUTRAL_OWNER else 0.0
+			if _in_river_band(_cell_world_z(y, extent)):
+				continue
 
 			# Right neighbor boundary (x -> x+1)
 			if x + 1 < extent.x and battlefield.owners[x + 1] is Array:
@@ -982,7 +1000,7 @@ func _refresh_boundary_skirts() -> void:
 				if abs(elev - n_elev) > 0.001:
 					var skirt_h: float = abs(elev - n_elev)
 					var boundary_x: float = (float(x) + 1.0 - float(extent.x) * 0.5) * ARENA_X_SCALE
-					var cell_z: float = (float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
+					var cell_z: float = _cell_world_z(y, extent)
 					var skirt_y: float = base_top + minf(elev, n_elev) + skirt_h * 0.5
 					var higher_owner: int = owner_id if elev > n_elev else n_owner
 					boundary_skirt_multimesh.multimesh.set_instance_transform(index, Transform3D(
@@ -1002,7 +1020,9 @@ func _refresh_boundary_skirts() -> void:
 				if abs(elev - n_elev) > 0.001:
 					var skirt_h: float = abs(elev - n_elev)
 					var cell_x: float = (float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE
-					var boundary_z: float = (float(y) + 1.0 - float(extent.y) * 0.5) * _z_scale
+					var boundary_z: float = _cell_world_z(y, extent) + _z_scale * 0.5
+					if _in_river_band(boundary_z):
+						continue
 					var skirt_y: float = base_top + minf(elev, n_elev) + skirt_h * 0.5
 					var higher_owner: int = owner_id if elev > n_elev else n_owner
 					boundary_skirt_multimesh.multimesh.set_instance_transform(index, Transform3D(
@@ -1097,6 +1117,8 @@ func _refresh_territory_boundaries() -> void:
 			var seg_w: float = float(run_len) * ARENA_X_SCALE
 			var cx: float = (float(run_start) + float(run_len) * 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE
 			var cz: float = (float(y) + 1.0 - float(extent.y) * 0.5) * _z_scale
+			if _in_river_band(cz):
+				continue
 			if is_frontline:
 				index = _set_boundary_instance(index,
 					Vector3(cx, contour_y_t2, cz),
@@ -1176,10 +1198,12 @@ func _refresh_sparse_claim_markers() -> void:
 			var cell := Vector2i(x, y)
 			if _same_owner_neighbor_count(cell, owner_id, extent) > 1:
 				continue
+			if _in_river_band(_cell_world_z(y, extent)):
+				continue
 			var center := Vector3(
 				(float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE,
 				TILE_HEIGHT + 0.25,
-				(float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
+				_cell_world_z(y, extent)
 			)
 			var basis := Basis(Vector3.UP, PI * 0.25).scaled(Vector3(0.62, 0.18, 0.62))
 			sparse_claim_multimesh.multimesh.set_instance_transform(marker_index, Transform3D(basis, center))
@@ -1214,7 +1238,7 @@ func _build_lane_paths(width: float, height: float) -> void:
 		var lane := MeshInstance3D.new()
 		lane.name = "ArenaLane"
 		var lane_mesh := BoxMesh.new()
-		lane_mesh.size = Vector3(3.0, 0.10, (height - 3.0) * _z_scale)
+		lane_mesh.size = Vector3(2.6, 0.10, (height - 3.0) * _z_scale)
 		lane.mesh = lane_mesh
 		lane.position = Vector3(lane_x, TILE_HEIGHT + 0.035, 0.0)
 		lane.material_override = _make_material(_theme_color("path"), 0.0)
@@ -1737,6 +1761,55 @@ func _build_stronghold_platforms() -> void:
 		world_root.add_child(ring)
 		_region_control_rings[region_id] = ring
 
+		var icon := _build_region_type_icon(str(region_map.get_region_type_by_id(region_id)))
+		if icon != null:
+			icon.name = "StrongholdTypeIcon_%s" % region_id
+			icon.position = center_world + Vector3(0.0, 0.86, 0.0)
+			world_root.add_child(icon)
+
+
+func _build_region_type_icon(region_type: String) -> MeshInstance3D:
+	var icon := MeshInstance3D.new()
+	var accent: Color = _region_accent(region_type)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = accent.lightened(0.22)
+	mat.roughness = 0.42
+	mat.metallic = 0.08
+	mat.emission_enabled = true
+	mat.emission = accent.lightened(0.08)
+	mat.emission_energy_multiplier = 1.15
+	match region_type:
+		RegionTypeScript.ENERGY:
+			var torus := TorusMesh.new()
+			torus.inner_radius = 0.34
+			torus.outer_radius = 0.60
+			torus.rings = 14
+			torus.ring_segments = 6
+			icon.mesh = torus
+			icon.scale = Vector3.ONE * 1.35
+		RegionTypeScript.FACTORY:
+			var tank := CylinderMesh.new()
+			tank.top_radius = 0.34
+			tank.bottom_radius = 0.38
+			tank.height = 0.62
+			tank.radial_segments = 12
+			icon.mesh = tank
+		RegionTypeScript.LAB:
+			var crystal := SphereMesh.new()
+			crystal.radius = 0.30
+			crystal.height = 1.05
+			crystal.radial_segments = 5
+			crystal.rings = 3
+			icon.mesh = crystal
+			icon.scale = Vector3(1.0, 1.25, 1.0)
+		_:
+			var marker := BoxMesh.new()
+			marker.size = Vector3(0.42, 0.42, 0.42)
+			icon.mesh = marker
+	icon.material_override = mat
+	icon.cast_shadow = 0
+	return icon
+
 
 func _cell_bounds(cells: Array) -> Rect2:
 	var min_cell := Vector2(INF, INF)
@@ -1763,6 +1836,13 @@ func _refresh_tile_colors() -> void:
 			var owner_id: int = int(battlefield.owners[x][y])
 			var region_type: String = str(region_map.get_region_type(Vector2i(x, y)))
 			var index: int = x * extent.y + y
+			var world_z: float = _cell_world_z(y, extent)
+			if _in_river_band(world_z):
+				tile_multimesh.multimesh.set_instance_transform(index, Transform3D(
+					Basis.IDENTITY.scaled(Vector3.ONE * 0.001),
+					Vector3(0.0, -50.0, 0.0)
+				))
+				continue
 			tile_multimesh.multimesh.set_instance_color(index, _tile_color(owner_id, region_type, Vector2i(x, y)))
 			var tile_y: float = TILE_HEIGHT
 			if owner_id != CardfrontRulesScript.NEUTRAL_OWNER:
@@ -1772,7 +1852,7 @@ func _refresh_tile_colors() -> void:
 				Vector3(
 					(float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE,
 					tile_y,
-					(float(y) + 0.5 - float(extent.y) * 0.5) * _z_scale
+					world_z
 				)
 			))
 	_refresh_boundary_skirts()
@@ -1830,22 +1910,10 @@ func _build_region_labels() -> void:
 
 		var badge_plate := MeshInstance3D.new()
 		badge_plate.name = "BadgePlate"
-		var badge_mesh := QuadMesh.new()
-		badge_mesh.size = REGION_BADGE_COMPACT_SIZE
-		badge_plate.mesh = badge_mesh
-		var badge_material := StandardMaterial3D.new()
-		badge_material.albedo_color = Color(0.035, 0.055, 0.060, 0.92)
-		badge_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		badge_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		badge_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-		badge_material.no_depth_test = true
-		badge_plate.material_override = badge_material
-		badge_material.render_priority = -1
-		badge_plate.position = label.position + Vector3(0.0, 0.0, -0.06)
-		badge_material.albedo_color.a = REGION_LABEL_REST_ALPHA
+		badge_plate.visible = false
 		world_root.add_child(badge_plate)
 
-		label.modulate.a = REGION_LABEL_REST_ALPHA
+		label.modulate.a = 0.0
 		world_root.add_child(label)
 		_region_labels[region_id] = label
 		_region_badge_plates[region_id] = badge_plate

@@ -26,10 +26,10 @@ func build_edge_dressing(height: float, arena_width: float, z_scale: float) -> i
 		return 0
 	var edge_x: float = arena_width * 0.5 + 2.6
 	var placements: Array[Dictionary] = [
-		{"id": "tree_a", "position": Vector3(-edge_x, 0.0, -height * 0.31 * z_scale), "scale": 3.65, "rotation": 0.18},
-		{"id": "tree_b", "position": Vector3(edge_x, 0.0, -height * 0.28 * z_scale), "scale": 3.50, "rotation": -0.32},
-		{"id": "tree_b", "position": Vector3(-edge_x, 0.0, height * 0.27 * z_scale), "scale": 3.35, "rotation": 0.56},
-		{"id": "tree_a", "position": Vector3(edge_x, 0.0, height * 0.32 * z_scale), "scale": 3.60, "rotation": -0.48},
+		{"id": "tree_a", "position": Vector3(-edge_x, 0.0, -height * 0.335 * z_scale), "scale": 2.95, "rotation": 0.18},
+		{"id": "tree_b", "position": Vector3(edge_x, 0.0, -height * 0.315 * z_scale), "scale": 2.85, "rotation": -0.32},
+		{"id": "tree_b", "position": Vector3(-edge_x, 0.0, height * 0.305 * z_scale), "scale": 2.75, "rotation": 0.56},
+		{"id": "tree_a", "position": Vector3(edge_x, 0.0, height * 0.34 * z_scale), "scale": 2.90, "rotation": -0.48},
 		{"id": "rock_a", "position": Vector3(-edge_x + 0.7, 0.0, -height * 0.13 * z_scale), "scale": 5.8, "rotation": 0.42},
 		{"id": "rock_b", "position": Vector3(edge_x - 0.6, 0.0, -height * 0.08 * z_scale), "scale": 5.4, "rotation": -0.28},
 		{"id": "rock_c", "position": Vector3(-edge_x + 0.5, 0.0, height * 0.11 * z_scale), "scale": 5.1, "rotation": -0.62},

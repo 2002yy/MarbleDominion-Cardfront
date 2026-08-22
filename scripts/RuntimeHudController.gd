@@ -147,6 +147,25 @@ static func update_meta(timer_label, stage_label, leader_label, current_score_co
 		else:
 			leader_label.text = "双方持平  %d%%" % percent
 			leader_label.add_theme_color_override("font_color", Color(0.92, 0.88, 0.72))
+		if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT:
+			_apply_territory_pressure_style(leader_label, current_score_counts)
+
+
+static func _apply_territory_pressure_style(leader_label: Label, score_counts: Dictionary) -> void:
+	var player_count := int(score_counts.get(CardfrontRulesScript.PLAYER_FACTION, 0))
+	var ai_count := int(score_counts.get(CardfrontRulesScript.AI_FACTION, 0))
+	var neutral_count := int(score_counts.get(CardfrontRulesScript.NEUTRAL_OWNER, 0))
+	var total := player_count + ai_count + neutral_count
+	if total <= 0:
+		return
+	leader_label.text = "领土  %d%% · 中立 %d%% · %d%%" % [
+		int(round(float(player_count) * 100.0 / float(total))),
+		int(round(float(neutral_count) * 100.0 / float(total))),
+		int(round(float(ai_count) * 100.0 / float(total))),
+	]
+	leader_label.add_theme_color_override("font_color", Color(0.78, 0.82, 0.74, 0.88))
+	leader_label.add_theme_font_size_override("font_size", 11)
+	leader_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 
 static func update_top_bar(counts: Dictionary, top_bar_segments: Dictionary, top_bar_labels: Dictionary, top_bar_name_labels: Dictionary, top_bar_total_width: float, is_mobile_layout: bool) -> void:
 	if top_bar_segments.size() == 0:

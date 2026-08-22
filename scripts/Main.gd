@@ -172,6 +172,15 @@ func _process(delta: float) -> void:
 	if hud_meta_update_timer <= 0.0:
 		hud_meta_update_timer = HUD_META_UPDATE_INTERVAL
 		RuntimeHudController.update_meta(_hud_ref("timer_label"), _hud_ref("stage_label"), _hud_ref("leader_label"), current_score_counts, game_elapsed_time)
+		if _is_cardfront_mode():
+			RuntimeHudController.update_top_bar(
+				_hq_hp_bar_counts(),
+				_ui_runtime_ref("top_bar_segments", {}),
+				_ui_runtime_ref("top_bar_labels", {}),
+				_ui_runtime_ref("top_bar_name_labels", {}),
+				float(_ui_runtime_ref("top_bar_total_width", 0.0)),
+				is_mobile_layout
+			)
 		_update_cardfront_status_label()
 		_check_winner()
 
@@ -1065,8 +1074,11 @@ func _stop_all_actions_for_game_over() -> void:
 
 func _on_scores_changed(counts: Dictionary) -> void:
 	current_score_counts = counts.duplicate()
+	var bar_counts: Dictionary = counts
+	if GameConfig.get_game_mode_name() == GameConfig.GAME_MODE_CARDFRONT:
+		bar_counts = _hq_hp_bar_counts()
 	RuntimeHudController.update_top_bar(
-		counts,
+		bar_counts,
 		_ui_runtime_ref("top_bar_segments", {}),
 		_ui_runtime_ref("top_bar_labels", {}),
 		_ui_runtime_ref("top_bar_name_labels", {}),
@@ -1074,6 +1086,17 @@ func _on_scores_changed(counts: Dictionary) -> void:
 		is_mobile_layout
 	)
 	RuntimeHudController.update_meta(_hud_ref("timer_label"), _hud_ref("stage_label"), _hud_ref("leader_label"), current_score_counts, game_elapsed_time)
+
+func _hq_hp_bar_counts() -> Dictionary:
+	var hp_counts: Dictionary = {}
+	if runtime != null and runtime.turrets != null:
+		for faction_id in [CardfrontRules.PLAYER_FACTION, CardfrontRules.AI_FACTION]:
+			var turret = runtime.turrets.get(faction_id, null)
+			if turret != null and is_instance_valid(turret):
+				hp_counts[int(faction_id)] = maxi(0, int(turret.health))
+	if hp_counts.is_empty():
+		return current_score_counts
+	return hp_counts
 
 func _show_center_banner(title_text: String, sub_text: String, accent: Color, auto_hide: bool) -> void:
 	_set_hud_ref(

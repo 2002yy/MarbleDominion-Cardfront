@@ -46,13 +46,13 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.gte(int(badge_metrics.get("font_size", 0)), 40, "orthographic arena: stronghold badge font should survive the default camera distance")
 	_assert.between(float(badge_metrics.get("world_text_height", 0.0)), 1.30, 1.45, "orthographic arena: compact stronghold badge should remain readable without dominating combat")
 	_assert.that((badge_metrics.get("plate_size", Vector2.ZERO) as Vector2).x <= 4.8, "orthographic arena: combat-state stronghold badge should remain compact")
-	_assert.gte(float(badge_metrics.get("rest_alpha", 0.0)), 0.78, "orthographic arena: compact stronghold status should remain available during combat")
+	_assert.eq(float(badge_metrics.get("rest_alpha", -1.0)), 0.0, "orthographic arena: stronghold labels stay hidden at rest and appear only on ownership change")
 	_assert.that(view.get_region_badge_text_for_test(first_region_id).contains("%"), "orthographic arena: stronghold badge should keep an explicit percentage")
 	_assert.that(view.get_region_badge_text_for_test(first_region_id).begins_with("能"), "orthographic arena: compact stronghold badge should preserve a readable resource abbreviation")
 	view.set_stronghold_labels_visible(true)
 	badge_metrics = view.get_region_badge_metrics_for_test(first_region_id)
 	_assert.that(view.get_region_badge_text_for_test(first_region_id).contains("能源"), "orthographic arena: battlefield review should expand the full resource name")
-	_assert.gte((badge_metrics.get("plate_size", Vector2.ZERO) as Vector2).x, 6.5, "orthographic arena: review-state badge should make room for the full resource name")
+	_assert.eq(badge_metrics.get("plate_size", Vector2.ONE), Vector2.ZERO, "orthographic arena: stronghold badge backplates are removed in favor of type icons")
 	view.set_stronghold_labels_visible(false)
 	_assert.that(not view.get_region_badge_text_for_test(first_region_id).contains("能源"), "orthographic arena: combat state should return to the compact badge")
 	_assert.eq(view.get_bridge_count_for_test(), 2, "orthographic arena: open arena should expose two clear bridge crossings")
@@ -224,7 +224,7 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	})
 	_assert.gte(view.get_combat_effect_count_for_test(), 1, "orthographic arena: projectile contact should create a visible battlefield pulse")
 
-	var isolated_cell := Vector2i(20, 20)
+	var isolated_cell := Vector2i(20, 8)
 	main.runtime.battlefield.owners[isolated_cell.x][isolated_cell.y] = CardfrontRulesScript.PLAYER_FACTION
 	view.mark_tiles_dirty()
 	await process_frame
