@@ -82,6 +82,14 @@ static func beacon_function_contract() -> Dictionary:
 	}
 
 
+static func fortification_contract() -> Dictionary:
+	return {
+		"required_nodes": PackedStringArray(),
+		"require_ground_contact": true,
+		"require_visible_geometry": true,
+	}
+
+
 func validate_resource_path(path: String, contract: Dictionary = {}) -> Dictionary:
 	if path.is_empty() or not ResourceLoader.exists(path):
 		return _failure_result("RESOURCE_MISSING", path, "PackedScene resource does not exist")

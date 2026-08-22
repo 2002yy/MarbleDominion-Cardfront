@@ -87,6 +87,10 @@ var _turret_barrels: Dictionary = {}
 var _chamber_labels: Dictionary = {}
 var _chamber_damage_modules: Dictionary = {}
 var _chamber_core_glows: Dictionary = {}
+var fortify_layer = null
+var _fortify_proxies: Dictionary = {}
+var _fortify_sync_timer: float = 0.0
+const FORTIFY_SYNC_INTERVAL: float = 0.15
 var _region_labels: Dictionary = {}
 var _region_platforms: Dictionary = {}
 var _region_control_rings: Dictionary = {}
@@ -739,6 +743,10 @@ func simulation_to_world_for_test(simulation_position: Vector2, height: float = 
 	return _simulation_to_world(simulation_position, height)
 
 
+func set_fortify_source(layer) -> void:
+	fortify_layer = layer
+
+
 func _process(delta: float) -> void:
 	if battlefield == null or not is_instance_valid(battlefield):
 		visible = false
@@ -750,8 +758,50 @@ func _process(delta: float) -> void:
 	_sync_turrets()
 	_sync_bullets()
 	_sync_entities()
+	_fortify_sync_timer -= delta
+	if _fortify_sync_timer <= 0.0:
+		_fortify_sync_timer = FORTIFY_SYNC_INTERVAL
+		_sync_fortifications()
 	_update_combat_effects(delta)
 	_sync_aim_guide()
+
+
+func _sync_fortifications() -> void:
+	if fortify_layer == null or not is_instance_valid(fortify_layer):
+		return
+	var extent: Vector2i = battlefield.grid_extent
+	for x in range(extent.x):
+		if not (battlefield.owners[x] is Array):
+			continue
+		for y in range(extent.y):
+			var cell := Vector2i(x, y)
+			var stack: int = int(fortify_layer.get_fortify_stack(cell))
+			var proxy: Node3D = _fortify_proxies.get(cell, null)
+			if stack <= 0:
+				if proxy != null and is_instance_valid(proxy):
+					proxy.visible = false
+				continue
+			if proxy == null or not is_instance_valid(proxy):
+				var scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_fortification")
+				if scene == null:
+					return
+				proxy = scene.instantiate() as Node3D
+				if proxy == null:
+					return
+				proxy.name = "Fort_%d_%d" % [x, y]
+				proxy.set_meta("presentation_only", true)
+				proxy.set_meta("uses_named_materials", true)
+				world_root.add_child(proxy)
+				_apply_building_material_pass(proxy, int(battlefield.owners[x][y]))
+				_fortify_proxies[cell] = proxy
+			var world_x: float = (float(x) + 0.5 - float(extent.x) * 0.5) * ARENA_X_SCALE
+			var world_z: float = _cell_world_z(y, extent)
+			proxy.position = Vector3(world_x, TILE_HEIGHT, world_z)
+			proxy.visible = not _in_river_band(world_z)
+			for level in range(1, 5):
+				var part: MeshInstance3D = proxy.find_child("GEO_Fort_L%d" % level, false, false) as MeshInstance3D
+				if part != null:
+					part.visible = level <= stack
 
 
 func _build_viewport(arena_view_rect: Rect2) -> void:

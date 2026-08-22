@@ -132,6 +132,8 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 	arena_layout["map_id"] = str(runtime.current_config.get("map_id", "default_duel"))
 	if not _record_or_fail("orthographic_arena", CardfrontArenaBuilderScript.create_orthographic_view(game_layer, runtime.battlefield, runtime.region_map, runtime.bullet_pool, runtime.turrets, arena_layout), runtime):
 		return _build_result(false)
+	if runtime.orthographic_arena_view != null and is_instance_valid(runtime.orthographic_arena_view) and runtime.fortify_layer != null:
+		runtime.orthographic_arena_view.set_fortify_source(runtime.fortify_layer)
 	if not _record_or_fail("gate_connectivity", create_gate_connectivity_system(game_layer, runtime.battlefield, runtime.bullet_pool, runtime.orthographic_arena_view), runtime):
 		return _build_result(false)
 	if not _record_or_fail("fire_director", create_fire_director(game_layer, runtime.region_map, runtime.battlefield, runtime.turrets), runtime):

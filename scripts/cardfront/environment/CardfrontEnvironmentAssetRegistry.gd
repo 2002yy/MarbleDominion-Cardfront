@@ -118,6 +118,12 @@ const ASSETS: Dictionary = {
 		"source_pack": "cardfront_formal_gate_v1",
 		"fallback": "primitive_gate",
 	},
+	"formal_fortification": {
+		"path": "res://assets/cardfront_environment/formal/fortification/fortification.glb",
+		"role": "cell_fortification_module",
+		"source_pack": "cardfront_formal_fort_v1",
+		"fallback": "none",
+	},
 	"custom_industrial_stack": {
 		"path": "res://assets/cardfront_environment/source/custom/industrial_stack.glb",
 		"role": "map_landmark",
