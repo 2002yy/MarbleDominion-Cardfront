@@ -1806,6 +1806,32 @@ func _refresh_gate_visual(lane_index: int) -> void:
 	label.text = "%s  #%d" % [state_text, lane_index + 1]
 
 
+func _try_spawn_formal_stronghold_base(region_id: int, region_type, bounds: Rect2, center_world: Vector3) -> Node3D:
+	var asset_id := "formal_stronghold_base_corner"
+	if str(region_type) == RegionTypeScript.LAB:
+		asset_id = "formal_stronghold_base_center"
+	var expected_x: float = bounds.size.x * ARENA_X_SCALE * STRONGHOLD_PLATFORM_FOOTPRINT_SCALE
+	var expected_z: float = bounds.size.y * _z_scale * STRONGHOLD_PLATFORM_FOOTPRINT_SCALE
+	var authored_x: float = 5.074 if asset_id.ends_with("corner") else 8.118
+	var authored_z: float = 4.300 if asset_id.ends_with("corner") else 6.880
+	if absf(expected_x - authored_x) / authored_x > 0.08 or absf(expected_z - authored_z) / authored_z > 0.08:
+		return null
+	var scene: PackedScene = EnvironmentAssetRegistryScript.load_scene(asset_id)
+	if scene == null:
+		return null
+	var instance: Node3D = scene.instantiate() as Node3D
+	if instance == null:
+		return null
+	instance.name = "StrongholdPlatform_%s" % region_id
+	instance.position = center_world + Vector3(0.0, 0.15, 0.0)
+	instance.set_meta("presentation_only", true)
+	instance.set_meta("uses_named_materials", true)
+	instance.set_meta("formal_stronghold_base", true)
+	world_root.add_child(instance)
+	_apply_building_material_pass(instance, CardfrontRulesScript.NEUTRAL_OWNER)
+	return instance
+
+
 func _build_stronghold_platforms() -> void:
 	for region_id_value in region_map.get_controllable_region_ids():
 		var region_id: int = int(region_id_value)
@@ -1833,18 +1859,25 @@ func _build_stronghold_platforms() -> void:
 		platform_shadow.material_override = _make_material(Color(0.16, 0.22, 0.20), 0.0)
 		world_root.add_child(platform_shadow)
 
-		var platform := MeshInstance3D.new()
-		platform.name = "StrongholdPlatform_%s" % region_id
-		var platform_mesh := BoxMesh.new()
-		platform_mesh.size = Vector3(
-			bounds.size.x * ARENA_X_SCALE * STRONGHOLD_PLATFORM_FOOTPRINT_SCALE,
-			STRONGHOLD_PLATFORM_HEIGHT,
-			bounds.size.y * _z_scale * STRONGHOLD_PLATFORM_FOOTPRINT_SCALE
-		)
-		platform.mesh = platform_mesh
-		platform.position = center_world + Vector3(0.0, 0.24, 0.0)
-		platform.material_override = _make_material(_region_accent(str(region_map.get_region_type_by_id(region_id))), 0.04)
-		world_root.add_child(platform)
+		var platform: Node3D
+		var formal_platform := _try_spawn_formal_stronghold_base(
+			region_id, region_map.get_region_type_by_id(region_id), bounds, center_world)
+		if formal_platform != null:
+			platform = formal_platform
+		else:
+			var primitive_platform := MeshInstance3D.new()
+			primitive_platform.name = "StrongholdPlatform_%s" % region_id
+			var platform_mesh := BoxMesh.new()
+			platform_mesh.size = Vector3(
+				bounds.size.x * ARENA_X_SCALE * STRONGHOLD_PLATFORM_FOOTPRINT_SCALE,
+				STRONGHOLD_PLATFORM_HEIGHT,
+				bounds.size.y * _z_scale * STRONGHOLD_PLATFORM_FOOTPRINT_SCALE
+			)
+			primitive_platform.mesh = platform_mesh
+			primitive_platform.position = center_world + Vector3(0.0, 0.24, 0.0)
+			primitive_platform.material_override = _make_material(_region_accent(str(region_map.get_region_type_by_id(region_id))), 0.04)
+			world_root.add_child(primitive_platform)
+			platform = primitive_platform
 		_region_platforms[region_id] = platform
 
 		var ring := MeshInstance3D.new()
@@ -1976,8 +2009,10 @@ func _refresh_stronghold_platforms() -> void:
 		var color: Color = accent.lightened(0.10)
 		if leader_id != CardfrontRulesScript.NEUTRAL_OWNER:
 			color = accent.lerp(_arena_faction_color(leader_id).lightened(0.18), 0.38)
-		var platform: MeshInstance3D = _region_platforms[region_id]
-		platform.material_override = _make_material(color, 0.10)
+		var platform = _region_platforms[region_id]
+		var is_formal_base: bool = platform is Node3D and not (platform is MeshInstance3D)
+		if not is_formal_base:
+			(platform as MeshInstance3D).material_override = _make_material(color, 0.10)
 		var ring: MeshInstance3D = _region_control_rings.get(region_id, null)
 		if ring != null and is_instance_valid(ring):
 			var control_ratio: float = clampf(float(leader.percent) / 100.0, 0.0, 1.0)

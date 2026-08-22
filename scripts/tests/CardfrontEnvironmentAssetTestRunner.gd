@@ -39,7 +39,7 @@ func _test_registry_assets_are_loadable() -> void:
 			kaykit_ids.append(asset_id)
 	_assert.eq(kaykit_ids.size(), 7, "environment registry: KayKit benchmark batch should contain seven reviewed source models")
 	_assert.eq(custom_ids.size(), 10, "environment registry: custom Blender batch should contain ten building models")
-	_assert.eq(formal_ids.size(), 12, "environment registry: Formal HQ, Tower (incl. Beacon), Bridge, Gate, and Fortification batches should contain twelve imported modules")
+	_assert.eq(formal_ids.size(), 14, "environment registry: Formal HQ, Tower (incl. Beacon), Bridge, Gate, Fortification, and Stronghold Base batches should contain fourteen imported modules")
 	for asset_id in ids:
 		var entry: Dictionary = AssetRegistryScript.get_entry(asset_id)
 		_assert.that(not str(entry.get("path", "")).is_empty(), "%s: path should be explicit" % asset_id)
@@ -82,6 +82,15 @@ func _test_formal_bridge_gate_pass_validator() -> void:
 		bool(fort_result.get("valid", false)),
 		"formal fortification should pass fail-closed validator: %s" % str(fort_result.get("errors", []))
 	)
+	for pad_name in ["stronghold_base_center", "stronghold_base_corner"]:
+		var pad_result: Dictionary = validator.validate_resource_path(
+			"res://assets/cardfront_environment/formal/stronghold_base/%s.glb" % pad_name,
+			CardfrontFormalAssetValidator.stronghold_base_contract()
+		)
+		_assert.that(
+			bool(pad_result.get("valid", false)),
+			"formal %s should pass fail-closed validator: %s" % [pad_name, str(pad_result.get("errors", []))]
+		)
 
 
 func _test_builder_creates_presentation_only_nodes() -> void:

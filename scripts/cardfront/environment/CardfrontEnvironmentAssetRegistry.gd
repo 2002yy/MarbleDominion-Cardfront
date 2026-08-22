@@ -124,6 +124,18 @@ const ASSETS: Dictionary = {
 		"source_pack": "cardfront_formal_fort_v1",
 		"fallback": "none",
 	},
+	"formal_stronghold_base_center": {
+		"path": "res://assets/cardfront_environment/formal/stronghold_base/stronghold_base_center.glb",
+		"role": "stronghold_base_pad",
+		"source_pack": "cardfront_formal_stronghold_v1",
+		"fallback": "primitive_platform",
+	},
+	"formal_stronghold_base_corner": {
+		"path": "res://assets/cardfront_environment/formal/stronghold_base/stronghold_base_corner.glb",
+		"role": "stronghold_base_pad",
+		"source_pack": "cardfront_formal_stronghold_v1",
+		"fallback": "primitive_platform",
+	},
 	"custom_industrial_stack": {
 		"path": "res://assets/cardfront_environment/source/custom/industrial_stack.glb",
 		"role": "map_landmark",
