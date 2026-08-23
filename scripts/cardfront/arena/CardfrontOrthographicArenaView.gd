@@ -124,6 +124,10 @@ var _bullet_trails: Dictionary = {}
 var _bullet_rims: Dictionary = {}
 var _projectile_trails_visible: bool = true
 var _combat_effects: Array = []
+var _combat_effect_pool: Array[MeshInstance3D] = []
+var _impact_mesh: SphereMesh = null
+var _impact_material_template: StandardMaterial3D = null
+const IMPACT_POOL_CAP: int = 24
 var _faction_materials: Dictionary = {}
 var _aim_mesh := ImmediateMesh.new()
 var _aim_material: StandardMaterial3D
@@ -2576,7 +2580,11 @@ func _sync_bullets() -> void:
 		if direction.length_squared() > 0.001:
 			var direction_3d := Vector3(direction.x, 0.0, direction.y).normalized()
 			proxy.look_at(proxy.position + direction_3d, Vector3.UP)
-		_sync_projectile_trail(proxy, spec, radius, faction_color, shape_scale)
+		var trail_density: float = _trail_density_factor(active.size())
+		if trail_density < 1.0:
+			spec["trail_length"] = float(spec.get("trail_length", 1.0)) * lerpf(0.45, 1.0, trail_density)
+			spec["trail_width"] = float(spec.get("trail_width", 0.12)) * lerpf(0.6, 1.0, trail_density)
+		_sync_projectile_trail(proxy, spec, radius, faction_color, shape_scale, trail_density)
 
 
 func _ensure_bullet_proxies(required_count: int) -> void:
@@ -2634,12 +2642,22 @@ func _projectile_mesh(shape: String) -> PrimitiveMesh:
 	return mesh
 
 
+func _trail_density_factor(active_count: int) -> float:
+	# D11 Density Compensation: more projectiles -> shorter/fainter common trails.
+	if active_count <= 12:
+		return 1.0
+	if active_count <= 30:
+		return lerpf(1.0, 0.5, float(active_count - 12) / 18.0)
+	return clampf(0.5 - float(active_count - 30) / 120.0, 0.25, 0.5)
+
+
 func _sync_projectile_trail(
 	proxy: MeshInstance3D,
 	spec: Dictionary,
 	radius: float,
 	faction_color: Color,
-	shape_scale: Vector3
+	shape_scale: Vector3,
+	trail_density: float = 1.0
 ) -> void:
 	var trail: MeshInstance3D = _bullet_trails.get(proxy.get_instance_id(), null)
 	if trail == null or not is_instance_valid(trail):
@@ -2659,7 +2677,7 @@ func _sync_projectile_trail(
 		length / safe_shape_scale.z
 	)
 	var trail_color: Color = spec.get("trail_color", faction_color) as Color
-	trail_color.a = 0.52
+	trail_color.a = lerpf(0.24, 0.52, trail_density)
 	trail.material_override = _make_material(trail_color, float(spec.get("rim_emission", 1.0)) * 0.65)
 
 
@@ -3271,24 +3289,27 @@ func _pulse_formal_tower_intercept(entity_id: String) -> void:
 
 
 func _on_heavy_charge_exploded(owner_id: int, cell: Vector2i, _center_target_id: String) -> void:
-	_add_combat_effect(cell, _arena_faction_color(owner_id).lerp(Color(1.0, 0.44, 0.08), 0.72), 0.72, 3.2)
+	_add_combat_effect(cell, _arena_faction_color(owner_id).lerp(Color(1.0, 0.44, 0.08), 0.72), 0.72, 3.2, "heavy")
 
 
-func _add_combat_effect(cell: Vector2i, color: Color, duration: float, max_scale: float) -> void:
+func _add_combat_effect(cell: Vector2i, color: Color, duration: float, max_scale: float, family: String = "impact") -> void:
 	if world_root == null:
 		return
-	var effect := MeshInstance3D.new()
-	effect.name = "CombatImpact"
-	var mesh := SphereMesh.new()
-	mesh.radius = 0.72
-	mesh.height = 0.28
-	mesh.radial_segments = 16
-	mesh.rings = 4
-	effect.mesh = mesh
+	# D11 Effect Coalescing: same cell + same family + still alive -> merge.
+	for existing in _combat_effects:
+		var e: Dictionary = existing as Dictionary
+		if str(e.get("family", "")) == family and e.get("cell", cell) == cell:
+			e["remaining"] = maxf(0.05, duration)
+			e["total"] = maxf(0.05, duration)
+			e["heat"] = minf(2.0, float(e.get("heat", 1.0)) + 0.25)
+			return
+	var effect := _acquire_impact_node()
+	if effect == null:
+		return
 	effect.position = _cell_to_world(cell, TILE_HEIGHT + 0.34)
-	var material := _make_material(Color(color.r, color.g, color.b, 0.82), 0.92)
-	effect.material_override = material
+	var material: StandardMaterial3D = effect.get_meta("material")
 	world_root.add_child(effect)
+	effect.visible = true
 	_combat_effects.append({
 		"node": effect,
 		"material": material,
@@ -3296,7 +3317,52 @@ func _add_combat_effect(cell: Vector2i, color: Color, duration: float, max_scale
 		"total": maxf(0.05, duration),
 		"color": color,
 		"max_scale": maxf(1.0, max_scale),
+		"family": family,
+		"heat": 1.0,
+		"cell": cell,
 	})
+
+
+func _acquire_impact_node() -> MeshInstance3D:
+	var node: MeshInstance3D = null
+	while not _combat_effect_pool.is_empty():
+		node = _combat_effect_pool.pop_back()
+		if node != null and is_instance_valid(node):
+			break
+		node = null
+	if node == null:
+		if _impact_mesh == null:
+			_impact_mesh = SphereMesh.new()
+			_impact_mesh.radius = 0.72
+			_impact_mesh.height = 0.28
+			_impact_mesh.radial_segments = 16
+			_impact_mesh.rings = 4
+		if _impact_material_template == null:
+			_impact_material_template = StandardMaterial3D.new()
+			_impact_material_template.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			_impact_material_template.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			_impact_material_template.emission_enabled = true
+		node = MeshInstance3D.new()
+		node.name = "CombatImpact"
+		node.mesh = _impact_mesh
+		var material: StandardMaterial3D = _impact_material_template.duplicate() as StandardMaterial3D
+		material.albedo_color = Color(1, 1, 1, 0.82)
+		material.emission = material.albedo_color
+		material.emission_energy_multiplier = 0.92
+		node.material_override = material
+		node.set_meta("material", material)
+	return node
+
+
+func _release_impact_node(node: MeshInstance3D) -> void:
+	if node == null or not is_instance_valid(node):
+		return
+	if _combat_effect_pool.size() < IMPACT_POOL_CAP:
+		node.visible = false
+		node.scale = Vector3.ONE
+		_combat_effect_pool.append(node)
+	else:
+		node.queue_free()
 
 
 func _update_combat_effects(delta: float) -> void:
@@ -3309,12 +3375,13 @@ func _update_combat_effects(delta: float) -> void:
 		var remaining: float = maxf(0.0, float(effect.get("remaining", 0.0)) - maxf(0.0, delta))
 		effect["remaining"] = remaining
 		if remaining <= 0.0:
-			node.queue_free()
+			_release_impact_node(node)
 			_combat_effects.remove_at(index)
 			continue
 		var total: float = maxf(0.05, float(effect.get("total", 0.05)))
 		var progress: float = 1.0 - remaining / total
-		var scale_value: float = lerpf(0.45, float(effect.get("max_scale", 1.5)), progress)
+		var heat: float = float(effect.get("heat", 1.0))
+		var scale_value: float = lerpf(0.45, float(effect.get("max_scale", 1.5)), progress) * (0.9 + 0.1 * heat)
 		node.scale = Vector3(scale_value, 0.35, scale_value)
 		var color: Color = effect.get("color", Color.WHITE) as Color
 		color.a = (1.0 - progress) * 0.78
