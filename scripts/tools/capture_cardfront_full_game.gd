@@ -59,6 +59,8 @@ func _capture() -> void:
 	_populate_entities(entity_runtime)
 	if main.runtime.orthographic_arena_view != null:
 		main.runtime.orthographic_arena_view.mark_tiles_dirty()
+	if OS.get_environment("CARDFRONT_CAPTURE_ROLE_DEBUG").strip_edges().to_lower() == "on":
+		main.runtime.orthographic_arena_view.set_role_debug_visible(true)
 	_apply_capture_damage_override(main)
 	_fire_preview_volleys(main)
 	await create_timer(0.32).timeout

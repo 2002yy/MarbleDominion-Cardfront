@@ -91,6 +91,18 @@ var fortify_layer = null
 var _fortify_proxies: Dictionary = {}
 var _fortify_sync_timer: float = 0.0
 const FORTIFY_SYNC_INTERVAL: float = 0.15
+var role_debug_active: bool = false
+var _role_debug_saved: Dictionary = {}
+var _role_debug_materials: Dictionary = {}
+const ROLE_DEBUG_CHANNELS: Dictionary = {
+	"STATIC": Color(0.5, 0.5, 0.5),
+	"THEME": Color(0.72, 0.6, 0.38),
+	"FACTION_PRIMARY": Color(1.0, 0.2, 1.0),
+	"FACTION_TRIM": Color(0.2, 0.8, 1.0),
+	"OWNERSHIP": Color(0.2, 1.0, 0.4),
+	"CORE": Color(1.0, 0.5, 0.0),
+	"DAMAGE": Color(0.45, 0.05, 0.05),
+}
 var _region_labels: Dictionary = {}
 var _region_platforms: Dictionary = {}
 var _region_control_rings: Dictionary = {}
@@ -749,6 +761,99 @@ func simulation_to_world_for_test(simulation_position: Vector2, height: float = 
 
 func set_fortify_source(layer) -> void:
 	fortify_layer = layer
+
+
+func set_role_debug_visible(enabled: bool) -> void:
+	if enabled == role_debug_active:
+		return
+	if enabled:
+		_apply_role_debug_colors()
+	else:
+		_restore_role_debug_colors()
+	role_debug_active = enabled
+
+
+func _role_debug_roots() -> Array[Node]:
+	var roots: Array[Node] = []
+	for owner_id in _turret_proxies.keys():
+		var proxy: Node3D = _turret_proxies.get(owner_id, null)
+		if proxy != null and is_instance_valid(proxy):
+			var model: Node = proxy.find_child("TowerGlb", true, false)
+			if model == null:
+				model = proxy.find_child("ChamberTower", true, false)
+			if model != null:
+				roots.append(model)
+	for cell in _fortify_proxies.keys():
+		var proxy: Node3D = _fortify_proxies.get(cell, null)
+		if proxy != null and is_instance_valid(proxy):
+			roots.append(proxy)
+	for region_id in _region_platforms.keys():
+		var platform = _region_platforms.get(region_id, null)
+		if platform != null and is_instance_valid(platform) and bool((platform as Node).get_meta("formal_stronghold_base", false)):
+			roots.append(platform)
+	for bridge_name in ["BridgeGlb", "GateFrameGlb"]:
+		var node: Node = world_root.find_child(bridge_name, true, false)
+		if node != null:
+			roots.append(node)
+	return roots
+
+
+func _apply_role_debug_colors() -> void:
+	_role_debug_saved.clear()
+	for root in _role_debug_roots():
+		for mesh_node in root.find_children("*", "MeshInstance3D", true, false):
+			var mesh_instance := mesh_node as MeshInstance3D
+			if mesh_instance.mesh == null:
+				continue
+			for surface in range(mesh_instance.mesh.get_surface_count()):
+				var key := "%d:%d" % [mesh_instance.get_instance_id(), surface]
+				var original := mesh_instance.get_surface_override_material(surface)
+				_role_debug_saved[key] = [mesh_instance, surface, original]
+				var active: Material = original
+				if active == null:
+					active = mesh_instance.mesh.surface_get_material(surface)
+				var channel := _role_debug_channel(str(active.resource_name if active != null else ""))
+				mesh_instance.set_surface_override_material(surface, _role_debug_material(channel))
+
+
+func _restore_role_debug_colors() -> void:
+	for key in _role_debug_saved.keys():
+		var saved: Array = _role_debug_saved[key]
+		var mesh_instance: MeshInstance3D = saved[0]
+		if mesh_instance != null and is_instance_valid(mesh_instance):
+			mesh_instance.set_surface_override_material(int(saved[1]), saved[2])
+	_role_debug_saved.clear()
+
+
+func _role_debug_channel(material_name: String) -> String:
+	var upper := material_name.to_upper()
+	for channel in ROLE_DEBUG_CHANNELS.keys():
+		if upper.ends_with("__%s" % str(channel)):
+			return str(channel)
+	# Legacy MAT_* adapter family (formal HQ v1) maps to semantic channels.
+	if upper.contains("MAT_FACTION_PRIMARY"):
+		return "FACTION_PRIMARY"
+	if upper.contains("MAT_FACTION_SECONDARY"):
+		return "FACTION_TRIM"
+	if upper.contains("MAT_CORE"):
+		return "CORE"
+	if upper.contains("MAT_DAMAGE"):
+		return "DAMAGE"
+	if upper.contains("MAT_METAL") or upper.contains("MAT_NEUTRAL") or upper.contains("MAT_STONE") or upper.contains("MAT_WOOD"):
+		return "STATIC"
+	return "UNKNOWN"
+
+
+func _role_debug_material(channel: String) -> StandardMaterial3D:
+	if not _role_debug_materials.has(channel):
+		var material := StandardMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		if channel == "UNKNOWN":
+			material.albedo_color = Color(1.0, 1.0, 0.0)
+		else:
+			material.albedo_color = ROLE_DEBUG_CHANNELS[channel] as Color
+		_role_debug_materials[channel] = material
+	return _role_debug_materials[channel] as StandardMaterial3D
 
 
 func _process(delta: float) -> void:

@@ -20,6 +20,7 @@ func _run() -> void:
 	await _test_cardfront_runtime_uses_imported_environment()
 	await _test_ballwar_does_not_create_environment()
 	_test_formal_bridge_gate_pass_validator()
+	_test_role_debug_view_toggle()
 
 	_assert.report("[CardfrontEnvironmentAssetTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
@@ -91,6 +92,45 @@ func _test_formal_bridge_gate_pass_validator() -> void:
 			bool(pad_result.get("valid", false)),
 			"formal %s should pass fail-closed validator: %s" % [pad_name, str(pad_result.get("errors", []))]
 		)
+
+
+func _test_role_debug_view_toggle() -> void:
+	var view_script := load("res://scripts/cardfront/arena/CardfrontOrthographicArenaView.gd")
+	if view_script == null:
+		return
+	var view = view_script.new()
+	var root := get_root()
+	root.add_child(view)
+	var world := Node3D.new()
+	world.name = "ArenaWorld"
+	root.add_child(world)
+	view.world_root = world
+	var probe := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.material = StandardMaterial3D.new()
+	(box.material as StandardMaterial3D).resource_name = "CF_METAL__FACTION_TRIM"
+	probe.mesh = box
+	var probe_host := Node3D.new()
+	probe_host.name = "GateFrameGlb"
+	world.add_child(probe_host)
+	probe_host.add_child(probe)
+	view.set_role_debug_visible(true)
+	_assert.that(view.role_debug_active, "role debug: enable should mark active")
+	var overridden := probe.get_surface_override_material(0)
+	_assert.that(
+		overridden != null and str(overridden.albedo_color) == str(Color(0.2, 0.8, 1.0)),
+		"role debug: FACTION_TRIM surface should switch to the channel diagnostic color"
+	)
+	view.set_role_debug_visible(false)
+	_assert.that(not view.role_debug_active, "role debug: disable should restore state")
+	_assert.that(
+		probe.get_surface_override_material(0) == null,
+		"role debug: disable should restore the original surface material"
+	)
+	probe.queue_free()
+	probe_host.queue_free()
+	world.queue_free()
+	view.queue_free()
 
 
 func _test_builder_creates_presentation_only_nodes() -> void:
