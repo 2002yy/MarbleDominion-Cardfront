@@ -43,6 +43,9 @@ func _capture() -> void:
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_extent = capture_extent
 	main.selected_cardfront_map_id = capture_map_id
+	var capture_hero := OS.get_environment("CARDFRONT_CAPTURE_PLAYER_HERO").strip_edges()
+	if not capture_hero.is_empty():
+		main.selected_cardfront_player_hero_id = capture_hero
 	main._start_game(capture_extent, true, false)
 	Input.warp_mouse(
 		Vector2(float(capture_viewport.x - 10), float(capture_viewport.y) * 0.5)

@@ -134,6 +134,8 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		return _build_result(false)
 	if runtime.orthographic_arena_view != null and is_instance_valid(runtime.orthographic_arena_view) and runtime.fortify_layer != null:
 		runtime.orthographic_arena_view.set_fortify_source(runtime.fortify_layer)
+	if runtime.orthographic_arena_view != null and is_instance_valid(runtime.orthographic_arena_view) and not runtime.hero_assignments.is_empty():
+		runtime.orthographic_arena_view.set_hero_assignments(runtime.hero_assignments)
 	if not _record_or_fail("gate_connectivity", create_gate_connectivity_system(game_layer, runtime.battlefield, runtime.bullet_pool, runtime.orthographic_arena_view), runtime):
 		return _build_result(false)
 	if not _record_or_fail("fire_director", create_fire_director(game_layer, runtime.region_map, runtime.battlefield, runtime.turrets), runtime):

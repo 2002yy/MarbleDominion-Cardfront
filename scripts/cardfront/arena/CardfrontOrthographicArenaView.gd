@@ -88,6 +88,7 @@ var _chamber_labels: Dictionary = {}
 var _chamber_damage_modules: Dictionary = {}
 var _chamber_core_glows: Dictionary = {}
 var fortify_layer = null
+var hero_assignments: Dictionary = {}
 var _fortify_proxies: Dictionary = {}
 var _fortify_sync_timer: float = 0.0
 const FORTIFY_SYNC_INTERVAL: float = 0.15
@@ -761,6 +762,20 @@ func simulation_to_world_for_test(simulation_position: Vector2, height: float = 
 
 func set_fortify_source(layer) -> void:
 	fortify_layer = layer
+
+
+func set_hero_assignments(assignments: Dictionary) -> void:
+	hero_assignments = assignments.duplicate(true)
+
+
+func _hero_module_asset_id(owner_id: int) -> String:
+	var hero_id := str(hero_assignments.get(int(owner_id), ""))
+	match hero_id:
+		"rapid_gunner":
+			return "formal_hq_hero_rapid"
+		"fortification_engineer":
+			return "formal_hq_hero_engineer"
+	return "formal_hq_hero_balanced"
 
 
 func set_role_debug_visible(enabled: bool) -> void:
@@ -2291,7 +2306,11 @@ func _get_region_leader(control: Dictionary) -> Dictionary:
 
 func _try_spawn_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
 	var common_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_hq_common")
-	var hero_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_hq_hero_balanced")
+	var hero_asset_id := _hero_module_asset_id(owner_id)
+	var hero_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene(hero_asset_id)
+	if hero_scene == null:
+		hero_scene = EnvironmentAssetRegistryScript.load_scene("formal_hq_hero_balanced")
+		hero_asset_id = "formal_hq_hero_balanced"
 	var theme_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_hq_theme_castle")
 	var damage_scene: PackedScene = EnvironmentAssetRegistryScript.load_scene("formal_hq_damage")
 	if common_scene != null and hero_scene != null and theme_scene != null:
@@ -2304,17 +2323,15 @@ func _try_spawn_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
 		hq.set_meta("presentation_only", true)
 		hq.set_meta("uses_named_materials", true)
 		proxy.add_child(hq)
-		for module_spec in [
-			{"scene": hero_scene, "name": "HQHeroBalanced"},
-			{"scene": theme_scene, "name": "HQThemeCastle"},
-		]:
-			var module: Node3D = (module_spec["scene"] as PackedScene).instantiate() as Node3D
-			if module == null:
-				hq.queue_free()
-				return false
-			module.name = str(module_spec["name"])
-			module.scale = Vector3.ONE
-			hq.add_child(module)
+		var hero_module_name := "HQHero%s" % hero_asset_id.trim_prefix("formal_hq_hero_").capitalize().replace("_", "")
+		var module_spec := {"scene": hero_scene, "name": hero_module_name}
+		var module: Node3D = (module_spec["scene"] as PackedScene).instantiate() as Node3D
+		if module == null:
+			hq.queue_free()
+			return false
+		module.name = str(module_spec["name"])
+		module.scale = Vector3.ONE
+		hq.add_child(module)
 		if damage_scene != null:
 			var damage_module: Node3D = damage_scene.instantiate() as Node3D
 			if damage_module != null:

@@ -64,6 +64,18 @@ const ASSETS: Dictionary = {
 		"source_pack": "cardfront_formal_hq_v1",
 		"fallback": "none",
 	},
+	"formal_hq_hero_rapid": {
+		"path": "res://assets/cardfront_environment/formal/hq/hq_hero_rapid.glb",
+		"role": "command_chamber_hero_module",
+		"source_pack": "cardfront_formal_hq_v1",
+		"fallback": "formal_hq_hero_balanced",
+	},
+	"formal_hq_hero_engineer": {
+		"path": "res://assets/cardfront_environment/formal/hq/hq_hero_engineer.glb",
+		"role": "command_chamber_hero_module",
+		"source_pack": "cardfront_formal_hq_v1",
+		"fallback": "formal_hq_hero_balanced",
+	},
 	"formal_hq_theme_castle": {
 		"path": "res://assets/cardfront_environment/formal/hq/hq_theme_castle.glb",
 		"role": "command_chamber_theme_module",
