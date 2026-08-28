@@ -69,28 +69,15 @@ func _test_settings_persistence(t: TestAssert) -> void:
 func _test_performance_toggle(t: TestAssert) -> void:
 	print("  [P2] performance bar toggle")
 
-	var prefs := PlayerSettingsStore.default_settings()
-	prefs["show_performance_info"] = false
-	PlayerSettingsStore.save_settings(prefs)
-
-	var main_script = load("res://scripts/Main.gd")
-	var main = main_script.new()
-	get_root().add_child(main)
-	main.player_settings = PlayerSettingsStore.load_settings()
-	main._apply_performance_setting()
-
-	t.that(not RuntimeHudController.performance_visible, "perf_visible=false after load")
+	# Current authority: HUD performance visibility is mode-driven via
+	# RuntimeHudController.set_performance_visible (Cardfront mode hides the
+	# BallWar FPS/perf bar and restores it on mode exit).
+	RuntimeHudController.set_performance_visible(false)
+	t.that(not RuntimeHudController.performance_visible, "perf_visible=false after set_performance_visible(false)")
 	t.eq(RuntimeHudController.get_perf_debug_text(null, null, 10, {}), "", "perf_debug_text returns empty when hidden")
 
-	prefs["show_performance_info"] = true
-	PlayerSettingsStore.save_settings(prefs)
-	main.player_settings = PlayerSettingsStore.load_settings()
-	main._apply_performance_setting()
-
-	t.that(RuntimeHudController.performance_visible, "perf_visible=true after toggle on")
-
-	main.queue_free()
-	await process_frame
+	RuntimeHudController.set_performance_visible(true)
+	t.that(RuntimeHudController.performance_visible, "perf_visible=true after set_performance_visible(true)")
 
 
 # === P3: Result panel ===

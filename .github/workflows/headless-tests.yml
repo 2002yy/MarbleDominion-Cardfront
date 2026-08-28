@@ -30,6 +30,8 @@ jobs:
               GameStateCoordinatorTestRunner.gd
               SaveFlowControllerTestRunner.gd
               RestorePlanTestRunner.gd
+              EndToEndContinueMainTestRunner.gd
+              SettingsAndResultTestRunner.gd
           - batch: Cardfront map economy
             scripts: |
               RegionMapTestRunner.gd
@@ -81,6 +83,9 @@ jobs:
               CardfrontActionHintTestRunner.gd
               CardfrontToastLayerTestRunner.gd
               CardfrontEffectVisualBridgeTestRunner.gd
+              CardfrontCardHoverMotionTestRunner.gd
+              CardfrontHandPanelGuidanceTestRunner.gd
+              CardfrontTargetPreviewGuidanceTestRunner.gd
           - batch: Cardfront UI art and debug
             scripts: |
               CardfrontDebugPanelToggleTestRunner.gd
@@ -226,6 +231,11 @@ jobs:
             scripts: |
               CardfrontOfferLevelProjectionTestRunner.gd
               CardfrontNoDeckInflationTestRunner.gd
+          - batch: Cardfront formal assets
+            scripts: |
+              CardfrontFormalAssetValidatorTestRunner.gd
+              CardfrontFormalTowerAssetTestRunner.gd
+              CardfrontLaneAllocationTestRunner.gd
     env:
       GODOT_VERSION: 4.7.1-stable
       GODOT_ARCHIVE: Godot_v4.7.1-stable_win64.exe.zip

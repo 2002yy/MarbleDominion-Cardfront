@@ -38,6 +38,16 @@ jobs:
             seeds: 1
             deck_seeds: 1
             opening_seeds: 1
+          - batch: B1 hero candidate audit
+            script: CardfrontB1HeroCandidateAuditTestRunner.gd
+            seeds: 1
+            deck_seeds: 1
+            opening_seeds: 1
+          - batch: B1 hero finalist audit
+            script: CardfrontB1HeroFinalistAuditTestRunner.gd
+            seeds: 1
+            deck_seeds: 1
+            opening_seeds: 1
           - batch: B1 selectable deck candidates
             script: CardfrontB1DeckCandidateAuditTestRunner.gd
             seeds: 1

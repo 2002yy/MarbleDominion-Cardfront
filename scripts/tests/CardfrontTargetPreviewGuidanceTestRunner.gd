@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 
@@ -15,9 +15,9 @@ func _run() -> void:
 	await process_frame
 
 	_test_hover_valid_cell_returns_valid()
-	_test_hover_invalid_cell_returns_reason()
-	_test_flash_invalid_cell_adds_entry()
-	_test_flash_expires_after_duration()
+	await _test_hover_invalid_cell_returns_reason()
+	await _test_flash_invalid_cell_adds_entry()
+	await _test_flash_expires_after_duration()
 
 	GameConfig.reset_runtime_defaults()
 	await _flush()
@@ -36,12 +36,17 @@ func _flush() -> void:
 
 func _make_main():
 	GameConfig.reset_runtime_defaults()
-	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
-	var main = load("res://scripts/Main.gd").new()
+	paused = false
+	var scene: PackedScene = load("res://scenes/Main.tscn")
+	var main = scene.instantiate()
 	get_root().add_child(main)
+	await process_frame
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
+	main.cardfront_legacy_compatibility_enabled = true
 	main._start_game(20, true, false)
+	await process_frame
+	await process_frame
 	return main
 
 
@@ -68,14 +73,14 @@ func _cell_outside_battlefield() -> Vector2i:
 
 
 func _test_hover_valid_cell_returns_valid() -> void:
-	var main = _make_main()
+	var main = await _make_main()
 	var preview = main.runtime.target_preview_layer
 	var card_data: Dictionary = main.runtime.card_system.get_hand_card_data()[0]
 	_select_card(main, card_data)
 
 	var valid_cell: Vector2i = _first_valid_cell(main)
 	if valid_cell.x < 0:
-		_assert.that(true, "preview guidance valid: no valid cells — skipping")
+		_assert.that(true, "preview guidance valid: no valid cells 鈥?skipping")
 		main._cleanup_game_layer()
 		TestFixtures.cleanup_node(main)
 		return
@@ -90,7 +95,7 @@ func _test_hover_valid_cell_returns_valid() -> void:
 
 
 func _test_hover_invalid_cell_returns_reason() -> void:
-	var main = _make_main()
+	var main = await _make_main()
 	var preview = main.runtime.target_preview_layer
 	var card_data: Dictionary = main.runtime.card_system.get_hand_card_data()[0]
 	_select_card(main, card_data)
@@ -110,7 +115,7 @@ func _test_hover_invalid_cell_returns_reason() -> void:
 
 
 func _test_flash_invalid_cell_adds_entry() -> void:
-	var main = _make_main()
+	var main = await _make_main()
 	var preview = main.runtime.target_preview_layer
 
 	_assert.eq(preview._invalid_flash_cells.size(), 0, "preview guidance flash: should start empty")
@@ -126,7 +131,7 @@ func _test_flash_invalid_cell_adds_entry() -> void:
 
 
 func _test_flash_expires_after_duration() -> void:
-	var main = _make_main()
+	var main = await _make_main()
 	var preview = main.runtime.target_preview_layer
 
 	preview.flash_invalid_cell(Vector2i(7, 8))

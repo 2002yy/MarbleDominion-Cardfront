@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 
@@ -15,10 +15,10 @@ func _run() -> void:
 	await process_frame
 
 	_test_each_card_hint_nonempty()
-	_test_selection_shows_hint()
-	_test_clear_selection_hides_hint()
-	_test_hover_valid_hint()
-	_test_hover_invalid_reason()
+	await _test_selection_shows_hint()
+	await _test_clear_selection_hides_hint()
+	await _test_hover_valid_hint()
+	await _test_hover_invalid_reason()
 
 	GameConfig.reset_runtime_defaults()
 	await _flush()
@@ -37,12 +37,17 @@ func _flush() -> void:
 
 func _make_main():
 	GameConfig.reset_runtime_defaults()
-	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
-	var main = load("res://scripts/Main.gd").new()
+	paused = false
+	var scene: PackedScene = load("res://scenes/Main.tscn")
+	var main = scene.instantiate()
 	get_root().add_child(main)
+	await process_frame
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
+	main.cardfront_legacy_compatibility_enabled = true
 	main._start_game(20, true, false)
+	await process_frame
+	await process_frame
 	return main
 
 
@@ -65,7 +70,7 @@ func _first_valid_cell(main) -> Vector2i:
 
 
 func _test_each_card_hint_nonempty() -> void:
-	var main = _make_main()
+	var main = await _make_main()
 	var hand_data: Array = main.runtime.card_system.get_hand_card_data()
 
 	for card_data in hand_data:
@@ -78,7 +83,7 @@ func _test_each_card_hint_nonempty() -> void:
 
 
 func _test_selection_shows_hint() -> void:
-	var main = _make_main()
+	var main = await _make_main()
 	var card_data: Dictionary = main.runtime.card_system.get_hand_card_data()[0]
 	_select_card(main, card_data)
 
@@ -89,7 +94,7 @@ func _test_selection_shows_hint() -> void:
 
 
 func _test_clear_selection_hides_hint() -> void:
-	var main = _make_main()
+	var main = await _make_main()
 	var card_data: Dictionary = main.runtime.card_system.get_hand_card_data()[0]
 	_select_card(main, card_data)
 	_assert.that(main.runtime.hand_panel.is_action_hint_visible(), "guidance: hint visible after selection")
@@ -102,7 +107,7 @@ func _test_clear_selection_hides_hint() -> void:
 
 
 func _test_hover_valid_hint() -> void:
-	var main = _make_main()
+	var main = await _make_main()
 	_add_resources(main)
 	var card_data: Dictionary = main.runtime.card_system.get_hand_card_data()[0]
 
@@ -110,7 +115,7 @@ func _test_hover_valid_hint() -> void:
 	var preview = main.runtime.target_preview_layer
 	var valid_cell: Vector2i = _first_valid_cell(main)
 	if valid_cell.x < 0:
-		_assert.that(true, "guidance hover valid: no valid cells for this card — skipping")
+		_assert.that(true, "guidance hover valid: no valid cells for this card 鈥?skipping")
 		main._cleanup_game_layer()
 		TestFixtures.cleanup_node(main)
 		return
@@ -126,7 +131,7 @@ func _test_hover_valid_hint() -> void:
 
 
 func _test_hover_invalid_reason() -> void:
-	var main = _make_main()
+	var main = await _make_main()
 	var preview = main.runtime.target_preview_layer
 
 	# Use a cell that is definitely outside the battlefield
