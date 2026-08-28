@@ -305,6 +305,7 @@ Formal production authority:
 | 2026-08-28 | Current-main directed P0 drift audit finds material semantic/evidence drift | baseline `144b57f`; P0-DA1 NO-GO; full current-main P0 rerun required |
 | 2026-08-28 | P0-DA2 batch 1: Support Capture authority wired, legacy numeric consumer retired | commit `7aa8bf6`; remote CI green |
 | 2026-08-28 | P0-DA2 batch 2: AI Observation boundary restored from RC schema; decision strength frozen | detached three-tier allowlist projection; live AI input is pure observation |
+| 2026-08-28 | P0-DA2 batch 3: Offer/View Level projection restored + no-deck-inflation evidence | `current_level`/`next_level` derive from Selected Level only; `applied_upgrade_counts` never impersonates Level; player-facing level copy (RC 09B4) remains out of scope |
 
 Generated captures under `artifacts/` are local review evidence unless a
 checkpoint explicitly admits them. They are not automatically release assets.

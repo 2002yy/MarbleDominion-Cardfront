@@ -222,6 +222,10 @@ jobs:
               CardfrontAiObservationBoundaryTestRunner.gd
               CardfrontAiObservationProjectionTestRunner.gd
               CardfrontAiCommanderObservationTestRunner.gd
+          - batch: Cardfront P0 offer level projection
+            scripts: |
+              CardfrontOfferLevelProjectionTestRunner.gd
+              CardfrontNoDeckInflationTestRunner.gd
     env:
       GODOT_VERSION: 4.7.1-stable
       GODOT_ARCHIVE: Godot_v4.7.1-stable_win64.exe.zip
