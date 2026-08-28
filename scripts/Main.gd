@@ -1001,7 +1001,9 @@ func _check_winner() -> void:
 		counts = runtime.battlefield.count_cells_by_team()
 		current_score_counts = counts.duplicate()
 		if runtime.stronghold_system != null and is_instance_valid(runtime.stronghold_system):
-			stronghold_snapshot = runtime.stronghold_system.sample_bonuses()
+			# Strongholds are status/timeout telemetry only. Numeric Factory,
+			# Energy and Lab reward sampling was retired in P0-05.
+			stronghold_snapshot = runtime.stronghold_system.sample_status()
 
 	var result: Dictionary = WinConditionEvaluator.evaluate(
 		mode_name,
@@ -1393,6 +1395,8 @@ func _update_cardfront_hover_hint() -> void:
 
 func _cleanup_game_layer() -> void:
 	GameStateCoordinator.reset_pause_and_winner_state(_hud_ref("pause_overlay"), _hud_ref("pause_button"), _hud_ref("winner_label"))
+	if runtime.orthographic_arena_view != null and is_instance_valid(runtime.orthographic_arena_view) and runtime.orthographic_arena_view.has_method("prepare_for_teardown"):
+		runtime.orthographic_arena_view.prepare_for_teardown()
 	if game_layer != null:
 		game_layer.queue_free()
 		game_layer = null

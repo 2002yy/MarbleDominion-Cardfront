@@ -1,8 +1,8 @@
 # Project Status / 项目状态
 
-Last updated: 2026-08-21
+Last updated: 2026-08-28
 
-Current `main`: `10ddb48`
+Current `main` audit baseline: `144b57f`
 Status authority: **this file**
 
 This document contains current truth, the active track, one next gate per
@@ -51,21 +51,22 @@ Locked sequence:
 
 ```text
 Documentation governance
-  → Art Formal Benchmark GO / NO-GO
-  → Gameplay P0 current-main drift audit GO / NO-GO
+  → Art Formal Benchmark TEMPORARY GO (closed)
+  → Gameplay P0 current-main directed drift audit NO-GO
+  → current-main P0 semantic reconciliation and full evidence rerun
   → choose the next single-track milestone from evidence
 ```
 
-### Active Track: Art Production
+### Closed Track Gate: Art Production
 
-**Current gate:** `P0-FT1 Formal Interceptor Tower Cross-Asset Benchmark`
+**Gate:** `P0-FT1 Formal Interceptor Tower Cross-Asset Benchmark`
 
-**Source commit:** `10ddb48`
+**Accepted source commit:** `697dcbe`
 
-**Status:** Step 1 validator committed and pushed; Steps 2–8 source, four GLBs,
-runtime binding, deterministic captures, save/performance regression, and clean
-logs PASS in the current working tree; Step 9 product-owner screenshot decision
-is pending, so P0-FT1 remains open
+**Status:** **TEMPORARY VISUAL GO / CLOSED.** Steps 1–8 passed and the product
+owner accepted Revision 3 on 2026-08-21 with the explicit note that HP2/HP1
+damage could become more visually significant later. That enhancement is
+non-blocking and does not reopen P0-FT1.
 
 **Checkpoint:**
 [`cardfront_refactor_checkpoints/P0-FT1_formal_interceptor_tower_benchmark.md`](cardfront_refactor_checkpoints/P0-FT1_formal_interceptor_tower_benchmark.md)
@@ -87,12 +88,10 @@ player/AI presentation instances. L1–L3, HP4–HP0, power, suppression, quota,
 intercept, counter, upgrade, build, and death presentation are bound without
 changing gameplay authority.
 
-The deterministic 15-card Chinese state board and desktop/narrow live capture matrix
-are under `artifacts/formal-tower-state-board/` and
-`artifacts/formal-tower-live/`. The state board is the close visual authority;
-the 40×50 live images verify battle hierarchy and coexistence with both HQs,
-bridges, and both factions' three projectile types. Product-owner screenshot
-GO / NO-GO is the only allowed next decision.
+The deterministic 15-card Chinese state board and desktop/narrow live capture
+matrix were accepted from commit `697dcbe`. Generated review artifacts were
+later retired from the tip of `main`; the accepted evidence remains recoverable
+from that source commit. The state board remains the close visual authority.
 
 The first screenshot review returned NO-GO for an undersized HP0 snapshot and
 weak L3 Counter focus. Revision 1 now uses five grounded rubble pieces and a
@@ -101,27 +100,56 @@ evidence has been refreshed. Revision 2 localizes the entire 15-card state board
 to Chinese and gives HP4/3/2/1/0 a dedicated, continuous two-row comparison.
 Revision 3 adds true structural silhouette loss: HP2 drops one buttress, HP1
 collapses the dome and breaks one interception arm/plate, and HP0 retains the
-five-piece rubble snapshot. The revised screenshot decision remains pending.
+five-piece rubble snapshot. Product-owner decision: temporary GO; future
+silhouette amplification is a non-blocking art debt.
 
-The art track may not expand to Fire-Control Beacon, Gate, Stronghold, Rapid,
-Engineer, Industrial, Lab, formal audio, or D26 until P0-FT1 records GO.
+Later commits expanded Bridge/Gate, Beacon, fortification, Stronghold, VFX,
+D21 role-debug, and Rapid/Engineer assets without updating this authority file.
+Those assets are retained as current-main facts, but their commit labels do not
+replace milestone acceptance records. No further Art Production expansion is
+authorized while the Gameplay Refactor track is active.
 
-### Queued Track: Gameplay Refactor
+### Active Track: Gameplay Refactor
 
-**Next gate after P0-FT1:** current-`main` directed P0 drift audit
+**Current gate:** `P0-DA1 Current-main Directed P0 Drift Audit`
 
-**Status:** queued; implementation blocked while Art Production is active
+**Audit baseline:** `144b57f`
+
+**Decision:** **NO-GO / MATERIAL DRIFT / FULL CURRENT-MAIN P0 RERUN REQUIRED**
+
+**Checkpoint:**
+[`cardfront_refactor_checkpoints/P0-DA1_current_main_directed_drift_audit.md`](cardfront_refactor_checkpoints/P0-DA1_current_main_directed_drift_audit.md)
 
 The old P0 seal and its `NO-GO / P1 locked` result remain historical evidence.
-The next gameplay action is not a blind restart at an old micro-step and not an
-automatic waiver. Audit current `main` against the old blockers, gameplay
-authority, save/restore, AI information boundaries, and current test authority.
+Its RC `def95b5` is not the current-main source and PR #24 remains open. The
+directed audit found material semantic and evidence drift:
 
-- If the old independent-playtest target still applies, retain the human gate.
-- If later code invalidated the old target, update the acceptance protocol
-  before judging it; do not silently mark it PASS.
-- Expand to a full P0 rerun only when the directed audit finds material drift.
-- P1 remains locked until the resulting gameplay checkpoint explicitly allows it.
+- current `main` still consumes legacy Stronghold `sample_bonuses()` in the
+  formal live timeout path;
+- the independent live Support Capture runtime and its save/restore binding from
+  the old RC are absent;
+- the detached AI Observation boundary from the old RC is absent;
+- the old source-bound human playtest target is invalidated by later gameplay,
+  art, UI, and runtime changes;
+- Headless Tests on `144b57f` fail because hero-module onboarding dropped the
+  Castle Theme module from modular HQ assembly;
+- status/checkpoint documents still named `10ddb48` and a pending FT1 decision.
+
+The local audit repair restores `hero + theme + damage` HQ assembly and makes
+the module-count probe accept any registered hero module. The source-bound CI
+result remains pending until an explicitly authorized commit/push.
+
+**Only allowed next implementation step:** `P0-DA2 Support / Stronghold
+Authority Reconciliation` — retire the live numeric Stronghold bonus consumer,
+wire the independent Support Capture authority into current `main`, bind its
+authoritative state to save/restore and presentation projections, and add
+focused current-main tests. Preserve all accepted art assets and do not begin
+P1, balance expansion, or another art family.
+
+After P0-DA2, continue the current-main rerun with AI Observation boundary,
+Offer/Selected-Level projection, regression/log/CI evidence, and a newly bound
+independent human North-Star protocol. P1 remains locked until the resulting
+current-main P0 seal explicitly allows it.
 
 ## 3. Current Product Direction / 当前产品方向
 
@@ -273,14 +301,17 @@ Formal production authority:
 | 2026-08-20 | Dual-track governance and Formal Interceptor Tower scope locked | current Grill decision record; implementation pending |
 | 2026-08-20 | P0-FT1 Step 1 validator committed; Step 2 Tower reference layout passes local admission | `10ddb48`; `artifacts/formal-tower-reference/validation.json`; P0-FT1 remains open |
 | 2026-08-21 | P0-FT1 Steps 3–8 production modules, runtime state binding, capture matrix, and regression PASS locally | source still `10ddb48`; evidence is dirty-working-tree and awaits product-owner screenshot decision |
+| 2026-08-21 | P0-FT1 Revision 3 accepted with temporary visual GO | `697dcbe`; stronger HP2/HP1 silhouette remains non-blocking art debt |
+| 2026-08-28 | Current-main directed P0 drift audit finds material semantic/evidence drift | baseline `144b57f`; P0-DA1 NO-GO; full current-main P0 rerun required |
 
 Generated captures under `artifacts/` are local review evidence unless a
 checkpoint explicitly admits them. They are not automatically release assets.
 
 ## 10. Explicitly Deferred / 明确暂缓
 
-- Fire-Control Beacon formal asset and the rest of the Tower family.
-- Formal Gate/Bridge, Stronghold, Rapid, Engineer, Industrial, and Lab modules.
+- Further Formal asset-family expansion while Gameplay Refactor is active.
+- Industrial and Lab Formal modules; accepted current-main Bridge/Gate, Beacon,
+  fortification, Stronghold, Rapid, and Engineer assets are retained.
 - D23 screen-space budget, D24 quality-tier contract, D25 Draft/card visual
   language, and D26 formal damage/VFX/audio timing hooks beyond the bounded
   Tower benchmark needs.

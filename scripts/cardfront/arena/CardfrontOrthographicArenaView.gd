@@ -140,6 +140,7 @@ var _combat_effects: Array = []
 var _combat_effect_pool: Array[MeshInstance3D] = []
 var _impact_mesh: SphereMesh = null
 var _impact_material_template: StandardMaterial3D = null
+var _teardown_prepared: bool = false
 const IMPACT_POOL_CAP: int = 24
 var _faction_materials: Dictionary = {}
 var _aim_mesh := ImmediateMesh.new()
@@ -206,8 +207,28 @@ func set_entity_runtime(new_entity_runtime) -> void:
 
 
 func _exit_tree() -> void:
+	prepare_for_teardown()
+
+
+func prepare_for_teardown() -> void:
+	if _teardown_prepared:
+		return
+	_teardown_prepared = true
+	set_process(false)
+	_disconnect_entity_runtime()
 	_disconnect_support_presentation_source()
 	_disconnect_deployment_zone_source()
+	if world_viewport != null and is_instance_valid(world_viewport):
+		world_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+		world_viewport.world_3d = null
+	if world_root != null and is_instance_valid(world_root):
+		# The Dummy renderer can query an already-released imported material when
+		# a large SubViewport world is destroyed as one recursive batch. Releasing
+		# direct branches deterministically avoids that teardown-only error while
+		# preserving the same ownership and lifetime.
+		for child in world_root.get_children():
+			world_root.remove_child(child)
+			child.free()
 
 
 func set_support_presentation_source(new_source) -> bool:
@@ -710,7 +731,10 @@ func get_command_chamber_module_count_for_test(owner_id: int) -> int:
 	if chamber == null:
 		return 0
 	var count := 0
-	for module_name in ["HQHeroBalanced", "HQThemeCastle", "HQDamageModule"]:
+	for child in chamber.get_children():
+		if str(child.name).begins_with("HQHero"):
+			count += 1
+	for module_name in ["HQThemeCastle", "HQDamageModule"]:
 		if chamber.get_node_or_null(module_name) != null:
 			count += 1
 	return count
@@ -2324,14 +2348,17 @@ func _try_spawn_chamber_glb(proxy: Node3D, owner_id: int) -> bool:
 		hq.set_meta("uses_named_materials", true)
 		proxy.add_child(hq)
 		var hero_module_name := "HQHero%s" % hero_asset_id.trim_prefix("formal_hq_hero_").capitalize().replace("_", "")
-		var module_spec := {"scene": hero_scene, "name": hero_module_name}
-		var module: Node3D = (module_spec["scene"] as PackedScene).instantiate() as Node3D
-		if module == null:
-			hq.queue_free()
-			return false
-		module.name = str(module_spec["name"])
-		module.scale = Vector3.ONE
-		hq.add_child(module)
+		for module_spec in [
+			{"scene": hero_scene, "name": hero_module_name},
+			{"scene": theme_scene, "name": "HQThemeCastle"},
+		]:
+			var module: Node3D = (module_spec["scene"] as PackedScene).instantiate() as Node3D
+			if module == null:
+				hq.queue_free()
+				return false
+			module.name = str(module_spec["name"])
+			module.scale = Vector3.ONE
+			hq.add_child(module)
 		if damage_scene != null:
 			var damage_module: Node3D = damage_scene.instantiate() as Node3D
 			if damage_module != null:

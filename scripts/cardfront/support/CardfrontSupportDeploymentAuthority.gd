@@ -19,6 +19,7 @@ var validation_errors: Array = []
 var _claim_owner_by_support: Dictionary = {}
 var _operational_by_support: Dictionary = {}
 var _connectivity_cache = SupportConnectivityCacheScript.new()
+var _presentation_state_provider: Callable
 
 
 func setup(new_map_definition: Dictionary) -> bool:
@@ -28,6 +29,7 @@ func setup(new_map_definition: Dictionary) -> bool:
 	_claim_owner_by_support.clear()
 	_operational_by_support.clear()
 	_connectivity_cache = SupportConnectivityCacheScript.new()
+	_presentation_state_provider = Callable()
 
 	var definitions = map_definition.get("deployment_supports", [])
 	if not definitions is Array or (definitions as Array).is_empty():
@@ -138,22 +140,37 @@ func presentation_snapshots() -> Array:
 			claim_owner != RulesScript.NEUTRAL_OWNER
 			and support_id in (connected_by_side.get(claim_owner, []) as Array)
 		)
+		var public_state: Dictionary = {
+			"support_id": support_id,
+			"claim_owner": claim_owner,
+			"operational": bool(_operational_by_support.get(support_id, false)),
+			"network_connected": connected,
+			"capture_side": RulesScript.NEUTRAL_OWNER,
+			"capture_progress": 0.0,
+			"contested": false,
+		}
+		if _presentation_state_provider.is_valid():
+			var provided = _presentation_state_provider.call(support_id)
+			if provided is Dictionary and not (provided as Dictionary).is_empty():
+				public_state.merge(provided as Dictionary, true)
+				public_state["network_connected"] = connected
 		var snapshot = PresentationSnapshotBuilderScript.build(
 			definitions_by_id[support_id] as Dictionary,
-			{
-				"support_id": support_id,
-				"claim_owner": claim_owner,
-				"operational": bool(_operational_by_support.get(support_id, false)),
-				"network_connected": connected,
-				"capture_side": RulesScript.NEUTRAL_OWNER,
-				"capture_progress": 0.0,
-				"contested": false,
-			},
+			public_state,
 			RulesScript.NEUTRAL_OWNER
 		)
 		if snapshot != null:
 			result.append(snapshot.to_dictionary())
 	return result
+
+
+func configure_presentation_state_provider(provider: Callable) -> void:
+	_presentation_state_provider = provider
+	_emit_presentation_snapshots()
+
+
+func notify_presentation_state_changed() -> void:
+	_emit_presentation_snapshots()
 
 
 func _emit_presentation_snapshots() -> void:

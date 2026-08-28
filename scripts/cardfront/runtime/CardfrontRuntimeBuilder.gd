@@ -31,6 +31,7 @@ const CardfrontRoundDirectorScript = preload("res://scripts/cardfront/run/Cardfr
 const CardfrontTerritoryDefenseSystemScript = preload("res://scripts/cardfront/defense/CardfrontTerritoryDefenseSystem.gd")
 const CardfrontHeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
 const CardfrontGateConnectivitySystemScript = preload("res://scripts/cardfront/gates/CardfrontGateConnectivitySystem.gd")
+const CardfrontSupportCaptureRuntimeScript = preload("res://scripts/cardfront/support/capture/CardfrontSupportCaptureRuntime.gd")
 const SystemRegistryScript = preload("res://scripts/cardfront/runtime/CardfrontSystemRegistry.gd")
 
 var registry = SystemRegistryScript.new()
@@ -156,6 +157,8 @@ func build_live_world_layers(game_layer: Node, runtime) -> Dictionary:
 		runtime.orthographic_arena_view.set_entity_runtime(capture_interceptor.entity_runtime)
 		var support_authority = capture_interceptor.get_support_deployment_authority()
 		if support_authority != null:
+			if not _record_or_fail("support_capture", create_support_capture_runtime(game_layer, runtime.battlefield, capture_interceptor.entity_runtime, support_authority), runtime):
+				return _build_result(false)
 			runtime.orthographic_arena_view.set_support_presentation_source(support_authority)
 	CardfrontPresentationModeControllerScript.activate_orthographic(runtime)
 	return _build_result(true)
@@ -214,8 +217,11 @@ func _clear_core_refs(runtime) -> void:
 	runtime.fortify_layer = null
 	runtime.fortify_overlay = null
 	runtime.territory_defense_system = null
+	runtime.support_capture_runtime = null
 	if runtime.battlefield != null and is_instance_valid(runtime.battlefield):
 		runtime.battlefield.capture_interceptor = null
+		runtime.battlefield.remove_meta("cardfront_support_deployment_authority")
+		runtime.battlefield.remove_meta("cardfront_support_capture_runtime")
 	runtime.target_bias_system = null
 	runtime.card_system = null
 
@@ -467,6 +473,24 @@ static func create_territory_defense_system(game_layer: Node, battlefield, regio
 	return {
 		"configured": true,
 		"territory_defense_system": system,
+	}
+
+
+static func create_support_capture_runtime(game_layer: Node, battlefield, entity_runtime, support_authority) -> Dictionary:
+	if game_layer == null or not is_instance_valid(game_layer):
+		return {"configured": false, "reason": "missing_game_layer"}
+	if battlefield == null or entity_runtime == null or support_authority == null:
+		return {"configured": false, "reason": "missing_support_capture_dependency"}
+	var system = CardfrontSupportCaptureRuntimeScript.new()
+	game_layer.add_child(system)
+	if not system.setup(battlefield, entity_runtime.registry, support_authority, entity_runtime.map_definition):
+		system.queue_free()
+		return {"configured": false, "reason": "support_capture_setup_failed"}
+	support_authority.configure_presentation_state_provider(Callable(system, "public_state"))
+	battlefield.set_meta("cardfront_support_capture_runtime", system)
+	return {
+		"configured": true,
+		"support_capture_runtime": system,
 	}
 
 

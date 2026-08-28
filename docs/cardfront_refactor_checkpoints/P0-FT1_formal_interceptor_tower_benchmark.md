@@ -2,8 +2,8 @@
 
 Date: 2026-08-21
 
-Source commit: `10ddb48`
-Decision: **STEPS 1–8 GO / PRODUCT-OWNER SCREENSHOT DECISION PENDING**
+Accepted source commit: `697dcbe`
+Decision: **STEPS 1–9 TEMPORARY VISUAL GO / CLOSED**
 
 ## Step Contract
 
@@ -316,13 +316,17 @@ No new parse, import, runtime, or performance-budget error remains in the
 accepted evidence run. The refreshed focused matrix totals **17 suites / 1066
 PASS**.
 
-Current result: **STEPS 1–8 GO / P0-FT1 REMAINS OPEN FOR STEP 9**
+Current result: **STEPS 1–9 TEMPORARY VISUAL GO / P0-FT1 CLOSED**
 
-GO evidence bound to source commit: **NO**
-Manual evidence required: **YES**
+GO evidence bound to source commit: **YES — `697dcbe`**
+Manual evidence required: **COMPLETED by product-owner screenshot review on 2026-08-21**
 
-Only allowed next step inside the Art Production track:
+Product-owner review result:
 
-> Product owner reviews the deterministic state board together with desktop and
-> narrow live captures, then records explicit screenshot GO / NO-GO. Do not
-> start another Formal asset family or the queued gameplay drift audit first.
+> Temporary visual GO. Structural damage may become more visually significant
+> in a future art pass, especially the HP2 buttress loss and HP1 collapsed
+> dome/broken arm silhouette, but that improvement is non-blocking.
+
+Only allowed program step after this closed gate is selected by
+`docs/PROJECT_STATUS.md`; this checkpoint does not authorize another Art asset
+family by itself.

@@ -13,29 +13,35 @@ Current status authority:
   explicitly labeled.
 - Missing manual/runtime evidence is never silently promoted to PASS.
 
-## Active Art Production Checkpoint
+## Closed Art Production Checkpoint
 
 Current checkpoint:
 
 [`P0-FT1_formal_interceptor_tower_benchmark.md`](P0-FT1_formal_interceptor_tower_benchmark.md)
 
-Current decision: **NOT STARTED**
+Current decision: **TEMPORARY VISUAL GO / CLOSED**
 
-Only allowed next Art Production step:
-
-> Implement the reusable D22 Formal GLB validator with negative fixtures and
-> focused tests. Do not start Tower modeling before validator admission is
-> executable.
+P0-FT1 was accepted by the product owner on 2026-08-21 from source commit
+`697dcbe`. Stronger HP2/HP1 silhouette differentiation remains a non-blocking
+future enhancement. No Art Production implementation is active.
 
 Decision authority:
 [`../设计_design/CARDFRONT_DUAL_TRACK_AND_FORMAL_TOWER_GRILL_DECISIONS_2026-08-20.md`](../设计_design/CARDFRONT_DUAL_TRACK_AND_FORMAL_TOWER_GRILL_DECISIONS_2026-08-20.md)
 
-## Queued Gameplay Refactor Gate
+## Active Gameplay Refactor Gate
 
-Gameplay implementation is not active. After P0-FT1 GO/NO-GO, the first
-gameplay action is a directed current-`main` P0 drift audit against the old
-blockers, authority boundaries, save/restore, AI information boundaries, and
-current tests.
+Current checkpoint:
+
+[`P0-DA1_current_main_directed_drift_audit.md`](P0-DA1_current_main_directed_drift_audit.md)
+
+Current decision: **NO-GO / MATERIAL DRIFT / FULL CURRENT-MAIN P0 RERUN REQUIRED**
+
+Only allowed next Gameplay Refactor step:
+
+> P0-DA2 Support / Stronghold Authority Reconciliation on current `main`.
+> Preserve current art, retire the live legacy numeric-bonus consumer, wire
+> independent Support Capture plus save/presentation projections, and add
+> focused evidence before moving to the AI boundary batch.
 
 Do not:
 
