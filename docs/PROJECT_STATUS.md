@@ -303,6 +303,8 @@ Formal production authority:
 | 2026-08-21 | P0-FT1 Steps 3–8 production modules, runtime state binding, capture matrix, and regression PASS locally | source still `10ddb48`; evidence is dirty-working-tree and awaits product-owner screenshot decision |
 | 2026-08-21 | P0-FT1 Revision 3 accepted with temporary visual GO | `697dcbe`; stronger HP2/HP1 silhouette remains non-blocking art debt |
 | 2026-08-28 | Current-main directed P0 drift audit finds material semantic/evidence drift | baseline `144b57f`; P0-DA1 NO-GO; full current-main P0 rerun required |
+| 2026-08-28 | P0-DA2 batch 1: Support Capture authority wired, legacy numeric consumer retired | commit `7aa8bf6`; remote CI green |
+| 2026-08-28 | P0-DA2 batch 2: AI Observation boundary restored from RC schema; decision strength frozen | detached three-tier allowlist projection; live AI input is pure observation |
 
 Generated captures under `artifacts/` are local review evidence unless a
 checkpoint explicitly admits them. They are not automatically release assets.

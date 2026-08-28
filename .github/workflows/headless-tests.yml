@@ -214,6 +214,14 @@ jobs:
               CardfrontOrthographicArenaTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontLiveRuntimeBoundaryTestRunner.gd
+          - batch: Cardfront P0 live support capture
+            scripts: |
+              CardfrontSupportCaptureLiveRuntimeTestRunner.gd
+          - batch: Cardfront P0 AI observation boundary
+            scripts: |
+              CardfrontAiObservationBoundaryTestRunner.gd
+              CardfrontAiObservationProjectionTestRunner.gd
+              CardfrontAiCommanderObservationTestRunner.gd
     env:
       GODOT_VERSION: 4.7.1-stable
       GODOT_ARCHIVE: Godot_v4.7.1-stable_win64.exe.zip
