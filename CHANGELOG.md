@@ -17,6 +17,15 @@ Detailed stage notes now live under [docs/历史_history/](docs/历史_history/R
 - Historical Releases: `v1.9.x`, `v0.1.0-mvp`
   - reconstructed history, not the recommended download path
 
+## Unreleased — P0 current-main rerun & RC convergence / P0 当前主干重跑与收敛
+
+- Governance drift audit `P0-DA1` (baseline `144b57f`): NO-GO / material drift vs the historical P0 RC `def95b5`; six-batch current-main rerun locked.
+- Batch 1 (`7aa8bf6`): Support Capture independent authority wired into live runtime with save/restore binding; legacy Stronghold `sample_bonuses()` numeric consumer retired; HQ hero+theme assembly regression fixed (CI Headless red since `94a762b`); teardown-only material-null error removed via `prepare_for_teardown()`.
+- Batch 2 (`31bd718`): AI Observation boundary restored — detached three-tier allowlist projection (`CardfrontAiObservationBuilder`), live Draft AI consumes `choose_from_observation()`, raw run-state object never reaches the commander; decision strength frozen vs legacy path.
+- Batch 3 (`33c3a1f`): Offer/View Level projection restored (`current_level`/`next_level` from Selected Level authority only; `applied_upgrade_counts` can never impersonate Level) + no-deck-inflation evidence frozen (62 checks).
+- Batch 4 (`f2e4270`): full RC convergence — 4 dark-corner test runners repaired (stale hover constants, pre-tscn fixtures, retired settings path), CI coverage closed at 161/161 suites across 3 workflows, parse/import 0 errors; convergence checkpoint `P0-DA4` bound to `f2e4270`.
+- Remaining gates: independent human North-Star session (batch 5), then final current-main GO/NO-GO seal (batch 6); P1 stays locked.
+
 ## `v0.2.2-card-art-binding` — 卡牌插图绑定
 
 - Sync project.godot version to 0.2.2-dev.

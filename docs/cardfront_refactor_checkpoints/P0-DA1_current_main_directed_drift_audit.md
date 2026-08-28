@@ -87,7 +87,10 @@ The local audit repair restores deterministic modular HQ assembly:
 - count any registered `HQHero*` child rather than only Balanced.
 
 Focused local result: `CardfrontOrthographicArenaTestRunner` **166 PASS**.
-Remote CI evidence remains pending until commit/push is explicitly authorized.
+Remote CI evidence was subsequently authorized and bound: the required rerun
+batches 1–4 are complete and converged on `f2e4270` — see
+[`P0-DA4_current_main_rc_convergence.md`](P0-DA4_current_main_rc_convergence.md)
+for the bound evidence.
 
 ## Decision And Required Rerun
 
