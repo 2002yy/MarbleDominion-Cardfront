@@ -32,16 +32,21 @@ Decision authority:
 
 Current checkpoint:
 
-[`P0-DA1_current_main_directed_drift_audit.md`](P0-DA1_current_main_directed_drift_audit.md)
+[`P0-DA4_current_main_rc_convergence.md`](P0-DA4_current_main_rc_convergence.md)
 
-Current decision: **NO-GO / MATERIAL DRIFT / FULL CURRENT-MAIN P0 RERUN REQUIRED**
+Current decision: **CONVERGENCE COMPLETE / AWAITING INDEPENDENT HUMAN
+NORTH-STAR**
+
+(`P0-DA1_current_main_directed_drift_audit.md` recorded the founding
+**NO-GO / MATERIAL DRIFT** and remains the audit of record; its required
+rerun batches 1–4 are complete and bound to `f2e4270`.)
 
 Only allowed next Gameplay Refactor step:
 
-> P0-DA2 Support / Stronghold Authority Reconciliation on current `main`.
-> Preserve current art, retire the live legacy numeric-bonus consumer, wire
-> independent Support Capture plus save/presentation projections, and add
-> focused evidence before moving to the AI boundary batch.
+> Batch 5: an independent human North-Star session played against an RC at or
+> after `f2e4270` (comprehension, pacing, fair-chance evidence). The old
+> `def95b5` session does not transfer. Batch 6 records the final current-main
+> GO / NO-GO seal from that evidence; P1 stays locked until the seal.
 
 Do not:
 
