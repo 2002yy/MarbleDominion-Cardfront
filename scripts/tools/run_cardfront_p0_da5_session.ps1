@@ -49,8 +49,10 @@ if ($statusLines.Count -gt 0) {
     throw 'P0-DA5 requires a clean worktree. Commit or remove task changes before the session.'
 }
 
-$godotVersion = (& $GodotPath --version | Select-Object -First 1).Trim()
-if ($LASTEXITCODE -ne 0 -or $godotVersion -notmatch '^4\.7\.1') {
+$godotVersionOutput = @(& $GodotPath --version)
+$godotVersionExitCode = $LASTEXITCODE
+$godotVersion = ([string]($godotVersionOutput | Select-Object -First 1)).Trim()
+if ($godotVersionExitCode -ne 0 -or $godotVersion -notmatch '^4\.7\.1') {
     throw "P0-DA5 requires Godot 4.7.1; detected: $godotVersion"
 }
 
