@@ -32,21 +32,24 @@ Decision authority:
 
 Current checkpoint:
 
-[`P0-DA4_current_main_rc_convergence.md`](P0-DA4_current_main_rc_convergence.md)
+[`P0-DA5_current_main_human_north_star.md`](P0-DA5_current_main_human_north_star.md)
 
-Current decision: **CONVERGENCE COMPLETE / AWAITING INDEPENDENT HUMAN
-NORTH-STAR**
+Current decision: **READY FOR INDEPENDENT HUMAN SESSION / NO-GO UNTIL
+EVIDENCE**
 
-(`P0-DA1_current_main_directed_drift_audit.md` recorded the founding
+(`P0-DA4_current_main_rc_convergence.md` binds the completed automated rerun to
+`f2e4270`. `P0-DA1_current_main_directed_drift_audit.md` recorded the founding
 **NO-GO / MATERIAL DRIFT** and remains the audit of record; its required
 rerun batches 1–4 are complete and bound to `f2e4270`.)
 
 Only allowed next Gameplay Refactor step:
 
-> Batch 5: an independent human North-Star session played against an RC at or
-> after `f2e4270` (comprehension, pacing, fair-chance evidence). The old
-> `def95b5` session does not transfer. Batch 6 records the final current-main
-> GO / NO-GO seal from that evidence; P1 stays locked until the seal.
+> Run the DA5 protocol and source-binding launcher with an independent,
+> initially unbriefed tester against a clean pushed `main`. Record
+> comprehension, pacing, fair-chance, and all seven real-runtime scenarios.
+> The old `def95b5` session does not transfer. Batch 6 records the final
+> current-main GO / NO-GO seal from that evidence; P1 stays locked until the
+> seal.
 
 Do not:
 

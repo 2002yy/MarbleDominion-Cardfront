@@ -25,9 +25,10 @@ one pushed `main` commit and leaves the human gate explicitly open.
 2. **Parse and import checks: 0 errors.**
 3. **Performance budget** batch (`CardfrontPerformanceSmokeTestRunner`) green
    inside the Headless matrix.
-4. **Log cleanliness:** no gameplay SCRIPT ERRORs in the convergent suites;
-   the known benign headless dummy-renderer `material is null` boot noise is
-   documented in DA1 and remains renderer-only.
+4. **Log cleanliness:** no gameplay SCRIPT ERRORs in the convergent suites.
+   The headless dummy-renderer `material is null` teardown noise found during
+   DA1 was eliminated by the deterministic ArenaView teardown in `7aa8bf6`;
+   the live GateRuntime teardown rerun on `72871f2` is 12 PASS with no ERROR.
 
 ## Rerun Batches Completed
 
@@ -66,7 +67,8 @@ one pushed `main` commit and leaves the human gate explicitly open.
 - **Batch 5:** a newly bound independent human North-Star session played
   against an RC at or after `f2e4270` (comprehension, pacing, fair-chance
   evidence per the old P0-11K intent; the old `def95b5` session does not
-  transfer).
+  transfer). The current protocol and source-binding launcher are frozen in
+  [`P0-DA5_current_main_human_north_star.md`](P0-DA5_current_main_human_north_star.md).
 - **Batch 6:** final current-main GO / NO-GO seal recorded from batch 5
   evidence. P1 remains locked until that seal.
 

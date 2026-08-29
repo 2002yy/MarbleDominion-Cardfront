@@ -1,8 +1,8 @@
 # Project Status / 项目状态
 
-Last updated: 2026-08-28
+Last updated: 2026-08-29
 
-Current `main` audit baseline: `144b57f`
+Current verified remote tip at DA5 preparation: `72871f2`
 Status authority: **this file**
 
 This document contains current truth, the active track, one next gate per
@@ -111,45 +111,34 @@ authorized while the Gameplay Refactor track is active.
 
 ### Active Track: Gameplay Refactor
 
-**Current gate:** `P0-DA1 Current-main Directed P0 Drift Audit`
+**Current gate:** `P0-DA5 Current-main Human North-Star Gate`
 
-**Audit baseline:** `144b57f`
+**Minimum eligible runtime source:** `f2e4270`
 
-**Decision:** **NO-GO / MATERIAL DRIFT / FULL CURRENT-MAIN P0 RERUN REQUIRED**
+**Decision:** **READY FOR INDEPENDENT HUMAN SESSION / NO-GO UNTIL EVIDENCE**
 
 **Checkpoint:**
-[`cardfront_refactor_checkpoints/P0-DA1_current_main_directed_drift_audit.md`](cardfront_refactor_checkpoints/P0-DA1_current_main_directed_drift_audit.md)
+[`cardfront_refactor_checkpoints/P0-DA5_current_main_human_north_star.md`](cardfront_refactor_checkpoints/P0-DA5_current_main_human_north_star.md)
 
-The old P0 seal and its `NO-GO / P1 locked` result remain historical evidence.
-Its RC `def95b5` is not the current-main source and PR #24 remains open. The
-directed audit found material semantic and evidence drift:
+P0-DA1 found material drift at `144b57f`. P0-DA2 batches restored the live
+Support Capture authority, retired the Stronghold numeric consumer, restored
+the detached AI Observation boundary, restored Offer/Selected-Level
+projection, and repaired the modular HQ regression. P0-DA4 then bound 161/161
+CI-enumerated runners, parse/import, performance, and log evidence to the
+pushed RC `f2e4270`; all three active workflows are green on both that RC and
+the later documentation tip `72871f2`.
 
-- current `main` still consumes legacy Stronghold `sample_bonuses()` in the
-  formal live timeout path;
-- the independent live Support Capture runtime and its save/restore binding from
-  the old RC are absent;
-- the detached AI Observation boundary from the old RC is absent;
-- the old source-bound human playtest target is invalidated by later gameplay,
-  art, UI, and runtime changes;
-- Headless Tests on `144b57f` fail because hero-module onboarding dropped the
-  Castle Theme module from modular HQ assembly;
-- status/checkpoint documents still named `10ddb48` and a pending FT1 decision.
+The only remaining P0 evidence is a newly source-bound independent human
+North-Star session. The implementation agent cannot self-certify route and
+Support comprehension, Core fallback playability, combat-versus-control role,
+Draft Preview continuity, live pacing, or fair chance.
 
-The local audit repair restores `hero + theme + damage` HQ assembly and makes
-the module-count probe accept any registered hero module. The source-bound CI
-result remains pending until an explicitly authorized commit/push.
-
-**Only allowed next implementation step:** `P0-DA2 Support / Stronghold
-Authority Reconciliation` — retire the live numeric Stronghold bonus consumer,
-wire the independent Support Capture authority into current `main`, bind its
-authoritative state to save/restore and presentation projections, and add
-focused current-main tests. Preserve all accepted art assets and do not begin
-P1, balance expansion, or another art family.
-
-After P0-DA2, continue the current-main rerun with AI Observation boundary,
-Offer/Selected-Level projection, regression/log/CI evidence, and a newly bound
-independent human North-Star protocol. P1 remains locked until the resulting
-current-main P0 seal explicitly allows it.
+**Only allowed next step:** run the DA5 source-binding launcher with an
+independent, initially unbriefed tester against a clean pushed `main`, complete
+all seven real-runtime scenarios, and record GO / NO-GO evidence. If GO, batch
+6 may create the final current-main P0 seal. If NO-GO, route only the observed
+failure back to its owning P0 contract. Preserve accepted art assets; do not
+begin P1, balance expansion, or another art family.
 
 ## 3. Current Product Direction / 当前产品方向
 
@@ -307,6 +296,7 @@ Formal production authority:
 | 2026-08-28 | P0-DA2 batch 2: AI Observation boundary restored from RC schema; decision strength frozen | detached three-tier allowlist projection; live AI input is pure observation |
 | 2026-08-28 | P0-DA2 batch 3: Offer/View Level projection restored + no-deck-inflation evidence | `current_level`/`next_level` derive from Selected Level only; `applied_upgrade_counts` never impersonates Level; player-facing level copy (RC 09B4) remains out of scope |
 | 2026-08-28 | P0-DA4 current-main RC convergence complete at `f2e4270` | 161/161 suites CI-enumerated (3/3 workflows green), parse/import clean, dark-corner runners repaired; next = independent human North-Star session, then final seal |
+| 2026-08-29 | P0-DA5 current-main human gate protocol prepared | clean-main/source/engine binding launcher; two-phase unbriefed + hosted protocol; independent human evidence still missing, so P0 remains NO-GO |
 
 Generated captures under `artifacts/` are local review evidence unless a
 checkpoint explicitly admits them. They are not automatically release assets.
