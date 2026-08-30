@@ -34,7 +34,7 @@ Current checkpoint:
 
 [`P0-DA5B_playtest_no_go_remediation.md`](P0-DA5B_playtest_no_go_remediation.md)
 
-Current decision: **NO-GO / REMEDIATION IMPLEMENTED LOCALLY / NEW RC AUDIT
+Current decision: **NO-GO / RC `9ec52d1` AND CI GREEN / LIVE AND HUMAN AUDIT
 REQUIRED / P1 LOCKED**
 
 (`P0-DA4_current_main_rc_convergence.md` binds the completed automated rerun to
@@ -44,10 +44,10 @@ rerun batches 1–4 are complete and bound to `f2e4270`.)
 
 Only allowed next Gameplay Refactor step:
 
-> Review and deliver the bounded `1A 2A 3A 4A 5A` DA5B remediation as one new
-> RC after explicit commit/push authorization. Converge clean CI, long-session
-> logs, and screenshots on that pushed RC, then rerun DA5 with an independent
-> initially unbriefed tester. P1 stays locked until the final seal.
+> Run a clean source-bound long live session and refreshed deterministic
+> captures against remediation RC `9ec52d1`, then rerun DA5 with an independent
+> initially unbriefed tester against that same RC. P1 stays locked until the
+> final seal.
 
 Do not:
 

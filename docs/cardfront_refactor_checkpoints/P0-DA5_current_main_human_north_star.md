@@ -164,13 +164,13 @@ Mandatory audit gates touched: Human North-Star; source identity; Support/route
 comprehension; Core fallback; combat/control role; Draft Preview lifecycle;
 fair-chance pacing
 
-Audit status per gate: **NO-GO / REMEDIATION REQUIRED / INDEPENDENT HUMAN
-EVIDENCE STILL MISSING**
+Audit status per gate: **NO-GO / RC `9ec52d1` AND CI GREEN / LIVE AND
+INDEPENDENT HUMAN EVIDENCE STILL MISSING**
 
 Evidence bound to source commit: **NO — protocol prepared, session not run**
 
 Manual evidence required before GO: **YES**
 
-Only allowed next step: complete P0-DA5B remediation, converge automated and
-live evidence on one new pushed RC, then rerun this protocol with an independent
-initially unbriefed tester. P1 remains locked.
+Only allowed next step: bind an error-free long live session and refreshed
+captures to remediation RC `9ec52d1`, then rerun this protocol with an
+independent initially unbriefed tester against that same RC. P1 remains locked.

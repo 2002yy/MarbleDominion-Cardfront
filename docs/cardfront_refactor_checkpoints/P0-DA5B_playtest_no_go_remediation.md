@@ -4,7 +4,9 @@ Date: 2026-08-29
 
 Playtest source commit: `4b240fb026b0a4dea1dfa10f4031935fff2719dc`
 
-Decision: **NO-GO / REMEDIATION IMPLEMENTED LOCALLY / NEW RC AUDIT REQUIRED / P1 LOCKED**
+Remediation RC: `9ec52d1522c93a4cf269f11bceb99b5baadab2c5`
+
+Decision: **NO-GO / RC AND CI GREEN / LIVE AND HUMAN AUDIT REQUIRED / P1 LOCKED**
 
 Product-owner Grill lock: **`1A 2A 3A 4A 5A`**
 
@@ -141,14 +143,13 @@ remediation.
 
 ## Only allowed next step
 
-Review and deliver the bounded DA5B implementation as one new RC after explicit
-commit/push authorization. Bind clean CI, an error-free live long session, the
-new visual evidence, and the independent initially unbriefed DA5 rerun to that
-same RC. Do not start P1 or another Art Production family.
+Run a clean source-bound long live session and deterministic captures against
+RC `9ec52d1`, then rerun DA5 with an independent initially unbriefed human
+against that same RC. Do not start P1 or another Art Production family.
 
-## Local implementation evidence — 2026-08-30
+## Delivered implementation evidence — 2026-08-30
 
-The locked `1A 2A 3A 4A 5A` remediation is implemented in the local worktree:
+The locked `1A 2A 3A 4A 5A` remediation is delivered in RC `9ec52d1`:
 
 - pooled combat impacts detach before pooling, reattach exactly once, and are
   explicitly freed during arena teardown;
@@ -195,5 +196,11 @@ Local evidence:
   - `artifacts/cardfront-upgrade-history-40x50-viewport-760x540.png`
   - `artifacts/cardfront-full-draft-40x50-viewport-760x540.png`
 
-This is not DA5 GO. A pushed source-bound RC, remote CI, a longer live replay,
-and the independent human rerun remain mandatory.
+Remote evidence bound to `9ec52d1`:
+
+- Headless Tests: run `33317826438`, success;
+- B1 Simulation Tests: run `33317826442`, success;
+- Shared Upgrade AI Tests: run `33317826462`, success.
+
+This is not DA5 GO. A clean source-bound longer live replay, refreshed visual
+evidence, and the independent human rerun remain mandatory.

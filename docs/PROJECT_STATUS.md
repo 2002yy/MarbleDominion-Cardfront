@@ -115,7 +115,7 @@ authorized while the Gameplay Refactor track is active.
 
 **Minimum eligible runtime source:** `f2e4270`
 
-**Decision:** **NO-GO / REMEDIATION IMPLEMENTED LOCALLY / NEW RC AUDIT REQUIRED / P1 LOCKED**
+**Decision:** **NO-GO / RC `9ec52d1` AND CI GREEN / LIVE AND HUMAN AUDIT REQUIRED / P1 LOCKED**
 
 **Checkpoint:**
 [`cardfront_refactor_checkpoints/P0-DA5B_playtest_no_go_remediation.md`](cardfront_refactor_checkpoints/P0-DA5B_playtest_no_go_remediation.md)
@@ -134,17 +134,18 @@ The first source-bound product-owner session on `4b240fb` found a live pooled
 review, weak building causality, and imperceptible rarity/late power. The
 product owner locked remediation `1A 2A 3A 4A 5A`.
 
-DA5B is implemented locally: pooled VFX reuse/teardown is clean, the top bar is
-independent absolute chamber HP, selected upgrades are reopenable, creatures
-show action/hold intent, building events identify their source/outcome, and
-rarity has whole-card hierarchy plus deterministic mid/late quality floors.
-The 162-match B1 probe moved weak Rare picks into a strong but non-automatic
-range while converging hero rates near 50%.
+DA5B is delivered in remediation RC `9ec52d1`: pooled VFX reuse/teardown is
+clean, the top bar is independent absolute chamber HP, selected upgrades are
+reopenable, creatures show action/hold intent, building events identify their
+source/outcome, and rarity has whole-card hierarchy plus deterministic mid/late
+quality floors. The 162-match B1 probe moved weak Rare picks into a strong but
+non-automatic range while converging hero rates near 50%. Headless, B1
+Simulation, and Shared Upgrade AI workflows all concluded success on that RC.
 
-**Only allowed next step:** review and deliver DA5B as one new RC after explicit
-commit/push authorization, then bind clean remote CI, an error-free live long
-session, screenshots, and the independent initially unbriefed DA5 rerun to that
-same RC. Preserve accepted art assets; do not begin P1 or another art family.
+**Only allowed next step:** run a clean source-bound error-free live long
+session and refreshed deterministic captures against `9ec52d1`, then rerun DA5
+with an independent initially unbriefed tester against that same RC. Preserve
+accepted art assets; do not begin P1 or another art family.
 
 ## 3. Current Product Direction / 当前产品方向
 
@@ -304,7 +305,7 @@ Formal production authority:
 | 2026-08-28 | P0-DA4 current-main RC convergence complete at `f2e4270` | 161/161 suites CI-enumerated (3/3 workflows green), parse/import clean, dark-corner runners repaired; next = independent human North-Star session, then final seal |
 | 2026-08-29 | P0-DA5 current-main human gate protocol prepared | clean-main/source/engine binding launcher; two-phase unbriefed + hosted protocol; independent human evidence still missing, so P0 remains NO-GO |
 | 2026-08-29 | P0-DA5 product-owner playtest NO-GO; remediation `1A 2A 3A 4A 5A` locked | live pooled-impact ERROR; truthful HP, creature intent, selected-upgrade drawer, building causality, rarity/late-power remediation authorized; P1 remains locked |
-| 2026-08-30 | P0-DA5B remediation implemented locally; new RC audit required | 148/148 Headless runners clean after fixture leak repair; B1 162-match hero rates 49.07%/50.93%/50.00%; desktop+narrow deterministic captures clean; commit/push, remote CI, long live replay, and independent DA5 rerun remain |
+| 2026-08-30 | P0-DA5B remediation delivered in RC `9ec52d1`; remote CI green | 148/148 Headless runners clean after fixture leak repair; B1 162-match hero rates 49.07%/50.93%/50.00%; all three workflows green; clean source-bound long live replay, refreshed captures, and independent DA5 rerun remain |
 
 Generated captures under `artifacts/` are local review evidence unless a
 checkpoint explicitly admits them. They are not automatically release assets.
