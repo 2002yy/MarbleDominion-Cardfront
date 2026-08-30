@@ -1,8 +1,8 @@
 # Project Status / 项目状态
 
-Last updated: 2026-08-29
+Last updated: 2026-08-30
 
-Current verified remote tip at DA5 preparation: `72871f2`
+Current verified remote tip: `7df8329` (docs: DA5B long-session gate-1 evidence)
 Status authority: **this file**
 
 This document contains current truth, the active track, one next gate per
@@ -113,9 +113,9 @@ authorized while the Gameplay Refactor track is active.
 
 **Current gate:** `P0-DA5B Playtest NO-GO Remediation`
 
-**Minimum eligible runtime source:** `f2e4270`
+**Minimum eligible runtime source:** `f2e4270` (remediation RC: `9ec52d1`)
 
-**Decision:** **NO-GO / RC `9ec52d1` AND CI GREEN / LIVE AND HUMAN AUDIT REQUIRED / P1 LOCKED**
+**Decision:** **NO-GO / RC `9ec52d1` AND CI GREEN / LIVE LONG-SESSION AUDIT PASSED / INDEPENDENT HUMAN RERUN REQUIRED / P1 LOCKED**
 
 **Checkpoint:**
 [`cardfront_refactor_checkpoints/P0-DA5B_playtest_no_go_remediation.md`](cardfront_refactor_checkpoints/P0-DA5B_playtest_no_go_remediation.md)
@@ -141,11 +141,26 @@ source/outcome, and rarity has whole-card hierarchy plus deterministic mid/late
 quality floors. The 162-match B1 probe moved weak Rare picks into a strong but
 non-automatic range while converging hero rates near 50%. Headless, B1
 Simulation, and Shared Upgrade AI workflows all concluded success on that RC.
+The refreshed deterministic captures at desktop `1120x720` and narrow `760x540`
+completed with exit 0 and zero ERROR lines.
 
-**Only allowed next step:** run a clean source-bound error-free live long
-session and refreshed deterministic captures against `9ec52d1`, then rerun DA5
-with an independent initially unbriefed tester against that same RC. Preserve
-accepted art assets; do not begin P1 or another art family.
+On 2026-08-30 the mandatory clean source-bound long live session passed: a
+deterministic full-match replay on `f362d3f` (descends from `9ec52d1`, code
+identical) played all 34 rounds against the real runtime, hammered the pooled
+combat-effect paths through the same signals the product-owner session reached
+(1010 event batches), and finished with exit 0 and zero ERROR/SCRIPT ERROR
+lines; capture `artifacts/cardfront-long-session-34-rounds.png`. DA5B
+acceptance gate 1 (pooled combat effects) now has both focused and live
+long-session halves; **gate 8 — the independent initially unbriefed human DA5
+rerun — is the only outstanding acceptance gate.**
+
+**Only allowed next step:** rerun the P0-DA5 human protocol with an
+independent initially unbriefed tester against the current RC (`9ec52d1` /
+tip `7df8329`) using `scripts/tools/run_cardfront_p0_da5_session.ps1`; the
+host guide is
+`cardfront_refactor_checkpoints/P0-DA5_independent_rerun_host_guide.md`.
+Record the reviewer decision (GO / NO-GO) in the session notes, then update
+this file and the checkpoint. P1 stays locked until the final seal.
 
 ## 3. Current Product Direction / 当前产品方向
 
@@ -306,6 +321,7 @@ Formal production authority:
 | 2026-08-29 | P0-DA5 current-main human gate protocol prepared | clean-main/source/engine binding launcher; two-phase unbriefed + hosted protocol; independent human evidence still missing, so P0 remains NO-GO |
 | 2026-08-29 | P0-DA5 product-owner playtest NO-GO; remediation `1A 2A 3A 4A 5A` locked | live pooled-impact ERROR; truthful HP, creature intent, selected-upgrade drawer, building causality, rarity/late-power remediation authorized; P1 remains locked |
 | 2026-08-30 | P0-DA5B remediation delivered in RC `9ec52d1`; remote CI green | 148/148 Headless runners clean after fixture leak repair; B1 162-match hero rates 49.07%/50.93%/50.00%; all three workflows green; clean source-bound long live replay, refreshed captures, and independent DA5 rerun remain |
+| 2026-08-30 | DA5B long-session live audit PASSED and bound at `7df8329` | full 34-round deterministic live replay, 1010 pooled-combat event batches, exit 0, zero ERROR lines; gate 1 (pooled combat effects) complete; host guide published; only gate 8 (independent human DA5 rerun) remains |
 
 Generated captures under `artifacts/` are local review evidence unless a
 checkpoint explicitly admits them. They are not automatically release assets.
