@@ -204,3 +204,28 @@ Remote evidence bound to `9ec52d1`:
 
 This is not DA5 GO. A clean source-bound longer live replay, refreshed visual
 evidence, and the independent human rerun remain mandatory.
+
+## Long-session live evidence — 2026-08-30
+
+Acceptance gate 1 (repeated pooled combat effects: zero ERROR, no
+duplicate-parent attempt in focused and live long-session evidence) now has
+its live long-session half:
+
+- source: `f362d3f` (descends from remediation RC `9ec52d1`; code identical —
+  `f362d3f` is the docs-only binding tip);
+- preflight via the P0-DA5 launcher rules: branch `main`, HEAD == local
+  `origin/main` == live remote `main`, clean worktree, Godot 4.7.1,
+  deterministic seed `331`, OpenGL driver, `1120x720` live window;
+- a deterministic long live-session driver played the full 34-round match
+  against the real runtime, hammering the exact failing paths every battle
+  phase through the same signals the product-owner session reached
+  (`entity_contact_resolved`, `projectile_guided`, `building_volley_fired`,
+  `tower_power_changed`, plus the heavy family): **1010 event batches**,
+  repeated impact-node acquire/release/coalesce cycles;
+- result: **34/34 rounds completed** (natural end, no destroyed turret),
+  exit code 0, **zero `ERROR:` / `SCRIPT ERROR:` lines**, capture saved at
+  `artifacts/cardfront-long-session-34-rounds.png`.
+
+Focused half of gate 1 remains covered by the Orthographic Arena suite in the
+green CI matrix. Gate 8 (independent initially unbriefed human DA5 rerun)
+remains the only outstanding acceptance gate.
