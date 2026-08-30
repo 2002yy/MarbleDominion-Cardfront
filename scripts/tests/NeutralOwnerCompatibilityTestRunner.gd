@@ -141,6 +141,19 @@ func _test_hud_accepts_neutral_owner() -> void:
 	_assert.eq((top_bar_name_labels[GameConfig.Faction.GREEN] as Label).text, CardfrontRulesScript.owner_display_name(CardfrontRulesScript.NEUTRAL_OWNER), "hud top bar: neutral segment should use neutral display name")
 	_assert.that(not (top_bar_segments[GameConfig.Faction.YELLOW] as Panel).visible, "hud top bar: unused fourth segment should be hidden in Cardfront mode")
 
+	RuntimeHudController.update_cardfront_hq_bar({
+		CardfrontRulesScript.PLAYER_FACTION: {"current": 30, "max": 40},
+		CardfrontRulesScript.AI_FACTION: {"current": 10, "max": 20},
+	}, top_bar_segments, top_bar_labels, top_bar_name_labels, 420.0, false)
+	_assert.eq((top_bar_labels[GameConfig.Faction.BLUE] as Label).text, "30/40", "hud HQ bar: player chamber should show absolute health")
+	_assert.eq((top_bar_labels[GameConfig.Faction.RED] as Label).text, "10/20", "hud HQ bar: AI chamber should show absolute health")
+	_assert.eq((top_bar_name_labels[GameConfig.Faction.BLUE] as Label).text, "蓝方指挥室", "hud HQ bar: player segment should state its chamber meaning")
+	_assert.that(not (top_bar_segments[GameConfig.Faction.GREEN] as Panel).visible, "hud HQ bar: neutral territory must not occupy the chamber health bar")
+	var blue_fill := (top_bar_segments[GameConfig.Faction.BLUE] as Panel).get_node("Fill") as ColorRect
+	var red_fill := (top_bar_segments[GameConfig.Faction.RED] as Panel).get_node("Fill") as ColorRect
+	_assert.that(blue_fill.size.x > red_fill.size.x, "hud HQ bar: each side should fill against its own maximum health")
+	_assert.eq(leader_label.text, "领土  蓝 20% · 中立 60% · 红 20%", "hud meta: territory should remain an explicit secondary readout")
+
 	TestFixtures.cleanup_node(timer_label)
 	TestFixtures.cleanup_node(stage_label)
 	TestFixtures.cleanup_node(leader_label)

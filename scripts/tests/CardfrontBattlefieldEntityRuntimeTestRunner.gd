@@ -59,6 +59,8 @@ func _run() -> void:
 	_test_projectile_contacts(fixture)
 	print("[CardfrontBattlefieldEntityRuntimeTest] repair")
 	_test_repair_action(fixture)
+	print("[CardfrontBattlefieldEntityRuntimeTest] repair support")
+	_test_repair_frontline_support(fixture)
 	print("[CardfrontBattlefieldEntityRuntimeTest] expiry")
 	_test_expiry_signal(fixture)
 	print("[CardfrontBattlefieldEntityRuntimeTest] tower")
@@ -199,6 +201,33 @@ func _test_repair_action(fixture: Dictionary) -> void:
 	_assert.gte(after, 1, "repair unit restores a nearby frontline layer")
 	if repair_fixture != null:
 		runtime.registry.remove_entity(str(repair_fixture.entity_id))
+
+
+func _test_repair_frontline_support(fixture: Dictionary) -> void:
+	var runtime = fixture["runtime"]
+	var fortify = fixture["fortify"]
+	for x in range(8):
+		fortify.set_fortify_stack(Vector2i(x, 4), 2)
+	var support = runtime.registry.spawn_creature(
+		"repair_support_fixture",
+		RuntimeScript.CREATURE_REPAIR_UNIT,
+		RulesScript.PLAYER_FACTION,
+		Vector2i(6, 7),
+		1,
+		CreatureStateScript.ARMOR_NORMAL,
+		1,
+		"repair_frontline",
+		3
+	)
+	_assert.that(support != null, "repair support fixture spawns behind a fully repaired frontline")
+	if support == null:
+		return
+	var target: Vector2i = runtime._find_nearest_guard_post(support.owner_id, support.cell)
+	var before_distance: int = runtime._manhattan_distance(support.cell, target)
+	runtime.advance_round()
+	_assert.that(runtime._manhattan_distance(support.cell, target) < before_distance, "repair unit advances toward a contested frontline when nothing needs repair")
+	_assert.eq(str(support.metadata.get("action_feedback", "")), "支援前线", "repair unit exposes its fallback control contribution")
+	runtime.registry.remove_entity(str(support.entity_id))
 
 
 func _test_expiry_signal(fixture: Dictionary) -> void:

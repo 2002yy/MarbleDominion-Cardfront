@@ -5,6 +5,7 @@ const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 const BattlefieldEntityScript = preload("res://scripts/cardfront/entities/CardfrontBattlefieldEntity.gd")
 const CreatureStateScript = preload("res://scripts/cardfront/entities/CardfrontCreatureState.gd")
+const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
 
 var runtime = null
 
@@ -21,7 +22,7 @@ func decorate_volley_plan(owner_id: int, plan) -> void:
 	var level: int = clampi(int(plan.building_volley_level), 0, 3)
 	if level <= 0:
 		return
-	var shots_per_tower: int = level + 1
+	var shots_per_tower: int = UpgradeManifestScript.building_volley_shots_per_tower(level)
 	var remaining_budget: int = maxi(0, runtime.BUILDING_VOLLEY_TOTAL_CAP - int(plan.shot_count))
 	for tower in owner_towers(owner_id):
 		if remaining_budget <= 0:

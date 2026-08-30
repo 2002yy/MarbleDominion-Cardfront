@@ -4,9 +4,14 @@ class_name CardfrontUpgradeChoiceCard
 signal upgrade_chosen(upgrade_id)
 
 const RARITY_COLORS: Dictionary = {
-	"common": Color(0.38, 0.80, 1.0),
-	"uncommon": Color(1.0, 0.78, 0.24),
-	"rare": Color(0.82, 0.48, 1.0),
+	"common": Color(0.54, 0.74, 0.88),
+	"uncommon": Color(0.30, 0.80, 1.0),
+	"rare": Color(1.0, 0.66, 0.20),
+}
+const RARITY_BACKGROUNDS: Dictionary = {
+	"common": Color(0.052, 0.070, 0.092, 0.99),
+	"uncommon": Color(0.035, 0.090, 0.125, 0.99),
+	"rare": Color(0.145, 0.075, 0.025, 0.99),
 }
 
 @onready var rarity_label: Label = get_node("RarityLabel")
@@ -15,6 +20,7 @@ const RARITY_COLORS: Dictionary = {
 @onready var name_label: Label = get_node("NameLabel")
 @onready var description_label: Label = get_node("DescriptionLabel")
 @onready var lock_label: Label = get_node("LockLabel")
+@onready var divider: ColorRect = get_node("Divider")
 
 var definition: Dictionary = {}
 var upgrade_id: String = ""
@@ -48,6 +54,7 @@ func setup(new_definition: Dictionary) -> void:
 	scale = Vector2.ONE
 	modulate = Color.WHITE
 	_apply_style(false)
+	_play_rarity_reveal(str(definition.get("rarity", "common")))
 
 
 func _symbol_font_size(symbol_text: String) -> int:
@@ -110,16 +117,18 @@ func _animate_to(target_scale: Vector2, duration: float) -> void:
 func _apply_style(highlighted: bool) -> void:
 	var rarity: String = str(definition.get("rarity", "common"))
 	var accent: Color = RARITY_COLORS.get(rarity, RARITY_COLORS.common)
+	var background: Color = RARITY_BACKGROUNDS.get(rarity, RARITY_BACKGROUNDS.common)
+	var rarity_rank := _rarity_rank(rarity)
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.055, 0.075, 0.105, 0.985)
+	style.bg_color = background.lightened(0.035) if highlighted else background
 	style.border_color = accent.lightened(0.16) if highlighted else accent.darkened(0.10)
-	style.set_border_width_all(4 if highlighted else 3)
+	style.set_border_width_all(3 + rarity_rank + (1 if highlighted else 0))
 	style.corner_radius_top_left = 7
 	style.corner_radius_top_right = 7
 	style.corner_radius_bottom_left = 7
 	style.corner_radius_bottom_right = 7
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.42)
-	style.shadow_size = 8
+	style.shadow_color = Color(accent.r, accent.g, accent.b, 0.16 + float(rarity_rank) * 0.12)
+	style.shadow_size = 8 + rarity_rank * 5
 	add_theme_stylebox_override("normal", style)
 	add_theme_stylebox_override("hover", style)
 	add_theme_stylebox_override("pressed", style)
@@ -128,13 +137,40 @@ func _apply_style(highlighted: bool) -> void:
 		symbol_label.add_theme_color_override("font_color", accent)
 	if is_instance_valid(rarity_label):
 		rarity_label.add_theme_color_override("font_color", accent.lightened(0.25))
+		rarity_label.add_theme_constant_override("outline_size", 2 + rarity_rank)
+	if is_instance_valid(divider):
+		divider.color = Color(accent.r, accent.g, accent.b, 0.48 + float(rarity_rank) * 0.18)
 
 
 func _rarity_text(rarity: String) -> String:
 	match rarity:
 		"rare":
-			return "\u7a00\u6709"
+			return "◆◆◆  \u7a00\u6709"
 		"uncommon":
-			return "\u8fdb\u9636"
+			return "◆◆  \u8fdb\u9636"
 		_:
-			return "\u666e\u901a"
+			return "◆  \u666e\u901a"
+
+
+func _rarity_rank(rarity: String) -> int:
+	match rarity:
+		"rare":
+			return 2
+		"uncommon":
+			return 1
+		_:
+			return 0
+
+
+func _play_rarity_reveal(rarity: String) -> void:
+	if rarity != "rare" or not is_inside_tree():
+		return
+	if _motion_tween != null and _motion_tween.is_valid():
+		_motion_tween.kill()
+	scale = Vector2(0.90, 0.90)
+	modulate = Color(1.0, 0.82, 0.46, 0.42)
+	_motion_tween = create_tween()
+	_motion_tween.set_parallel(true)
+	_motion_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_motion_tween.tween_property(self, "scale", Vector2.ONE, 0.34)
+	_motion_tween.tween_property(self, "modulate", Color.WHITE, 0.24)

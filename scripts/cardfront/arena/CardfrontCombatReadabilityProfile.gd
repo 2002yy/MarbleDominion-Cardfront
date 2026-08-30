@@ -67,13 +67,15 @@ static func entity_status_text(entity) -> String:
 			return "%s 信标·引导%d发" % [level_text, maxi(0, int(entity.guidance_remaining))]
 		return "%s 拦截·拦%d发" % [level_text, maxi(0, int(entity.intercepts_remaining))]
 	var names: Dictionary = {
-		"repair_unit": "维修·修复前线",
-		"armored_guard": "护卫·挡弹",
-		"sapper_unit": "掘城·爆破",
+		"repair_unit": "维修",
+		"armored_guard": "护卫",
+		"sapper_unit": "掘城",
 		"scout_unit": "侦察·修正弹道",
 		"gate_colossus": "中立巨像·攻双方",
 	}
-	return str(names.get(str(entity.creature_id), "单位"))
+	var role_text := str(names.get(str(entity.creature_id), "单位"))
+	var action_feedback := str(entity.metadata.get("action_feedback", ""))
+	return "%s·%s" % [role_text, action_feedback] if action_feedback != "" else role_text
 
 
 static func entity_description(entity) -> String:

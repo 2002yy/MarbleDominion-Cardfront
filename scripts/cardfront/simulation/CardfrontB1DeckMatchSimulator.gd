@@ -130,7 +130,7 @@ func _build_and_consume_volley_fast(state: Dictionary) -> Dictionary:
 	plan["projectile_counts"] = ProjectileTypeScript.count_types(sequence)
 	var building_shots: int = (
 		int(state.get("owned_defense_tower_count", 0))
-		* (int(state.get("building_volley_level", 0)) + 1)
+		* ManifestScript.building_volley_shots_per_tower(int(state.get("building_volley_level", 0)))
 		if int(state.get("building_volley_level", 0)) > 0
 		else 0
 	)

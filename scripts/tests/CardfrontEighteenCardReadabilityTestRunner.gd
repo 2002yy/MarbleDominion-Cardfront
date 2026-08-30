@@ -26,6 +26,7 @@ func _run() -> void:
 func _test_all_live_cards_render_in_the_formal_scene() -> void:
 	var card_scene: PackedScene = load("res://scenes/ui/cardfront/CardfrontUpgradeChoiceCard.tscn")
 	var live_ids: Array = UpgradeManifestScript.get_upgrade_ids()
+	var rarity_backgrounds: Dictionary = {}
 	_assert.eq(live_ids.size(), 18, "live pool: formal catalog should contain eighteen cards")
 	for raw_id in live_ids:
 		var upgrade_id: String = str(raw_id)
@@ -45,9 +46,16 @@ func _test_all_live_cards_render_in_the_formal_scene() -> void:
 		_assert.gte(card.custom_minimum_size.y, 260.0, "live pool: formal card should keep a readable height")
 		_assert.that(card.symbol_label.get_theme_font_size("font_size") >= 29, "live pool: primary number or symbol should remain visually dominant")
 		_assert.eq(card.mouse_filter, Control.MOUSE_FILTER_STOP, "live pool: formal card should remain clickable")
+		var rarity := str(definition.get("rarity", "common"))
+		_assert.that(card.rarity_label.text.begins_with("◆"), "live pool: rarity should use a tier glyph as well as text/color")
+		var style := card.get_theme_stylebox("normal") as StyleBoxFlat
+		_assert.eq(style.get_border_width(SIDE_LEFT), 3 + card._rarity_rank(rarity), "live pool: higher rarity should receive a stronger whole-card border")
+		rarity_backgrounds[rarity] = style.bg_color
 
 		TestFixtures.cleanup_node(card)
 		await process_frame
+	_assert.neq(rarity_backgrounds.get("common"), rarity_backgrounds.get("uncommon"), "live pool: Uncommon should tint the entire card differently from Common")
+	_assert.neq(rarity_backgrounds.get("uncommon"), rarity_backgrounds.get("rare"), "live pool: Rare should tint the entire card differently from Uncommon")
 
 
 func _test_seeded_drafts_can_reach_the_full_live_pool() -> void:

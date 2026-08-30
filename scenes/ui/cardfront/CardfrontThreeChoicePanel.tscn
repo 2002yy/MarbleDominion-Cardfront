@@ -208,6 +208,96 @@ theme_override_font_sizes/font_size = 9
 text = ""
 autowrap_mode = 2
 
+[node name="UpgradeHistoryChrome" type="Control" parent="."]
+offset_right = 1120.0
+offset_bottom = 720.0
+mouse_filter = 2
+
+[node name="ToggleButton" type="Button" parent="UpgradeHistoryChrome"]
+layout_mode = 0
+offset_left = 982.0
+offset_top = 68.0
+offset_right = 1108.0
+offset_bottom = 104.0
+mouse_filter = 0
+focus_mode = 0
+text = "本局强化 · 0"
+
+[node name="Drawer" type="Panel" parent="UpgradeHistoryChrome"]
+visible = false
+layout_mode = 0
+offset_left = 804.0
+offset_top = 110.0
+offset_right = 1108.0
+offset_bottom = 566.0
+mouse_filter = 0
+
+[node name="Bg" type="ColorRect" parent="UpgradeHistoryChrome/Drawer"]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 301.0
+offset_bottom = 453.0
+mouse_filter = 2
+color = Color(0.025, 0.045, 0.075, 0.985)
+
+[node name="Accent" type="ColorRect" parent="UpgradeHistoryChrome/Drawer"]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 301.0
+offset_bottom = 7.0
+mouse_filter = 2
+color = Color(0.98, 0.76, 0.18, 0.95)
+
+[node name="Title" type="Label" parent="UpgradeHistoryChrome/Drawer"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 15.0
+offset_right = 250.0
+offset_bottom = 45.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.93, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 20
+text = "本局强化"
+
+[node name="CloseButton" type="Button" parent="UpgradeHistoryChrome/Drawer"]
+layout_mode = 0
+offset_left = 254.0
+offset_top = 11.0
+offset_right = 293.0
+offset_bottom = 47.0
+mouse_filter = 0
+focus_mode = 0
+text = "×"
+
+[node name="Summary" type="Label" parent="UpgradeHistoryChrome/Drawer"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 288.0
+offset_bottom = 74.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.68, 0.84, 0.96, 1)
+theme_override_font_sizes/font_size = 13
+text = "尚未选择强化"
+
+[node name="Scroll" type="ScrollContainer" parent="UpgradeHistoryChrome/Drawer"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 82.0
+offset_right = 292.0
+offset_bottom = 442.0
+mouse_filter = 0
+horizontal_scroll_mode = 0
+
+[node name="List" type="VBoxContainer" parent="UpgradeHistoryChrome/Drawer/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
 [node name="UpgradeToast" type="Panel" parent="."]
 visible = false
 offset_left = 24.0

@@ -116,7 +116,7 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	var tower = entity_runtime._find_owner_tower(CardfrontRulesScript.PLAYER_FACTION, "interceptor_tower")
 	var tower_id: String = str(tower.entity_id) if tower != null else ""
 	_assert.that(bool(tower_result.get("success", false)), "orthographic arena: interceptor tower fixture should build")
-	_assert.eq(view.get_entity_status_text_for_test(repair_id), "", "orthographic arena: healthy entities should not carry persistent role text")
+	_assert.that(view.get_entity_status_text_for_test(repair_id).contains("下轮行动"), "orthographic arena: summoned units should state when they will first act")
 	_assert.eq(view.get_entity_status_text_for_test(tower_id), "", "orthographic arena: powered towers should not carry persistent state text")
 	_assert.that(not view.get_entity_hp_visible_for_test(repair_id), "orthographic arena: full-health entity bars should stay hidden")
 	_assert.gte(view.get_entity_visual_scale_for_test(repair_id), 1.45, "orthographic arena: combat creatures should receive the readability scale")
@@ -140,9 +140,16 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.eq(view.get_formal_tower_counter_event_count_for_test(tower_id), 1, "orthographic arena: L3 counterfire should originate from the explicit runtime event")
 	_assert.gte(view.get_formal_tower_counter_recoil_distance_for_test(tower_id), 0.20, "orthographic arena: L3 counterfire recoil should be visually readable")
 	_assert.eq(view.get_formal_tower_counter_flash_count_for_test(tower_id), 1, "orthographic arena: L3 counterfire should create one bounded muzzle flash")
+	_assert.eq(view.get_formal_tower_last_feedback_for_test(tower_id), "反击!", "orthographic arena: counterfire should state its building causality at the source")
 	tower.configure_interceptor(3)
 	entity_runtime.entity_contact_resolved.emit({"target_id": tower_id, "intercepted": true, "cell": tower.cell})
 	_assert.eq(view.get_formal_tower_intercept_pulse_count_for_test(tower_id), 1, "orthographic arena: intercept result should pulse the Formal interception elements")
+	_assert.eq(view.get_formal_tower_last_feedback_for_test(tower_id), "拦截!", "orthographic arena: interception should state its building causality at the source")
+	entity_runtime.projectile_guided.emit(tower_id, CardfrontRulesScript.PLAYER_FACTION, ProjectileTypeScript.STANDARD)
+	_assert.eq(view.get_formal_tower_last_feedback_for_test(tower_id), "引导", "orthographic arena: guidance should state its building causality at the source")
+	entity_runtime.building_volley_fired.emit(CardfrontRulesScript.PLAYER_FACTION, tower_id, 4)
+	_assert.eq(view.get_formal_tower_last_feedback_for_test(tower_id), "建筑齐射 ×4", "orthographic arena: building volley should expose its source and shot count")
+	_assert.gte(view.get_formal_tower_feedback_event_count_for_test(tower_id), 4, "orthographic arena: distinct building events should all reach the causality feedback channel")
 	tower.powered = false
 	entity_runtime.tower_power_changed.emit(tower_id, false)
 	view._process(0.0)
@@ -223,6 +230,13 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 		"projectile_type": ProjectileTypeScript.SIEGE,
 	})
 	_assert.gte(view.get_combat_effect_count_for_test(), 1, "orthographic arena: projectile contact should create a visible battlefield pulse")
+	view._add_combat_effect(Vector2i(19, 19), Color.WHITE, 0.05, 1.2, "pool_regression")
+	view._update_combat_effects(0.06)
+	_assert.gte(view._combat_effect_pool.size(), 1, "orthographic arena: expired impacts should enter the reusable pool")
+	var pooled_impact := view._combat_effect_pool.back() as MeshInstance3D
+	_assert.eq(pooled_impact.get_parent(), null, "orthographic arena: pooled impacts must be detached before reuse")
+	view._add_combat_effect(Vector2i(18, 18), Color.WHITE, 0.20, 1.2, "pool_regression_reuse")
+	_assert.eq(pooled_impact.get_parent(), view.world_root, "orthographic arena: reused impacts should be attached exactly once")
 
 	var isolated_cell := Vector2i(20, 8)
 	main.runtime.battlefield.owners[isolated_cell.x][isolated_cell.y] = CardfrontRulesScript.PLAYER_FACTION

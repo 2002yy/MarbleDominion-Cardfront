@@ -22,6 +22,7 @@ func _run() -> void:
 	_test_seeded_offers_are_unique_and_deterministic()
 	_test_legacy_four_choice_request_is_capped_to_three()
 	_test_rarity_growth_changes_weights()
+	_test_mid_and_late_offer_quality_guarantees()
 	_test_capped_or_armed_upgrades_are_not_offered()
 	_test_timeout_fallback_comes_from_offer()
 
@@ -87,6 +88,25 @@ func _test_rarity_growth_changes_weights() -> void:
 	_assert.that(draft.weight_for_definition(common_definition, state) < base_common_weight, "rarity: common weight should decrease")
 
 
+func _test_mid_and_late_offer_quality_guarantees() -> void:
+	var state = RunStateScript.new()
+	state.setup(0)
+	var draft = DraftSystemScript.new()
+	state.selected_upgrade_levels[UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5] = 3
+	for seed_value in range(1, 21):
+		draft.set_seed(seed_value)
+		_assert.gte(_highest_rarity_rank(draft.draw_three(state)), 1, "quality floor: after three prior selections every offer has an Uncommon-or-better card")
+	state.selected_upgrade_levels[UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5] = 6
+	for seed_value in range(21, 41):
+		draft.set_seed(seed_value)
+		_assert.eq(_highest_rarity_rank(draft.draw_three(state)), 2, "quality floor: after six prior selections every offer has a Rare card")
+	state.selected_upgrade_levels[UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5] = 5
+	state.increase_rarity_level(1)
+	for seed_value in range(41, 61):
+		draft.set_seed(seed_value)
+		_assert.eq(_highest_rarity_rank(draft.draw_three(state)), 2, "rarity growth: each level advances the Rare guarantee by one prior selection")
+
+
 func _test_legacy_four_choice_request_is_capped_to_three() -> void:
 	var state = RunStateScript.new()
 	state.setup(0)
@@ -150,6 +170,19 @@ func _offer_ids(offer: Array) -> Array:
 		if raw_definition is Dictionary:
 			result.append(str((raw_definition as Dictionary).get("id", "")))
 	return result
+
+
+func _highest_rarity_rank(offer: Array) -> int:
+	var highest := 0
+	for raw_definition in offer:
+		if not (raw_definition is Dictionary):
+			continue
+		match str((raw_definition as Dictionary).get("rarity", "")):
+			UpgradeManifestScript.RARITY_RARE:
+				highest = maxi(highest, 2)
+			UpgradeManifestScript.RARITY_UNCOMMON:
+				highest = maxi(highest, 1)
+	return highest
 
 
 func _contains_ascii_letters(value: String) -> bool:

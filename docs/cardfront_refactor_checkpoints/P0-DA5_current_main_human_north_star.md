@@ -6,7 +6,14 @@ Minimum eligible runtime source: `f2e427043aa34a422f50d4f52559bd11eabed623`
 
 Prepared from current `main`: `72871f2aa2d9c1814cc7b6701abb29cad7d580f3`
 
-Decision: **READY FOR INDEPENDENT HUMAN SESSION / NO-GO UNTIL EVIDENCE**
+Decision: **NO-GO / PRODUCT-OWNER FINDINGS REQUIRE REMEDIATION**
+
+The first source-bound product-owner session on `4b240fb` found a live pooled
+combat-effect ERROR plus five experience failures. The locked remediation is
+recorded in
+[`P0-DA5B_playtest_no_go_remediation.md`](P0-DA5B_playtest_no_go_remediation.md).
+This document remains the protocol for the required independent rerun after
+remediation; the initial session does not satisfy that independent human gate.
 
 ## Purpose
 
@@ -157,13 +164,13 @@ Mandatory audit gates touched: Human North-Star; source identity; Support/route
 comprehension; Core fallback; combat/control role; Draft Preview lifecycle;
 fair-chance pacing
 
-Audit status per gate: **READY / HUMAN EVIDENCE MISSING**
+Audit status per gate: **NO-GO / REMEDIATION REQUIRED / INDEPENDENT HUMAN
+EVIDENCE STILL MISSING**
 
 Evidence bound to source commit: **NO — protocol prepared, session not run**
 
 Manual evidence required before GO: **YES**
 
-Only allowed next step: run this protocol with an independent initially
-unbriefed tester against a clean pushed `main`, then record the evidence and
-decision here. If GO, create batch 6 final current-main seal; if NO-GO, route
-only the observed failure back to its owning P0 checkpoint. P1 remains locked.
+Only allowed next step: complete P0-DA5B remediation, converge automated and
+live evidence on one new pushed RC, then rerun this protocol with an independent
+initially unbriefed tester. P1 remains locked.

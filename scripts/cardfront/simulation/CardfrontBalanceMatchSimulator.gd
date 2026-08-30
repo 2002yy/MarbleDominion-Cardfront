@@ -558,7 +558,7 @@ func _build_and_consume_volley_fast(state: Dictionary) -> Dictionary:
 	var building_shots: int = 0
 	if building_level > 0:
 		building_shots = mini(
-			int(state.get("owned_defense_tower_count", 0)) * (building_level + 1),
+			int(state.get("owned_defense_tower_count", 0)) * UpgradeManifestScript.building_volley_shots_per_tower(building_level),
 			maxi(0, 32 - shot_count)
 		)
 	shot_count += building_shots

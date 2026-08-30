@@ -2,6 +2,7 @@ extends SceneTree
 
 const PanelScene = preload("res://scenes/ui/cardfront/CardfrontThreeChoicePanel.tscn")
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
+const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 
 const DESKTOP_VIEWPORT := Vector2(1120.0, 720.0)
 const NARROW_VIEWPORT := Vector2(760.0, 540.0)
@@ -43,9 +44,16 @@ class FakeDirector:
 
 	var phase_controller := FakePhaseController.new()
 	var round_number: int = 0
+	var run_state = RunStateScript.new()
+
+	func _ready() -> void:
+		run_state.setup(CardfrontRules.PLAYER_FACTION)
+		run_state.selected_upgrade_levels[UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5] = 2
+		run_state.selected_upgrade_levels[UpgradeManifestScript.UPGRADE_BUILDING_VOLLEY] = 1
+		run_state.next_volley_bonus = 5
 
 	func get_run_state(_owner_id: int):
-		return null
+		return run_state
 
 	func get_stronghold_status(_owner_id: int) -> Dictionary:
 		return {}
@@ -118,6 +126,15 @@ func _test_geometry_snapshot(viewport_size: Vector2, expected_shell_position: Ve
 	_assert.that(peek_button.get_global_rect().end.x <= viewport_size.x - 8.0, "%s: PeekButton stays inside the right viewport edge" % label)
 	_assert.eq(panel.peek_chrome.position, Vector2.ZERO, "%s: PeekChrome position snapshot" % label)
 	_assert.eq(panel.peek_chrome.size, viewport_size, "%s: PeekChrome size snapshot" % label)
+	_assert.that(not panel.is_upgrade_history_open_for_test(), "%s: upgrade history starts collapsed" % label)
+	_assert.eq(panel.upgrade_history_button.text, "本局强化 · 2", "%s: upgrade history edge control shows distinct selected count" % label)
+	panel._toggle_upgrade_history()
+	_assert.that(panel.is_upgrade_history_open_for_test(), "%s: upgrade history can open during Draft or battle" % label)
+	var history_texts: Array[String] = panel.get_upgrade_history_texts_for_test()
+	_assert.eq(history_texts.size(), 2, "%s: upgrade history lists every selected upgrade identity" % label)
+	_assert.that(history_texts[0].contains("增援齐射  Lv2") and history_texts[0].contains("下轮待结算"), "%s: upgrade history uses Selected Level and pending state" % label)
+	_assert.that(history_texts[1].contains("建筑齐射  Lv1") and history_texts[1].contains("本局生效"), "%s: upgrade history shows persistent building state" % label)
+	panel._close_upgrade_history()
 
 	_assert.eq(panel.dimmer.position, Vector2.ZERO, "%s: Dimmer position snapshot" % label)
 	_assert.eq(panel.dimmer.size, viewport_size, "%s: Dimmer size snapshot" % label)

@@ -73,6 +73,20 @@ func draw_offer_ids_for_context(context, offer_size: int = DEFAULT_OFFER_SIZE) -
 		if is_upgrade_eligible(definition, context.run_state):
 			candidate_ids.append(upgrade_id)
 	var result: Array = []
+	var guaranteed_rarity := _guaranteed_min_rarity(context.run_state)
+	if guaranteed_rarity != "":
+		var guaranteed_candidates: Array = []
+		var minimum_rank := _rarity_rank(guaranteed_rarity)
+		for raw_upgrade_id in candidate_ids:
+			var definition := UpgradeManifestScript.get_definition(str(raw_upgrade_id))
+			if _rarity_rank(str(definition.get("rarity", ""))) >= minimum_rank:
+				guaranteed_candidates.append(str(raw_upgrade_id))
+		if not guaranteed_candidates.is_empty():
+			var guaranteed_index := _weighted_index(guaranteed_candidates, context.run_state, side_rng)
+			if guaranteed_index >= 0:
+				var guaranteed_id := str(guaranteed_candidates[guaranteed_index])
+				result.append(guaranteed_id)
+				candidate_ids.erase(guaranteed_id)
 	while result.size() < resolved_offer_size and not candidate_ids.is_empty():
 		var selected_index: int = _weighted_index(candidate_ids, context.run_state, side_rng)
 		if selected_index < 0:
@@ -81,6 +95,32 @@ func draw_offer_ids_for_context(context, offer_size: int = DEFAULT_OFFER_SIZE) -
 		result.append(upgrade_id)
 		candidate_ids.remove_at(selected_index)
 	return result
+
+
+func _guaranteed_min_rarity(run_state) -> String:
+	if run_state == null:
+		return ""
+	var prior_selections := 0
+	var selected_levels: Dictionary = run_state.get("selected_upgrade_levels") as Dictionary
+	for level in selected_levels.values():
+		prior_selections += maxi(0, int(level))
+	var rarity_level := maxi(0, int(run_state.get("rarity_level")))
+	var rare_threshold := maxi(3, 6 - rarity_level)
+	if prior_selections >= rare_threshold:
+		return UpgradeManifestScript.RARITY_RARE
+	if prior_selections >= 3:
+		return UpgradeManifestScript.RARITY_UNCOMMON
+	return ""
+
+
+func _rarity_rank(rarity: String) -> int:
+	match str(rarity):
+		UpgradeManifestScript.RARITY_RARE:
+			return 2
+		UpgradeManifestScript.RARITY_UNCOMMON:
+			return 1
+		_:
+			return 0
 
 
 func choose_timeout_fallback(offer: Array, owner_id: int = RulesScript.PLAYER_FACTION) -> Dictionary:

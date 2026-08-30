@@ -111,14 +111,14 @@ authorized while the Gameplay Refactor track is active.
 
 ### Active Track: Gameplay Refactor
 
-**Current gate:** `P0-DA5 Current-main Human North-Star Gate`
+**Current gate:** `P0-DA5B Playtest NO-GO Remediation`
 
 **Minimum eligible runtime source:** `f2e4270`
 
-**Decision:** **READY FOR INDEPENDENT HUMAN SESSION / NO-GO UNTIL EVIDENCE**
+**Decision:** **NO-GO / REMEDIATION IMPLEMENTED LOCALLY / NEW RC AUDIT REQUIRED / P1 LOCKED**
 
 **Checkpoint:**
-[`cardfront_refactor_checkpoints/P0-DA5_current_main_human_north_star.md`](cardfront_refactor_checkpoints/P0-DA5_current_main_human_north_star.md)
+[`cardfront_refactor_checkpoints/P0-DA5B_playtest_no_go_remediation.md`](cardfront_refactor_checkpoints/P0-DA5B_playtest_no_go_remediation.md)
 
 P0-DA1 found material drift at `144b57f`. P0-DA2 batches restored the live
 Support Capture authority, retired the Stronghold numeric consumer, restored
@@ -128,17 +128,23 @@ CI-enumerated runners, parse/import, performance, and log evidence to the
 pushed RC `f2e4270`; all three active workflows are green on both that RC and
 the later documentation tip `72871f2`.
 
-The only remaining P0 evidence is a newly source-bound independent human
-North-Star session. The implementation agent cannot self-certify route and
-Support comprehension, Core fallback playability, combat-versus-control role,
-Draft Preview continuity, live pacing, or fair chance.
+The first source-bound product-owner session on `4b240fb` found a live pooled
+`CombatImpact` duplicate-parent ERROR and five experience failures: misleading
+50/50 top-bar semantics, stationary/opaque creature action, no selected-upgrade
+review, weak building causality, and imperceptible rarity/late power. The
+product owner locked remediation `1A 2A 3A 4A 5A`.
 
-**Only allowed next step:** run the DA5 source-binding launcher with an
-independent, initially unbriefed tester against a clean pushed `main`, complete
-all seven real-runtime scenarios, and record GO / NO-GO evidence. If GO, batch
-6 may create the final current-main P0 seal. If NO-GO, route only the observed
-failure back to its owning P0 contract. Preserve accepted art assets; do not
-begin P1, balance expansion, or another art family.
+DA5B is implemented locally: pooled VFX reuse/teardown is clean, the top bar is
+independent absolute chamber HP, selected upgrades are reopenable, creatures
+show action/hold intent, building events identify their source/outcome, and
+rarity has whole-card hierarchy plus deterministic mid/late quality floors.
+The 162-match B1 probe moved weak Rare picks into a strong but non-automatic
+range while converging hero rates near 50%.
+
+**Only allowed next step:** review and deliver DA5B as one new RC after explicit
+commit/push authorization, then bind clean remote CI, an error-free live long
+session, screenshots, and the independent initially unbriefed DA5 rerun to that
+same RC. Preserve accepted art assets; do not begin P1 or another art family.
 
 ## 3. Current Product Direction / 当前产品方向
 
@@ -229,7 +235,7 @@ The normal run uses `core_tactics`, exactly eighteen upgrades:
 | Repair Units / 维修单位 | Common | Summons two 1-HP, movement-1, three-round repair units. |
 | Fire-Control Beacon / 火控信标 | Uncommon | Fixed-slot 5-HP L1–L3 tower; guides 6/8/10 shots and later maintains a scout. |
 | Interceptor Tower / 拦截塔 | Uncommon | Fixed-slot 4-HP L1–L3 tower; intercepts 2/3/3 standards; L3 counterfires. |
-| Building Volley / 建筑齐射 | Rare | Powered towers fire 2/3/4 standards; combined shot cap 32. |
+| Building Volley / 建筑齐射 | Rare | Powered towers fire 4/6/8 standards; combined shot cap 32. |
 | Heavy Charge / 重型装药 | Rare | First qualifying tower contact adds structure/area pressure; no direct chamber damage. |
 | Armored Guard / 装甲护卫 | Uncommon | Summons one permanent 4-HP armored projectile blocker. |
 | Sapper Unit / 掘城单位 | Uncommon | Summons one permanent 3-HP armored demolition unit; self-destructs on attack. |
@@ -297,6 +303,8 @@ Formal production authority:
 | 2026-08-28 | P0-DA2 batch 3: Offer/View Level projection restored + no-deck-inflation evidence | `current_level`/`next_level` derive from Selected Level only; `applied_upgrade_counts` never impersonates Level; player-facing level copy (RC 09B4) remains out of scope |
 | 2026-08-28 | P0-DA4 current-main RC convergence complete at `f2e4270` | 161/161 suites CI-enumerated (3/3 workflows green), parse/import clean, dark-corner runners repaired; next = independent human North-Star session, then final seal |
 | 2026-08-29 | P0-DA5 current-main human gate protocol prepared | clean-main/source/engine binding launcher; two-phase unbriefed + hosted protocol; independent human evidence still missing, so P0 remains NO-GO |
+| 2026-08-29 | P0-DA5 product-owner playtest NO-GO; remediation `1A 2A 3A 4A 5A` locked | live pooled-impact ERROR; truthful HP, creature intent, selected-upgrade drawer, building causality, rarity/late-power remediation authorized; P1 remains locked |
+| 2026-08-30 | P0-DA5B remediation implemented locally; new RC audit required | 148/148 Headless runners clean after fixture leak repair; B1 162-match hero rates 49.07%/50.93%/50.00%; desktop+narrow deterministic captures clean; commit/push, remote CI, long live replay, and independent DA5 rerun remain |
 
 Generated captures under `artifacts/` are local review evidence unless a
 checkpoint explicitly admits them. They are not automatically release assets.

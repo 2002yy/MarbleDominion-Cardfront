@@ -103,6 +103,7 @@ func _test_direction_controller_lane_angles() -> void:
 	controller.set_lane_split(0.3)
 	var allocs2: Array = controller.get_lane_allocations(10)
 	_assert.that(int(allocs2[1].shot_count) > int(allocs2[0].shot_count), "controller: 0.3 ratio should give right more shots")
+	controller.free()
 
 
 func _test_direction_controller_priority_target() -> void:
@@ -122,6 +123,7 @@ func _test_direction_controller_priority_target() -> void:
 	_assert.that(has_priority, "priority: at least one allocation should have priority target")
 	controller.clear_priority_target()
 	_assert.that(not controller.has_priority_target(), "priority: should clear target")
+	controller.free()
 
 
 func _test_command_point_spend() -> void:

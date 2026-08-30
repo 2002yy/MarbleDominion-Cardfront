@@ -21,6 +21,7 @@ func spawn_repair_units_at(owner_id: int, cells: Array) -> Array:
 		)
 		if creature == null:
 			continue
+		_set_action_feedback(creature, "下轮行动")
 		spawned.append(creature)
 		runtime.entity_spawned.emit(
 			creature.entity_id,
@@ -47,6 +48,7 @@ func spawn_armored_guard_at(owner_id: int, cell: Vector2i):
 		-1
 	)
 	if guard != null:
+		_set_action_feedback(guard, "下轮行动")
 		runtime.entity_spawned.emit(guard.entity_id, guard.entity_kind, guard.owner_id, guard.cell)
 	runtime._mark_visuals_dirty()
 	return guard
@@ -67,6 +69,7 @@ func spawn_sapper_unit_at(owner_id: int, cell: Vector2i):
 		-1
 	)
 	if sapper != null:
+		_set_action_feedback(sapper, "下轮行动")
 		runtime.entity_spawned.emit(sapper.entity_id, sapper.entity_kind, sapper.owner_id, sapper.cell)
 	runtime._mark_visuals_dirty()
 	return sapper

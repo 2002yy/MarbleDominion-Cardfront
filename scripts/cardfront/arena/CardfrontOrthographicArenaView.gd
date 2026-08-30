@@ -138,10 +138,12 @@ var _bullet_rims: Dictionary = {}
 var _projectile_trails_visible: bool = true
 var _combat_effects: Array = []
 var _combat_effect_pool: Array[MeshInstance3D] = []
+var _building_feedbacks: Array = []
 var _impact_mesh: SphereMesh = null
 var _impact_material_template: StandardMaterial3D = null
 var _teardown_prepared: bool = false
 const IMPACT_POOL_CAP: int = 24
+const BUILDING_FEEDBACK_SECONDS: float = 0.95
 var _faction_materials: Dictionary = {}
 var _aim_mesh := ImmediateMesh.new()
 var _aim_material: StandardMaterial3D
@@ -218,6 +220,14 @@ func prepare_for_teardown() -> void:
 	_disconnect_entity_runtime()
 	_disconnect_support_presentation_source()
 	_disconnect_deployment_zone_source()
+	for pooled_node in _combat_effect_pool:
+		if pooled_node != null and is_instance_valid(pooled_node):
+			pooled_node.free()
+	_combat_effect_pool.clear()
+	_combat_effects.clear()
+	_building_feedbacks.clear()
+	_impact_mesh = null
+	_impact_material_template = null
 	if world_viewport != null and is_instance_valid(world_viewport):
 		world_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 		world_viewport.world_3d = null
@@ -625,6 +635,16 @@ func get_formal_tower_counter_flash_count_for_test(entity_id: String) -> int:
 	return proxy.find_children("CounterMuzzleFlash*", "MeshInstance3D", true, false).size()
 
 
+func get_formal_tower_last_feedback_for_test(entity_id: String) -> String:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	return str(proxy.get_meta("last_building_feedback", "")) if proxy != null and is_instance_valid(proxy) else ""
+
+
+func get_formal_tower_feedback_event_count_for_test(entity_id: String) -> int:
+	var proxy: Node3D = _entity_proxies.get(entity_id, null)
+	return int(proxy.get_meta("building_feedback_event_count", 0)) if proxy != null and is_instance_valid(proxy) else 0
+
+
 func get_formal_tower_status_core_visible_for_test(entity_id: String) -> bool:
 	var proxy: Node3D = _entity_proxies.get(entity_id, null)
 	if proxy == null or not is_instance_valid(proxy):
@@ -911,6 +931,7 @@ func _process(delta: float) -> void:
 		_fortify_sync_timer = FORTIFY_SYNC_INTERVAL
 		_sync_fortifications()
 	_update_combat_effects(delta)
+	_update_building_feedbacks(delta)
 	_sync_aim_guide()
 
 
@@ -2930,9 +2951,9 @@ func _build_entity_hp_bar(proxy: Node3D, entity, owner_color: Color) -> void:
 	status.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	status.no_depth_test = true
 	status.font = ThemeDB.fallback_font
-	status.font_size = 18
-	status.outline_size = 6
-	status.pixel_size = 0.012
+	status.font_size = 24
+	status.outline_size = 8
+	status.pixel_size = 0.018
 	status.position = Vector3(0.0, 2.74, 0.0)
 	status.modulate = owner_color.lightened(0.28)
 	status.visible = false
@@ -2954,7 +2975,8 @@ func _sync_entity_readability(entity) -> void:
 			backing.visible = show_hp
 	var status: Label3D = _entity_status_labels.get(entity_id, null)
 	if status != null and is_instance_valid(status):
-		status.visible = not bool(entity.can_act())
+		var has_action_feedback := str(entity.metadata.get("action_feedback", "")) != ""
+		status.visible = has_action_feedback or not bool(entity.can_act())
 		status.text = CombatReadabilityScript.entity_status_text(entity) if status.visible else ""
 		status.modulate = Color(0.58, 0.62, 0.66) if not bool(entity.powered) else Color.WHITE
 	var proxy: Node3D = _entity_proxies.get(entity_id, null)
@@ -3307,6 +3329,7 @@ func _connect_entity_runtime() -> void:
 		"tower_power_changed": "_on_tower_power_changed",
 		"tower_level_changed": "_on_tower_level_changed",
 		"tower_counter_fired": "_on_tower_counter_fired",
+		"building_volley_fired": "_on_building_volley_fired",
 		"heavy_charge_exploded": "_on_heavy_charge_exploded",
 	}
 	for signal_name in bindings.keys():
@@ -3326,6 +3349,7 @@ func _disconnect_entity_runtime() -> void:
 		"tower_power_changed": "_on_tower_power_changed",
 		"tower_level_changed": "_on_tower_level_changed",
 		"tower_counter_fired": "_on_tower_counter_fired",
+		"building_volley_fired": "_on_building_volley_fired",
 		"heavy_charge_exploded": "_on_heavy_charge_exploded",
 	}
 	for signal_name in bindings.keys():
@@ -3338,7 +3362,9 @@ func _disconnect_entity_runtime() -> void:
 
 func _on_entity_contact_resolved(result: Dictionary) -> void:
 	if bool(result.get("intercepted", false)):
-		_pulse_formal_tower_intercept(str(result.get("target_id", "")))
+		var target_id := str(result.get("target_id", ""))
+		_pulse_formal_tower_intercept(target_id)
+		_show_building_feedback(target_id, "intercept", "拦截!", Color(0.38, 0.90, 1.0))
 	var cell: Vector2i = result.get("cell", Vector2i(-1, -1)) as Vector2i
 	if cell.x < 0:
 		return
@@ -3354,15 +3380,17 @@ func _on_projectile_guided(tower_entity_id: String, owner_id: int, _projectile_t
 	var tower = registry.get_entity(tower_entity_id) if registry != null else null
 	if tower != null:
 		_add_combat_effect(tower.cell, _arena_faction_color(owner_id).lightened(0.28), 0.34, 1.25)
+		_show_building_feedback(tower_entity_id, "guidance", "引导", _arena_faction_color(owner_id).lightened(0.35))
 
 
-func _on_tower_power_changed(entity_id: String, _powered: bool) -> void:
+func _on_tower_power_changed(entity_id: String, powered: bool) -> void:
 	if entity_runtime == null:
 		return
 	var registry = entity_runtime.get("registry")
 	var tower = registry.get_entity(entity_id) if registry != null else null
 	if tower != null:
 		_add_combat_effect(tower.cell, Color(0.82, 0.88, 0.92), 0.42, 1.35)
+		_show_building_feedback(entity_id, "power", "供能恢复" if powered else "断电", Color(0.76, 1.0, 0.72) if powered else Color(1.0, 0.42, 0.34))
 
 
 func _on_tower_level_changed(entity_id: String, _owner_id: int, _previous_level: int, new_level: int) -> void:
@@ -3381,6 +3409,7 @@ func _on_tower_level_changed(entity_id: String, _owner_id: int, _previous_level:
 		core.scale = Vector3.ONE * 1.18
 		var core_tween := core.create_tween()
 		core_tween.tween_property(core, "scale", Vector3.ONE, 0.30)
+	_show_building_feedback(entity_id, "upgrade", "升级 L%d" % new_level, Color(1.0, 0.78, 0.26))
 
 
 func _on_tower_counter_fired(entity_id: String, _owner_id: int) -> void:
@@ -3388,6 +3417,7 @@ func _on_tower_counter_fired(entity_id: String, _owner_id: int) -> void:
 	if proxy == null or not is_instance_valid(proxy):
 		return
 	proxy.set_meta("counter_event_count", int(proxy.get_meta("counter_event_count", 0)) + 1)
+	_show_building_feedback(entity_id, "counter", "反击!", Color(1.0, 0.68, 0.18))
 	const RECOIL_DISTANCE := 0.24
 	proxy.set_meta("counter_recoil_distance", RECOIL_DISTANCE)
 	var pivot := proxy.find_child("PIV_Turret", true, false) as Node3D
@@ -3423,6 +3453,16 @@ func _on_tower_counter_fired(entity_id: String, _owner_id: int) -> void:
 	flash_tween.tween_callback(flash.queue_free)
 
 
+func _on_building_volley_fired(_owner_id: int, tower_entity_id: String, shot_count: int) -> void:
+	var tower = null
+	if entity_runtime != null:
+		var registry = entity_runtime.get("registry")
+		tower = registry.get_entity(tower_entity_id) if registry != null else null
+	if tower != null:
+		_add_combat_effect(tower.cell, _arena_faction_color(int(tower.owner_id)).lightened(0.24), 0.44, 1.65, "building_volley")
+	_show_building_feedback(tower_entity_id, "building_volley", "建筑齐射 ×%d" % maxi(1, shot_count), Color(1.0, 0.78, 0.24))
+
+
 func _pulse_formal_tower_intercept(entity_id: String) -> void:
 	var proxy: Node3D = _entity_proxies.get(entity_id, null)
 	if proxy == null or not is_instance_valid(proxy):
@@ -3441,6 +3481,67 @@ func _on_heavy_charge_exploded(owner_id: int, cell: Vector2i, _center_target_id:
 	_add_combat_effect(cell, _arena_faction_color(owner_id).lerp(Color(1.0, 0.44, 0.08), 0.72), 0.72, 3.2, "heavy")
 
 
+func _show_building_feedback(entity_id: String, family: String, text_value: String, color: Color) -> void:
+	var proxy: Node3D = _entity_proxies.get(str(entity_id), null)
+	if proxy == null or not is_instance_valid(proxy):
+		return
+	proxy.set_meta("last_building_feedback", text_value)
+	proxy.set_meta("building_feedback_event_count", int(proxy.get_meta("building_feedback_event_count", 0)) + 1)
+	var key := "%s:%s" % [entity_id, family]
+	for raw_feedback in _building_feedbacks:
+		var feedback: Dictionary = raw_feedback as Dictionary
+		if str(feedback.get("key", "")) != key:
+			continue
+		var existing_label = feedback.get("node", null)
+		if existing_label == null or not is_instance_valid(existing_label):
+			continue
+		feedback["remaining"] = BUILDING_FEEDBACK_SECONDS
+		feedback["count"] = int(feedback.get("count", 1)) + 1
+		existing_label.text = "%s ×%d" % [text_value, int(feedback.get("count", 1))]
+		existing_label.modulate = color
+		return
+	var label := Label3D.new()
+	label.name = "BuildingFeedback_%s" % family
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.font = ThemeDB.fallback_font
+	label.font_size = 36
+	label.outline_size = 10
+	label.pixel_size = 0.018
+	label.position = Vector3(0.0, 3.15, 0.0)
+	label.modulate = color
+	label.text = text_value
+	proxy.add_child(label)
+	_building_feedbacks.append({
+		"key": key,
+		"node": label,
+		"remaining": BUILDING_FEEDBACK_SECONDS,
+		"total": BUILDING_FEEDBACK_SECONDS,
+		"count": 1,
+	})
+
+
+func _update_building_feedbacks(delta: float) -> void:
+	for index in range(_building_feedbacks.size() - 1, -1, -1):
+		var feedback: Dictionary = _building_feedbacks[index] as Dictionary
+		var label = feedback.get("node", null)
+		if label == null or not is_instance_valid(label):
+			_building_feedbacks.remove_at(index)
+			continue
+		var remaining := maxf(0.0, float(feedback.get("remaining", 0.0)) - maxf(0.0, delta))
+		feedback["remaining"] = remaining
+		if remaining <= 0.0:
+			label.queue_free()
+			_building_feedbacks.remove_at(index)
+			continue
+		var total := maxf(0.05, float(feedback.get("total", BUILDING_FEEDBACK_SECONDS)))
+		var progress := 1.0 - remaining / total
+		label.position.y = 3.15 + progress * 0.72
+		var color: Color = label.modulate
+		color.a = minf(1.0, remaining / 0.24)
+		label.modulate = color
+
+
 func _add_combat_effect(cell: Vector2i, color: Color, duration: float, max_scale: float, family: String = "impact") -> void:
 	if world_root == null:
 		return
@@ -3457,7 +3558,11 @@ func _add_combat_effect(cell: Vector2i, color: Color, duration: float, max_scale
 		return
 	effect.position = _cell_to_world(cell, TILE_HEIGHT + 0.34)
 	var material: StandardMaterial3D = effect.get_meta("material")
-	world_root.add_child(effect)
+	var current_parent := effect.get_parent()
+	if current_parent != null and current_parent != world_root:
+		current_parent.remove_child(effect)
+	if effect.get_parent() == null:
+		world_root.add_child(effect)
 	effect.visible = true
 	_combat_effects.append({
 		"node": effect,
@@ -3507,6 +3612,9 @@ func _release_impact_node(node: MeshInstance3D) -> void:
 	if node == null or not is_instance_valid(node):
 		return
 	if _combat_effect_pool.size() < IMPACT_POOL_CAP:
+		var current_parent := node.get_parent()
+		if current_parent != null:
+			current_parent.remove_child(node)
 		node.visible = false
 		node.scale = Vector3.ONE
 		_combat_effect_pool.append(node)

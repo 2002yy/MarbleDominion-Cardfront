@@ -158,7 +158,7 @@ static func _apply_territory_pressure_style(leader_label: Label, score_counts: D
 	var total := player_count + ai_count + neutral_count
 	if total <= 0:
 		return
-	leader_label.text = "领土  %d%% · 中立 %d%% · %d%%" % [
+	leader_label.text = "领土  蓝 %d%% · 中立 %d%% · 红 %d%%" % [
 		int(round(float(player_count) * 100.0 / float(total))),
 		int(round(float(neutral_count) * 100.0 / float(total))),
 		int(round(float(ai_count) * 100.0 / float(total))),
@@ -166,6 +166,71 @@ static func _apply_territory_pressure_style(leader_label: Label, score_counts: D
 	leader_label.add_theme_color_override("font_color", Color(0.78, 0.82, 0.74, 0.88))
 	leader_label.add_theme_font_size_override("font_size", 11)
 	leader_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+
+
+static func update_cardfront_hq_bar(hp_status: Dictionary, top_bar_segments: Dictionary, top_bar_labels: Dictionary, top_bar_name_labels: Dictionary, top_bar_total_width: float, is_mobile_layout: bool) -> void:
+	if top_bar_segments.size() == 0:
+		return
+	var faction_specs: Array[Dictionary] = [
+		{"segment_id": GameConfig.Faction.BLUE, "owner_id": CardfrontRulesScript.PLAYER_FACTION, "name": "蓝方指挥室", "mirror": false},
+		{"segment_id": GameConfig.Faction.RED, "owner_id": CardfrontRulesScript.AI_FACTION, "name": "红方指挥室", "mirror": true},
+	]
+	for hidden_id in [GameConfig.Faction.GREEN, GameConfig.Faction.YELLOW]:
+		if top_bar_segments.has(hidden_id):
+			(top_bar_segments[hidden_id] as Panel).visible = false
+		if top_bar_labels.has(hidden_id):
+			(top_bar_labels[hidden_id] as Label).visible = false
+		if top_bar_name_labels.has(hidden_id):
+			(top_bar_name_labels[hidden_id] as Label).visible = false
+
+	var usable_width := maxf(100.0, top_bar_total_width - 6.0)
+	var segment_width := usable_width * 0.5
+	for index in range(faction_specs.size()):
+		var spec: Dictionary = faction_specs[index]
+		var segment_id: int = int(spec.segment_id)
+		if not top_bar_segments.has(segment_id):
+			continue
+		var segment := top_bar_segments[segment_id] as Panel
+		var owner_id: int = int(spec.owner_id)
+		var status: Dictionary = hp_status.get(owner_id, {}) as Dictionary
+		var max_health := maxi(1, int(status.get("max", 1)))
+		var health := clampi(int(status.get("current", max_health)), 0, max_health)
+		var ratio := clampf(float(health) / float(max_health), 0.0, 1.0)
+		segment.visible = true
+		segment.position.x = 3.0 + float(index) * segment_width
+		segment.size.x = segment_width
+
+		var fill := segment.get_node("Fill") as ColorRect
+		var fill_width := maxf(0.0, (segment.size.x - 4.0) * ratio)
+		fill.position = Vector2(segment.size.x - 2.0 - fill_width if bool(spec.mirror) else 2.0, 2.0)
+		fill.size = Vector2(fill_width, maxf(0.0, segment.size.y - 4.0))
+		fill.color = _owner_display_color(owner_id)
+		var gloss := segment.get_node("Gloss") as ColorRect
+		gloss.position = Vector2(fill.position.x, 2.0)
+		gloss.size = Vector2(fill_width, maxf(5.0, (segment.size.y - 4.0) * 0.42))
+		var bottom_shadow := segment.get_node("BottomShadow") as ColorRect
+		bottom_shadow.position = Vector2(fill.position.x, maxf(4.0, segment.size.y - 8.0))
+		bottom_shadow.size = Vector2(fill_width, 4.0)
+		if segment.has_node("Separator"):
+			var separator := segment.get_node("Separator") as ColorRect
+			separator.position = Vector2(segment.size.x - 2.0 if index == 0 else 0.0, 0.0)
+			separator.size = Vector2(2.0, segment.size.y)
+
+		var value_label := top_bar_labels[segment_id] as Label
+		var name_label := top_bar_name_labels[segment_id] as Label
+		value_label.visible = true
+		name_label.visible = true
+		value_label.text = "%d/%d" % [health, max_health]
+		name_label.text = str(spec.name)
+		name_label.add_theme_color_override("font_color", _owner_display_color(owner_id).lightened(0.45))
+		name_label.position = Vector2(4.0, 1.0)
+		name_label.size = Vector2(segment.size.x - 8.0, 12.0)
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+		name_label.add_theme_font_size_override("font_size", 9 if is_mobile_layout else 10)
+		value_label.position = Vector2(0.0, 10.0)
+		value_label.size = Vector2(segment.size.x, 20.0)
+		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+		value_label.add_theme_font_size_override("font_size", 15 if is_mobile_layout else 16)
 
 static func update_top_bar(counts: Dictionary, top_bar_segments: Dictionary, top_bar_labels: Dictionary, top_bar_name_labels: Dictionary, top_bar_total_width: float, is_mobile_layout: bool) -> void:
 	if top_bar_segments.size() == 0:

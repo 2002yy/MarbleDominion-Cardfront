@@ -35,6 +35,7 @@ func spawn_repair_units(owner_id: int, amount: int = 2) -> Array:
 		)
 		if creature == null:
 			continue
+		_set_action_feedback(creature, "下轮行动")
 		spawned.append(creature)
 		runtime.entity_spawned.emit(
 			creature.entity_id,
@@ -60,6 +61,7 @@ func spawn_armored_guard(owner_id: int):
 		-1
 	)
 	if guard != null:
+		_set_action_feedback(guard, "下轮行动")
 		runtime.entity_spawned.emit(guard.entity_id, guard.entity_kind, guard.owner_id, guard.cell)
 	runtime._mark_visuals_dirty()
 	return guard
@@ -79,6 +81,7 @@ func spawn_sapper_unit(owner_id: int):
 		-1
 	)
 	if sapper != null:
+		_set_action_feedback(sapper, "下轮行动")
 		runtime.entity_spawned.emit(sapper.entity_id, sapper.entity_kind, sapper.owner_id, sapper.cell)
 	runtime._mark_visuals_dirty()
 	return sapper
@@ -111,25 +114,79 @@ func run_actions() -> void:
 func run_repair_unit(creature) -> void:
 	var target: Vector2i = find_nearest_repairable_frontline(creature.owner_id, creature.cell)
 	if target.x < 0:
+		_run_repair_frontline_support(creature)
 		return
 	if runtime._manhattan_distance(creature.cell, target) <= 1 and repair_frontline_cell(creature, target):
+		_set_action_feedback(creature, "修复前线 +1")
 		return
 	var next_cell: Vector2i = next_owned_step_toward(creature.owner_id, creature.cell, target)
 	if next_cell != creature.cell:
 		runtime.registry.move_entity(creature.entity_id, next_cell)
+		_set_action_feedback(creature, "前往受损前线")
+	else:
+		_set_action_feedback(creature, "前线路径受阻")
+
+
+func _run_repair_frontline_support(creature) -> void:
+	var target: Vector2i = find_nearest_guard_post(creature.owner_id, creature.cell)
+	if target.x < 0:
+		_set_action_feedback(creature, "等待争夺前线")
+		return
+	if target == creature.cell:
+		_set_action_feedback(creature, "支援争夺")
+		return
+	var next_cell: Vector2i = next_owned_step_toward(creature.owner_id, creature.cell, target)
+	if next_cell != creature.cell:
+		runtime.registry.move_entity(creature.entity_id, next_cell)
+		_set_action_feedback(creature, "支援前线")
+	else:
+		_set_action_feedback(creature, "支援路径受阻")
 
 
 func run_armored_guard(creature) -> void:
 	var target: Vector2i = find_nearest_guard_post(creature.owner_id, creature.cell)
-	if target.x < 0 or target == creature.cell:
+	if target.x < 0:
+		_set_action_feedback(creature, "等待争夺前线")
+		return
+	if target == creature.cell:
+		_set_action_feedback(creature, "驻守前线")
 		return
 	var next_cell: Vector2i = next_owned_step_toward(creature.owner_id, creature.cell, target)
 	if next_cell != creature.cell:
 		runtime.registry.move_entity(creature.entity_id, next_cell)
+		_set_action_feedback(creature, "向前线推进")
+	else:
+		_set_action_feedback(creature, "驻守路径受阻")
 
 
 func run_sapper_unit(creature) -> void:
+	var target: Dictionary = runtime._sapper_system.find_target(creature.owner_id, creature.cell)
+	var before_cell: Vector2i = creature.cell
 	runtime._sapper_system.run(creature)
+	if creature == null or not creature.is_alive():
+		return
+	if target.is_empty():
+		_set_action_feedback(creature, "等待爆破目标")
+	elif creature.cell != before_cell:
+		_set_action_feedback(creature, "向%s推进" % _sapper_target_name(str(target.get("kind", ""))))
+	else:
+		_set_action_feedback(creature, "等待闸门 / 路径受阻")
+
+
+func _set_action_feedback(creature, text: String) -> void:
+	if creature == null:
+		return
+	creature.metadata["action_feedback"] = str(text)
+
+
+func _sapper_target_name(target_kind: String) -> String:
+	match target_kind:
+		"defense_tower":
+			return "敌塔"
+		"territory_defense":
+			return "防线"
+		_:
+			return "指挥室"
 
 
 func repair_frontline_cell(creature, cell: Vector2i) -> bool:

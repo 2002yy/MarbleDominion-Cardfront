@@ -157,14 +157,22 @@ static func _score_entity_upgrade(
 		"increase_building_volley":
 			var towers: int = maxi(0, int(model.get("owned_defense_tower_count", 0)))
 			var level: int = clampi(int(model.get("building_volley_level", 0)), 0, 3)
-			result["persistent_value"] = float(towers * (level + 2)) * 6.0 * minf(8.0, float(context.get("rounds_remaining", 8))) / 8.0
+			var next_level := mini(3, level + maxi(1, int(params.get("amount", 1))))
+			var shots_per_tower := UpgradeManifestScript.building_volley_shots_per_tower(next_level)
+			result["persistent_value"] = float(towers * shots_per_tower) * 6.0 * minf(8.0, float(context.get("rounds_remaining", 8))) / 8.0
 			result["reason"] = "powered_tower_volley_growth"
 		"arm_heavy_charge":
 			# A confirmed enemy tower creates one immediate demolition window:
 			# center damage, nearby entity damage, and a defense-layer break. Its
 			# proxy value must compete with repeatable construction cards so this
 			# approved fortification-deck answer is actually selectable.
-			result["immediate_value"] = 28.0 + float(enemy_towers) * 44.0
+			result["immediate_value"] = (
+				28.0
+				+ float(enemy_towers) * 44.0
+				+ float(maxi(0, int(params.get("center_bonus", 0)))) * 4.0
+				+ float(maxi(0, int(params.get("entity_damage", 0)))) * 3.0
+				+ float(maxi(0, int(params.get("defense_damage", 0)))) * 3.0
+			)
 			result["reason"] = "enemy_tower_demolition_window"
 	result["score"] = float(result["persistent_value"]) + float(result["immediate_value"])
 	return result

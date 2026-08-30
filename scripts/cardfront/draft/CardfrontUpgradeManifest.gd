@@ -23,6 +23,7 @@ const UPGRADE_HEAVY_CHARGE: String = "heavy_charge"
 const UPGRADE_ARMORED_GUARD: String = "armored_guard"
 const UPGRADE_SAPPER_UNIT: String = "sapper_unit"
 const UPGRADE_GATE_COLOSSUS: String = "gate_colossus"
+const BUILDING_VOLLEY_SHOTS_BY_LEVEL: Array[int] = [0, 4, 6, 8]
 
 # Historical A/B0 baseline. Keep this list available for audit fixtures.
 const CORE_UPGRADE_IDS: Array[String] = [
@@ -213,7 +214,7 @@ const DEFINITIONS := {
 		"tags": ["tower", "volley", "building", "growth"],
 		"effect_id": "increase_building_volley",
 		"params": {"amount": 1},
-		"description": "每座正常供电的己方塔每轮沿所在路线发射标准弹；每塔依次为 2、3、4 发",
+		"description": "每座正常供电的己方塔每轮沿所在路线发射标准弹；每塔依次为 4、6、8 发",
 	},
 	UPGRADE_HEAVY_CHARGE: {
 		"id": UPGRADE_HEAVY_CHARGE,
@@ -224,13 +225,13 @@ const DEFINITIONS := {
 		"tags": ["explosion", "tower", "siege", "anti_building"],
 		"effect_id": "arm_heavy_charge",
 		"params": {
-			"center_bonus": 1,
+			"center_bonus": 2,
 			"entity_radius": 2,
-			"entity_damage": 1,
+			"entity_damage": 2,
 			"defense_radius": 1,
-			"defense_damage": 1,
+			"defense_damage": 2,
 		},
-		"description": "下一轮首次命中敌塔时爆炸：中心塔额外受 1 伤害，半径 2 内敌方实体受 1 伤害，半径 1 内敌方格失去 1 层防守",
+		"description": "下一轮首次命中敌塔时爆炸：中心塔额外受 2 伤害，半径 2 内敌方实体受 2 伤害，半径 1 内敌方格失去 2 层防守",
 	},
 	UPGRADE_ARMORED_GUARD: {
 		"id": UPGRADE_ARMORED_GUARD,
@@ -298,6 +299,10 @@ static func get_all_upgrade_ids() -> Array:
 
 static func get_definition(upgrade_id: String) -> Dictionary:
 	return (DEFINITIONS.get(str(upgrade_id), {}) as Dictionary).duplicate(true)
+
+
+static func building_volley_shots_per_tower(level: int) -> int:
+	return BUILDING_VOLLEY_SHOTS_BY_LEVEL[clampi(int(level), 0, BUILDING_VOLLEY_SHOTS_BY_LEVEL.size() - 1)]
 
 
 static func has_upgrade(upgrade_id: String) -> bool:

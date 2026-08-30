@@ -112,13 +112,13 @@ func _test_building_volley(fixture: Dictionary) -> void:
 	var plan = VolleyResolverScript.new().build_and_consume(state)
 	runtime.decorate_volley_plan(RulesScript.PLAYER_FACTION, plan)
 	_assert.eq(plan.building_sources.size(), 2, "building volley: both powered towers become independent sources")
-	_assert.eq(plan.building_shot_count, 4, "building volley: level one adds two shots per powered tower")
+	_assert.eq(plan.building_shot_count, 8, "building volley: level one adds four shots per powered tower")
 	_assert.eq(plan.shot_count, state.base_volley_count, "building volley: command chamber volley is not multiplied")
 
 	var first_tower = runtime._owner_towers(RulesScript.PLAYER_FACTION)[0]
 	first_tower.powered = false
 	runtime.decorate_volley_plan(RulesScript.PLAYER_FACTION, plan)
-	_assert.eq(plan.building_shot_count, 2, "building volley: unpowered towers do not fire")
+	_assert.eq(plan.building_shot_count, 4, "building volley: unpowered towers do not fire")
 
 
 func _test_heavy_charge(fixture: Dictionary) -> void:
@@ -155,8 +155,8 @@ func _test_heavy_charge(fixture: Dictionary) -> void:
 			"heavy_charge_pool": pool,
 		}
 	)
-	_assert.eq(enemy_tower.hp, enemy_tower.max_hp - 2, "heavy charge: normal hit plus one center damage")
-	_assert.eq(splash_target.hp, 1, "heavy charge: nearby enemy entity takes one splash damage")
+	_assert.eq(enemy_tower.hp, enemy_tower.max_hp - 3, "heavy charge: normal hit plus two center damage")
+	_assert.eq(splash_target.hp, 0, "heavy charge: nearby enemy entity takes two splash damage")
 	_assert.eq(fortify.get_fortify_stack(adjacent_cell), 0, "heavy charge: nearby enemy defense loses one layer")
 	_assert.eq(int(pool.get("remaining", -1)), 0, "heavy charge: first enemy tower contact consumes the shared charge")
 	_assert.that(result.has("heavy_charge"), "heavy charge: contact result reports explosion details")
@@ -169,7 +169,7 @@ func _test_heavy_charge(fixture: Dictionary) -> void:
 			"heavy_charge_pool": pool,
 		}
 	)
-	_assert.eq(enemy_tower.hp, enemy_tower.max_hp - 3, "heavy charge: later contacts deal only normal projectile damage")
+	_assert.eq(enemy_tower.hp, enemy_tower.max_hp - 4, "heavy charge: later contacts deal only normal projectile damage")
 
 
 func _test_map_route_slots(fixture: Dictionary) -> void:

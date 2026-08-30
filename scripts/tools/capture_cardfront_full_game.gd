@@ -6,6 +6,7 @@ const CreatureStateScript = preload(
 )
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
+const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
 
 
 func _initialize() -> void:
@@ -60,6 +61,9 @@ func _capture() -> void:
 		quit(2)
 		return
 	_populate_entities(entity_runtime)
+	var da5b_capture := OS.get_environment("CARDFRONT_CAPTURE_DA5B").strip_edges().to_lower() == "on"
+	if da5b_capture:
+		_prepare_da5b_capture(main, entity_runtime)
 	if main.runtime.orthographic_arena_view != null:
 		main.runtime.orthographic_arena_view.mark_tiles_dirty()
 	if OS.get_environment("CARDFRONT_CAPTURE_ROLE_DEBUG").strip_edges().to_lower() == "on":
@@ -68,11 +72,23 @@ func _capture() -> void:
 	_fire_preview_volleys(main)
 	await create_timer(0.32).timeout
 	await _flush(4)
+	if da5b_capture:
+		_trigger_da5b_building_feedback(entity_runtime)
+		await create_timer(0.12).timeout
+		await _flush(2)
 
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://artifacts"))
 	var battle_error := _save_root_png(
 		"res://artifacts/cardfront-full-battle-%s.png" % capture_label
 	)
+	var history_error: int = OK
+	if da5b_capture and main.runtime.three_choice_panel != null:
+		main.runtime.three_choice_panel._toggle_upgrade_history()
+		await _flush(2)
+		history_error = _save_root_png(
+			"res://artifacts/cardfront-upgrade-history-%s.png" % capture_label
+		)
+		main.runtime.three_choice_panel._close_upgrade_history()
 	var scale_errors: Array[int] = []
 	for scale_value in [1.0, 1.12, 1.20]:
 		main.runtime.orthographic_arena_view.set_presentation_scale(scale_value, false)
@@ -94,7 +110,10 @@ func _capture() -> void:
 		"res://artifacts/cardfront-full-draft-%s.png" % capture_label
 	)
 	var scale_capture_ok: bool = scale_errors.all(func(error_code: int) -> bool: return error_code == OK)
-	quit(0 if battle_error == OK and draft_error == OK and scale_capture_ok else 1)
+	var exit_code := 0 if battle_error == OK and history_error == OK and draft_error == OK and scale_capture_ok else 1
+	main.queue_free()
+	await _flush(5)
+	quit(exit_code)
 
 
 func _capture_extent() -> Vector2i:
@@ -164,6 +183,44 @@ func _populate_entities(entity_runtime) -> void:
 	)
 	entity_runtime._neutral_creature_system.spawn(RulesScript.PLAYER_FACTION)
 	entity_runtime._mark_visuals_dirty()
+
+
+func _prepare_da5b_capture(main, entity_runtime) -> void:
+	var director = main.runtime.round_director
+	var state = director.get_run_state(RulesScript.PLAYER_FACTION)
+	entity_runtime.sync_run_state_entity_summary(state)
+	for upgrade_id in [
+		UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5,
+		UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5,
+		UpgradeManifestScript.UPGRADE_ATTACK_LEVEL_PLUS_1,
+		UpgradeManifestScript.UPGRADE_FIRE_CONTROL_BEACON,
+		UpgradeManifestScript.UPGRADE_BUILDING_VOLLEY,
+		UpgradeManifestScript.UPGRADE_RARITY_PLUS_1,
+	]:
+		director._upgrade_resolver.resolve(state, str(upgrade_id))
+
+
+func _trigger_da5b_building_feedback(entity_runtime) -> void:
+	var player_interceptor = entity_runtime._find_owner_tower(
+		RulesScript.PLAYER_FACTION,
+		entity_runtime.TOWER_INTERCEPTOR
+	)
+	var player_beacon = entity_runtime._find_owner_tower(
+		RulesScript.PLAYER_FACTION,
+		entity_runtime.TOWER_FIRE_CONTROL_BEACON
+	)
+	if player_interceptor != null:
+		entity_runtime.entity_contact_resolved.emit({
+			"target_id": str(player_interceptor.entity_id),
+			"intercepted": true,
+			"cell": player_interceptor.cell,
+		})
+	if player_beacon != null:
+		entity_runtime.building_volley_fired.emit(
+			RulesScript.PLAYER_FACTION,
+			str(player_beacon.entity_id),
+			UpgradeManifestScript.building_volley_shots_per_tower(1)
+		)
 
 
 func _spawn_scout(entity_runtime, owner_id: int, entity_id: String) -> void:

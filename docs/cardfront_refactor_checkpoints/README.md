@@ -32,10 +32,10 @@ Decision authority:
 
 Current checkpoint:
 
-[`P0-DA5_current_main_human_north_star.md`](P0-DA5_current_main_human_north_star.md)
+[`P0-DA5B_playtest_no_go_remediation.md`](P0-DA5B_playtest_no_go_remediation.md)
 
-Current decision: **READY FOR INDEPENDENT HUMAN SESSION / NO-GO UNTIL
-EVIDENCE**
+Current decision: **NO-GO / REMEDIATION IMPLEMENTED LOCALLY / NEW RC AUDIT
+REQUIRED / P1 LOCKED**
 
 (`P0-DA4_current_main_rc_convergence.md` binds the completed automated rerun to
 `f2e4270`. `P0-DA1_current_main_directed_drift_audit.md` recorded the founding
@@ -44,12 +44,10 @@ rerun batches 1–4 are complete and bound to `f2e4270`.)
 
 Only allowed next Gameplay Refactor step:
 
-> Run the DA5 protocol and source-binding launcher with an independent,
-> initially unbriefed tester against a clean pushed `main`. Record
-> comprehension, pacing, fair-chance, and all seven real-runtime scenarios.
-> The old `def95b5` session does not transfer. Batch 6 records the final
-> current-main GO / NO-GO seal from that evidence; P1 stays locked until the
-> seal.
+> Review and deliver the bounded `1A 2A 3A 4A 5A` DA5B remediation as one new
+> RC after explicit commit/push authorization. Converge clean CI, long-session
+> logs, and screenshots on that pushed RC, then rerun DA5 with an independent
+> initially unbriefed tester. P1 stays locked until the final seal.
 
 Do not:
 
