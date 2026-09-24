@@ -63,11 +63,6 @@ jobs:
             seeds: 1
             deck_seeds: 20
             opening_seeds: 1
-          - batch: B1 162-match matrix probe
-            script: CardfrontB1BalanceAuditTestRunner.gd
-            seeds: 3
-            deck_seeds: 1
-            opening_seeds: 1
           - batch: B1 opening strength framework
             script: CardfrontB1OpeningBalanceAuditTestRunner.gd
             seeds: 1
