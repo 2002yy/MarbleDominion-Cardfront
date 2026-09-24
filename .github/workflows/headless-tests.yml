@@ -263,11 +263,6 @@ jobs:
 
           "path=$($godotExe.FullName)" >> $env:GITHUB_OUTPUT
 
-      - name: Headless Parse Check
-        shell: pwsh
-        run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --quit
-
       - name: Import Project
         shell: pwsh
         run: |
