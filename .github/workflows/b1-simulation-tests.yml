@@ -33,6 +33,16 @@ jobs:
             seeds: 1
             deck_seeds: 1
             opening_seeds: 1
+          - batch: B1 battlefield entity foundation
+            script: CardfrontBattlefieldEntityFoundationTestRunner.gd
+            seeds: 1
+            deck_seeds: 1
+            opening_seeds: 1
+          - batch: B1 battlefield entity runtime
+            script: CardfrontBattlefieldEntityRuntimeTestRunner.gd
+            seeds: 1
+            deck_seeds: 1
+            opening_seeds: 1
           - batch: B1 selectable decks and AI
             script: CardfrontUpgradeDeckTestRunner.gd
             seeds: 1
