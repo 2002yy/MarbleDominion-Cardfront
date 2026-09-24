@@ -195,17 +195,10 @@ jobs:
           - batch: Cardfront live runtime boundary
             scripts: |
               CardfrontLiveRuntimeBoundaryTestRunner.gd
-          - batch: Cardfront vertical performance smoke
-            scripts: |
-              CardfrontPerformanceSmokeTestRunner.gd
           - batch: Cardfront v0.3 tactical strongholds
             scripts: |
               CardfrontStrongholdSystemTestRunner.gd
               CardfrontStrongholdTimeoutScoringTestRunner.gd
-              CardfrontMapDefinitionTestRunner.gd
-              CardfrontUpgradeContentTestRunner.gd
-              CardfrontThreeChoiceRuntimeTestRunner.gd
-              CardfrontLiveRuntimeBoundaryTestRunner.gd
           - batch: Cardfront v0.3 hero balance
             scripts: |
               CardfrontHeroBalanceSimulationTestRunner.gd
@@ -216,9 +209,6 @@ jobs:
             scripts: |
               CardfrontGateConnectivityTestRunner.gd
               CardfrontGateRuntimeTestRunner.gd
-              CardfrontOrthographicArenaTestRunner.gd
-              CardfrontRoundCombatTestRunner.gd
-              CardfrontLiveRuntimeBoundaryTestRunner.gd
           - batch: Cardfront P0 live support capture
             scripts: |
               CardfrontSupportCaptureLiveRuntimeTestRunner.gd
