@@ -106,11 +106,9 @@ jobs:
           if (-not $godotExe) { $godotExe = Get-ChildItem -Path $extractPath -Recurse -Filter "*.exe" | Select-Object -First 1 }
           if (-not $godotExe) { throw "Godot executable not found." }
           "path=$($godotExe.FullName)" >> $env:GITHUB_OUTPUT
-      - name: Parse and import
+      - name: Import Project
         shell: pwsh
         run: |
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --quit
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
           exit $LASTEXITCODE
       - name: Run ${{ matrix.batch }}
