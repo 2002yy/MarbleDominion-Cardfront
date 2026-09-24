@@ -5,6 +5,11 @@ on:
     branches:
       - main
   pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".github/workflows/headless-tests.yml"
+      - ".github/workflows/b1-simulation-tests.yml"
 
 concurrency:
   group: shared-upgrade-ai-${{ github.event.pull_request.head.ref || github.ref_name }}
