@@ -14,10 +14,13 @@ concurrency:
   group: b1-simulation-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
+env:
+  GODOT_VERSION: 4.7.1-stable
+  GODOT_ARCHIVE: Godot_v4.7.1-stable_win64.exe.zip
+
 jobs:
   b1-simulation:
     name: ${{ matrix.batch }}
-    if: matrix.heavy != true || github.event_name != 'pull_request'
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -78,15 +81,7 @@ jobs:
             seeds: 1
             deck_seeds: 1
             opening_seeds: 20
-          - batch: B1 5400 directional audit
-            script: CardfrontB1BalanceAuditTestRunner.gd
-            seeds: 100
-            deck_seeds: 1
-            opening_seeds: 1
-            heavy: true
     env:
-      GODOT_VERSION: 4.7.1-stable
-      GODOT_ARCHIVE: Godot_v4.7.1-stable_win64.exe.zip
       CARDFRONT_B1_AUDIT_SEEDS: ${{ matrix.seeds }}
       CARDFRONT_B1_DECK_AUDIT_SEEDS: ${{ matrix.deck_seeds }}
       CARDFRONT_B1_OPENING_AUDIT_SEEDS: ${{ matrix.opening_seeds }}
@@ -156,5 +151,66 @@ jobs:
         with:
           name: cardfront-b1-opening-${{ matrix.opening_seeds }}-${{ github.run_id }}
           path: artifacts/cardfront-b1-opening-balance.*
+          if-no-files-found: error
+          retention-days: 14
+
+  b1-heavy-audit:
+    name: B1 5400 directional audit
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    env:
+      CARDFRONT_B1_AUDIT_SEEDS: 100
+      CARDFRONT_B1_DECK_AUDIT_SEEDS: 1
+      CARDFRONT_B1_OPENING_AUDIT_SEEDS: 1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Godot archive
+        uses: actions/cache@v4
+        with:
+          path: .godot-cache
+          key: godot-${{ runner.os }}-${{ env.GODOT_VERSION }}-${{ env.GODOT_ARCHIVE }}
+      - name: Download Godot
+        id: godot
+        shell: pwsh
+        run: |
+          $cacheDir = Join-Path "${{ github.workspace }}" ".godot-cache"
+          New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+          $archiveUrl = "https://github.com/godotengine/godot/releases/download/$env:GODOT_VERSION/$env:GODOT_ARCHIVE"
+          $archivePath = Join-Path $cacheDir $env:GODOT_ARCHIVE
+          $extractPath = Join-Path $env:RUNNER_TEMP "godot"
+          if (-not (Test-Path $archivePath)) { Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath }
+          Expand-Archive -Path $archivePath -DestinationPath $extractPath -Force
+          $godotExe = Get-ChildItem -Path $extractPath -Recurse -Filter "*console.exe" | Select-Object -First 1
+          if (-not $godotExe) { $godotExe = Get-ChildItem -Path $extractPath -Recurse -Filter "*.exe" | Select-Object -First 1 }
+          if (-not $godotExe) { throw "Godot executable not found." }
+          "path=$($godotExe.FullName)" >> $env:GITHUB_OUTPUT
+      - name: Import Project
+        shell: pwsh
+        run: |
+          & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
+          exit $LASTEXITCODE
+      - name: Run 5400 directional audit
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "${{ github.workspace }}/artifacts/test-logs" -Force | Out-Null
+          $logPath = "${{ github.workspace }}/artifacts/test-logs/CardfrontB1BalanceAuditTestRunner-100-1.log"
+          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/CardfrontB1BalanceAuditTestRunner.gd" *>&1 | Tee-Object -FilePath $logPath
+          $exitCode = $LASTEXITCODE
+          Get-Content -Path $logPath -Tail 300
+          exit $exitCode
+      - name: Upload heavy audit log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b1-heavy-log-${{ github.run_id }}
+          path: artifacts/test-logs/CardfrontB1BalanceAuditTestRunner-100-1.log
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload B1 heavy balance artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardfront-b1-audit-100-${{ github.run_id }}
+          path: artifacts/cardfront-b1-balance-audit.*
           if-no-files-found: error
           retention-days: 14
