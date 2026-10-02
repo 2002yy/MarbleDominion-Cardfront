@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
 concurrency:
   group: headless-tests-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
@@ -18,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - batch: Baseline runtime
+          - batch: Baseline and map economy
             scripts: |
               SmokeTestRunner.gd
               IntegrationTestRunner.gd
@@ -32,8 +35,6 @@ jobs:
               RestorePlanTestRunner.gd
               EndToEndContinueMainTestRunner.gd
               SettingsAndResultTestRunner.gd
-          - batch: Cardfront map economy
-            scripts: |
               RegionMapTestRunner.gd
               CardfrontMapDefinitionTestRunner.gd
               CardfrontMapReadabilityTestRunner.gd
@@ -44,7 +45,7 @@ jobs:
               EconomyDebugPanelSceneTestRunner.gd
               CardfrontVisualPolicyTestRunner.gd
               VisualPressurePolicyTestRunner.gd
-          - batch: Cardfront cards effects fire
+          - batch: Cards effects and fire
             scripts: |
               FortifyLayerTestRunner.gd
               CardfrontContentValidationTestRunner.gd
@@ -58,7 +59,7 @@ jobs:
               CardfrontFireDirectorTurretIntegrationTestRunner.gd
               CardfrontFireDirectorSignalTestRunner.gd
               CardfrontControlChamberDecouplingTestRunner.gd
-          - batch: Cardfront devices visuals schema
+          - batch: Devices visuals and interaction
             scripts: |
               DeviceCoreTestRunner.gd
               AbsorberCoreLiteTestRunner.gd
@@ -75,8 +76,6 @@ jobs:
               CardfrontBattlefieldClickSelectionTestRunner.gd
               CardfrontRegionControlBlockTestRunner.gd
               CardfrontCardArtBindingTestRunner.gd
-          - batch: Cardfront interaction feedback
-            scripts: |
               CardfrontCardDetailPopupTestRunner.gd
               CardfrontCardFeedbackTestRunner.gd
               CardfrontDisabledCardFeedbackTestRunner.gd
@@ -86,7 +85,7 @@ jobs:
               CardfrontCardHoverMotionTestRunner.gd
               CardfrontHandPanelGuidanceTestRunner.gd
               CardfrontTargetPreviewGuidanceTestRunner.gd
-          - batch: Cardfront UI art and debug
+          - batch: UI art debug and performance
             scripts: |
               CardfrontDebugPanelToggleTestRunner.gd
               CardfrontUiAssetRegistryTestRunner.gd
@@ -98,10 +97,8 @@ jobs:
               CardfrontRegionInfoPanelVisibilityTestRunner.gd
               CardfrontTopResourceBarMinimalTestRunner.gd
               CardfrontMatchFlowClarityTestRunner.gd
-          - batch: Cardfront performance budget
-            scripts: |
               CardfrontPerformanceSmokeTestRunner.gd
-          - batch: Cardfront v0.3 core loop
+          - batch: Core loop and arena
             scripts: |
               CardfrontUpgradeContentTestRunner.gd
               CardfrontMatchPhaseControllerTestRunner.gd
@@ -116,8 +113,6 @@ jobs:
               CardfrontEntityAnimationTestRunner.gd
               CardfrontEntityRuntimeBoundaryTestRunner.gd
               CardfrontEntityPresentationFeedbackTestRunner.gd
-          - batch: Cardfront v0.3 arena spike
-            scripts: |
               CardfrontArenaLayoutTestRunner.gd
               CardfrontGridExtentMatrixTestRunner.gd
               CardfrontDirectionControllerTestRunner.gd
@@ -127,7 +122,7 @@ jobs:
               CardfrontEnvironmentAssetTestRunner.gd
               CardfrontEighteenCardReadabilityTestRunner.gd
               CardfrontPrematchFlowTestRunner.gd
-          - batch: Cardfront v0.3 three-choice slice
+          - batch: Draft and support identity
             scripts: |
               CardfrontDraftGeometrySnapshotTestRunner.gd
               CardfrontDraftLifecycleSnapshotTestRunner.gd
@@ -136,11 +131,7 @@ jobs:
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontModeSmokeTestRunner.gd
-          - batch: Cardfront P0 golden baseline
-            scripts: |
               CardfrontP0GoldenBaselineTestRunner.gd
-          - batch: Cardfront P0 support identity
-            scripts: |
               CardfrontSupportIdentityTestRunner.gd
               CardfrontSupportStateTestRunner.gd
               CardfrontSupportPresentationContractTestRunner.gd
@@ -148,7 +139,7 @@ jobs:
               CardfrontDeploymentZoneVisualizationTestRunner.gd
               CardfrontSupportRegionMapperTestRunner.gd
               CardfrontSupportMapMetadataTestRunner.gd
-          - batch: Cardfront P0 support capture pure
+          - batch: Support capture graph and routes
             scripts: |
               CardfrontSupportCaptureContributorTestRunner.gd
               CardfrontSupportCaptureProfileTestRunner.gd
@@ -157,17 +148,13 @@ jobs:
               CardfrontSupportCaptureOccupancyAdapterTestRunner.gd
               CardfrontSupportCaptureTerritoryPrototypeTestRunner.gd
               CardfrontSupportSnapshotContractTestRunner.gd
-          - batch: Cardfront P0 support graph pure
-            scripts: |
               CardfrontSupportTopologyContractTestRunner.gd
               CardfrontSupportTopologyValidatorTestRunner.gd
               CardfrontSupportConnectivityResolverTestRunner.gd
               CardfrontSupportConnectivityTruthTestRunner.gd
               CardfrontSupportConnectivityCacheTestRunner.gd
-          - batch: Cardfront P0 route semantics pure
-            scripts: |
               CardfrontRouteSemanticsTestRunner.gd
-          - batch: Cardfront P0 deployment pure
+          - batch: Deployment and tactical foundations
             scripts: |
               CardfrontDeploymentContractTestRunner.gd
               CardfrontDeploymentCoreFallbackTestRunner.gd
@@ -177,52 +164,28 @@ jobs:
               CardfrontDeploymentAiParityTestRunner.gd
               CardfrontDeploymentAutomaticSpawnTestRunner.gd
               CardfrontDeploymentFourConsumerParityTestRunner.gd
-          - batch: Cardfront hero numeric foundation
-            scripts: |
               CardfrontHeroNumericFoundationTestRunner.gd
-          - batch: Cardfront card pool rebalance
-            scripts: |
               CardfrontCardPoolRebalanceTestRunner.gd
-          - batch: Cardfront territory defense
-            scripts: |
               CardfrontTerritoryDefenseTestRunner.gd
-          - batch: Cardfront engineer contact front
-            scripts: |
               CardfrontEngineerContactFrontTestRunner.gd
-          - batch: Cardfront vertical slice feedback
-            scripts: |
               CardfrontVerticalSliceFeedbackTestRunner.gd
-          - batch: Cardfront live runtime boundary
-            scripts: |
               CardfrontLiveRuntimeBoundaryTestRunner.gd
-          - batch: Cardfront v0.3 tactical strongholds
+          - batch: Balance and gate audits
             scripts: |
               CardfrontStrongholdSystemTestRunner.gd
               CardfrontStrongholdTimeoutScoringTestRunner.gd
-          - batch: Cardfront v0.3 hero balance
-            scripts: |
               CardfrontHeroBalanceSimulationTestRunner.gd
-          - batch: Cardfront v0.3 parity balance audit
-            scripts: |
               CardfrontParityBalanceAuditTestRunner.gd
-          - batch: Cardfront v0.3 gate connectivity
-            scripts: |
               CardfrontGateConnectivityTestRunner.gd
               CardfrontGateRuntimeTestRunner.gd
-          - batch: Cardfront P0 live support capture
+          - batch: Live AI offers and formal assets
             scripts: |
               CardfrontSupportCaptureLiveRuntimeTestRunner.gd
-          - batch: Cardfront P0 AI observation boundary
-            scripts: |
               CardfrontAiObservationBoundaryTestRunner.gd
               CardfrontAiObservationProjectionTestRunner.gd
               CardfrontAiCommanderObservationTestRunner.gd
-          - batch: Cardfront P0 offer level projection
-            scripts: |
               CardfrontOfferLevelProjectionTestRunner.gd
               CardfrontNoDeckInflationTestRunner.gd
-          - batch: Cardfront formal assets
-            scripts: |
               CardfrontFormalAssetValidatorTestRunner.gd
               CardfrontFormalTowerAssetTestRunner.gd
               CardfrontLaneAllocationTestRunner.gd
@@ -267,6 +230,7 @@ jobs:
         shell: pwsh
         run: |
           & "${{ steps.godot.outputs.path }}" --headless --editor --audio-driver Dummy --path "${{ github.workspace }}" --quit
+          exit $LASTEXITCODE
 
       - name: Run ${{ matrix.batch }}
         shell: pwsh
@@ -278,28 +242,35 @@ jobs:
           $artifactDir = Join-Path "${{ github.workspace }}" "artifacts\headless\${{ strategy.job-index }}"
           New-Item -ItemType Directory -Path $artifactDir -Force | Out-Null
 
+          $failures = @()
           foreach ($script in $scripts) {
             Write-Host "Running $script"
             $logPath = Join-Path $artifactDir ($script + ".log")
             & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/$script" 2>&1 | Tee-Object -FilePath $logPath
             $exitCode = $LASTEXITCODE
             if ($exitCode -ne 0) {
-              exit $exitCode
+              $failures += "$script ($exitCode)"
             }
           }
 
-      - name: Upload headless script logs
-        if: always()
+          if ($failures.Count -gt 0) {
+            throw "Headless failures: $($failures -join ', ')"
+          }
+
+      - name: Upload headless script logs on failure
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: headless-${{ strategy.job-index }}-${{ github.run_id }}
           path: artifacts/headless/**/*.log
           if-no-files-found: warn
+          retention-days: 7
 
       - name: Upload parity balance audit
-        if: always() && matrix.batch == 'Cardfront v0.3 parity balance audit'
+        if: always() && matrix.batch == 'Balance and gate audits'
         uses: actions/upload-artifact@v4
         with:
           name: cardfront-parity-audit-${{ github.run_id }}
           path: artifacts/cardfront-parity-audit.*
           if-no-files-found: error
+          retention-days: 14
