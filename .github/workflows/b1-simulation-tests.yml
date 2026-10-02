@@ -5,6 +5,10 @@ on:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: b1-simulation-${{ github.event.pull_request.head.ref || github.ref_name }}
@@ -13,6 +17,7 @@ concurrency:
 jobs:
   b1-simulation:
     name: ${{ matrix.batch }}
+    if: matrix.heavy != true || github.event_name != 'pull_request'
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -78,6 +83,7 @@ jobs:
             seeds: 100
             deck_seeds: 1
             opening_seeds: 1
+            heavy: true
     env:
       GODOT_VERSION: 4.7.1-stable
       GODOT_ARCHIVE: Godot_v4.7.1-stable_win64.exe.zip
@@ -120,13 +126,14 @@ jobs:
           $exitCode = $LASTEXITCODE
           Get-Content -Path $logPath -Tail 300
           exit $exitCode
-      - name: Upload B1 test log
-        if: always()
+      - name: Upload B1 test log on failure
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: b1-log-${{ matrix.script }}-${{ matrix.seeds }}-${{ matrix.deck_seeds }}-${{ github.run_id }}
           path: artifacts/test-logs/${{ matrix.script }}-${{ matrix.seeds }}-${{ matrix.deck_seeds }}.log
           if-no-files-found: error
+          retention-days: 7
       - name: Upload B1 balance artifact
         if: always() && matrix.script == 'CardfrontB1BalanceAuditTestRunner.gd'
         uses: actions/upload-artifact@v4
@@ -134,6 +141,7 @@ jobs:
           name: cardfront-b1-audit-${{ matrix.seeds }}-${{ github.run_id }}
           path: artifacts/cardfront-b1-balance-audit.*
           if-no-files-found: error
+          retention-days: 14
       - name: Upload B1 deck candidate artifact
         if: always() && matrix.script == 'CardfrontB1DeckCandidateAuditTestRunner.gd'
         uses: actions/upload-artifact@v4
@@ -141,6 +149,7 @@ jobs:
           name: cardfront-b1-deck-candidates-${{ matrix.deck_seeds }}-${{ github.run_id }}
           path: artifacts/cardfront-b1-deck-candidates.*
           if-no-files-found: error
+          retention-days: 14
       - name: Upload B1 opening balance artifact
         if: always() && matrix.script == 'CardfrontB1OpeningBalanceAuditTestRunner.gd'
         uses: actions/upload-artifact@v4
@@ -148,3 +157,4 @@ jobs:
           name: cardfront-b1-opening-${{ matrix.opening_seeds }}-${{ github.run_id }}
           path: artifacts/cardfront-b1-opening-balance.*
           if-no-files-found: error
+          retention-days: 14
