@@ -170,14 +170,18 @@ jobs:
               CardfrontEngineerContactFrontTestRunner.gd
               CardfrontVerticalSliceFeedbackTestRunner.gd
               CardfrontLiveRuntimeBoundaryTestRunner.gd
-          - batch: Balance and gate audits
+          - batch: Stronghold and gate audits
             scripts: |
               CardfrontStrongholdSystemTestRunner.gd
               CardfrontStrongholdTimeoutScoringTestRunner.gd
-              CardfrontHeroBalanceSimulationTestRunner.gd
-              CardfrontParityBalanceAuditTestRunner.gd
               CardfrontGateConnectivityTestRunner.gd
               CardfrontGateRuntimeTestRunner.gd
+          - batch: Historical balance audit
+            scripts: |
+              CardfrontHeroBalanceSimulationTestRunner.gd
+          - batch: Parity balance audit
+            scripts: |
+              CardfrontParityBalanceAuditTestRunner.gd
           - batch: Live AI offers and formal assets
             scripts: |
               CardfrontSupportCaptureLiveRuntimeTestRunner.gd
@@ -267,7 +271,7 @@ jobs:
           retention-days: 7
 
       - name: Upload parity balance audit
-        if: always() && matrix.batch == 'Balance and gate audits'
+        if: always() && matrix.batch == 'Parity balance audit'
         uses: actions/upload-artifact@v4
         with:
           name: cardfront-parity-audit-${{ github.run_id }}
