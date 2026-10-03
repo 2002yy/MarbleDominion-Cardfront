@@ -4,7 +4,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - scripts/**
+      - assets/**
+      - project.godot
+      - .github/workflows/headless-tests.yml
   pull_request:
+    paths:
+      - scripts/**
+      - assets/**
+      - project.godot
+      - .github/workflows/headless-tests.yml
 
 permissions:
   contents: read
