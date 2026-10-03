@@ -36,65 +36,32 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - batch: B1 route gate defense unit
-            script: CardfrontB1SimulationTestRunner.gd
-            seeds: 1
-            deck_seeds: 1
-            opening_seeds: 1
-          - batch: B1 live simulation model contract
-            script: CardfrontB1ModelConsistencyTestRunner.gd
-            seeds: 1
-            deck_seeds: 1
-            opening_seeds: 1
-          - batch: B1 typed projectile runtime
-            script: CardfrontProjectileTypeCombatTestRunner.gd
-            seeds: 1
-            deck_seeds: 1
-            opening_seeds: 1
-          - batch: B1 battlefield entity foundation
-            script: CardfrontBattlefieldEntityFoundationTestRunner.gd
-            seeds: 1
-            deck_seeds: 1
-            opening_seeds: 1
-          - batch: B1 battlefield entity runtime
-            script: CardfrontBattlefieldEntityRuntimeTestRunner.gd
-            seeds: 1
-            deck_seeds: 1
-            opening_seeds: 1
-          - batch: B1 selectable decks and AI
-            script: CardfrontUpgradeDeckTestRunner.gd
-            seeds: 1
-            deck_seeds: 1
-            opening_seeds: 1
-          - batch: B1 hero candidate audit
-            script: CardfrontB1HeroCandidateAuditTestRunner.gd
-            seeds: 1
-            deck_seeds: 1
-            opening_seeds: 1
-          - batch: B1 hero finalist audit
-            script: CardfrontB1HeroFinalistAuditTestRunner.gd
-            seeds: 1
-            deck_seeds: 1
-            opening_seeds: 1
-          - batch: B1 selectable deck candidates
-            script: CardfrontB1DeckCandidateAuditTestRunner.gd
-            seeds: 1
-            deck_seeds: 20
-            opening_seeds: 1
-          - batch: B1 162-match matrix probe
-            script: CardfrontB1BalanceAuditTestRunner.gd
-            seeds: 3
-            deck_seeds: 1
-            opening_seeds: 1
-          - batch: B1 opening strength framework
-            script: CardfrontB1OpeningBalanceAuditTestRunner.gd
-            seeds: 1
-            deck_seeds: 1
-            opening_seeds: 20
+          - id: core-runtime
+            batch: B1 core runtime contracts
+            cases: |
+              CardfrontB1SimulationTestRunner.gd|1|1|1
+              CardfrontB1ModelConsistencyTestRunner.gd|1|1|1
+              CardfrontProjectileTypeCombatTestRunner.gd|1|1|1
+              CardfrontBattlefieldEntityFoundationTestRunner.gd|1|1|1
+              CardfrontBattlefieldEntityRuntimeTestRunner.gd|1|1|1
+              CardfrontUpgradeDeckTestRunner.gd|1|1|1
+          - id: hero-audits
+            batch: B1 hero candidate and finalist audits
+            cases: |
+              CardfrontB1HeroCandidateAuditTestRunner.gd|1|1|1
+              CardfrontB1HeroFinalistAuditTestRunner.gd|1|1|1
+          - id: deck-candidates
+            batch: B1 selectable deck candidates
+            cases: |
+              CardfrontB1DeckCandidateAuditTestRunner.gd|1|tier|1
+          - id: balance-opening
+            batch: B1 balance and opening audits
+            cases: |
+              CardfrontB1BalanceAuditTestRunner.gd|3|1|1
+              CardfrontB1OpeningBalanceAuditTestRunner.gd|1|1|tier
     env:
-      CARDFRONT_B1_AUDIT_SEEDS: ${{ matrix.seeds }}
-      CARDFRONT_B1_DECK_AUDIT_SEEDS: ${{ matrix.deck_seeds }}
-      CARDFRONT_B1_OPENING_AUDIT_SEEDS: ${{ matrix.opening_seeds }}
+      B1_DECK_TIER_SEEDS: ${{ github.event_name == 'pull_request' && '5' || github.event_name == 'workflow_dispatch' && '50' || '20' }}
+      B1_OPENING_TIER_SEEDS: ${{ github.event_name == 'pull_request' && '5' || github.event_name == 'workflow_dispatch' && '50' || '20' }}
     steps:
       - uses: actions/checkout@v4
       - name: Cache Godot archive
@@ -126,40 +93,64 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path "${{ github.workspace }}/artifacts/test-logs" -Force | Out-Null
-          $logPath = "${{ github.workspace }}/artifacts/test-logs/${{ matrix.script }}-${{ matrix.seeds }}-${{ matrix.deck_seeds }}.log"
-          & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/${{ matrix.script }}" *>&1 | Tee-Object -FilePath $logPath
-          $exitCode = $LASTEXITCODE
-          Get-Content -Path $logPath -Tail 300
-          exit $exitCode
-      - name: Upload B1 test log on failure
+          $failures = @()
+          $cases = @"
+          ${{ matrix.cases }}
+          "@ -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+
+          foreach ($case in $cases) {
+            $parts = $case -split '\|'
+            if ($parts.Count -ne 4) { throw "Invalid B1 case: $case" }
+
+            $script = $parts[0]
+            $seeds = [int]$parts[1]
+            $deckSeeds = if ($parts[2] -eq 'tier') { [int]$env:B1_DECK_TIER_SEEDS } else { [int]$parts[2] }
+            $openingSeeds = if ($parts[3] -eq 'tier') { [int]$env:B1_OPENING_TIER_SEEDS } else { [int]$parts[3] }
+
+            $env:CARDFRONT_B1_AUDIT_SEEDS = "$seeds"
+            $env:CARDFRONT_B1_DECK_AUDIT_SEEDS = "$deckSeeds"
+            $env:CARDFRONT_B1_OPENING_AUDIT_SEEDS = "$openingSeeds"
+
+            $logPath = "${{ github.workspace }}/artifacts/test-logs/$script-$seeds-$deckSeeds-$openingSeeds.log"
+            Write-Host "Running $script seeds=$seeds deck=$deckSeeds opening=$openingSeeds"
+            & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/$script" *>&1 | Tee-Object -FilePath $logPath
+            $exitCode = $LASTEXITCODE
+            Get-Content -Path $logPath -Tail 300
+            if ($exitCode -ne 0) { $failures += "$script ($exitCode)" }
+          }
+
+          if ($failures.Count -gt 0) {
+            throw "B1 failures: $($failures -join ', ')"
+          }
+      - name: Upload B1 test logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: b1-log-${{ matrix.script }}-${{ matrix.seeds }}-${{ matrix.deck_seeds }}-${{ github.run_id }}
-          path: artifacts/test-logs/${{ matrix.script }}-${{ matrix.seeds }}-${{ matrix.deck_seeds }}.log
+          name: b1-log-${{ matrix.id }}-${{ github.run_id }}
+          path: artifacts/test-logs/*.log
           if-no-files-found: error
           retention-days: 7
       - name: Upload B1 balance artifact
-        if: always() && matrix.script == 'CardfrontB1BalanceAuditTestRunner.gd'
+        if: always() && matrix.id == 'balance-opening'
         uses: actions/upload-artifact@v4
         with:
-          name: cardfront-b1-audit-${{ matrix.seeds }}-${{ github.run_id }}
+          name: cardfront-b1-audit-3-${{ github.run_id }}
           path: artifacts/cardfront-b1-balance-audit.*
           if-no-files-found: error
           retention-days: 14
       - name: Upload B1 deck candidate artifact
-        if: always() && matrix.script == 'CardfrontB1DeckCandidateAuditTestRunner.gd'
+        if: always() && matrix.id == 'deck-candidates'
         uses: actions/upload-artifact@v4
         with:
-          name: cardfront-b1-deck-candidates-${{ matrix.deck_seeds }}-${{ github.run_id }}
+          name: cardfront-b1-deck-candidates-${{ env.B1_DECK_TIER_SEEDS }}-${{ github.run_id }}
           path: artifacts/cardfront-b1-deck-candidates.*
           if-no-files-found: error
           retention-days: 14
       - name: Upload B1 opening balance artifact
-        if: always() && matrix.script == 'CardfrontB1OpeningBalanceAuditTestRunner.gd'
+        if: always() && matrix.id == 'balance-opening'
         uses: actions/upload-artifact@v4
         with:
-          name: cardfront-b1-opening-${{ matrix.opening_seeds }}-${{ github.run_id }}
+          name: cardfront-b1-opening-${{ env.B1_OPENING_TIER_SEEDS }}-${{ github.run_id }}
           path: artifacts/cardfront-b1-opening-balance.*
           if-no-files-found: error
           retention-days: 14
