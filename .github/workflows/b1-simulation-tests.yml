@@ -4,7 +4,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - scripts/**
+      - assets/**
+      - project.godot
+      - .github/workflows/b1-simulation-tests.yml
   pull_request:
+    paths:
+      - scripts/**
+      - assets/**
+      - project.godot
+      - .github/workflows/b1-simulation-tests.yml
   workflow_dispatch:
 
 permissions:
