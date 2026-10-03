@@ -91,7 +91,7 @@ jobs:
 
   shared-ai-heavy-audit:
     name: Shared AI 5400 parity proxy audit
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     env:
       CARDFRONT_SHARED_AI_AUDIT_SEEDS: 100

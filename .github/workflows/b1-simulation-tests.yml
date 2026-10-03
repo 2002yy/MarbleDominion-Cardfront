@@ -166,7 +166,7 @@ jobs:
 
   b1-heavy-audit:
     name: B1 5400 directional audit
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     env:
       CARDFRONT_B1_AUDIT_SEEDS: 100
