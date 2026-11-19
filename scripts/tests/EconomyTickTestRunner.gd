@@ -2,7 +2,6 @@ extends SceneTree
 
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
-const CardfrontEconomyDebugPanelScript = preload("res://scripts/cardfront/economy/CardfrontEconomyDebugPanel.gd")
 const CardfrontResourceStateScript = preload("res://scripts/cardfront/economy/CardfrontResourceState.gd")
 const EconomyTickSystemScript = preload("res://scripts/cardfront/economy/EconomyTickSystem.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
@@ -184,18 +183,6 @@ func _test_tick_once_and_owner_grid_safety() -> void:
 	_assert.eq(state.snapshot(), {"energy": 4, "parts": 2}, "economy tick: repeated tick_once should settle stable yield again")
 	_assert.eq(JSON.stringify(bf.owners), before_owners, "economy tick: tick system should not change battlefield owners")
 
-	var panel = CardfrontEconomyDebugPanelScript.new()
-	get_root().add_child(panel)
-	panel.setup(region_map, bf, system, {CardfrontRulesScript.PLAYER_FACTION: state}, GameConfig.GAME_MODE_CARDFRONT)
-	var debug_text: String = panel.get_debug_text()
-	_assert.that(debug_text.find("能量：4") >= 0, "economy debug panel: should show current player energy")
-	_assert.that(debug_text.find("零件：2") >= 0, "economy debug panel: should show current player parts")
-	_assert.that(debug_text.find("本tick") >= 0, "economy debug panel: should show compact tick summary")
-	_assert.that(debug_text.find("+2 能量/s") >= 0, "economy debug panel: should show ENERGY tier 2 output")
-	_assert.that(debug_text.find("+1 零件/s") >= 0, "economy debug panel: should show FACTORY tier 1 output")
-	_assert.that(_count_region_lines(debug_text) <= 3, "economy debug panel: compact mode should not list every region")
-
-	TestFixtures.cleanup_node(panel)
 	TestFixtures.cleanup_node(system)
 	TestFixtures.cleanup_node(bf)
 
@@ -213,7 +200,6 @@ func _test_main_economy_integration() -> void:
 	main._start_game(40, true, false)
 	await process_frame
 	_assert.eq(main.runtime.economy_system, null, "main integration: old BallWar mode should not create economy_system")
-	_assert.eq(main.runtime.economy_debug_panel, null, "main integration: old BallWar mode should not create economy debug panel")
 	_assert.that(main.runtime.resource_states.is_empty(), "main integration: old BallWar mode should not create resource states")
 
 	main._cleanup_game_layer()
@@ -222,12 +208,8 @@ func _test_main_economy_integration() -> void:
 	main._start_game(40, true, false)
 	await process_frame
 	_assert.that(main.runtime.economy_system != null and is_instance_valid(main.runtime.economy_system), "main integration: Cardfront should create economy_system")
-	_assert.that(main.runtime.economy_debug_panel != null and is_instance_valid(main.runtime.economy_debug_panel), "main integration: Cardfront should create economy debug panel")
-	_assert.that(main.runtime.economy_debug_panel.visible, "main integration: Cardfront economy debug panel should be visible")
 	_assert.that(main.runtime.resource_states.has(CardfrontRulesScript.PLAYER_FACTION), "main integration: Cardfront should create player resource state")
 	_assert.that(main.runtime.resource_states.has(CardfrontRulesScript.AI_FACTION), "main integration: Cardfront should create AI resource state")
-	_assert.that(main.runtime.economy_debug_panel.get_debug_text().find("能量：0") >= 0, "main integration: economy debug panel should show player energy")
-	_assert.that(main.runtime.economy_debug_panel.get_debug_text().find("本tick") >= 0, "main integration: economy debug panel should show compact tick summary")
 	var player_state = main.runtime.resource_states.get(CardfrontRulesScript.PLAYER_FACTION, null)
 	for _tick in range(10):
 		main.runtime.economy_system.tick_once()
@@ -276,11 +258,3 @@ func _assign_region_owner_percent(owners: Array, cells: Array, owner_id: int, pe
 		var cell: Vector2i = cells[index]
 		if index < owner_count:
 			owners[cell.x][cell.y] = owner_id
-
-
-func _count_region_lines(text: String) -> int:
-	var total: int = 0
-	for line in text.split("\n"):
-		if String(line).find("#") >= 0:
-			total += 1
-	return total

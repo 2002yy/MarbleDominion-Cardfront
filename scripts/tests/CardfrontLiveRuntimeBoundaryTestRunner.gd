@@ -44,7 +44,6 @@ func _test_default_cardfront_uses_live_runtime_only() -> void:
 		"target bias": runtime.target_bias_system,
 		"devices": runtime.device_layer,
 		"legacy target preview": runtime.target_preview_layer,
-		"debug panel": runtime.debug_action_panel,
 		"fixed hand": runtime.hand_panel,
 		"resource minibar": runtime.top_resource_bar,
 		"legacy feedback bus": runtime.cardfront_feedback_bus,

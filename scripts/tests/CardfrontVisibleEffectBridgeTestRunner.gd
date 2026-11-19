@@ -26,9 +26,6 @@ func _run() -> void:
 	_test_absorber_absorb_triggers_vfx()
 	_test_engineer_repair_triggers_vfx()
 	_test_beacon_convert_triggers_vfx()
-	_test_debug_panel_creates_absorber_device()
-	_test_debug_panel_creates_engineer_device()
-	_test_debug_panel_creates_beacon_device()
 	_test_old_ballwar_no_vfx_effect()
 
 	GameConfig.reset_runtime_defaults()
@@ -161,68 +158,6 @@ func _test_beacon_convert_triggers_vfx() -> void:
 	TestFixtures.cleanup_node(system)
 	TestFixtures.cleanup_node(device_layer)
 	TestFixtures.cleanup_node(vfx)
-	TestFixtures.cleanup_node(bf)
-
-
-func _test_debug_panel_creates_absorber_device() -> void:
-	var bf = _make_bf(12)
-	var device_layer = _make_device_layer(bf)
-	var CardPlaySystemScript = load("res://scripts/cardfront/cards/CardPlaySystem.gd")
-	var card_system = CardPlaySystemScript.new()
-
-	var DebugPanelScript = load("res://scripts/cardfront/debug/CardfrontDebugActionPanel.gd")
-	var panel = DebugPanelScript.new()
-	panel.setup(device_layer, card_system, bf, null, GameConfig.GAME_MODE_CARDFRONT)
-	get_root().add_child(panel)
-
-	panel._place_device(DeviceTypeScript.ABSORBER_CORE)
-	var devices = device_layer.get_all_active_devices()
-	_assert.gte(devices.size(), 1, "bridge: debug panel should place absorber device")
-	if devices.size() > 0:
-		_assert.eq(str(devices[0].device_type), DeviceTypeScript.ABSORBER_CORE, "bridge: placed device should be absorber")
-
-	TestFixtures.cleanup_node(panel)
-	TestFixtures.cleanup_node(device_layer)
-	TestFixtures.cleanup_node(bf)
-
-
-func _test_debug_panel_creates_engineer_device() -> void:
-	var bf = _make_bf(12)
-	var device_layer = _make_device_layer(bf)
-	var CardPlaySystemScript = load("res://scripts/cardfront/cards/CardPlaySystem.gd")
-	var card_system = CardPlaySystemScript.new()
-
-	var DebugPanelScript = load("res://scripts/cardfront/debug/CardfrontDebugActionPanel.gd")
-	var panel = DebugPanelScript.new()
-	panel.setup(device_layer, card_system, bf, null, GameConfig.GAME_MODE_CARDFRONT)
-	get_root().add_child(panel)
-
-	panel._place_device(DeviceTypeScript.ENGINEER_BOT)
-	var devices = device_layer.get_all_active_devices()
-	_assert.gte(devices.size(), 1, "bridge: debug panel should place engineer device")
-
-	TestFixtures.cleanup_node(panel)
-	TestFixtures.cleanup_node(device_layer)
-	TestFixtures.cleanup_node(bf)
-
-
-func _test_debug_panel_creates_beacon_device() -> void:
-	var bf = _make_bf(12)
-	var device_layer = _make_device_layer(bf)
-	var CardPlaySystemScript = load("res://scripts/cardfront/cards/CardPlaySystem.gd")
-	var card_system = CardPlaySystemScript.new()
-
-	var DebugPanelScript = load("res://scripts/cardfront/debug/CardfrontDebugActionPanel.gd")
-	var panel = DebugPanelScript.new()
-	panel.setup(device_layer, card_system, bf, null, GameConfig.GAME_MODE_CARDFRONT)
-	get_root().add_child(panel)
-
-	panel._place_device(DeviceTypeScript.PIONEER_BEACON)
-	var devices = device_layer.get_all_active_devices()
-	_assert.gte(devices.size(), 1, "bridge: debug panel should place beacon device")
-
-	TestFixtures.cleanup_node(panel)
-	TestFixtures.cleanup_node(device_layer)
 	TestFixtures.cleanup_node(bf)
 
 
