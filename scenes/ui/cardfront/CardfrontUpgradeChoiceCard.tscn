@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/cardfront/ui/CardfrontUpgradeChoiceCard.gd" id="1_card"]
 
 [node name="UpgradeChoiceCard" type="Button"]
-custom_minimum_size = Vector2(214, 266)
+custom_minimum_size = Vector2(214, 326)
 mouse_default_cursor_shape = 2
 focus_mode = 0
 text = ""
@@ -102,9 +102,9 @@ visible = false
 layout_mode = 0
 anchor_right = 1.0
 offset_left = 44.0
-offset_top = 226.0
+offset_top = 293.0
 offset_right = -44.0
-offset_bottom = 257.0
+offset_bottom = 321.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)

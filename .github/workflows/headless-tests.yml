@@ -105,7 +105,7 @@ jobs:
               CardfrontPrematchFlowTestRunner.gd
           - batch: Draft and support identity
             scripts: |
-              CardfrontDraftGeometrySnapshotTestRunner.gd
+              CardfrontDraftViewportUsabilityTestRunner.gd
               CardfrontDraftLifecycleSnapshotTestRunner.gd
               CardfrontDraftOfferIndependenceTestRunner.gd
               CardfrontDraftSideRngIsolationTestRunner.gd
