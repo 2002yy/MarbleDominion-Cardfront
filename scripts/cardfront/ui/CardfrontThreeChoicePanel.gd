@@ -106,11 +106,28 @@ func setup(new_director, view_size: Vector2 = Vector2(1120, 720)) -> bool:
 	dimmer.size = view_size
 	peek_chrome.position = Vector2.ZERO
 	peek_chrome.size = view_size
-	choice_shell.position = Vector2((view_size.x - choice_shell.size.x) * 0.5, 116.0)
+	# Keep full card descriptions and the choice controls inside smaller viewports.
+	# The shell remains 944 px wide in design coordinates, scaled only when needed.
+	var available_size: Vector2 = view_size - Vector2(16.0, 16.0)
+	var shell_scale: float = minf(1.0, minf(
+		available_size.x / choice_shell.size.x,
+		available_size.y / choice_shell.size.y
+	))
+	shell_scale = maxf(0.1, shell_scale)
+	choice_shell.scale = Vector2.ONE * shell_scale
+	var displayed_shell_size: Vector2 = choice_shell.size * shell_scale
+	var shell_y: float = (
+		116.0 if 116.0 + displayed_shell_size.y + 8.0 <= view_size.y
+		else maxf(8.0, (view_size.y - displayed_shell_size.y) * 0.5)
+	)
+	choice_shell.position = Vector2((view_size.x - displayed_shell_size.x) * 0.5, shell_y)
 	battle_status.position = Vector2(12.0, 68.0)
 	upgrade_history_chrome.position = Vector2.ZERO
 	upgrade_history_chrome.size = view_size
-	upgrade_history_button.position = Vector2(maxf(8.0, view_size.x - 138.0), 68.0)
+	upgrade_history_button.position = Vector2(
+		maxf(8.0, view_size.x - 138.0),
+		68.0 if shell_y >= 110.0 else maxf(8.0, view_size.y - 44.0)
+	)
 	upgrade_history_drawer.position = Vector2(maxf(8.0, view_size.x - 316.0), 110.0)
 	upgrade_history_drawer.size.y = minf(456.0, maxf(280.0, view_size.y - 122.0))
 	var drawer_bg := upgrade_history_drawer.get_node("Bg") as ColorRect
@@ -276,7 +293,7 @@ func _set_draft_display_mode(mode: String) -> void:
 	_peek_button.text = "返回选择" if is_preview else "查看战场"
 	_peek_button.position = Vector2(
 		clampf(
-			choice_shell.position.x + choice_shell.size.x - _peek_button.size.x - 12.0,
+			choice_shell.position.x + choice_shell.size.x * choice_shell.scale.x - _peek_button.size.x - 12.0,
 			8.0,
 			maxf(8.0, _view_size.x - _peek_button.size.x - 8.0)
 		),
@@ -293,14 +310,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _layout_choice_cards(choice_count: int) -> void:
-	var safe_count: int = clampi(choice_count, 1, 4)
-	var card_width: float = 280.0 if safe_count <= 3 else 214.0
-	var separation: int = 20 if safe_count <= 3 else 13
-	card_box.add_theme_constant_override("separation", separation)
+	card_box.add_theme_constant_override("separation", 20)
 	card_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	for card in _choice_cards:
 		if card != null and is_instance_valid(card):
-			card.custom_minimum_size = Vector2(card_width, 266.0)
+			card.custom_minimum_size = Vector2(280.0, 326.0)
 			card.size = card.custom_minimum_size
 			card.pivot_offset = card.custom_minimum_size * 0.5
 

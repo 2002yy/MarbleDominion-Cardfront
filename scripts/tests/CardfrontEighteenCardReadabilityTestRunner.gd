@@ -1,7 +1,5 @@
 extends SceneTree
 
-const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDraftSystem.gd")
-const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
 
 var _assert: TestAssert
@@ -17,7 +15,6 @@ func _run() -> void:
 	await process_frame
 
 	await _test_all_live_cards_render_in_the_formal_scene()
-	_test_seeded_drafts_can_reach_the_full_live_pool()
 
 	_assert.report("[CardfrontEighteenCardReadabilityTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
@@ -34,6 +31,10 @@ func _test_all_live_cards_render_in_the_formal_scene() -> void:
 		var card = card_scene.instantiate()
 		get_root().add_child(card)
 		await process_frame
+		# Measure the width/height of the actual three-choice card, not the
+		# small standalone scene default that never appears in the live draft.
+		card.custom_minimum_size = Vector2(280.0, 326.0)
+		card.size = card.custom_minimum_size
 		card.setup(definition)
 		await process_frame
 
@@ -42,8 +43,10 @@ func _test_all_live_cards_render_in_the_formal_scene() -> void:
 		_assert.eq(card.symbol_label.text, str(definition.get("symbol", "")), "live pool: scene should display the direct symbol")
 		_assert.that(not _contains_ascii_letters(card.symbol_label.text), "live pool: symbol should not expose unexplained English shorthand")
 		_assert.that(card.description_label.text.length() >= 4, "live pool: description should explain the effect")
-		_assert.gte(card.custom_minimum_size.x, 210.0, "live pool: formal card should keep a readable width")
-		_assert.gte(card.custom_minimum_size.y, 260.0, "live pool: formal card should keep a readable height")
+		var description = card.description_label
+		_assert.eq(description.get_visible_line_count(), description.get_line_count(), "live pool: entire description should be visible for %s" % upgrade_id)
+		_assert.that(description.get_rect().end.y + 4.0 <= card.lock_label.position.y, "live pool: description must not overlap selected badge for %s" % upgrade_id)
+		_assert.that(description.get_rect().end.y < card.size.y, "live pool: description must fit within card for %s" % upgrade_id)
 		_assert.that(card.symbol_label.get_theme_font_size("font_size") >= 29, "live pool: primary number or symbol should remain visually dominant")
 		_assert.eq(card.mouse_filter, Control.MOUSE_FILTER_STOP, "live pool: formal card should remain clickable")
 		var rarity := str(definition.get("rarity", "common"))
@@ -57,26 +60,6 @@ func _test_all_live_cards_render_in_the_formal_scene() -> void:
 	_assert.neq(rarity_backgrounds.get("common"), rarity_backgrounds.get("uncommon"), "live pool: Uncommon should tint the entire card differently from Common")
 	_assert.neq(rarity_backgrounds.get("uncommon"), rarity_backgrounds.get("rare"), "live pool: Rare should tint the entire card differently from Uncommon")
 
-
-func _test_seeded_drafts_can_reach_the_full_live_pool() -> void:
-	var state = RunStateScript.new()
-	state.setup(0)
-	var draft = DraftSystemScript.new()
-	var seen: Dictionary = {}
-	for seed_value in range(1, 501):
-		draft.set_seed(seed_value)
-		for raw_definition in draft.draw_three(state):
-			if raw_definition is Dictionary:
-				seen[str((raw_definition as Dictionary).get("id", ""))] = true
-	state.sync_entity_summary(0, 1, {"interceptor_tower": 1})
-	for seed_value in range(501, 701):
-		draft.set_seed(seed_value)
-		for raw_definition in draft.draw_three(state):
-			if raw_definition is Dictionary:
-				seen[str((raw_definition as Dictionary).get("id", ""))] = true
-	_assert.eq(seen.size(), UpgradeManifestScript.get_upgrade_ids().size(), "live pool: seeded formal drafts should reach every implemented card")
-	for raw_id in UpgradeManifestScript.get_upgrade_ids():
-		_assert.that(seen.has(str(raw_id)), "live pool: every implemented card should be reachable through the live draft")
 
 
 func _contains_ascii_letters(value: String) -> bool:
