@@ -8,11 +8,9 @@ var resource_states: Dictionary = {}
 var economy_system = null
 var last_energy: int = -1
 var last_parts: int = -1
-var _release_mode_override_for_test: int = -1
 
 @onready var _energy_value: Label = $Margin/HBox/EnergyBox/Margin2/Inner/Value
 @onready var _parts_value: Label = $Margin/HBox/PartsBox/Margin2/Inner/Value
-@onready var _debug_hint: Label = $DebugHint
 @onready var _energy_icon: TextureRect = $Margin/HBox/EnergyBox/Margin2/Inner/EnergyIcon
 @onready var _parts_icon: TextureRect = $Margin/HBox/PartsBox/Margin2/Inner/PartsIcon
 @onready var _energy_symbol: Label = $Margin/HBox/EnergyBox/Margin2/Inner/EnergySymbol
@@ -23,11 +21,9 @@ var _release_mode_override_for_test: int = -1
 
 func setup(new_economy_system, new_resource_states: Dictionary, mode_name: String) -> void:
 	_set_mouse_passthrough($Margin)
-	_debug_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	economy_system = new_economy_system
 	resource_states = new_resource_states.duplicate(false)
 	visible = CardfrontRulesScript.is_cardfront_mode(mode_name)
-	_update_debug_hint(mode_name)
 	if not visible:
 		return
 	_apply_art_assets()
@@ -72,32 +68,6 @@ func refresh(force: bool = false) -> void:
 		last_parts = p
 
 
-func set_release_mode_override_for_test(is_release: bool) -> void:
-	_release_mode_override_for_test = 1 if is_release else 0
-
-
-func is_debug_hint_visible_for_test() -> bool:
-	return _debug_hint != null and is_instance_valid(_debug_hint) and _debug_hint.visible
-
-
-func get_debug_hint_text_for_test() -> String:
-	if _debug_hint == null or not is_instance_valid(_debug_hint):
-		return ""
-	return _debug_hint.text
-
-
-func _update_debug_hint(mode_name: String) -> void:
-	if _debug_hint == null or not is_instance_valid(_debug_hint):
-		return
-	_debug_hint.visible = CardfrontRulesScript.is_cardfront_mode(mode_name) and not _is_release_build()
-
-
-func _is_release_build() -> bool:
-	if _release_mode_override_for_test >= 0:
-		return _release_mode_override_for_test == 1
-	return OS.has_feature("release")
-
-
 func _apply_art_assets() -> void:
 	var style_energy = CardfrontUiAssetRegistryScript.make_panel_style(
 		"resource_panel_bg",
@@ -120,7 +90,7 @@ func _apply_art_assets() -> void:
 			var bg = get_node_or_null(bg_path)
 			if bg is ColorRect:
 				(bg as ColorRect).color = Color(0.04, 0.07, 0.13, 0.44)
-	for label in [_energy_symbol, _parts_symbol, _energy_name, _parts_name, _debug_hint]:
+	for label in [_energy_symbol, _parts_symbol, _energy_name, _parts_name]:
 		CardfrontUiAssetRegistryScript.apply_body_font(label)
 	CardfrontUiAssetRegistryScript.apply_numeric_font(_energy_value)
 	CardfrontUiAssetRegistryScript.apply_numeric_font(_parts_value)

@@ -49,10 +49,7 @@ Implemented in this repository:
   - `CardfrontCardDetailPopup` explains card type, target, costs, effect summary, and usable/resource/used state.
   - `CardfrontToastLayer` shows invalid target, resource shortage, success, and failure feedback without covering the battlefield core.
   - `CardfrontEffectVisualBridge` maps the 4 existing card successes into existing `CardfrontVfxLayer` effects.
-- Cardfront debug panel:
-  - `CardfrontDebugActionPanel` is hidden by default and toggled through the real F3 input route in Cardfront non-release builds.
-  - `CardfrontTopResourceBar` shows a small non-release `F3 Debug` hint at bottom-right (1010, 660); release builds hide both the hint and debug panel route.
-  - Old BallWar modes do not create the Cardfront debug action panel.
+- Legacy Cardfront debug overlays (the F3 device/card action panel and economy yield overlay) have been retired. Neither the live runtime nor the optional compatibility path creates them.
 - Cardfront UI art registry (v0.2.4a):
   - `CardfrontUiAssetRegistry` centralizes Kenney/Wenrexa/Game-Icons/font paths.
   - TopResourceBar uses TextureRect icons (icon_energy/icon_parts SVG) with registry-backed emoji fallback.
@@ -68,7 +65,7 @@ Implemented in this repository:
   - TopResourceBar simplified: removed Name labels ("能量"/"零件"), removed YieldLabel ("本秒无产出"/"+x/s").
   - Added fallback Symbol labels (⚡/⚙) toggled with TextureRect icons.
   - Container widths halved (360→220) to match compact layout.
-  - DebugHint (1010, 660) unchanged.
+  - The former DebugHint was removed when the old debug overlay was retired.
   - No gameplay or card-value changes.
 - Card click hitbox feedback hotfix (v0.2.4a.2):
   - `CardfrontHandPanel` gives `CardHBox` a real 4-card hitbox and `MOUSE_FILTER_PASS`; decorative panel nodes ignore mouse input.
@@ -228,7 +225,6 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeploymentRulesTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMoraleTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EconomyTickTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EconomyDebugPanelSceneTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVisualPolicyTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/VisualPressurePolicyTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMapTestRunner.gd
@@ -240,7 +236,6 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDisabledCardFeedbackTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontToastLayerTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontEffectVisualBridgeTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDebugPanelToggleTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontUiAssetRegistryTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontUiArtSceneTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontCardViewInteractionConfigTestRunner.gd
