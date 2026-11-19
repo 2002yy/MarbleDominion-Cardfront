@@ -1,7 +1,6 @@
 extends SceneTree
 
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
-const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
 const CardfrontRuntimeRefsScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeRefs.gd")
 const CardfrontSystemRegistryScript = preload("res://scripts/cardfront/runtime/CardfrontSystemRegistry.gd")
@@ -43,11 +42,11 @@ func _test_runtime_refs_payload_filters_status_keys() -> void:
 		"configured": true,
 		"reason": "ignored",
 		"stage": "ignored",
-		"card_system": "card-fixture",
+		"fortify_layer": "fortify-fixture",
 	})
 	_assert.that(not refs.has_ref("configured"), "runtime refs: should not store configured flag")
 	_assert.that(not refs.has_ref("reason"), "runtime refs: should not store failure reason")
-	_assert.eq(refs.get_ref("card_system"), "card-fixture", "runtime refs: should keep runtime payload values")
+	_assert.eq(refs.get_ref("fortify_layer"), "fortify-fixture", "runtime refs: should keep runtime payload values")
 
 
 func _test_system_registry_applies_result_aliases() -> void:
@@ -57,15 +56,13 @@ func _test_system_registry_applies_result_aliases() -> void:
 	var ok: bool = registry.record_result("fixture", {
 		"configured": true,
 		"region_map": region_fixture,
-		"device_overlay": "device-overlay-fixture",
-		"vfx_layer": "vfx-fixture",
+		"orthographic_arena_view": "arena-fixture",
 	})
 	registry.apply_to(runtime)
 
 	_assert.that(ok, "system registry: configured result should record")
 	_assert.eq(runtime.region_map, region_fixture, "system registry: direct refs should apply to runtime")
-	_assert.eq(runtime.device_overlay_layer, "device-overlay-fixture", "system registry: device_overlay should map to device_overlay_layer")
-	_assert.eq(runtime.cardfront_vfx_layer, "vfx-fixture", "system registry: vfx_layer should map to cardfront_vfx_layer")
+	_assert.eq(runtime.orthographic_arena_view, "arena-fixture", "system registry: live arena should map to runtime")
 
 	var failed: bool = registry.record_result("missing", {"configured": false, "reason": "nope"})
 	_assert.that(not failed, "system registry: failed result should not record")
@@ -87,25 +84,14 @@ func _test_core_builder_creates_runtime_refs() -> void:
 	runtime.battlefield = battlefield
 
 	var builder = CardfrontRuntimeBuilderScript.new()
-	var yield_callable := Callable(self, "_on_builder_yield_tick")
-	var result: Dictionary = builder.build_core_systems(game_layer, runtime, yield_callable)
+	var result: Dictionary = builder.build_live_core_systems(game_layer, runtime)
 
 	_assert.that(bool(result.get("configured", false)), "runtime builder: core systems should build")
 	_assert.that(runtime.region_map != null, "runtime builder: should set region_map")
 	_assert.that(runtime.region_overlay != null and is_instance_valid(runtime.region_overlay), "runtime builder: should set region overlay")
-	_assert.that(runtime.economy_system != null and is_instance_valid(runtime.economy_system), "runtime builder: should set economy system")
-	_assert.that(runtime.resource_states.has(CardfrontRulesScript.PLAYER_FACTION), "runtime builder: should create player resources")
-	_assert.that(runtime.resource_states.has(CardfrontRulesScript.AI_FACTION), "runtime builder: should create AI resources")
-	_assert.that(runtime.morale_system != null and is_instance_valid(runtime.morale_system), "runtime builder: should set morale system")
+	_assert.that(runtime.stronghold_system != null and is_instance_valid(runtime.stronghold_system), "runtime builder: should set live stronghold system")
 	_assert.that(runtime.fortify_layer != null, "runtime builder: should set fortify layer")
-	_assert.that(runtime.target_bias_system != null and is_instance_valid(runtime.target_bias_system), "runtime builder: should set target bias")
-	_assert.that(runtime.card_system != null, "runtime builder: should set card system")
-	_assert.eq(runtime.card_system.target_bias_system, runtime.target_bias_system, "runtime builder: card system should receive target bias")
-	_assert.that(runtime.economy_system.yield_tick.is_connected(yield_callable), "runtime builder: should connect yield tick callback")
+	_assert.that(runtime.region_control_block_layer != null and is_instance_valid(runtime.region_control_block_layer), "runtime builder: should set control blocks")
 
 	game_layer.queue_free()
 	await _flush()
-
-
-func _on_builder_yield_tick(_owner_id: int, _yield_data: Dictionary) -> void:
-	pass

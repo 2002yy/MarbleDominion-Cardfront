@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - batch: Baseline and map economy
+          - batch: Baseline and map rules
             scripts: |
               SmokeTestRunner.gd
               IntegrationTestRunner.gd
@@ -56,38 +56,21 @@ jobs:
               CardfrontMapReadabilityTestRunner.gd
               NeutralOwnerCompatibilityTestRunner.gd
               DeploymentRulesTestRunner.gd
-              RegionMoraleTestRunner.gd
-              EconomyTickTestRunner.gd
               CardfrontVisualPolicyTestRunner.gd
               VisualPressurePolicyTestRunner.gd
-          - batch: Cards effects and fire
+          - batch: Fortification and fire
             scripts: |
               FortifyLayerTestRunner.gd
-              CardfrontContentValidationTestRunner.gd
-              CardfrontTargetValidatorTestRunner.gd
-              CardEffectResolverTestRunner.gd
-              CardCoreLiteTestRunner.gd
-              CardFirstEffectsTestRunner.gd
-              CardfrontTargetBiasTestRunner.gd
-              PioneerBeaconLiteTestRunner.gd
               CardfrontFireDirectorTestRunner.gd
               CardfrontFireDirectorTurretIntegrationTestRunner.gd
               CardfrontFireDirectorSignalTestRunner.gd
               CardfrontControlChamberDecouplingTestRunner.gd
-          - batch: Devices visuals and interaction
+          - batch: Runtime UI and persistence
             scripts: |
-              DeviceCoreTestRunner.gd
-              AbsorberCoreLiteTestRunner.gd
-              EngineerBotLiteTestRunner.gd
-              DurablePioneerBeaconTestRunner.gd
-              DeviceOverlayLayerTestRunner.gd
               CardfrontBottomHudStatusTestRunner.gd
-              CardfrontVfxLayerTestRunner.gd
-              CardfrontVisibleEffectBridgeTestRunner.gd
               CardfrontRuntimeSnapshotTestRunner.gd
               CardfrontRuntimeBuilderTestRunner.gd
               CardfrontFormalUITestRunner.gd
-              CardfrontTargetPreviewTestRunner.gd
               CardfrontRegionControlBlockTestRunner.gd
           - batch: UI art debug and performance
             scripts: |
@@ -157,11 +140,11 @@ jobs:
               CardfrontDeploymentContractTestRunner.gd
               CardfrontDeploymentCoreFallbackTestRunner.gd
               CardfrontDeploymentDirectionalZoneTestRunner.gd
-              CardfrontDeploymentPlayerCommitTestRunner.gd
+              CardfrontDeploymentAuthorityRefreshTestRunner.gd
               CardfrontDeploymentPreviewParityTestRunner.gd
               CardfrontDeploymentAiParityTestRunner.gd
               CardfrontDeploymentAutomaticSpawnTestRunner.gd
-              CardfrontDeploymentFourConsumerParityTestRunner.gd
+              CardfrontDeploymentThreeConsumerParityTestRunner.gd
               CardfrontHeroNumericFoundationTestRunner.gd
               CardfrontCardPoolRebalanceTestRunner.gd
               CardfrontTerritoryDefenseTestRunner.gd

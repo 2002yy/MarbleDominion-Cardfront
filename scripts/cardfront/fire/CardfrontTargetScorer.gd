@@ -9,24 +9,20 @@ const StrongholdRulesScript = preload("res://scripts/cardfront/strongholds/Cardf
 
 
 static func select_base_target(region_map, battlefield, owner_id: int) -> Dictionary:
-	return _select_target(region_map, battlefield, owner_id, -1, FireRulesScript.REASON_BASE)
+	return _select_target(region_map, battlefield, owner_id)
 
 
-static func select_region_target(region_map, battlefield, owner_id: int, region_id: int, reason: String = FireRulesScript.REASON_TARGET_BIAS) -> Dictionary:
-	return _select_target(region_map, battlefield, owner_id, int(region_id), reason)
-
-
-static func _select_target(region_map, battlefield, owner_id: int, preferred_region_id: int, preferred_reason: String) -> Dictionary:
+static func _select_target(region_map, battlefield, owner_id: int) -> Dictionary:
 	if region_map == null or battlefield == null:
-		return _result(false, -1, Vector2i(-1, -1), preferred_reason)
+		return _result(false, -1, Vector2i(-1, -1), FireRulesScript.REASON_BASE)
 	if not region_map.has_method("get_all_region_ids") or not region_map.has_method("get_region_cells"):
-		return _result(false, -1, Vector2i(-1, -1), preferred_reason)
+		return _result(false, -1, Vector2i(-1, -1), FireRulesScript.REASON_BASE)
 
 	var best_score: int = -999999
 	var best_region_id: int = -1
 	var best_cell: Vector2i = Vector2i(-1, -1)
-	var best_reason: String = preferred_reason
-	var region_ids: Array = [preferred_region_id] if preferred_region_id >= 0 else region_map.get_all_region_ids()
+	var best_reason: String = FireRulesScript.REASON_BASE
+	var region_ids: Array = region_map.get_all_region_ids()
 
 	for region_id in region_ids:
 		var safe_region_id: int = int(region_id)
@@ -40,22 +36,20 @@ static func _select_target(region_map, battlefield, owner_id: int, preferred_reg
 			var owner_at_cell: int = DeploymentRulesScript.get_owner_at(battlefield, cell)
 			if owner_at_cell == int(owner_id):
 				continue
-			var score: int = _score_cell(region_map, battlefield, owner_id, cell, owner_at_cell, region_type, enemy_stronghold, preferred_region_id >= 0)
+			var score: int = _score_cell(region_map, battlefield, owner_id, cell, owner_at_cell, region_type, enemy_stronghold)
 			if score > best_score:
 				best_score = score
 				best_region_id = safe_region_id
 				best_cell = cell
-				best_reason = _reason_for_cell(region_map, battlefield, owner_id, cell, owner_at_cell, region_type, enemy_stronghold, preferred_reason)
+				best_reason = _reason_for_cell(region_map, battlefield, owner_id, cell, owner_at_cell, region_type, enemy_stronghold)
 
 	if best_region_id < 0:
-		return _result(false, -1, Vector2i(-1, -1), preferred_reason)
+		return _result(false, -1, Vector2i(-1, -1), FireRulesScript.REASON_BASE)
 	return _result(true, best_region_id, best_cell, best_reason)
 
 
-static func _score_cell(region_map, battlefield, owner_id: int, cell: Vector2i, owner_at_cell: int, region_type: String, enemy_stronghold: bool, preferred_region: bool) -> int:
+static func _score_cell(region_map, battlefield, owner_id: int, cell: Vector2i, owner_at_cell: int, region_type: String, enemy_stronghold: bool) -> int:
 	var score: int = 0
-	if preferred_region:
-		score += int(300 * FireRulesScript.TARGET_BIAS_STRENGTH)
 	if owner_at_cell == CardfrontRulesScript.NEUTRAL_OWNER:
 		score += 120
 		if _touches_owner(region_map, battlefield, cell, owner_id):
@@ -70,9 +64,7 @@ static func _score_cell(region_map, battlefield, owner_id: int, cell: Vector2i, 
 	return score
 
 
-static func _reason_for_cell(region_map, battlefield, owner_id: int, cell: Vector2i, owner_at_cell: int, region_type: String, enemy_stronghold: bool, preferred_reason: String) -> String:
-	if preferred_reason == FireRulesScript.REASON_TARGET_BIAS:
-		return FireRulesScript.REASON_TARGET_BIAS
+static func _reason_for_cell(region_map, battlefield, owner_id: int, cell: Vector2i, owner_at_cell: int, region_type: String, enemy_stronghold: bool) -> String:
 	if owner_at_cell == CardfrontRulesScript.NEUTRAL_OWNER and _touches_owner(region_map, battlefield, cell, owner_id):
 		return FireRulesScript.REASON_NEUTRAL_BOUNDARY
 	if enemy_stronghold:

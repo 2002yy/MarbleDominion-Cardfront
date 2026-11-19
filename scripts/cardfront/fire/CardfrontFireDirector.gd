@@ -15,7 +15,6 @@ const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontPr
 var region_map = null
 var battlefield = null
 var turrets: Dictionary = {}
-var target_bias_system = null
 var active_factions: Array = []
 
 var shot_interval: float = FireRulesScript.BASE_SHOT_INTERVAL
@@ -36,11 +35,10 @@ func _init() -> void:
 	name = "CardfrontFireDirector"
 
 
-func setup(new_region_map, new_battlefield, new_turrets: Dictionary, new_target_bias_system = null, new_active_factions: Array = []) -> void:
+func setup(new_region_map, new_battlefield, new_turrets: Dictionary, new_active_factions: Array = []) -> void:
 	region_map = new_region_map
 	battlefield = new_battlefield
 	turrets = new_turrets.duplicate(false)
-	target_bias_system = new_target_bias_system
 	active_factions = new_active_factions.duplicate(false)
 	if active_factions.is_empty():
 		active_factions = CardfrontRulesScript.get_duel_factions()
@@ -231,13 +229,6 @@ func _process(delta: float) -> void:
 
 
 func _select_target(owner_id: int) -> Dictionary:
-	var biased_region_id: int = -1
-	if target_bias_system != null and is_instance_valid(target_bias_system) and target_bias_system.has_method("get_biased_region"):
-		biased_region_id = int(target_bias_system.get_biased_region(owner_id))
-	if biased_region_id >= 0:
-		var biased_target: Dictionary = TargetScorerScript.select_region_target(region_map, battlefield, owner_id, biased_region_id, FireRulesScript.REASON_TARGET_BIAS)
-		if bool(biased_target.get("success", false)):
-			return biased_target
 	return TargetScorerScript.select_base_target(region_map, battlefield, owner_id)
 
 

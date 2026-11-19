@@ -91,21 +91,21 @@ Credits rule:
 - manifest: `assets/cardfront/提示词_prompts/generated_asset_manifest_v01.md`
 - current status: source/staged AI-generated originals plus processed runtime derivatives; runtime use is tracked in section 8
 - imported content (11 files):
-  - 卡牌插图_cards_illustrations/ (3 source card illustrations) — processed 512 runtime versions are wired by `CardVisualRegistry.gd`
-  - 装置地图精灵_devices_map_sprites/ (4 device sprites) — processed 96 runtime versions are wired by `DeviceVisualRegistry.gd`
+  - 卡牌插图_cards_illustrations/ (3 source card illustrations) — retained as unreferenced source assets after fixed-hand UI retirement
+  - 装置地图精灵_devices_map_sprites/ (4 device sprites) — retained as unreferenced source assets after legacy device-layer retirement
   - 装置图标_devices_icons/ (1 status icon)
-  - 特效纹理_vfx_textures/ (3 VFX textures) — processed 128 runtime versions are wired by `CardfrontVfxLayer.gd`
+  - 特效纹理_vfx_textures/ (3 VFX textures) — processed 128 variants are retained but no longer used by the retired v0.2 VFX layer
   - 中立生物_neutral_creatures/ (Gate Colossus source and animation strips) — normalized `idle`, `move`, `attack`, `hit`, and `death` frames are wired by `CardfrontEntityVisualRegistry.gd`
   - 战场实体_battlefield_entities/ (friendly entity contact sheets) — generated locally by `scripts/tools/generate_cardfront_entity_animations.py`
 
 ### `assets/cardfront_runtime/`
 
 - processed runtime assets derived from `assets/cardfront/` source
-- device sprites under `装置精灵_devices/96/` are already wired by `DeviceVisualRegistry.gd`
-  - registered sprites: absorber core, engineer bot, pioneer beacon, temporary reflector
-- VFX textures under `视觉特效_vfx/128/` are wired by `CardfrontVfxLayer.gd`
+- device sprites under `装置精灵_devices/96/` are archived runtime derivatives; the retired v0.2 device registry no longer loads them
+  - archived sprites: absorber core, engineer bot, pioneer beacon, temporary reflector
+- VFX textures under `视觉特效_vfx/128/` are archived derivatives; the old canvas VFX layer was retired
 - device icons under `装置图标_icons/48/` are staged runtime icons for later HUD polish
-- card illustrations under `卡牌插图_cards/512/` are wired by `CardVisualRegistry.gd`
+- card illustrations under `卡牌插图_cards/512/` are archived derivatives of the retired fixed-hand card UI
 - neutral-creature sprites under `中立生物_neutral_creatures/256/` are wired by `CardfrontEntityVisualRegistry.gd`; Gate Colossus uses a five-state `AnimatedSprite2D` presentation actor with static and procedural fallbacks
 - friendly entity frames under `战场实体_battlefield_entities/256/` are wired by `CardfrontEntityVisualRegistry.gd`; Repair Unit, Armored Guard, Sapper Unit, and Scout use complete role-specific animation sets
 
@@ -214,8 +214,8 @@ fallbacks, but assets are no longer disconnected from code.
 | Area | Runtime entry | Asset status |
 |---|---|---|
 | Historical card illustrations | Legacy v0.2 fixed-hand UI (retired) | 1001-1004 artwork retained as sourced assets; no longer loaded by the live or compatibility UI. |
-| Device sprites | `scripts/cardfront/devices/DeviceVisualRegistry.gd` and `CardfrontDeviceOverlayLayer.gd` | Absorber, Engineer, Pioneer Beacon, and Temporary Reflector sprites load from `assets/cardfront_runtime/装置精灵_devices/96/`. |
-| VFX textures | `scripts/cardfront/vfx/CardfrontVfxLayer.gd` | Energy ripple, shield crack/pulse, and region pulse load from `assets/cardfront_runtime/视觉特效_vfx/128/`, with draw-circle fallback. |
+| Device sprites (archived) | No active runtime consumer | Absorber, Engineer, Pioneer Beacon, and Temporary Reflector sprites remain under `assets/cardfront_runtime/装置精灵_devices/96/` for provenance. |
+| VFX textures (archived) | No active runtime consumer | Energy ripple, shield crack/pulse, and region pulse textures remain under `assets/cardfront_runtime/视觉特效_vfx/128/` for provenance. |
 | Historical card audio feedback | Legacy v0.2 card feedback (retired) | Audio files retain source/license records but the old card-feedback hook was removed. |
 | Battlefield entities | `scripts/cardfront/entities/CardfrontEntityVisualRegistry.gd` and `CardfrontEntityPresentationLayer.gd` | Gate Colossus plus four friendly entity animation sets are active; two defense towers use procedural hybrid actors and all assets retain runtime fallbacks. |
 | Cardfront environment | `scripts/cardfront/environment/CardfrontEnvironmentAssetRegistry.gd` and `CardfrontEnvironmentBuilder.gd` | Selected KayKit trees, rocks, wall rails, and gate foundations are active in the orthographic arena. Imported nodes are presentation-only and retain primitive fallback. |

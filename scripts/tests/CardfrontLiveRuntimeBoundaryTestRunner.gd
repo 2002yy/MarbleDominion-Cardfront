@@ -13,7 +13,6 @@ func _run() -> void:
 	await process_frame
 
 	await _test_default_cardfront_uses_live_runtime_only()
-	await _test_legacy_compatibility_is_explicit()
 	await _test_ballwar_is_unchanged()
 	GameConfig.reset_runtime_defaults()
 	paused = false
@@ -23,7 +22,7 @@ func _run() -> void:
 
 
 func _test_default_cardfront_uses_live_runtime_only() -> void:
-	var main = await _start_main(GameConfig.GAME_MODE_CARDFRONT, false)
+	var main = await _start_main(GameConfig.GAME_MODE_CARDFRONT)
 	var runtime = main.runtime
 
 	_assert.that(runtime.region_map != null, "live: region map should exist")
@@ -37,39 +36,13 @@ func _test_default_cardfront_uses_live_runtime_only() -> void:
 	_assert.that(runtime.three_choice_panel != null, "live: three-choice panel should exist")
 	_assert.that(runtime.gate_connectivity_system != null, "live: gate connectivity system should exist")
 
-	var retired_refs: Dictionary = {
-		"economy": runtime.economy_system,
-		"morale": runtime.morale_system,
-		"fixed card system": runtime.card_system,
-		"target bias": runtime.target_bias_system,
-		"devices": runtime.device_layer,
-	}
-	for label in retired_refs.keys():
-		_assert.eq(retired_refs[label], null, "live: default path should not construct %s" % label)
-
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
-	await _flush()
-
-
-func _test_legacy_compatibility_is_explicit() -> void:
-	var main = await _start_main(GameConfig.GAME_MODE_CARDFRONT, true)
-	var runtime = main.runtime
-
-	_assert.that(runtime.economy_system != null, "compatibility: economy should be available when explicitly enabled")
-	_assert.that(runtime.morale_system != null, "compatibility: morale should be available when explicitly enabled")
-	_assert.that(runtime.card_system != null, "compatibility: fixed card system should be available when explicitly enabled")
-	_assert.that(runtime.target_bias_system != null, "compatibility: target bias should be available when explicitly enabled")
-	_assert.that(runtime.device_layer != null, "compatibility: devices should be available when explicitly enabled")
-	_assert.that(runtime.round_director != null, "compatibility: the current round director should still exist")
-
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
 	await _flush()
 
 
 func _test_ballwar_is_unchanged() -> void:
-	var main = await _start_main(GameConfig.GAME_MODE_BASIC, false)
+	var main = await _start_main(GameConfig.GAME_MODE_BASIC)
 	_assert.eq(main.runtime.round_director, null, "BallWar: should not create Cardfront round director")
 	_assert.eq(main.runtime.stronghold_system, null, "BallWar: should not create Cardfront strongholds")
 	_assert.eq(main.runtime.territory_defense_system, null, "BallWar: should not create Cardfront territory defense")
@@ -81,14 +54,13 @@ func _test_ballwar_is_unchanged() -> void:
 	await _flush()
 
 
-func _start_main(mode_name: String, compatibility_enabled: bool):
+func _start_main(mode_name: String):
 	GameConfig.reset_runtime_defaults()
 	paused = false
 	var scene: PackedScene = load("res://scenes/Main.tscn")
 	var main = scene.instantiate()
 	get_root().add_child(main)
 	await process_frame
-	main.cardfront_legacy_compatibility_enabled = compatibility_enabled
 	main.selected_game_mode_name = mode_name
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)

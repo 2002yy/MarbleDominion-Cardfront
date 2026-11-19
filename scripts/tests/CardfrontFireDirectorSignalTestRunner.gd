@@ -2,7 +2,6 @@ extends SceneTree
 
 const CardfrontFireDirectorScript = preload("res://scripts/cardfront/fire/CardfrontFireDirector.gd")
 const CardfrontFireRulesScript = preload("res://scripts/cardfront/fire/CardfrontFireRules.gd")
-const CardfrontTargetBiasSystemScript = preload("res://scripts/cardfront/effects/CardfrontTargetBiasSystem.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 
@@ -114,7 +113,7 @@ func _test_fire_skipped_signal_on_turret_failure() -> void:
 	var failing_turret := FailingTurret.new()
 	failing_turret.global_position = Vector2(-80.0, 100.0)
 	fixture.turrets[CardfrontRulesScript.PLAYER_FACTION] = failing_turret
-	fixture.director.setup(fixture.rm, fixture.bf, fixture.turrets, fixture.target_bias_system, [CardfrontRulesScript.PLAYER_FACTION])
+	fixture.director.setup(fixture.rm, fixture.bf, fixture.turrets, [CardfrontRulesScript.PLAYER_FACTION])
 
 	var collector := SignalCollector.new()
 	fixture.signal_collector = collector
@@ -254,9 +253,6 @@ func _make_fixture(include_ai: bool = false, generate_layout: bool = true) -> Di
 	if generate_layout:
 		rm.generate_default_layout()
 
-	var target_bias_system = CardfrontTargetBiasSystemScript.new()
-	target_bias_system.setup(rm)
-
 	var player_turret = MockTurret.new()
 	player_turret.global_position = Vector2(-80.0, 100.0)
 	var turrets: Dictionary = {
@@ -271,12 +267,11 @@ func _make_fixture(include_ai: bool = false, generate_layout: bool = true) -> Di
 		active_factions.append(CardfrontRulesScript.AI_FACTION)
 
 	var director = CardfrontFireDirectorScript.new()
-	director.setup(rm, bf, turrets, target_bias_system, active_factions)
+	director.setup(rm, bf, turrets, active_factions)
 
 	return {
 		"bf": bf,
 		"rm": rm,
-		"target_bias_system": target_bias_system,
 		"director": director,
 		"player_turret": player_turret,
 		"ai_turret": ai_turret,
@@ -297,5 +292,4 @@ func _make_fixture_with_collector() -> Dictionary:
 
 func _cleanup_fixture(fixture: Dictionary) -> void:
 	TestFixtures.cleanup_node(fixture.get("bf", null))
-	TestFixtures.cleanup_node(fixture.get("target_bias_system", null))
 	TestFixtures.cleanup_node(fixture.get("director", null))
