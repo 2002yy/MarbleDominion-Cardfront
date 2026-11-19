@@ -1,5 +1,12 @@
 # P0-07A1 Draft Geometry Golden Snapshot
 
+> **Historical pre-fix evidence; superseded by [PR #41](https://github.com/2002yy/MarbleDominion-Cardfront/pull/41).**
+> The negative 760×540 shell coordinates recorded below were an actual UI overflow,
+> not a desirable invariant. The original golden runner was replaced by
+> `CardfrontDraftViewportUsabilityTestRunner.gd`, which checks visible control
+> bounds and card descriptions across viewports. Keep these measurements only
+> to explain the previous defect; do not restore them as current expectations.
+
 Source commit: `e560503295864dddedc6440f5aa61770055437d9`
 
 Decision: **GO**

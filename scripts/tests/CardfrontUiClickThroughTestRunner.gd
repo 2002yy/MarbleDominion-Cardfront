@@ -16,9 +16,15 @@ func _run() -> void:
 	var main = _make_main()
 	await _flush()
 	_test_decorative_layers_ignore_mouse(main)
-	await _test_real_card_and_battlefield_click(main)
+	await _test_real_card_and_battlefield_click(main, Vector2(1120.0, 720.0))
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
+	await _flush()
+	var narrow_main = _make_main()
+	await _flush()
+	await _test_real_card_and_battlefield_click(narrow_main, Vector2(760.0, 540.0))
+	narrow_main._cleanup_game_layer()
+	TestFixtures.cleanup_node(narrow_main)
 	await _flush()
 	_assert.report("[CardfrontUiClickThroughTest]")
 	quit(0 if _assert.failures.is_empty() else 1)
@@ -53,10 +59,21 @@ func _assert_controls_ignore(node: Node, label: String) -> void:
 		_assert_controls_ignore(child, label)
 
 
-func _test_real_card_and_battlefield_click(main) -> void:
+func _test_real_card_and_battlefield_click(main, viewport_size: Vector2) -> void:
+	var panel = main.runtime.three_choice_panel
+	_assert.that(panel.setup(main.runtime.round_director, viewport_size), "%s: UI setup succeeds" % viewport_size)
 	main.runtime.round_director.force_open_draft_for_test()
 	await _flush()
-	var cards: Array = main.runtime.three_choice_panel.get_choice_cards()
+	await _click_at(panel._peek_button.get_global_rect().get_center())
+	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_BATTLEFIELD_PREVIEW, "%s: real battlefield button opens preview" % viewport_size)
+	_assert.that(not panel.choice_shell.visible, "%s: preview hides the offer without rerolling" % viewport_size)
+	await _click_at(panel._peek_button.get_global_rect().get_center())
+	_assert.eq(panel.get_display_mode_for_test(), panel.DISPLAY_MODE_DRAFT_VISIBLE, "%s: real return button restores the draft" % viewport_size)
+	await _click_at(panel.upgrade_history_button.get_global_rect().get_center())
+	_assert.that(panel.is_upgrade_history_open_for_test(), "%s: real history button opens the drawer" % viewport_size)
+	await _click_at(panel.upgrade_history_close_button.get_global_rect().get_center())
+	_assert.that(not panel.is_upgrade_history_open_for_test(), "%s: real close button dismisses the drawer" % viewport_size)
+	var cards: Array = panel.get_choice_cards()
 	_assert.eq(cards.size(), 3, "click-through: draft should create three real choice cards")
 	if cards.is_empty():
 		paused = false

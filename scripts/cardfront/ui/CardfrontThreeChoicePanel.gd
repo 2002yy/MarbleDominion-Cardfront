@@ -39,7 +39,6 @@ var _last_round_number: int = 0
 var _pending_player_upgrade_name: String = ""
 var _pending_player_upgrade_times: int = 1
 var _upgrade_toast_remaining: float = 0.0
-var _last_stronghold_status: Dictionary = {}
 var _view_size: Vector2 = Vector2(1120, 720)
 const DISPLAY_MODE_DRAFT_VISIBLE: String = "draft_visible"
 const DISPLAY_MODE_BATTLEFIELD_PREVIEW: String = "battlefield_preview"
@@ -253,7 +252,7 @@ func _on_draft_opened(player_offer: Array, _ai_offer: Array, timeout_seconds: fl
 		card.setup(raw_definition as Dictionary)
 		card.upgrade_chosen.connect(_choose_upgrade)
 		_choice_cards.append(card)
-	_layout_choice_cards(_choice_cards.size())
+	_layout_choice_cards()
 	# P0-05B3: the formal draft is always three-choice. Stronghold identity may
 	# be shown separately, but it must not alter or describe the draft offer.
 	title_label.text = "\u9009\u62e9\u672c\u8f6e\u5f3a\u5316"
@@ -309,7 +308,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-func _layout_choice_cards(choice_count: int) -> void:
+func _layout_choice_cards() -> void:
 	card_box.add_theme_constant_override("separation", 20)
 	card_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	for card in _choice_cards:
@@ -327,7 +326,6 @@ func _on_draft_time_updated(time_remaining: float, timeout_seconds: float) -> vo
 
 
 func _on_strongholds_sampled(status_snapshot: Dictionary) -> void:
-	_last_stronghold_status = status_snapshot.duplicate(true)
 	var player_status: Dictionary = status_snapshot.get(RulesScript.PLAYER_FACTION, {}) as Dictionary
 	var active_types: Array = player_status.get("active_types", []) as Array
 	if active_types.is_empty():
