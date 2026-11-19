@@ -136,6 +136,48 @@ func spawn_single_creature(
 	return resolution
 
 
+func targeted_preview(owner_id: int) -> Dictionary:
+	var context: Dictionary = _current_deployment_context(owner_id)
+	var revision: int = int(context.get("deployment_revision", 0))
+	var cells: Array[Vector2i] = []
+	if runtime == null or runtime.battlefield == null or context.is_empty():
+		return {"cells": cells, "revision": revision}
+	if runtime.registry.count_owner_entities(owner_id, BattlefieldEntityScript.KIND_CREATURE) >= RegistryScript.MAX_CREATURES_PER_FACTION:
+		return {"cells": cells, "revision": revision}
+	var extent: Vector2i = runtime.battlefield.grid_extent
+	var available := func(cell: Vector2i) -> bool:
+		return _creature_slots_at(cell) < RegistryScript.MAX_CREATURE_SLOTS_PER_CELL
+	for x in range(extent.x):
+		for y in range(extent.y):
+			var cell := Vector2i(x, y)
+			var result: Dictionary = DeploymentPlacementResolverScript.validate_exact(
+				null, runtime.battlefield, owner_id, context, cell, available
+			)
+			if bool(result.get("allowed", false)):
+				cells.append(cell)
+	return {"cells": cells, "revision": revision}
+
+
+func spawn_exact_guard(owner_id: int, cell: Vector2i, expected_revision: int) -> Dictionary:
+	var context: Dictionary = _current_deployment_context(owner_id)
+	var revision: int = int(context.get("deployment_revision", 0))
+	if revision != expected_revision:
+		return {"allowed": false, "reason": "stale_deployment_revision", "deployment_revision": revision}
+	if runtime.registry.count_owner_entities(owner_id, BattlefieldEntityScript.KIND_CREATURE) >= RegistryScript.MAX_CREATURES_PER_FACTION:
+		return {"allowed": false, "reason": REASON_ENTITY_CAPACITY_REACHED, "deployment_revision": revision}
+	var available := func(candidate: Vector2i) -> bool:
+		return _creature_slots_at(candidate) < RegistryScript.MAX_CREATURE_SLOTS_PER_CELL
+	var placement: Dictionary = DeploymentPlacementResolverScript.validate_exact(
+		null, runtime.battlefield, owner_id, context, cell, available
+	)
+	if not bool(placement.get("allowed", false)):
+		return placement
+	var guard = runtime._creature_action_coordinator.spawn_armored_guard_at(owner_id, cell)
+	if guard == null:
+		return {"allowed": false, "reason": REASON_ENTITY_SPAWN_FAILED, "deployment_revision": revision}
+	return {"allowed": true, "reason": REASON_ALLOWED, "cell": cell, "entity": guard, "placement": _placement_trace(placement), "deployment_revision": revision}
+
+
 func public_spawn_result(action: String, resolution: Dictionary) -> Dictionary:
 	var spawned: int = 0
 	if resolution.has("entities"):

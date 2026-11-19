@@ -54,6 +54,39 @@ static func resolve(
 	return _failure(revision)
 
 
+static func validate_exact(
+	region_map,
+	battlefield,
+	owner_id: int,
+	deployment_context: Dictionary,
+	cell: Vector2i,
+	availability: Callable = Callable()
+) -> Dictionary:
+	# Manual and automatic deployment share the same SupportNetwork evaluator.
+	# This path never substitutes an automatically selected cell for the click.
+	var revision: int = int(deployment_context.get("deployment_revision", 0))
+	if deployment_context.is_empty() or int(deployment_context.get("side", -1)) != int(owner_id):
+		return _failure(revision)
+	var result = _evaluate_cell(region_map, battlefield, owner_id, deployment_context, cell, "", "")
+	if not bool(result.allowed):
+		var denied: Dictionary = _failure(revision)
+		denied["reason"] = str(result.reason)
+		return denied
+	if not _is_available(availability, cell):
+		var unavailable: Dictionary = _failure(revision)
+		unavailable["reason"] = "cell_capacity_reached"
+		return unavailable
+	return {
+		"allowed": true,
+		"reason": DeploymentRulesScript.REASON_ALLOWED,
+		"cell": cell,
+		"resolved_support_id": str(result.resolved_support_id),
+		"source_kind": str(result.source_kind),
+		"deployment_revision": revision,
+		"legal_candidate_count": 1,
+	}
+
+
 static func _ordered_support_sources(
 	raw_sources: Array,
 	preferred_support_id: String,

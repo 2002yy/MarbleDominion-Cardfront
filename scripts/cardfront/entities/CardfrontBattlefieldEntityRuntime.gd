@@ -273,6 +273,14 @@ func spawn_armored_guard(owner_id: int, placement_request: Dictionary = {}):
 	return result.get("entity", null)
 
 
+func targeted_guard_preview(owner_id: int) -> Dictionary:
+	return _automatic_spawn_coordinator.targeted_preview(owner_id)
+
+
+func deploy_targeted_guard(owner_id: int, cell: Vector2i, expected_revision: int) -> Dictionary:
+	return _automatic_spawn_coordinator.spawn_exact_guard(owner_id, cell, expected_revision)
+
+
 func spawn_sapper_unit(owner_id: int, placement_request: Dictionary = {}):
 	var result: Dictionary = _automatic_spawn_coordinator.spawn_single_creature(
 		owner_id,
