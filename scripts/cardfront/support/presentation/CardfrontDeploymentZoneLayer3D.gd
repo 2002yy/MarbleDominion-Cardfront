@@ -1,6 +1,9 @@
 extends MultiMeshInstance3D
 class_name CardfrontDeploymentZoneLayer3D
 
+# Presentation-only result consumer. A future targeting controller must supply
+# already-validated cells and their authority revision; this layer never decides
+# whether deployment is legal.
 var _cell_to_world: Callable
 var _cell_footprint: Vector2 = Vector2.ONE
 var _visible_cells: Array[Vector2i] = []

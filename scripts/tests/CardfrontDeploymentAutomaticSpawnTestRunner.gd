@@ -14,7 +14,6 @@ const BattlefieldEntityScript = preload("res://scripts/cardfront/entities/Cardfr
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 
 const PRODUCTION_ROOT: String = "res://scripts/cardfront"
-const PREVIEW_PATH: String = "res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd"
 const AI_PLANNER_PATH: String = "res://scripts/cardfront/ai/CardfrontAiDeploymentPlanner.gd"
 const PLACEMENT_RESOLVER_PATH: String = "res://scripts/cardfront/deployment/DeploymentPlacementResolver.gd"
 const AUTOMATIC_SPAWN_PATH: String = "res://scripts/cardfront/entities/CardfrontAutomaticSpawnCoordinator.gd"
@@ -69,13 +68,12 @@ func _test_authority_convergence_source_contract() -> void:
 	var expected_direct_consumers: Array[String] = [
 		AI_PLANNER_PATH,
 		PLACEMENT_RESOLVER_PATH,
-		PREVIEW_PATH,
 	]
 	expected_direct_consumers.sort()
 	_assert.eq(
 		direct_evaluate_consumers,
 		expected_direct_consumers,
-		"authority convergence: only Preview, AI and placement resolver call DeploymentRules.evaluate in production"
+		"authority convergence: only active AI and placement resolver call DeploymentRules.evaluate"
 	)
 
 	base_coordinator_references.sort()
@@ -85,10 +83,6 @@ func _test_authority_convergence_source_contract() -> void:
 		expected_base_references,
 		"authority convergence: legacy creature coordinator is only inherited by the authoritative adapter"
 	)
-
-	var preview_source: String = _read_source(PREVIEW_PATH)
-	_assert.that(preview_source.contains("DeploymentRuleTypeScript.SUPPORT_NETWORK"), "authority convergence: Preview uses SUPPORT_NETWORK")
-	_assert.that(preview_source.contains(DIRECT_EVALUATE_NEEDLE), "authority convergence: Preview delegates to DeploymentRules")
 
 	var ai_source: String = _read_source(AI_PLANNER_PATH)
 	_assert.that(ai_source.contains("DeploymentRuleTypeScript.SUPPORT_NETWORK"), "authority convergence: AI uses SUPPORT_NETWORK")
