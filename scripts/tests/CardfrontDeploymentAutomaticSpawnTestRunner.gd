@@ -14,7 +14,6 @@ const BattlefieldEntityScript = preload("res://scripts/cardfront/entities/Cardfr
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 
 const PRODUCTION_ROOT: String = "res://scripts/cardfront"
-const PLAYER_COMMIT_RULE_PATH: String = "res://scripts/cardfront/targets/target_rules/FrontlineDeploymentTargetRule.gd"
 const PREVIEW_PATH: String = "res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd"
 const AI_PLANNER_PATH: String = "res://scripts/cardfront/ai/CardfrontAiDeploymentPlanner.gd"
 const PLACEMENT_RESOLVER_PATH: String = "res://scripts/cardfront/deployment/DeploymentPlacementResolver.gd"
@@ -37,7 +36,7 @@ func _initialize() -> void:
 func _run() -> void:
 	_assert = TestAssert.new()
 	_map_definition = DefaultMapScript.make(Vector2i(40, 40))
-	print("[CardfrontDeploymentAutomaticSpawnTest] Checking deterministic resolver, spawn cutover, and four-consumer authority convergence")
+	print("[CardfrontDeploymentAutomaticSpawnTest] Checking resolver, spawn cutover, and current authority consumers")
 	_test_authority_convergence_source_contract()
 	await _test_source_ranking()
 	await _test_core_fallback()
@@ -70,14 +69,13 @@ func _test_authority_convergence_source_contract() -> void:
 	var expected_direct_consumers: Array[String] = [
 		AI_PLANNER_PATH,
 		PLACEMENT_RESOLVER_PATH,
-		PLAYER_COMMIT_RULE_PATH,
 		PREVIEW_PATH,
 	]
 	expected_direct_consumers.sort()
 	_assert.eq(
 		direct_evaluate_consumers,
 		expected_direct_consumers,
-		"authority convergence: only Commit, Preview, AI and placement resolver call DeploymentRules.evaluate in production"
+		"authority convergence: only Preview, AI and placement resolver call DeploymentRules.evaluate in production"
 	)
 
 	base_coordinator_references.sort()
@@ -87,10 +85,6 @@ func _test_authority_convergence_source_contract() -> void:
 		expected_base_references,
 		"authority convergence: legacy creature coordinator is only inherited by the authoritative adapter"
 	)
-
-	var commit_source: String = _read_source(PLAYER_COMMIT_RULE_PATH)
-	_assert.that(commit_source.contains("DeploymentRuleTypeScript.SUPPORT_NETWORK"), "authority convergence: player Commit uses SUPPORT_NETWORK")
-	_assert.that(commit_source.contains(DIRECT_EVALUATE_NEEDLE), "authority convergence: player Commit delegates to DeploymentRules")
 
 	var preview_source: String = _read_source(PREVIEW_PATH)
 	_assert.that(preview_source.contains("DeploymentRuleTypeScript.SUPPORT_NETWORK"), "authority convergence: Preview uses SUPPORT_NETWORK")

@@ -1,7 +1,5 @@
 extends RefCounted
 
-const CardfrontContentManifestScript = preload("res://scripts/cardfront/content/CardfrontContentManifest.gd")
-
 const OWNED_CELL: String = "owned_cell"
 const OWNED_BORDER: String = "owned_border"
 const OWNED_REGION: String = "owned_region"
@@ -15,4 +13,8 @@ const TARGET_AREA: String = "target_area"
 const FRONTLINE_DEPLOYMENT: String = "frontline_deployment"
 
 static func is_valid(target_type: String) -> bool:
-	return CardfrontContentManifestScript.is_target_type_valid(str(target_type))
+	return target_type in [
+		OWNED_CELL, OWNED_BORDER, OWNED_REGION, ENEMY_REGION,
+		NEUTRAL_REGION, ANY_RESOURCE_REGION, OWNED_DEVICE, ENEMY_DEVICE,
+		TARGET_LINE, TARGET_AREA, FRONTLINE_DEPLOYMENT,
+	]

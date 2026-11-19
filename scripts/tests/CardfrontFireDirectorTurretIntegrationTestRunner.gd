@@ -2,7 +2,6 @@ extends SceneTree
 
 const CardfrontFireDirectorScript = preload("res://scripts/cardfront/fire/CardfrontFireDirector.gd")
 const CardfrontFireIntentScript = preload("res://scripts/cardfront/fire/CardfrontFireIntent.gd")
-const CardfrontTargetBiasSystemScript = preload("res://scripts/cardfront/effects/CardfrontTargetBiasSystem.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
 
@@ -59,16 +58,12 @@ func _make_fixture(grid_size: int = 32):
 	turret.position = Vector2(float(grid_size) * bf.cell_size * 0.25, float(grid_size) * bf.cell_size * 0.25)
 	get_root().add_child(turret)
 
-	var target_bias_system = CardfrontTargetBiasSystemScript.new()
-	target_bias_system.setup(rm)
-	get_root().add_child(target_bias_system)
-
 	var turrets: Dictionary = {
 		CardfrontRulesScript.PLAYER_FACTION: turret,
 	}
 
 	var director = CardfrontFireDirectorScript.new()
-	director.setup(rm, bf, turrets, target_bias_system, CardfrontRulesScript.get_duel_factions())
+	director.setup(rm, bf, turrets, CardfrontRulesScript.get_duel_factions())
 	get_root().add_child(director)
 
 	return {
@@ -76,13 +71,12 @@ func _make_fixture(grid_size: int = 32):
 		"rm": rm,
 		"pool": pool,
 		"turret": turret,
-		"target_bias_system": target_bias_system,
 		"director": director,
 	}
 
 
 func _cleanup_fixture(fixture: Dictionary) -> void:
-	for node in [fixture.get("director", null), fixture.get("target_bias_system", null), fixture.get("turret", null), fixture.get("pool", null), fixture.get("bf", null)]:
+	for node in [fixture.get("director", null), fixture.get("turret", null), fixture.get("pool", null), fixture.get("bf", null)]:
 		TestFixtures.cleanup_node(node)
 
 
@@ -90,13 +84,8 @@ func _test_fire_directed_called_with_real_turret() -> void:
 	var fixture: Dictionary = _make_fixture(20)
 	var director = fixture.director
 	var turret = fixture.turret
-	var target_bias = fixture.target_bias_system
-
-	var region_id: int = _first_controllable_region_id(fixture.rm)
-	target_bias.apply_region_bias(CardfrontRulesScript.PLAYER_FACTION, region_id, 30.0)
-
 	var issued: Array = director.tick(0.0)
-	_assert.eq(issued.size(), 1, "integration: tick should issue one intent with bias set")
+	_assert.eq(issued.size(), 1, "integration: tick should issue one intent")
 
 	var intent = issued[0] if issued.size() > 0 else null
 	_assert.that(intent != null, "integration: intent should be valid")
@@ -110,12 +99,7 @@ func _test_fire_directed_called_with_real_turret() -> void:
 func _test_burst_directed_flag_set() -> void:
 	var fixture: Dictionary = _make_fixture(20)
 	var turret = fixture.turret
-	var target_bias = fixture.target_bias_system
-
 	turret.burst_directed = false
-	var region_id: int = _first_controllable_region_id(fixture.rm)
-	target_bias.apply_region_bias(CardfrontRulesScript.PLAYER_FACTION, region_id, 30.0)
-
 	fixture.director.tick(0.0)
 
 	_assert.that(turret.burst_directed, "integration: burst_directed should be true after fire_directed")
@@ -131,11 +115,6 @@ func _test_burst_directed_flag_set() -> void:
 func _test_current_burst_shot_angle_matches_intent() -> void:
 	var fixture: Dictionary = _make_fixture(20)
 	var turret = fixture.turret
-	var target_bias = fixture.target_bias_system
-
-	var region_id: int = _first_controllable_region_id(fixture.rm)
-	target_bias.apply_region_bias(CardfrontRulesScript.PLAYER_FACTION, region_id, 30.0)
-
 	var issued: Array = fixture.director.tick(0.0)
 	var intent = issued[0] if issued.size() > 0 else null
 	_assert.that(intent != null, "integration angle: intent should exist")
@@ -195,10 +174,3 @@ func _test_old_fire_burst_not_affected() -> void:
 	turret.cancel_burst()
 
 	_cleanup_fixture(fixture)
-
-
-func _first_controllable_region_id(rm) -> int:
-	if rm == null or not rm.has_method("get_controllable_region_ids"):
-		return -1
-	var ids: Array = rm.get_controllable_region_ids()
-	return int(ids[0]) if not ids.is_empty() else -1

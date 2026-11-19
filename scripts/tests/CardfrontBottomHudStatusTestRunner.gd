@@ -15,8 +15,6 @@ func _run() -> void:
 	_test_cardfront_event_label_has_fire_status()
 	_test_cardfront_fps_label_hidden()
 	_test_ballwar_old_event_hud_still_works()
-	_test_device_count_updates_status_text()
-	_test_status_text_updates_after_device_change()
 
 	GameConfig.reset_runtime_defaults()
 	await _flush()
@@ -39,7 +37,6 @@ func _test_cardfront_event_label_has_fire_status() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
-	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -51,15 +48,12 @@ func _test_cardfront_event_label_has_fire_status() -> void:
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
-
-
 func _test_cardfront_fps_label_hidden() -> void:
 	GameConfig.reset_runtime_defaults()
 	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
-	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -78,7 +72,6 @@ func _test_ballwar_old_event_hud_still_works() -> void:
 
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
-	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_BASIC
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
@@ -86,55 +79,6 @@ func _test_ballwar_old_event_hud_still_works() -> void:
 	var event_label = main._hud_ref("event_label")
 	_assert.that(event_label != null, "hud: BallWar event_label should exist")
 	_assert.that(event_label.visible, "hud: BallWar event_label should be visible")
-
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
-
-
-func _test_device_count_updates_status_text() -> void:
-	GameConfig.reset_runtime_defaults()
-	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
-
-	var main = load("res://scripts/Main.gd").new()
-	get_root().add_child(main)
-	main.cardfront_legacy_compatibility_enabled = true
-	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
-	main.selected_grid_size = 20
-	main._start_game(20, true, false)
-
-	main._update_cardfront_status_label()
-	var text: String = str(main._cardfront_status_label().text)
-	_assert.that(text.find("射击") >= 0, "hud: status should show fire status (got: %s)" % text)
-	_assert.that(text.find("设备") == -1, "hud: status should NOT show device counts (now in formal UI)")
-
-	main._cleanup_game_layer()
-	TestFixtures.cleanup_node(main)
-
-
-func _test_status_text_updates_after_device_change() -> void:
-	GameConfig.reset_runtime_defaults()
-	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
-
-	var main = load("res://scripts/Main.gd").new()
-	get_root().add_child(main)
-	main.cardfront_legacy_compatibility_enabled = true
-	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
-	main.selected_grid_size = 20
-	main._start_game(20, true, false)
-
-	main._update_cardfront_status_label()
-	var before: String = str(main._cardfront_status_label().text)
-
-	var DevicePlacementRequestScript = load("res://scripts/cardfront/devices/DevicePlacementRequest.gd")
-	var DeviceTypeScript = load("res://scripts/cardfront/devices/DeviceType.gd")
-	var CardfrontRulesScript = load("res://scripts/cardfront/CardfrontRules.gd")
-
-	var player_cell := Vector2i(2, int(main.runtime.battlefield.grid_size) - 1)
-	var req = DevicePlacementRequestScript.make(DeviceTypeScript.ENGINEER_BOT, CardfrontRulesScript.PLAYER_FACTION, player_cell)
-	main.runtime.device_layer.place(req)
-	main._update_cardfront_status_label()
-
-	_assert.that(main.runtime.device_layer.get_all_active_devices().size() > 0, "device should be placed")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

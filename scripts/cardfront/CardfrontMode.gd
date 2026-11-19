@@ -58,52 +58,12 @@ static func create_region_control_blocks(game_layer: Node, region_map, battlefie
 	return CardfrontRuntimeBuilderScript.create_region_control_blocks(game_layer, region_map, battlefield)
 
 
-static func create_economy(game_layer: Node, battlefield, region_map) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_economy(game_layer, battlefield, region_map)
-
-
-static func create_morale(game_layer: Node, battlefield, region_map) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_morale(game_layer, battlefield, region_map)
-
-
 static func create_fortify(game_layer: Node, battlefield, region_map) -> Dictionary:
 	return CardfrontRuntimeBuilderScript.create_fortify(game_layer, battlefield, region_map)
 
 
-static func create_target_bias(game_layer: Node, region_map) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_target_bias(game_layer, region_map)
-
-
-static func create_card_system(resource_states: Dictionary, region_map, battlefield, fortify_layer, morale_system, region_overlay, target_bias_system = null) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_card_system(resource_states, region_map, battlefield, fortify_layer, morale_system, region_overlay, target_bias_system)
-
-
-static func create_fire_director(game_layer: Node, region_map, battlefield, turrets: Dictionary, target_bias_system = null) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_fire_director(game_layer, region_map, battlefield, turrets, target_bias_system)
-
-
-static func create_shot_guide(game_layer: Node, battlefield, target_bias_system, turrets: Dictionary, region_map) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_shot_guide(game_layer, battlefield, target_bias_system, turrets, region_map)
-
-
-static func create_device_layer(game_layer: Node, battlefield, region_map) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_device_layer(game_layer, battlefield, region_map)
-
-
-static func create_absorber_core_effect_system(game_layer: Node, device_layer, bullet_pool, resource_states: Dictionary, battlefield, vfx_layer = null) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_absorber_core_effect_system(game_layer, device_layer, bullet_pool, resource_states, battlefield, vfx_layer)
-
-
-static func create_engineer_bot_effect_system(game_layer: Node, device_layer, fortify_layer, battlefield, region_map, vfx_layer = null) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_engineer_bot_effect_system(game_layer, device_layer, fortify_layer, battlefield, region_map, vfx_layer)
-
-
-static func create_durable_pioneer_beacon_effect_system(game_layer: Node, device_layer, battlefield, region_map, vfx_layer = null) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_durable_pioneer_beacon_effect_system(game_layer, device_layer, battlefield, region_map, vfx_layer)
-
-
-static func create_vfx_layer(game_layer: Node, battlefield, region_map) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_vfx_layer(game_layer, battlefield, region_map)
+static func create_fire_director(game_layer: Node, region_map, battlefield, turrets: Dictionary) -> Dictionary:
+	return CardfrontRuntimeBuilderScript.create_fire_director(game_layer, region_map, battlefield, turrets)
 
 
 static func create_aim_control(ui_layer: Node, direction_controller, layout: Dictionary) -> Dictionary:

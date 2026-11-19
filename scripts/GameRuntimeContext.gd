@@ -13,22 +13,11 @@ var region_map = null
 var region_overlay = null
 var region_control_block_layer = null
 var stronghold_system = null
-var economy_system = null
-var morale_system = null
 var fortify_layer = null
 var fortify_overlay = null
 var territory_defense_system = null
 var support_capture_runtime = null
-var target_bias_system = null
 var fire_director = null
-var card_system = null
-var shot_guide_layer = null
-var device_layer = null
-var device_overlay_layer = null
-var cardfront_vfx_layer = null
-var absorber_core_effect_system = null
-var engineer_bot_effect_system = null
-var durable_pioneer_beacon_effect_system = null
 var region_info_panel = null
 var arena_presentation_layer = null
 var orthographic_arena_view = null
@@ -47,8 +36,6 @@ var three_choice_panel = null
 var battle_hero_hud = null
 var hero_assignments: Dictionary = {}
 var faction_run_states: Dictionary = {}
-var resource_states: Dictionary = {}
-var last_yield_snapshot: Dictionary = {}
 var current_config: Dictionary = {}
 var current_layout: Dictionary = {}
 
@@ -65,22 +52,11 @@ func reset() -> void:
     region_overlay = null
     region_control_block_layer = null
     stronghold_system = null
-    economy_system = null
-    morale_system = null
     fortify_layer = null
     fortify_overlay = null
     territory_defense_system = null
     support_capture_runtime = null
-    target_bias_system = null
     fire_director = null
-    card_system = null
-    shot_guide_layer = null
-    device_layer = null
-    device_overlay_layer = null
-    cardfront_vfx_layer = null
-    absorber_core_effect_system = null
-    engineer_bot_effect_system = null
-    durable_pioneer_beacon_effect_system = null
     region_info_panel = null
     arena_presentation_layer = null
     orthographic_arena_view = null
@@ -99,8 +75,6 @@ func reset() -> void:
     battle_hero_hud = null
     hero_assignments.clear()
     faction_run_states.clear()
-    resource_states.clear()
-    last_yield_snapshot.clear()
     current_config.clear()
     current_layout.clear()
 

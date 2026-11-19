@@ -9,10 +9,7 @@ const QueryScript = preload("res://scripts/cardfront/deployment/DeploymentQuery.
 const RuleTypeScript = preload("res://scripts/cardfront/deployment/DeploymentRuleType.gd")
 const DeploymentRulesScript = preload("res://scripts/cardfront/deployment/DeploymentRules.gd")
 const PreviewScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
-const CardDataScript = preload("res://scripts/cardfront/cards/CardData.gd")
-const RequestScript = preload("res://scripts/cardfront/cards/CardPlayRequest.gd")
 const TargetTypeScript = preload("res://scripts/cardfront/cards/CardTargetType.gd")
-const TargetRuleScript = preload("res://scripts/cardfront/targets/target_rules/FrontlineDeploymentTargetRule.gd")
 
 var _assert: TestAssert
 var _battlefield: Battlefield
@@ -75,19 +72,9 @@ func _test_preview_revision_is_not_commit_permission() -> void:
 	_authority.context = ContextScript.core_only(_map_definition, Rules.PLAYER_FACTION)
 	_authority.revision = 2
 	_assert.that(_layer.is_valid_target(target), "preview parity: old rendered preview remains a stale visual until refresh")
-	var card = CardDataScript.new()
-	card.card_name = "Fixture Frontline Deployment"
-	card.target_type = TargetTypeScript.FRONTLINE_DEPLOYMENT
-	card.params = (_card_snapshot().params as Dictionary).duplicate(true)
-	var req = RequestScript.make(99002, Rules.PLAYER_FACTION, target, -1)
-	var provider := func(_owner_id: int): return (_authority.context as Dictionary).duplicate(true)
-	var commit_result = TargetRuleScript.new().validate(req, card, {
-		"battlefield": _battlefield,
-		"region_map": null,
-		"deployment_context_provider": provider,
-	})
-	_assert.that(not commit_result.success, "preview parity: current commit authority rejects stale visual")
-	_assert.eq(commit_result.authority_reason, DeploymentRulesScript.REASON_SUPPORT_OFFLINE, "preview parity: stale visual cannot mask current authority reason")
+	var current_result = _evaluate(target)
+	_assert.that(not current_result.allowed, "preview parity: current deployment authority rejects stale visual")
+	_assert.eq(current_result.reason, DeploymentRulesScript.REASON_SUPPORT_OFFLINE, "preview parity: stale visual cannot mask current authority reason")
 	_layer.show_for_card(99002, _card_snapshot())
 	_assert.eq(_layer.get_preview_revision(), 2, "preview parity: refresh records new revision")
 	_assert.that(not _layer.is_valid_target(target), "preview parity: refresh removes offline Support target")

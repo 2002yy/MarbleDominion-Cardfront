@@ -11,9 +11,9 @@ Current version, active implementation slice, next step, and deferred scope are 
 
 ## Live v0.3 Loop / 当前主玩法
 
-The default Cardfront runtime is the lean 1v1 loop: manual aim, paused three-choice upgrade, simultaneous automatic volleys, visible per-cell territory defense, and 40-health command chambers. The former four-card hand and its UI/feedback chain have been deleted; low-level Energy/Parts economy, morale, card effects, and devices remain behind an explicit compatibility flag for focused simulation tests only.
+The default Cardfront runtime is the lean 1v1 loop: manual aim, paused three-choice upgrade, simultaneous automatic volleys, visible per-cell territory defense, and 40-health command chambers. The former fixed four-card hand, Energy/Parts economy, morale, card/device effects, and dedicated compatibility runtime have been retired.
 
-当前默认 Cardfront 只装配“瞄准 -> 暂停三选一 -> 双方自动齐射 -> 领土护甲 -> 摧毁控制舱”主循环。旧四卡手牌及其点格交互、提示反馈界面已经删除；旧经济、士气、卡牌效果与装置的底层逻辑暂留在显式测试兼容装配中。
+当前默认 Cardfront 只装配“瞄准 -> 暂停三选一 -> 双方自动齐射 -> 领土护甲 -> 摧毁控制舱”主循环。旧四卡手牌、经济、士气、装置特效及其测试兼容装配均已退役。
 
 The current arena is still a transitional `Node2D` presentation. `ENERGY`, `FACTORY`, and `LAB` shapes remain visible but do not yet provide live bonuses; the committed next steps are an explicit tactical-stronghold contract followed by a real orthographic `Camera3D` 2.5D arena spike.
 
@@ -25,9 +25,9 @@ v0.2 originally provided a four-card hand, Energy/Parts minibar, card target cli
 
 旧版固定四卡手牌、资源栏、点格出牌、反馈气泡、教程提示等界面与对应测试已整体退役。现役玩家使用 v0.3 的三选一升级界面。历史实现与设计决策可在 Git 历史和 `docs/历史_history/` 中查阅。
 
-The optional `cardfront_legacy_compatibility_enabled` flag still assembles **low-level** legacy economy, morale, fixed-card effects, device effects, and VFX for the remaining focused simulation tests. It no longer restores the v0.2 player-facing UI. This is a transitional test compatibility boundary, not a supported second gameplay mode.
+The v0.2 compatibility flag and low-level legacy assembly are also removed. The current three-choice round director, fortification, territory defense, deployment resolver, and fire director remain in use and continue to be tested.
 
-兼容开关仍能创建旧经济、士气、卡牌效果和装置等底层模块供现存测试使用，但不再恢复旧玩家界面。后续是否删除底层功能，需要进一步确认它们与现役玩法的共享依赖。
+兼容开关与旧底层模块已经移除；仍承担现役玩法职责的据点、领土护甲、三选一升级、射击和部署判定保持不变。
 
 ## Screenshots / 截图
 
@@ -47,17 +47,14 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 - `scripts/cardfront/CardfrontBattlefieldInitializer.gd` — player/AI/neutral initial owner-grid generation.
 - `scripts/cardfront/regions/RegionMap.gd` — deterministic region instance map used by Cardfront systems.
 - `scripts/cardfront/regions/RegionControlCalculator.gd` — per-region player / AI / neutral control statistics.
-- `scripts/cardfront/economy/` — resource state, region yield rules, yield calculator, economy tick system, and debug panel.
-- `scripts/cardfront/morale/` — region-local morale rules and deterministic morale tick system.
-- `scripts/cardfront/cards/` — fixed-hand card catalog, play request/result, cost checks, target validation, effect dispatch, and rollback.
-- `scripts/cardfront/effects/CardfrontTargetBiasSystem.gd` — Cardfront-only target-region bias state used by Calibrated Shot.
-- `scripts/cardfront/effects/PioneerBeaconLiteEffect.gd` — one-shot Pioneer Beacon neutral-cell pulse logic.
+- `scripts/cardfront/deployment/` — current Core/Support deployment rules, target preview parity, and placement resolver.
+- `scripts/cardfront/strongholds/` and `scripts/cardfront/defense/` — live tactical strongholds and territory defense.
+- `scripts/cardfront/run/` and `scripts/cardfront/draft/` — the three-choice draft, battle-phase coordination, and upgrades.
 - `scripts/cardfront/fire/` — Cardfront-only fire rules, target scoring, fire intent data, and fire director.
 - `scripts/cardfront/runtime/` — Cardfront runtime assembly builder, named refs, and result-to-runtime registry.
-- `scripts/cardfront/ui/` — Cardfront formal HUD, hand cards, selection controller, feedback bus, detail popup, toasts, UI asset registry, and light audio/visual feedback bridges.
-- `scripts/cardfront/vfx/CardfrontVfxLayer.gd` — reusable Cardfront visible-effect layer for card/device feedback.
+- `scripts/cardfront/ui/` — current formal HUD, three-choice panel, deployment preview, and UI assets.
 - `scripts/cardfront/regions/RegionOverlayLayer.gd` — lightweight Cardfront-only region visualization.
-- `scripts/cardfront/CardfrontMode.gd` — mode policy/facade for Cardfront identity and compatibility calls.
+- `scripts/cardfront/CardfrontMode.gd` — mode policy/facade for the active Cardfront loop.
 - `scripts/Battlefield.gd` — owns generic owner grids, owner counts, painting, and draw color overrides.
 - `scripts/WinConditionEvaluator.gd` — adds Cardfront win evaluation beside the existing BallWar modes.
 - `scripts/Main.gd` — stays orchestration-only and delegates Cardfront rules to `scripts/cardfront/`.
@@ -87,39 +84,12 @@ Run with Godot 4.6:
 CI gate: [`.github/workflows/headless-tests.yml`](.github/workflows/headless-tests.yml) runs these as batch jobs on push and pull request.
 
 ```powershell
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontPerformanceSmokeTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontBottomHudStatusTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVfxLayerTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVisibleEffectBridgeTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontRuntimeSnapshotTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontRuntimeBuilderTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeviceOverlayLayerTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeviceCoreTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/AbsorberCoreLiteTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EngineerBotLiteTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DurablePioneerBeaconTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/FortifyLayerTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardEffectResolverTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardCoreLiteTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardFirstEffectsTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFireDirectorTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFireDirectorTurretIntegrationTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontControlChamberDecouplingTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/PioneerBeaconLiteTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontTargetBiasTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontModeSmokeTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/NeutralOwnerCompatibilityTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/DeploymentRulesTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMoraleTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/EconomyTickTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontVisualPolicyTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/VisualPressurePolicyTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/RegionMapTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFormalUITestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontTargetPreviewTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontUiAssetRegistryTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/SmokeTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/IntegrationTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontLiveRuntimeBoundaryTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFireDirectorTurretIntegrationTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDeploymentAuthorityRefreshTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDeploymentThreeConsumerParityTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontRuntimeSnapshotTestRunner.gd
 ```
 
 Current checks run in `.github/workflows/headless-tests.yml`, `b1-simulation-tests.yml`, and `shared-upgrade-ai-tests.yml`. The old v0.2.5.2 local assertion-count snapshot is historical and no longer a valid current test inventory.

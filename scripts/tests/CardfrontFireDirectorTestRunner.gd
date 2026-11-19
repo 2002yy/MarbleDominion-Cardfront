@@ -2,7 +2,6 @@ extends SceneTree
 
 const CardfrontFireDirectorScript = preload("res://scripts/cardfront/fire/CardfrontFireDirector.gd")
 const CardfrontFireRulesScript = preload("res://scripts/cardfront/fire/CardfrontFireRules.gd")
-const CardfrontTargetBiasSystemScript = preload("res://scripts/cardfront/effects/CardfrontTargetBiasSystem.gd")
 const RegionMapScript = preload("res://scripts/cardfront/regions/RegionMap.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 
@@ -35,8 +34,7 @@ func _run() -> void:
 	print("[CardfrontFireDirectorTest] Starting Cardfront fire director tests")
 	await process_frame
 
-	_test_base_intent_without_target_bias()
-	_test_target_bias_controls_intent_region()
+	_test_base_intent()
 	_test_tick_requests_turret_fire()
 	_test_interval_limits_fire_frequency()
 	_test_owner_shot_budget_hard_limit()
@@ -58,33 +56,17 @@ func _flush() -> void:
 	await process_frame
 
 
-func _test_base_intent_without_target_bias() -> void:
+func _test_base_intent() -> void:
 	var fixture: Dictionary = _make_fixture()
 	var director = fixture.director
 	var intent = director.build_intent(CardfrontRulesScript.PLAYER_FACTION)
 
-	_assert.that(intent != null, "fire director: base intent should be generated without target bias")
+	_assert.that(intent != null, "fire director: base intent should be generated")
 	if intent != null:
 		_assert.eq(intent.owner_id, CardfrontRulesScript.PLAYER_FACTION, "fire director: intent owner")
 		_assert.that(fixture.rm.is_inside(intent.target_cell), "fire director: target cell should be inside region map")
 		_assert.that(intent.target_region_id >= 0, "fire director: target region should be valid")
 		_assert.that(intent.shot_count >= 1, "fire director: intent should request at least one shot")
-		_assert.neq(intent.reason, CardfrontFireRulesScript.REASON_TARGET_BIAS, "fire director: base intent should not be marked as target bias")
-
-	_cleanup_fixture(fixture)
-
-
-func _test_target_bias_controls_intent_region() -> void:
-	var fixture: Dictionary = _make_fixture()
-	var biased_region_id: int = _first_targetable_region_id(fixture.rm, fixture.bf, CardfrontRulesScript.PLAYER_FACTION)
-	fixture.target_bias_system.apply_region_bias(CardfrontRulesScript.PLAYER_FACTION, biased_region_id, 5.0)
-
-	var intent = fixture.director.build_intent(CardfrontRulesScript.PLAYER_FACTION)
-
-	_assert.that(intent != null, "fire director: biased intent should be generated")
-	if intent != null:
-		_assert.eq(intent.target_region_id, biased_region_id, "fire director: target bias should control target region")
-		_assert.eq(intent.reason, CardfrontFireRulesScript.REASON_TARGET_BIAS, "fire director: biased intent reason")
 
 	_cleanup_fixture(fixture)
 
@@ -183,9 +165,6 @@ func _make_fixture(include_ai: bool = false) -> Dictionary:
 	rm.configure(20)
 	rm.generate_default_layout()
 
-	var target_bias_system = CardfrontTargetBiasSystemScript.new()
-	target_bias_system.setup(rm)
-
 	var player_turret = MockTurret.new()
 	player_turret.global_position = Vector2(-80.0, 100.0)
 	var turrets: Dictionary = {
@@ -200,30 +179,17 @@ func _make_fixture(include_ai: bool = false) -> Dictionary:
 		active_factions.append(CardfrontRulesScript.AI_FACTION)
 
 	var director = CardfrontFireDirectorScript.new()
-	director.setup(rm, bf, turrets, target_bias_system, active_factions)
+	director.setup(rm, bf, turrets, active_factions)
 
 	return {
 		"bf": bf,
 		"rm": rm,
-		"target_bias_system": target_bias_system,
 		"director": director,
 		"player_turret": player_turret,
 		"ai_turret": ai_turret,
 	}
 
 
-func _first_targetable_region_id(region_map, battlefield, owner_id: int) -> int:
-	var ids: Array = region_map.get_controllable_region_ids()
-	for region_id_value in ids:
-		var region_id: int = int(region_id_value)
-		for cell_value in region_map.get_region_cells(region_id):
-			var cell: Vector2i = cell_value
-			if int(battlefield.owners[cell.x][cell.y]) != owner_id:
-				return region_id
-	return -1
-
-
 func _cleanup_fixture(fixture: Dictionary) -> void:
 	TestFixtures.cleanup_node(fixture.get("bf", null))
-	TestFixtures.cleanup_node(fixture.get("target_bias_system", null))
 	TestFixtures.cleanup_node(fixture.get("director", null))
