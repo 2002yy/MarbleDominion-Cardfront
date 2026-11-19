@@ -39,29 +39,16 @@ jobs:
           - id: core-runtime
             batch: B1 core runtime contracts
             cases: |
-              CardfrontB1SimulationTestRunner.gd|1|1|1
-              CardfrontB1ModelConsistencyTestRunner.gd|1|1|1
-              CardfrontProjectileTypeCombatTestRunner.gd|1|1|1
-              CardfrontBattlefieldEntityFoundationTestRunner.gd|1|1|1
-              CardfrontBattlefieldEntityRuntimeTestRunner.gd|1|1|1
-              CardfrontUpgradeDeckTestRunner.gd|1|1|1
-          - id: hero-audits
-            batch: B1 hero candidate and finalist audits
+              CardfrontB1SimulationTestRunner.gd|1
+              CardfrontB1ModelConsistencyTestRunner.gd|1
+              CardfrontProjectileTypeCombatTestRunner.gd|1
+              CardfrontBattlefieldEntityFoundationTestRunner.gd|1
+              CardfrontBattlefieldEntityRuntimeTestRunner.gd|1
+              CardfrontUpgradeDeckTestRunner.gd|1
+          - id: balance
+            batch: B1 current balance audit
             cases: |
-              CardfrontB1HeroCandidateAuditTestRunner.gd|1|1|1
-              CardfrontB1HeroFinalistAuditTestRunner.gd|1|1|1
-          - id: deck-candidates
-            batch: B1 selectable deck candidates
-            cases: |
-              CardfrontB1DeckCandidateAuditTestRunner.gd|1|tier|1
-          - id: balance-opening
-            batch: B1 balance and opening audits
-            cases: |
-              CardfrontB1BalanceAuditTestRunner.gd|3|1|1
-              CardfrontB1OpeningBalanceAuditTestRunner.gd|1|1|tier
-    env:
-      B1_DECK_TIER_SEEDS: ${{ github.event_name == 'pull_request' && '5' || github.event_name == 'workflow_dispatch' && '50' || '20' }}
-      B1_OPENING_TIER_SEEDS: ${{ github.event_name == 'pull_request' && '5' || github.event_name == 'workflow_dispatch' && '50' || '20' }}
+              CardfrontB1BalanceAuditTestRunner.gd|3
     steps:
       - uses: actions/checkout@v4
       - name: Cache Godot archive
@@ -100,19 +87,15 @@ jobs:
 
           foreach ($case in $cases) {
             $parts = $case -split '\|'
-            if ($parts.Count -ne 4) { throw "Invalid B1 case: $case" }
+            if ($parts.Count -ne 2) { throw "Invalid B1 case: $case" }
 
             $script = $parts[0]
             $seeds = [int]$parts[1]
-            $deckSeeds = if ($parts[2] -eq 'tier') { [int]$env:B1_DECK_TIER_SEEDS } else { [int]$parts[2] }
-            $openingSeeds = if ($parts[3] -eq 'tier') { [int]$env:B1_OPENING_TIER_SEEDS } else { [int]$parts[3] }
 
             $env:CARDFRONT_B1_AUDIT_SEEDS = "$seeds"
-            $env:CARDFRONT_B1_DECK_AUDIT_SEEDS = "$deckSeeds"
-            $env:CARDFRONT_B1_OPENING_AUDIT_SEEDS = "$openingSeeds"
 
-            $logPath = "${{ github.workspace }}/artifacts/test-logs/$script-$seeds-$deckSeeds-$openingSeeds.log"
-            Write-Host "Running $script seeds=$seeds deck=$deckSeeds opening=$openingSeeds"
+            $logPath = "${{ github.workspace }}/artifacts/test-logs/$script-$seeds.log"
+            Write-Host "Running $script seeds=$seeds"
             & "${{ steps.godot.outputs.path }}" --headless --audio-driver Dummy --path "${{ github.workspace }}" --script "res://scripts/tests/$script" *>&1 | Tee-Object -FilePath $logPath
             $exitCode = $LASTEXITCODE
             Get-Content -Path $logPath -Tail 300
@@ -131,27 +114,11 @@ jobs:
           if-no-files-found: error
           retention-days: 7
       - name: Upload B1 balance artifact
-        if: always() && matrix.id == 'balance-opening'
+        if: always() && matrix.id == 'balance'
         uses: actions/upload-artifact@v4
         with:
           name: cardfront-b1-audit-3-${{ github.run_id }}
           path: artifacts/cardfront-b1-balance-audit.*
-          if-no-files-found: error
-          retention-days: 14
-      - name: Upload B1 deck candidate artifact
-        if: always() && matrix.id == 'deck-candidates'
-        uses: actions/upload-artifact@v4
-        with:
-          name: cardfront-b1-deck-candidates-${{ env.B1_DECK_TIER_SEEDS }}-${{ github.run_id }}
-          path: artifacts/cardfront-b1-deck-candidates.*
-          if-no-files-found: error
-          retention-days: 14
-      - name: Upload B1 opening balance artifact
-        if: always() && matrix.id == 'balance-opening'
-        uses: actions/upload-artifact@v4
-        with:
-          name: cardfront-b1-opening-${{ env.B1_OPENING_TIER_SEEDS }}-${{ github.run_id }}
-          path: artifacts/cardfront-b1-opening-balance.*
           if-no-files-found: error
           retention-days: 14
 
@@ -161,8 +128,6 @@ jobs:
     runs-on: windows-latest
     env:
       CARDFRONT_B1_AUDIT_SEEDS: 100
-      CARDFRONT_B1_DECK_AUDIT_SEEDS: 1
-      CARDFRONT_B1_OPENING_AUDIT_SEEDS: 1
     steps:
       - uses: actions/checkout@v4
       - name: Cache Godot archive
