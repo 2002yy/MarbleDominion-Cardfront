@@ -4,6 +4,10 @@ const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd"
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 const MapRegistryScript = preload("res://scripts/cardfront/maps/CardfrontMapRegistry.gd")
 
+class DeploymentZoneSignalProbe:
+	extends RefCounted
+	signal deployment_zone_changed(cells: Array, revision: int)
+
 var _assert: TestAssert
 
 
@@ -62,6 +66,7 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 	_assert.eq(view.get_gate_count_for_test(), 2, "orthographic arena: both bridge lanes should expose a gate")
 	_assert.eq(view.get_support_visual_count_for_test(), 7, "orthographic arena: every authored support_id should own one live visual")
 	_assert.eq(view.get_support_presentation_update_count_for_test(), 7, "orthographic arena: initial Support presentation should update once per authored ID")
+	_test_dormant_deployment_zone(view)
 	var player_core_visual = view.support_presentation_layer.get_visual("core_player")
 	_assert.that(player_core_visual != null, "orthographic arena: player Core support visual should be bound by stable ID")
 	if player_core_visual != null:
@@ -319,6 +324,30 @@ func _test_cardfront_builds_true_3d_mirror() -> void:
 
 	TestFixtures.cleanup_node(main)
 	await _flush()
+
+
+func _test_dormant_deployment_zone(view) -> void:
+	var zone = view.deployment_zone_layer
+	_assert.that(zone != null, "deployment zone: future 3D presentation layer is retained")
+	if zone == null:
+		return
+	_assert.that(not zone.visible, "deployment zone: no live targeting controller means hidden by default")
+	_assert.eq(view.get_deployment_zone_cell_count_for_test(), 0, "deployment zone: no default preview cells")
+	_assert.that(view.deployment_zone_source == null, "deployment zone: live three-choice does not bind legacy targeting")
+	_assert.that(not zone.has_collision_authority(), "deployment zone: result-only visualization cannot own collision authority")
+	var source := DeploymentZoneSignalProbe.new()
+	_assert.that(view.set_deployment_zone_source(source), "deployment zone: accepts an independent future signal source")
+	source.deployment_zone_changed.emit([Vector2i(4, 7), Vector2i(3, 2), Vector2i(4, 7)], 42)
+	_assert.eq(zone.get_visible_cells_for_test(), [Vector2i(3, 2), Vector2i(4, 7)], "deployment zone: projects detached cells without duplicates")
+	_assert.eq(zone.multimesh.visible_instance_count, 2, "deployment zone: one 3D marker per unique cell")
+	_assert.that(zone.visible, "deployment zone: valid nonempty published result becomes visible")
+	_assert.eq(zone.last_revision, 42, "deployment zone: retains the authoritative result revision")
+	_assert.that(not view.set_deployment_zone_source(null), "deployment zone: disconnect clears the presentation")
+	_assert.that(not zone.visible, "deployment zone: removed source hides the old markers")
+	_assert.eq(zone.last_revision, -1, "deployment zone: removed source invalidates the preview revision")
+	var count_after_disconnect: int = zone.update_count
+	source.deployment_zone_changed.emit([Vector2i(8, 8)], 43)
+	_assert.eq(zone.update_count, count_after_disconnect, "deployment zone: detached source cannot update arena state")
 
 
 func _test_ballwar_does_not_build_3d_mirror() -> void:

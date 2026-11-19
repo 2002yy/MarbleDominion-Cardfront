@@ -25,9 +25,9 @@ v0.2 originally provided a four-card hand, Energy/Parts minibar, card target cli
 
 旧版固定四卡手牌、资源栏、点格出牌、反馈气泡、教程提示等界面与对应测试已整体退役。现役玩家使用 v0.3 的三选一升级界面。历史实现与设计决策可在 Git 历史和 `docs/历史_history/` 中查阅。
 
-The v0.2 compatibility flag and low-level legacy assembly are also removed. The former targeted-card preview and unconnected 3D deployment-zone display seam are retired as well: the live v0.3 loop has no player-facing targeted deployment selection. The current three-choice round director, fortification, territory defense, Core/Support deployment resolver, and fire director remain in use and continue to be tested.
+The v0.2 compatibility flag, low-level legacy assembly, and targeted-card preview have also been retired. The independent, result-only 3D deployment-zone layer and its optional signal binding remain dormant for a future authorized targeting controller; the live v0.3 loop has no player-facing targeted deployment selection and binds no such source. The three-choice round director, fortification, territory defense, Core/Support deployment resolver, and fire director remain in use and continue to be tested.
 
-兼容开关、旧底层模块及从未接入正式三选一的定向部署预览已移除；仍承担现役玩法职责的据点、领土护甲、三选一升级、射击和 Core/Support 部署判定保持不变。
+兼容开关、旧底层模块及旧卡牌目标预览已移除。独立的 3D 合法部署区域显示层及其可选信号接入口继续保留，但正式三选一没有玩家定向部署入口，因此默认隐藏、不接入旧卡牌系统。现役据点、领土护甲、三选一升级、射击和 Core/Support 部署判定保持不变。
 
 ## Screenshots / 截图
 

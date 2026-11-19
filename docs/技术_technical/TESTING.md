@@ -3,7 +3,7 @@
 Date: 2026-07-23
 Role: test matrix and run guidance / 测试矩阵与运行建议
 
-> Historical inventory note (2026-11-20): The older runner lists and v0.2 compatibility instructions below describe the original development stages, not the current executable CI inventory. The authoritative active runner paths are in `.github/workflows/headless-tests.yml`, `b1-simulation-tests.yml`, and `shared-upgrade-ai-tests.yml`. The dormant targeted-card preview / deployment-zone display suites are retired; current Core/Support legality, AI and automatic-spawn contracts remain covered.
+> Historical inventory note (2026-11-20): The older runner lists and v0.2 compatibility instructions below describe the original development stages, not the current executable CI inventory. The authoritative active runner paths are in `.github/workflows/headless-tests.yml`, `b1-simulation-tests.yml`, and `shared-upgrade-ai-tests.yml`. The old targeted-card preview suites and dedicated deployment-zone visualization runner are retired; the independent dormant 3D deployment-zone signal/display contract is now checked within `CardfrontOrthographicArenaTestRunner.gd`. Current Core/Support legality, AI and automatic-spawn contracts remain covered.
 
 ## Correctness Baseline / 正确性基线
 
