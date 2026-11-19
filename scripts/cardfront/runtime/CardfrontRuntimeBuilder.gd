@@ -22,7 +22,6 @@ const EngineerBotEffectSystemScript = preload("res://scripts/cardfront/devices/e
 const DurablePioneerBeaconEffectSystemScript = preload("res://scripts/cardfront/devices/effects/DurablePioneerBeaconEffectSystem.gd")
 const CardfrontDeviceOverlayLayerScript = preload("res://scripts/cardfront/devices/CardfrontDeviceOverlayLayer.gd")
 const CardfrontVfxLayerScript = preload("res://scripts/cardfront/vfx/CardfrontVfxLayer.gd")
-const CardfrontTargetPreviewLayerScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
 const CardfrontArenaBuilderScript = preload("res://scripts/cardfront/arena/CardfrontArenaBuilder.gd")
 const CardfrontPresentationModeControllerScript = preload("res://scripts/cardfront/arena/CardfrontPresentationModeController.gd")
 const CardfrontRoundDirectorScript = preload("res://scripts/cardfront/run/CardfrontRoundDirector.gd")
@@ -100,8 +99,6 @@ func build_world_layers(game_layer: Node, runtime) -> Dictionary:
 	if not _record_or_fail("shot_guide", create_shot_guide(game_layer, runtime.battlefield, runtime.target_bias_system, runtime.turrets, runtime.region_map), runtime):
 		return _build_result(false)
 	if not _record_or_fail("device_layer", create_device_layer(game_layer, runtime.battlefield, runtime.region_map), runtime):
-		return _build_result(false)
-	if not _record_or_fail("target_preview", create_target_preview_layer(game_layer, runtime.battlefield, runtime.region_map), runtime):
 		return _build_result(false)
 	if not _record_or_fail("vfx_layer", create_vfx_layer(game_layer, runtime.battlefield, runtime.region_map), runtime):
 		return _build_result(false)
@@ -226,7 +223,6 @@ func _clear_world_layer_refs(runtime) -> void:
 	runtime.shot_guide_layer = null
 	runtime.device_layer = null
 	runtime.device_overlay_layer = null
-	runtime.target_preview_layer = null
 	runtime.cardfront_vfx_layer = null
 	runtime.absorber_core_effect_system = null
 	runtime.engineer_bot_effect_system = null
@@ -522,20 +518,6 @@ static func create_device_layer(game_layer: Node, battlefield, region_map) -> Di
 		"configured": true,
 		"device_layer": device_layer,
 		"device_overlay": device_overlay,
-	}
-
-
-static func create_target_preview_layer(game_layer: Node, battlefield, region_map) -> Dictionary:
-	if game_layer == null or not is_instance_valid(game_layer):
-		return {"configured": false, "reason": "missing_game_layer"}
-
-	var layer = CardfrontTargetPreviewLayerScript.new()
-	layer.setup(battlefield, region_map, GameConfig.GAME_MODE_CARDFRONT)
-	game_layer.add_child(layer)
-
-	return {
-		"configured": true,
-		"target_preview_layer": layer,
 	}
 
 

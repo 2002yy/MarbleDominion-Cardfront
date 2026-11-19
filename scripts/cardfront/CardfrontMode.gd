@@ -5,16 +5,7 @@ const Rules = preload("res://scripts/cardfront/CardfrontRules.gd")
 const BattlefieldInitializer = preload("res://scripts/cardfront/CardfrontBattlefieldInitializer.gd")
 const CardfrontArenaLayoutScript = preload("res://scripts/cardfront/arena/CardfrontArenaLayout.gd")
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
-const CardfrontTopResourceBarScene = preload("res://scenes/ui/cardfront/CardfrontTopResourceBar.tscn")
-const CardfrontHandPanelScene = preload("res://scenes/ui/cardfront/CardfrontHandPanel.tscn")
-const CardfrontCardSelectionControllerScript = preload("res://scripts/cardfront/ui/CardfrontCardSelectionController.gd")
 const CardfrontRegionInfoPanelScript = preload("res://scripts/cardfront/ui/CardfrontRegionInfoPanel.gd")
-const CardfrontFeedbackBusScript = preload("res://scripts/cardfront/ui/CardfrontFeedbackBus.gd")
-const CardfrontCardDetailPopupScene = preload("res://scenes/ui/cardfront/CardfrontCardDetailPopup.tscn")
-const CardfrontToastLayerScene = preload("res://scenes/ui/cardfront/CardfrontToastLayer.tscn")
-const CardfrontEffectVisualBridgeScript = preload("res://scripts/cardfront/ui/CardfrontEffectVisualBridge.gd")
-const CardfrontCardAudioFeedbackScript = preload("res://scripts/cardfront/ui/CardfrontCardAudioFeedback.gd")
-const CardfrontTutorialOverlayScene = preload("res://scenes/ui/cardfront/CardfrontTutorialOverlay.tscn")
 const CardfrontAimControlScene = preload("res://scenes/ui/cardfront/CardfrontAimControl.tscn")
 const CardfrontThreeChoicePanelScene = preload("res://scenes/ui/cardfront/CardfrontThreeChoicePanel.tscn")
 const CardfrontBattlefieldScaleControlScene = preload("res://scenes/ui/cardfront/CardfrontBattlefieldScaleControl.tscn")
@@ -115,60 +106,6 @@ static func create_vfx_layer(game_layer: Node, battlefield, region_map) -> Dicti
 	return CardfrontRuntimeBuilderScript.create_vfx_layer(game_layer, battlefield, region_map)
 
 
-static func create_feedback_bus(ui_layer: Node) -> Dictionary:
-	if ui_layer == null or not is_instance_valid(ui_layer):
-		return {"configured": false, "reason": "missing_ui_layer"}
-
-	var bus = CardfrontFeedbackBusScript.new()
-	ui_layer.add_child(bus)
-
-	return {
-		"configured": true,
-		"feedback_bus": bus,
-	}
-
-
-static func create_feedback_layers(ui_layer: Node, feedback_bus, resource_states: Dictionary, view_size: Vector2) -> Dictionary:
-	if ui_layer == null or not is_instance_valid(ui_layer):
-		return {"configured": false, "reason": "missing_ui_layer"}
-	if feedback_bus == null:
-		return {"configured": false, "reason": "missing_feedback_bus"}
-
-	var player_state = resource_states.get(Rules.PLAYER_FACTION, null)
-	var detail_popup = CardfrontCardDetailPopupScene.instantiate()
-	ui_layer.add_child(detail_popup)
-	detail_popup.setup(feedback_bus, player_state, GameConfig.GAME_MODE_CARDFRONT)
-
-	var toast_layer = CardfrontToastLayerScene.instantiate()
-	ui_layer.add_child(toast_layer)
-	toast_layer.setup(feedback_bus, GameConfig.GAME_MODE_CARDFRONT, view_size)
-
-	var audio_feedback = CardfrontCardAudioFeedbackScript.new()
-	ui_layer.add_child(audio_feedback)
-	audio_feedback.setup(feedback_bus)
-
-	return {
-		"configured": true,
-		"card_detail_popup": detail_popup,
-		"toast_layer": toast_layer,
-		"card_audio_feedback": audio_feedback,
-	}
-
-
-static func create_tutorial_overlay(ui_layer: Node, view_size: Vector2 = Vector2(1120, 720)) -> Dictionary:
-	if ui_layer == null or not is_instance_valid(ui_layer):
-		return {"configured": false, "reason": "missing_ui_layer"}
-
-	var overlay = CardfrontTutorialOverlayScene.instantiate()
-	ui_layer.add_child(overlay)
-	overlay.setup(view_size)
-
-	return {
-		"configured": true,
-		"tutorial_overlay": overlay,
-	}
-
-
 static func create_aim_control(ui_layer: Node, direction_controller, layout: Dictionary) -> Dictionary:
 	if ui_layer == null or not is_instance_valid(ui_layer):
 		return {"configured": false, "reason": "missing_ui_layer"}
@@ -214,56 +151,6 @@ static func create_battlefield_scale_control(ui_layer: Node, orthographic_arena_
 	}
 
 
-static func create_effect_visual_bridge(game_layer: Node, feedback_bus, vfx_layer) -> Dictionary:
-	if game_layer == null or not is_instance_valid(game_layer):
-		return {"configured": false, "reason": "missing_game_layer"}
-	if feedback_bus == null:
-		return {"configured": false, "reason": "missing_feedback_bus"}
-
-	var bridge = CardfrontEffectVisualBridgeScript.new()
-	bridge.setup(feedback_bus, vfx_layer)
-	game_layer.add_child(bridge)
-
-	return {
-		"configured": true,
-		"effect_visual_bridge": bridge,
-	}
-
-
-static func create_top_resource_bar(ui_layer: Node, economy_system, resource_states: Dictionary) -> Dictionary:
-	if ui_layer == null or not is_instance_valid(ui_layer):
-		return {"configured": false, "reason": "missing_ui_layer"}
-
-	var bar = CardfrontTopResourceBarScene.instantiate()
-	ui_layer.add_child(bar)
-	bar.setup(economy_system, resource_states, GameConfig.GAME_MODE_CARDFRONT)
-
-	return {
-		"configured": true,
-		"top_resource_bar": bar,
-	}
-
-
-static func create_hand_panel(ui_layer: Node, card_system, resource_states: Dictionary, economy_system, view_size: Vector2, feedback_bus = null) -> Dictionary:
-	if ui_layer == null or not is_instance_valid(ui_layer):
-		return {"configured": false, "reason": "missing_ui_layer"}
-	if card_system == null:
-		return {"configured": false, "reason": "missing_card_system"}
-
-	var panel = CardfrontHandPanelScene.instantiate()
-	ui_layer.add_child(panel)
-	panel.setup(card_system, resource_states, economy_system, GameConfig.GAME_MODE_CARDFRONT, view_size, feedback_bus)
-
-	return {
-		"configured": true,
-		"hand_panel": panel,
-	}
-
-
-static func create_target_preview_layer(game_layer: Node, battlefield, region_map) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_target_preview_layer(game_layer, battlefield, region_map)
-
-
 static func create_region_info_panel(ui_layer: Node, region_map, battlefield, territory_defense_system = null, stronghold_system = null, layout: Dictionary = {}, arena_view = null) -> Dictionary:
 	if ui_layer == null or not is_instance_valid(ui_layer):
 		return {"configured": false, "reason": "missing_ui_layer"}
@@ -275,17 +162,6 @@ static func create_region_info_panel(ui_layer: Node, region_map, battlefield, te
 	return {
 		"configured": true,
 		"region_info_panel": panel,
-	}
-
-
-static func create_card_selection_controller(card_system, resource_states: Dictionary, hand_panel, top_resource_bar, target_preview = null, feedback_bus = null) -> Dictionary:
-	var controller = CardfrontCardSelectionControllerScript.new()
-	controller.setup(card_system, resource_states, hand_panel, top_resource_bar, target_preview, feedback_bus)
-	if hand_panel != null:
-		hand_panel.set_selection_controller(controller)
-	return {
-		"configured": true,
-		"selection_controller": controller,
 	}
 
 

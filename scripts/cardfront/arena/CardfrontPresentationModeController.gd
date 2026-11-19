@@ -16,7 +16,6 @@ static func activate_orthographic(runtime) -> Array[String]:
 	_hide_canvas_item(runtime.fortify_overlay, "fortify_overlay", hidden)
 	_hide_canvas_item(runtime.arena_presentation_layer, "arena_presentation", hidden)
 	_hide_canvas_item(runtime.aim_guide_layer, "aim_guide", hidden)
-	_hide_canvas_item(runtime.target_preview_layer, "target_preview", hidden)
 	_hide_canvas_item(runtime.device_overlay_layer, "device_overlay", hidden)
 	_hide_canvas_item(runtime.cardfront_vfx_layer, "vfx_layer", hidden)
 

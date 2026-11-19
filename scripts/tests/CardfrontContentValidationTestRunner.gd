@@ -4,7 +4,6 @@ const CardCatalogScript = preload("res://scripts/cardfront/cards/CardCatalog.gd"
 const CardPlaySystemScript = preload("res://scripts/cardfront/cards/CardPlaySystem.gd")
 const CardTargetTypeScript = preload("res://scripts/cardfront/cards/CardTargetType.gd")
 const CardTypeScript = preload("res://scripts/cardfront/cards/CardType.gd")
-const CardVisualRegistryScript = preload("res://scripts/cardfront/ui/CardVisualRegistry.gd")
 const CardfrontContentManifestScript = preload("res://scripts/cardfront/content/CardfrontContentManifest.gd")
 
 var _assert: TestAssert
@@ -95,10 +94,6 @@ func _test_visuals_are_declared() -> void:
 		var visual_id: String = str(definition.get("visual_id", ""))
 		var visual: Dictionary = CardfrontContentManifestScript.get_visual(visual_id)
 		_assert.that(not visual.is_empty(), "visuals: manifest visual should exist for %d" % int(card_id))
-		_assert.that(CardVisualRegistryScript.has_texture(int(card_id)), "visuals: registry should expose full texture for %d" % int(card_id))
-		_assert.that(CardVisualRegistryScript.has_thumbnail(int(card_id)), "visuals: registry should expose thumbnail for %d" % int(card_id))
-		_assert.that(CardVisualRegistryScript.get_texture_path(int(card_id)) != "", "visuals: full texture path should be non-empty")
-		_assert.that(CardVisualRegistryScript.get_thumbnail_path(int(card_id)) != "", "visuals: thumbnail path should be non-empty")
 
 
 func _test_default_hand_refs_exist() -> void:

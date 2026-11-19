@@ -29,27 +29,14 @@ func _make_main():
 	GameConfig.set_game_mode_by_name(GameConfig.GAME_MODE_CARDFRONT)
 	var main = load("res://scripts/Main.gd").new()
 	get_root().add_child(main)
-	main.cardfront_legacy_compatibility_enabled = true
 	main.selected_game_mode_name = GameConfig.GAME_MODE_CARDFRONT
 	main.selected_grid_size = 20
 	main._start_game(20, true, false)
-	if main.runtime.tutorial_overlay != null:
-		main.runtime.tutorial_overlay.visible = false
 	return main
 
 
 func _test_decorative_layers_ignore_mouse(main) -> void:
 	_assert.eq(main.get_node("MainBackground").mouse_filter, Control.MOUSE_FILTER_IGNORE, "click-through: full-screen background must not consume gameplay clicks")
-	var toast_box: Control = main.runtime.toast_layer.get_node("ToastBox")
-	_assert.eq(toast_box.mouse_filter, Control.MOUSE_FILTER_IGNORE, "click-through: toast container should not block battlefield clicks")
-	main.runtime.toast_layer.show_toast("测试提示")
-	var toast_label: Control = toast_box.get_child(0)
-	_assert.eq(toast_label.mouse_filter, Control.MOUSE_FILTER_IGNORE, "click-through: toast items should not block battlefield clicks")
-
-	var resource_margin: Control = main.runtime.top_resource_bar.get_node("Margin")
-	_assert.eq(resource_margin.mouse_filter, Control.MOUSE_FILTER_IGNORE, "click-through: resource bar shell should ignore mouse input")
-	_assert_controls_ignore(resource_margin, "resource bar")
-
 	var hud_canvas = main.runtime.hud.get("ui_canvas", null)
 	_assert.that(hud_canvas != null, "click-through: Cardfront HUD should exist")
 	if hud_canvas != null:
@@ -67,7 +54,6 @@ func _assert_controls_ignore(node: Node, label: String) -> void:
 
 
 func _test_real_card_and_battlefield_click(main) -> void:
-	_assert.that(not main.runtime.hand_panel.visible, "click-through: legacy hand should be retired from the live loop")
 	main.runtime.round_director.force_open_draft_for_test()
 	await _flush()
 	var cards: Array = main.runtime.three_choice_panel.get_choice_cards()

@@ -88,28 +88,12 @@ jobs:
               CardfrontRuntimeBuilderTestRunner.gd
               CardfrontFormalUITestRunner.gd
               CardfrontTargetPreviewTestRunner.gd
-              CardfrontBattlefieldClickSelectionTestRunner.gd
               CardfrontRegionControlBlockTestRunner.gd
-              CardfrontCardArtBindingTestRunner.gd
-              CardfrontCardDetailPopupTestRunner.gd
-              CardfrontCardFeedbackTestRunner.gd
-              CardfrontDisabledCardFeedbackTestRunner.gd
-              CardfrontActionHintTestRunner.gd
-              CardfrontToastLayerTestRunner.gd
-              CardfrontEffectVisualBridgeTestRunner.gd
-              CardfrontCardHoverMotionTestRunner.gd
-              CardfrontHandPanelGuidanceTestRunner.gd
-              CardfrontTargetPreviewGuidanceTestRunner.gd
           - batch: UI art debug and performance
             scripts: |
               CardfrontUiAssetRegistryTestRunner.gd
-              CardfrontUiArtSceneTestRunner.gd
-              CardfrontCardViewInteractionConfigTestRunner.gd
-              CardfrontHandRealHitboxTestRunner.gd
-              CardfrontHandCollapseLayoutTestRunner.gd
               CardfrontUiClickThroughTestRunner.gd
               CardfrontRegionInfoPanelVisibilityTestRunner.gd
-              CardfrontTopResourceBarMinimalTestRunner.gd
               CardfrontMatchFlowClarityTestRunner.gd
               CardfrontPerformanceSmokeTestRunner.gd
           - batch: Core loop and arena

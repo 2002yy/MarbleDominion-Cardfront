@@ -35,7 +35,8 @@ func _flush() -> void:
 
 func _test_registered_paths_have_fallbacks() -> void:
 	var ids: Array = CardfrontUiAssetRegistryScript.get_asset_ids()
-	_assert.gte(ids.size(), 8, "ui registry: should register core UI assets")
+	for required_id in ["font_kenney_future", "resource_panel_bg", "region_info_panel"]:
+		_assert.that(ids.has(required_id), "ui registry: live UI asset should be registered: %s" % required_id)
 	for asset_id in ids:
 		var path: String = CardfrontUiAssetRegistryScript.get_asset_path(str(asset_id))
 		var fallback: String = CardfrontUiAssetRegistryScript.get_fallback(str(asset_id))
@@ -55,5 +56,5 @@ func _test_missing_asset_fallback_safe() -> void:
 func _test_texture_and_font_loads_do_not_crash() -> void:
 	var font = CardfrontUiAssetRegistryScript.load_font()
 	_assert.that(font != null or CardfrontUiAssetRegistryScript.get_fallback("font_kenney_future") != "", "ui registry: font should load or fallback")
-	var texture = CardfrontUiAssetRegistryScript.load_texture("detail_popup_panel")
-	_assert.that(texture != null or CardfrontUiAssetRegistryScript.get_fallback("detail_popup_panel") != "", "ui registry: texture should load or fallback")
+	var texture = CardfrontUiAssetRegistryScript.load_texture("region_info_panel")
+	_assert.that(texture != null or CardfrontUiAssetRegistryScript.get_fallback("region_info_panel") != "", "ui registry: texture should load or fallback")
