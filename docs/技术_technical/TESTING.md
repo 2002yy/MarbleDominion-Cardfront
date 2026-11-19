@@ -3,6 +3,8 @@
 Date: 2026-07-23
 Role: test matrix and run guidance / 测试矩阵与运行建议
 
+> Historical inventory note (2026-11-20): The older runner lists and v0.2 compatibility instructions below describe the original development stages, not the current executable CI inventory. The authoritative active runner paths are in `.github/workflows/headless-tests.yml`, `b1-simulation-tests.yml`, and `shared-upgrade-ai-tests.yml`. The dormant targeted-card preview / deployment-zone display suites are retired; current Core/Support legality, AI and automatic-spawn contracts remain covered.
+
 ## Correctness Baseline / 正确性基线
 
 Baseline BallWar runtime runners:
@@ -101,7 +103,7 @@ Run the benchmark probes when tuning firing or pressure policies, collecting rel
 5. `CardfrontModeSmokeTestRunner.gd`.
 6. `CardfrontPerformanceSmokeTestRunner.gd`.
 
-Tests for retired v0.2 card/economy/device UI must explicitly set `cardfront_legacy_compatibility_enabled = true` before starting Cardfront. New live-path tests must leave it false.
+The former `cardfront_legacy_compatibility_enabled` switch and v0.2 card/economy/device UI tests have been removed; neither path is runnable in the current build.
 7. `LayoutSanityTestRunner.gd`, `SmokeTestRunner.gd`, and `IntegrationTestRunner.gd` when shared runtime surfaces change.
 
 ### Editing `.tscn` or UI wiring

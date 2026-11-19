@@ -116,7 +116,6 @@ jobs:
               CardfrontSupportStateTestRunner.gd
               CardfrontSupportPresentationContractTestRunner.gd
               CardfrontSupportPresentationLifecycleTestRunner.gd
-              CardfrontDeploymentZoneVisualizationTestRunner.gd
               CardfrontSupportRegionMapperTestRunner.gd
               CardfrontSupportMapMetadataTestRunner.gd
           - batch: Support capture graph and routes
@@ -140,10 +139,8 @@ jobs:
               CardfrontDeploymentCoreFallbackTestRunner.gd
               CardfrontDeploymentDirectionalZoneTestRunner.gd
               CardfrontDeploymentAuthorityRefreshTestRunner.gd
-              CardfrontDeploymentPreviewParityTestRunner.gd
               CardfrontDeploymentAiParityTestRunner.gd
               CardfrontDeploymentAutomaticSpawnTestRunner.gd
-              CardfrontDeploymentThreeConsumerParityTestRunner.gd
               CardfrontHeroNumericFoundationTestRunner.gd
               CardfrontCardPoolRebalanceTestRunner.gd
               CardfrontTerritoryDefenseTestRunner.gd

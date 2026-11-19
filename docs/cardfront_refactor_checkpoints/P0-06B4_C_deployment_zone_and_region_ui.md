@@ -1,5 +1,7 @@
 # P0-06B4 / P0-06C Deployment Zone and Region UI Separation
 
+> **Historical checkpoint / 后续退役说明（2026-11-20）:** This record documents the original B4 decision and its source-bound evidence. In the later v0.3 cleanup branch, the deliberately dormant 2D targeted-card Preview → 3D deployment-zone seam was removed because the formal three-choice runtime never acquired a targeting controller or player entry point. This does not retire `DeploymentRules`, Core/Support authority, AI legality, automatic spawn, or live Support presentation. A future player-facing targeted-deployment mechanic requires a new product decision and implementation; the old B4 tests must not be treated as current CI gates. The historical result below is preserved verbatim.
+
 Source commit: `ca01511c1766dc801aa62d198e091a361e786026`
 
 Decision: **GO**

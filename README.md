@@ -25,9 +25,9 @@ v0.2 originally provided a four-card hand, Energy/Parts minibar, card target cli
 
 旧版固定四卡手牌、资源栏、点格出牌、反馈气泡、教程提示等界面与对应测试已整体退役。现役玩家使用 v0.3 的三选一升级界面。历史实现与设计决策可在 Git 历史和 `docs/历史_history/` 中查阅。
 
-The v0.2 compatibility flag and low-level legacy assembly are also removed. The current three-choice round director, fortification, territory defense, deployment resolver, and fire director remain in use and continue to be tested.
+The v0.2 compatibility flag and low-level legacy assembly are also removed. The former targeted-card preview and unconnected 3D deployment-zone display seam are retired as well: the live v0.3 loop has no player-facing targeted deployment selection. The current three-choice round director, fortification, territory defense, Core/Support deployment resolver, and fire director remain in use and continue to be tested.
 
-兼容开关与旧底层模块已经移除；仍承担现役玩法职责的据点、领土护甲、三选一升级、射击和部署判定保持不变。
+兼容开关、旧底层模块及从未接入正式三选一的定向部署预览已移除；仍承担现役玩法职责的据点、领土护甲、三选一升级、射击和 Core/Support 部署判定保持不变。
 
 ## Screenshots / 截图
 
@@ -47,12 +47,12 @@ Cardfront is added as a sidecar mode, not a rewrite of the BallWar runtime.
 - `scripts/cardfront/CardfrontBattlefieldInitializer.gd` — player/AI/neutral initial owner-grid generation.
 - `scripts/cardfront/regions/RegionMap.gd` — deterministic region instance map used by Cardfront systems.
 - `scripts/cardfront/regions/RegionControlCalculator.gd` — per-region player / AI / neutral control statistics.
-- `scripts/cardfront/deployment/` — current Core/Support deployment rules, target preview parity, and placement resolver.
+- `scripts/cardfront/deployment/` — current Core/Support deployment rules, AI legality evaluation, and automatic placement resolver.
 - `scripts/cardfront/strongholds/` and `scripts/cardfront/defense/` — live tactical strongholds and territory defense.
 - `scripts/cardfront/run/` and `scripts/cardfront/draft/` — the three-choice draft, battle-phase coordination, and upgrades.
 - `scripts/cardfront/fire/` — Cardfront-only fire rules, target scoring, fire intent data, and fire director.
 - `scripts/cardfront/runtime/` — Cardfront runtime assembly builder, named refs, and result-to-runtime registry.
-- `scripts/cardfront/ui/` — current formal HUD, three-choice panel, deployment preview, and UI assets.
+- `scripts/cardfront/ui/` — current formal HUD, three-choice panel, and UI assets.
 - `scripts/cardfront/regions/RegionOverlayLayer.gd` — lightweight Cardfront-only region visualization.
 - `scripts/cardfront/CardfrontMode.gd` — mode policy/facade for the active Cardfront loop.
 - `scripts/Battlefield.gd` — owns generic owner grids, owner counts, painting, and draw color overrides.
@@ -88,7 +88,7 @@ E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tes
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontLiveRuntimeBoundaryTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontFireDirectorTurretIntegrationTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDeploymentAuthorityRefreshTestRunner.gd
-E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDeploymentThreeConsumerParityTestRunner.gd
+E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontDeploymentAiParityTestRunner.gd
 E:\Godot\Godot_\Godot_console.exe --headless --path . --script res://scripts/tests/CardfrontRuntimeSnapshotTestRunner.gd
 ```
 
