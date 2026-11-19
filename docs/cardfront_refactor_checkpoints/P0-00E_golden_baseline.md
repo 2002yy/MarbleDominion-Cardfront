@@ -1,5 +1,14 @@
 # P0-00E Golden Baseline Contract
 
+> **Historical checkpoint, no longer an active regression gate (2026-11-19).**
+> The original JSON fixture and “golden” runner were retired after the four-choice Lab
+> path and legacy Stronghold rewards had been removed. Their contents remain available
+> in Git history before this cleanup. Current behavior is exercised by
+> `CardfrontDraftSideRngIsolationTestRunner.gd`, `CardfrontStrongholdSystemTestRunner.gd`,
+> `CardfrontThreeChoiceRuntimeTestRunner.gd`, and real pointer interaction in
+> `CardfrontUiClickThroughTestRunner.gd`. The statements below describe the
+> **old checkpoint at its source commit**, not today's release requirements.
+
 Source commit: `9323c9f3c9f2bf7d2d9d222731a74ca05b089290`
 Target step: P0-00E Golden Baseline Contract
 Evidence type: automated + prior manual baseline
