@@ -10,6 +10,7 @@ signal gates_sampled(snapshot)
 signal choice_locked(owner_id, upgrade_id, automatic)
 signal choices_revealed(player_definition, ai_definition, resolution_results)
 signal volley_launched(plans, issued_intents)
+signal targeted_deployment_requested(round_number)
 signal director_stopped
 
 const RulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
@@ -26,6 +27,7 @@ const LaneAllocationScript = preload("res://scripts/cardfront/volley/CardfrontLa
 const CommandPointSystemScript = preload("res://scripts/cardfront/run/CardfrontCommandPointSystem.gd")
 const TuningScript = preload("res://scripts/cardfront/run/CardfrontRunTuning.gd")
 const HeroRegistryScript = preload("res://scripts/cardfront/heroes/CardfrontHeroRegistry.gd")
+const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
 
 const BATTLE_INTERVAL: float = TuningScript.AIM_SECONDS
 const FIRST_DRAFT_COUNTDOWN: float = TuningScript.FIRST_AIM_SECONDS
@@ -50,6 +52,7 @@ var current_stronghold_status: Dictionary = {}
 var current_gate_snapshot: Dictionary = {}
 var round_number: int = 0
 var active: bool = false
+var targeted_deployment_prototype_enabled: bool = false
 
 var _draft_system = DraftSystemScript.new()
 var _upgrade_resolver = UpgradeResolverScript.new()
@@ -59,6 +62,9 @@ var command_points = CommandPointSystemScript.new()
 var _reveal_remaining: float = 0.0
 var _resolution_started: bool = false
 var _draft_pause_owned: bool = false
+var _targeted_guard_pending: bool = false
+var _targeted_guard_waiting: bool = false
+var _targeted_guard_selected_manually: bool = false
 
 
 func _init() -> void:
@@ -149,7 +155,15 @@ func _process(delta: float) -> void:
 		MatchPhaseScript.RESOLVE_CHOICES:
 			_reveal_remaining = maxf(0.0, _reveal_remaining - maxf(0.0, delta))
 			if _reveal_remaining <= 0.0:
-				_launch_resolved_volleys()
+				if _targeted_guard_pending:
+					if not _targeted_guard_waiting:
+						_targeted_guard_waiting = true
+						if targeted_deployment_requested.get_connections().is_empty():
+							complete_targeted_deployment(false)
+						else:
+							targeted_deployment_requested.emit(round_number)
+				elif not _targeted_guard_waiting:
+					_launch_resolved_volleys()
 
 
 func select_player_upgrade(upgrade_id: String) -> bool:
@@ -159,9 +173,25 @@ func select_player_upgrade(upgrade_id: String) -> bool:
 		return false
 	if not phase_controller.select_upgrade(RulesScript.PLAYER_FACTION, upgrade_id):
 		return false
+	_targeted_guard_selected_manually = targeted_deployment_prototype_enabled and upgrade_id == UpgradeManifestScript.UPGRADE_ARMORED_GUARD
 	choice_locked.emit(RulesScript.PLAYER_FACTION, str(upgrade_id), false)
 	if phase_controller.has_all_choices():
 		_begin_resolution()
+	return true
+
+
+func enable_targeted_deployment_prototype(enabled: bool) -> void:
+	# Development-only opt-in; formal production always leaves this false.
+	targeted_deployment_prototype_enabled = enabled
+
+
+func complete_targeted_deployment(_placed: bool) -> bool:
+	if not active or not _targeted_guard_waiting or phase_controller.phase != MatchPhaseScript.RESOLVE_CHOICES:
+		return false
+	_targeted_guard_waiting = false
+	_targeted_guard_pending = false
+	_targeted_guard_selected_manually = false
+	_launch_resolved_volleys()
 	return true
 
 
@@ -276,6 +306,9 @@ func stop() -> void:
 		return
 	active = false
 	set_process(false)
+	_targeted_guard_waiting = false
+	_targeted_guard_pending = false
+	_targeted_guard_selected_manually = false
 	_set_draft_pause(false)
 	_set_direction_input_enabled(false)
 	director_stopped.emit()
@@ -290,6 +323,9 @@ func _on_phase_changed(previous_phase: String, next_phase: String) -> void:
 func _open_draft() -> void:
 	round_number += 1
 	_resolution_started = false
+	_targeted_guard_pending = false
+	_targeted_guard_waiting = false
+	_targeted_guard_selected_manually = false
 	current_plans.clear()
 	last_resolution_results.clear()
 	current_stronghold_status = _sample_strongholds()
@@ -314,6 +350,22 @@ func _open_draft() -> void:
 			DraftSystemScript.DEFAULT_OFFER_SIZE
 		),
 	}
+	if targeted_deployment_prototype_enabled:
+		var player_offer: Array = current_offers.get(RulesScript.PLAYER_FACTION, []) as Array
+		var prototype_id: String = UpgradeManifestScript.UPGRADE_ARMORED_GUARD
+		var found: bool = false
+		for index in range(player_offer.size()):
+			if str((player_offer[index] as Dictionary).get("id", "")) == prototype_id:
+				found = true
+				break
+		if not found and not player_offer.is_empty():
+			player_offer[player_offer.size() - 1] = UpgradeManifestScript.get_definition(prototype_id)
+		for index in range(player_offer.size()):
+			var card: Dictionary = player_offer[index] as Dictionary
+			if str(card.get("id", "")) == prototype_id:
+				card["name"] = "装甲护卫·定向部署（原型）"
+				card["description"] = "选择后暂停齐射，点击己方 Core / 在线 Support 合法格部署一名护卫；Esc 可跳过"
+		current_offers[RulesScript.PLAYER_FACTION] = player_offer
 	var ai_choice: Dictionary = _ai_commander.choose_from_observation(
 		get_ai_offer(),
 		get_ai_observation(RulesScript.AI_FACTION)
@@ -348,6 +400,21 @@ func _begin_resolution() -> void:
 		var upgrade_id: String = phase_controller.get_selected_upgrade_id(int(owner_id))
 		var run_state = get_run_state(int(owner_id))
 		last_resolution_results[int(owner_id)] = _upgrade_resolver.resolve(run_state, upgrade_id)
+		if (
+			targeted_deployment_prototype_enabled
+			and _targeted_guard_selected_manually
+			and int(owner_id) == RulesScript.PLAYER_FACTION
+			and upgrade_id == UpgradeManifestScript.UPGRADE_ARMORED_GUARD
+			and bool(last_resolution_results[int(owner_id)].get("success", false))
+		):
+			# Defer exactly the selected guard; replay/other queued actions remain automatic.
+			var queued: Array = run_state.consume_pending_entity_actions()
+			for raw_action in queued:
+				var action: Dictionary = raw_action as Dictionary
+				if not _targeted_guard_pending and str(action.get("action", "")) == "summon_armored_guard":
+					_targeted_guard_pending = true
+				else:
+					run_state.queue_entity_action(action)
 		if territory_defense_system != null and is_instance_valid(territory_defense_system):
 			var repaired_points: int = territory_defense_system.apply_pending_repair(int(owner_id), run_state)
 			last_resolution_results[int(owner_id)]["repaired_points"] = repaired_points
@@ -371,6 +438,8 @@ func _begin_resolution() -> void:
 
 func _launch_resolved_volleys() -> void:
 	if phase_controller.phase != MatchPhaseScript.RESOLVE_CHOICES:
+		return
+	if _targeted_guard_pending or _targeted_guard_waiting:
 		return
 	if not phase_controller.begin_launch():
 		return

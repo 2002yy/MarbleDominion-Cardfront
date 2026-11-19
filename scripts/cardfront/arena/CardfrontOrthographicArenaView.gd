@@ -295,6 +295,32 @@ func get_deployment_zone_cell_count_for_test() -> int:
 	return deployment_zone_layer.get_visible_cells_for_test().size() if deployment_zone_layer != null else 0
 
 
+func screen_to_deployment_cell(screen_position: Vector2) -> Vector2i:
+	if viewport_container == null or world_viewport == null or camera == null or battlefield == null:
+		return Vector2i(-1, -1)
+	var rect := Rect2(viewport_container.global_position, viewport_container.size)
+	if not rect.has_point(screen_position) or rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return Vector2i(-1, -1)
+	var viewport_position: Vector2 = (screen_position - rect.position) * Vector2(
+		float(world_viewport.size.x) / rect.size.x,
+		float(world_viewport.size.y) / rect.size.y
+	)
+	var origin: Vector3 = camera.project_ray_origin(viewport_position)
+	var direction: Vector3 = camera.project_ray_normal(viewport_position)
+	if absf(direction.y) < 0.00001:
+		return Vector2i(-1, -1)
+	var distance_to_plane: float = (0.205 - origin.y) / direction.y
+	if distance_to_plane < 0.0:
+		return Vector2i(-1, -1)
+	var point: Vector3 = origin + direction * distance_to_plane
+	var extent: Vector2i = battlefield.grid_extent
+	var cell := Vector2i(
+		floori(point.x / ARENA_X_SCALE + float(extent.x) * 0.5),
+		floori(point.z / _z_scale + float(extent.y) * 0.5)
+	)
+	return cell if cell.x >= 0 and cell.y >= 0 and cell.x < extent.x and cell.y < extent.y else Vector2i(-1, -1)
+
+
 func get_camera_for_test() -> Camera3D:
 	return camera
 

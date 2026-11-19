@@ -200,6 +200,7 @@ func _connect_director() -> void:
 		"strongholds_sampled": "_on_strongholds_sampled",
 		"choice_locked": "_on_choice_locked",
 		"choices_revealed": "_on_choices_revealed",
+		"targeted_deployment_requested": "_on_targeted_deployment_requested",
 		"volley_launched": "_on_volley_launched",
 		"director_stopped": "_on_director_stopped",
 	}
@@ -379,6 +380,12 @@ func _on_volley_launched(plans: Dictionary, _issued_intents: Dictionary) -> void
 		]
 	_show_upgrade_toast()
 	_refresh_upgrade_history()
+
+
+func _on_targeted_deployment_requested(_round_number: int) -> void:
+	_set_draft_display_mode(DISPLAY_MODE_DRAFT_VISIBLE)
+	draft_root.visible = false
+	battle_status.visible = false
 
 
 func _on_director_stopped() -> void:

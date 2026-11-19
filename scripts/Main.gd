@@ -25,6 +25,7 @@ const StartMenuUi = preload("res://scripts/StartMenu.gd")
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
+const TargetedDeploymentPrototypeScript = preload("res://scripts/cardfront/run/CardfrontTargetedDeploymentPrototypeController.gd")
 const CardfrontRuntimeSnapshotScript = preload("res://scripts/cardfront/save/CardfrontRuntimeSnapshot.gd")
 const NetworkManagerScript = preload("res://scripts/cardfront/network/CardfrontNetworkManager.gd")
 const PvpMatchScript = preload("res://scripts/cardfront/network/CardfrontPvpMatch.gd")
@@ -40,6 +41,7 @@ const GameHUDScene = preload("res://scenes/ui/GameHUD.tscn")
 
 var runtime = GameRuntimeContextScript.new()
 var cardfront_runtime_builder = null
+var _targeted_deployment_prototype = null
 var current_score_counts: Dictionary = {0: 0, 1: 0, 2: 0, 3: 0}
 var is_mobile_layout: bool = false
 
@@ -378,6 +380,25 @@ func _create_cardfront_three_choice_panel() -> void:
 	)
 	if bool(setup_result.get("configured", false)):
 		runtime.three_choice_panel = setup_result.get("three_choice_panel", null)
+	if OS.get_cmdline_user_args().has("--cardfront-targeted-deployment-prototype"):
+		_create_targeted_deployment_prototype()
+
+
+func _create_targeted_deployment_prototype() -> void:
+	if _targeted_deployment_prototype != null and is_instance_valid(_targeted_deployment_prototype):
+		return
+	if runtime.round_director == null or runtime.orthographic_arena_view == null:
+		return
+	var capture_interceptor = runtime.battlefield.capture_interceptor if runtime.battlefield != null else null
+	if capture_interceptor == null or capture_interceptor.entity_runtime == null:
+		return
+	var controller = TargetedDeploymentPrototypeScript.new()
+	game_layer.add_child(controller)
+	if not controller.setup(runtime.round_director, capture_interceptor.entity_runtime, runtime.orthographic_arena_view):
+		controller.queue_free()
+		return
+	_targeted_deployment_prototype = controller
+	runtime.round_director.enable_targeted_deployment_prototype(true)
 
 
 func _create_cardfront_region_info_panel() -> void:
@@ -1169,6 +1190,7 @@ func _cleanup_game_layer() -> void:
 		game_layer.queue_free()
 		game_layer = null
 	runtime.reset()
+	_targeted_deployment_prototype = null
 	cardfront_runtime_builder = null
 	pending_restore_bullets.clear()
 	pending_restore_index = 0
