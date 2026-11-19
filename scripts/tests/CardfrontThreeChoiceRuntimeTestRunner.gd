@@ -36,8 +36,6 @@ func _test_player_choice_pauses_resolves_and_launches() -> void:
 	_assert.that(director != null and is_instance_valid(director), "runtime: Cardfront should create round director")
 	_assert.that(panel != null and is_instance_valid(panel), "runtime: Cardfront should create formal three-choice panel")
 	_assert.that(not main.runtime.fire_director.is_processing(), "runtime: legacy continuous fire director should be disabled")
-	_assert.eq(main.runtime.hand_panel, null, "runtime: legacy four-card hand should not be constructed")
-	_assert.eq(main.runtime.top_resource_bar, null, "runtime: legacy resource minibar should not be constructed")
 	_assert.that(main.runtime.territory_defense_system != null, "runtime: live territory defense should replace legacy card fortification")
 	_assert.eq(panel.get_visible_choice_count(), 0, "runtime: choice cards should stay hidden during battle countdown")
 
@@ -146,7 +144,6 @@ func _test_ballwar_is_isolated() -> void:
 	var main = await _start_main(GameConfig.GAME_MODE_BASIC)
 	_assert.eq(main.runtime.round_director, null, "BallWar: should not create Cardfront round director")
 	_assert.eq(main.runtime.three_choice_panel, null, "BallWar: should not create Cardfront choice panel")
-	_assert.eq(main.runtime.hand_panel, null, "BallWar: should not create Cardfront legacy hand")
 	TestFixtures.cleanup_node(main)
 	await _flush()
 

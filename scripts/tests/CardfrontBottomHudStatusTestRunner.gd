@@ -135,7 +135,6 @@ func _test_status_text_updates_after_device_change() -> void:
 	main._update_cardfront_status_label()
 
 	_assert.that(main.runtime.device_layer.get_all_active_devices().size() > 0, "device should be placed")
-	_assert.that(main.runtime.top_resource_bar != null, "formal resource bar should exist")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)

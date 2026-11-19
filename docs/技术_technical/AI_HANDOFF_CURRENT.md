@@ -6,6 +6,8 @@ Role / 作用: archived v0.2.x technical snapshot / 已归档的 v0.2.x 技术�
 This file is not the current project-status source. Use [`docs/PROJECT_STATUS.md`](../PROJECT_STATUS.md) for the active version and next step.
 当前版本和实施进度只看 [`docs/PROJECT_STATUS.md`](../PROJECT_STATUS.md)。
 
+> 2026-11-19 archive note: the v0.2 fixed-hand UI, card selection, toast/feedback/tutorial layers and their dedicated CI runners have been retired. Historical file names and test counts below describe the **old** snapshot, not currently executable commands. The live CI matrix is in `.github/workflows/headless-tests.yml`.
+
 ## 1. Archived Version / 已归档版本
 
 - Archived line: `v0.2.x` Cardfront formal UI
@@ -105,7 +107,7 @@ Beyond v0.2.4:
 - Do not change old BallWar mode rules to satisfy Cardfront tests.
 - Do not expand the 4-card fixed hand.
 
-## 6. Required Tests / 当前必跑测试
+## 6. Historical Tests / 历史测试清单（非当前必跑）
 
 Cardfront formal UI + target preview:
 

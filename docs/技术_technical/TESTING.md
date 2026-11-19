@@ -26,6 +26,8 @@ Baseline subtotal: **1093 expected checks** across 10 runners.
 
 `.github/workflows/headless-tests.yml` runs parse/import warmup plus the following batches on every push and pull request:
 
+The v0.2 four-card hand and old click-target/feedback UI suites have been retired. `CardfrontFormalUITestRunner` now checks live edge controls; `CardfrontUiClickThroughTestRunner` exercises the real v0.3 three-choice click path without enabling compatibility mode.
+
 | CI batch | Runners |
 |---|---|
 | Baseline runtime | `SmokeTestRunner`, `IntegrationTestRunner`, `LayoutSanityTestRunner`, scene wiring, state, save, restore |
