@@ -19,8 +19,7 @@ const BUILD_TAG_SYNERGY: float = 0.04
 static func evaluate(
 	upgrade_id: String,
 	state = null,
-	context: Dictionary = {},
-	valuation_mode: String = MODE_MARGINAL
+	context: Dictionary = {}
 ) -> Dictionary:
 	var safe_id: String = str(upgrade_id)
 	if not UpgradeManifestScript.has_upgrade(safe_id):
@@ -37,10 +36,10 @@ static func evaluate(
 		"queue_entity_action", "increase_building_volley", "arm_heavy_charge":
 			result = _score_entity_upgrade(safe_id, definition, model, normalized_context)
 		"echo_next_choice":
-			result = BaseValuePolicyScript.evaluate(safe_id, state, normalized_context, valuation_mode)
+			result = BaseValuePolicyScript.evaluate(safe_id, state, normalized_context)
 			result = _extend_echo_value(result, model, normalized_context)
 		_:
-			result = BaseValuePolicyScript.evaluate(safe_id, state, normalized_context, valuation_mode)
+			result = BaseValuePolicyScript.evaluate(safe_id, state, normalized_context)
 
 	if not bool(result.get("eligible", false)):
 		return result
@@ -201,7 +200,7 @@ static func _extend_echo_value(
 			UpgradeManifestScript.UPGRADE_GATE_COLOSSUS,
 		]:
 			continue
-		var candidate: Dictionary = evaluate(candidate_id, model, future_context, MODE_MARGINAL)
+		var candidate: Dictionary = evaluate(candidate_id, model, future_context)
 		if bool(candidate.get("eligible", false)):
 			best_new_value = maxf(best_new_value, maxf(0.0, float(candidate.get("score", 0.0))))
 	var extended_replay: float = best_new_value * ECHO_REPLAY_DISCOUNT
