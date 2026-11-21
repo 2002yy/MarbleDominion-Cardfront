@@ -64,24 +64,8 @@ func rank_ids(
 	return ranked
 
 
-func evaluate_id(
-	upgrade_id: String,
-	run_state = null,
-	context: Dictionary = {}
-) -> Dictionary:
-	return ValuePolicyScript.evaluate(upgrade_id, run_state, context)
-
-
 func get_last_ranked_evaluations() -> Array:
 	return last_ranked_evaluations.duplicate(true)
-
-
-func _score(definition: Dictionary, run_state, context: Dictionary = {}) -> float:
-	return _score_id(str(definition.get("id", "")), run_state, context)
-
-
-func _score_id(upgrade_id: String, run_state, context: Dictionary = {}) -> float:
-	return float(ValuePolicyScript.evaluate(upgrade_id, run_state, context).get("score", -INF))
 
 
 func _sort_evaluations(left: Dictionary, right: Dictionary) -> bool:
