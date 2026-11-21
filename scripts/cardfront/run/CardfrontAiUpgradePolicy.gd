@@ -10,8 +10,7 @@ var last_ranked_evaluations: Array = []
 func choose(
 	offer: Array,
 	run_state = null,
-	context: Dictionary = {},
-	valuation_mode: String = ValuePolicyScript.MODE_MARGINAL
+	context: Dictionary = {}
 ) -> Dictionary:
 	var offer_ids: Array = []
 	var definitions_by_id: Dictionary = {}
@@ -24,7 +23,7 @@ func choose(
 			continue
 		offer_ids.append(upgrade_id)
 		definitions_by_id[upgrade_id] = definition
-	var chosen_id: String = choose_id(offer_ids, run_state, context, valuation_mode)
+	var chosen_id: String = choose_id(offer_ids, run_state, context)
 	if chosen_id == "" or not definitions_by_id.has(chosen_id):
 		return {}
 	return (definitions_by_id[chosen_id] as Dictionary).duplicate(true)
@@ -33,10 +32,9 @@ func choose(
 func choose_id(
 	offer_ids: Array,
 	run_state = null,
-	context: Dictionary = {},
-	valuation_mode: String = ValuePolicyScript.MODE_MARGINAL
+	context: Dictionary = {}
 ) -> String:
-	last_ranked_evaluations = rank_ids(offer_ids, run_state, context, valuation_mode)
+	last_ranked_evaluations = rank_ids(offer_ids, run_state, context)
 	if last_ranked_evaluations.is_empty():
 		return ""
 	return str((last_ranked_evaluations[0] as Dictionary).get("upgrade_id", ""))
@@ -45,8 +43,7 @@ func choose_id(
 func rank_ids(
 	offer_ids: Array,
 	run_state = null,
-	context: Dictionary = {},
-	valuation_mode: String = ValuePolicyScript.MODE_MARGINAL
+	context: Dictionary = {}
 ) -> Array:
 	var ranked: Array = []
 	for index in range(offer_ids.size()):
@@ -56,8 +53,7 @@ func rank_ids(
 		var evaluation: Dictionary = ValuePolicyScript.evaluate(
 			upgrade_id,
 			run_state,
-			context,
-			valuation_mode
+			context
 		)
 		if not bool(evaluation.get("eligible", false)):
 			continue
@@ -71,10 +67,9 @@ func rank_ids(
 func evaluate_id(
 	upgrade_id: String,
 	run_state = null,
-	context: Dictionary = {},
-	valuation_mode: String = ValuePolicyScript.MODE_MARGINAL
+	context: Dictionary = {}
 ) -> Dictionary:
-	return ValuePolicyScript.evaluate(upgrade_id, run_state, context, valuation_mode)
+	return ValuePolicyScript.evaluate(upgrade_id, run_state, context)
 
 
 func get_last_ranked_evaluations() -> Array:
