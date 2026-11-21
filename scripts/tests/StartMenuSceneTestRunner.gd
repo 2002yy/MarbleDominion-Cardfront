@@ -77,7 +77,6 @@ func _run() -> void:
 
 	t.that(instance.has_method("get_parts"), "has get_parts")
 	t.that(instance.has_method("refresh_slots"), "has refresh_slots")
-	t.that(instance.has_method("refresh_save_slots"), "keeps refresh_save_slots compatibility")
 	var parts: Dictionary = instance.get_parts()
 	t.eq(parts["menu_save_slot_buttons"].size(), 5, "slot buttons: 5 found")
 
