@@ -44,6 +44,9 @@ func _run() -> void:
 		if child.name == "StagePanel":
 			stage_panel_count += 1
 	t.eq(stage_panel_count, 1, "setup should reuse scene StagePanel")
+	t.that(instance.stage_panel == panel, "setup binds the scene StagePanel")
+	t.that(instance.header_label == panel.get_node("HeaderLabel"), "setup binds the scene header label")
+	t.that(instance.left_pointer == panel.get_node("LeftPointer"), "setup binds the scene pointer")
 
 	t.report("[EventRouletteSceneTest]")
 

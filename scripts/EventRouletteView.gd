@@ -47,11 +47,12 @@ func setup(view_size: Vector2, new_current_layout: Dictionary, is_mobile: bool) 
 	size = view_size
 	current_layout = new_current_layout.duplicate(true)
 	mobile_mode = is_mobile
-	_rebuild_stage()
+	_bind_scene_nodes()
+	_layout_stage()
 
 func play_event(payload: Dictionary) -> void:
 	if stage_panel == null:
-		_rebuild_stage()
+		_bind_scene_nodes()
 
 	_payload = payload.duplicate(true)
 	_effect_sequence = payload.get("effect_sequence", []).duplicate(true)
@@ -89,48 +90,6 @@ func _process(delta: float) -> void:
 
 	if _timeline >= _total_duration():
 		_finish_presentation()
-
-func _rebuild_stage() -> void:
-	_bind_scene_nodes()
-	if stage_panel != null and is_instance_valid(stage_panel):
-		if stage_panel.has_node("HeaderLabel"):
-			_layout_stage()
-			return
-		stage_panel.queue_free()
-
-	stage_panel = Panel.new()
-	stage_panel.visible = false
-	stage_panel.self_modulate = Color(0.94, 0.97, 1.0, 0.96)
-	stage_panel.process_mode = Node.PROCESS_MODE_PAUSABLE
-	add_child(stage_panel)
-
-	var bg: ColorRect = ColorRect.new()
-	bg.name = "Bg"
-	bg.color = Color(0.05, 0.08, 0.14, 0.98)
-	stage_panel.add_child(bg)
-
-	header_label = _make_label("事件转盘", 22 if mobile_mode else 24, Color(1.0, 0.95, 0.72))
-	stage_panel.add_child(header_label)
-	left_title_label = _make_label("阵营", 15 if mobile_mode else 16, Color(0.84, 0.92, 1.0))
-	stage_panel.add_child(left_title_label)
-	right_title_label = _make_label("效果", 15 if mobile_mode else 16, Color(0.84, 0.92, 1.0))
-	stage_panel.add_child(right_title_label)
-	left_value_label = _make_label("", 24 if mobile_mode else 28, Color.WHITE)
-	stage_panel.add_child(left_value_label)
-	right_value_label = _make_label("", 22 if mobile_mode else 26, Color.WHITE)
-	stage_panel.add_child(right_value_label)
-	result_label = _make_label("", 20 if mobile_mode else 24, Color(1.0, 0.94, 0.42))
-	result_label.visible = false
-	stage_panel.add_child(result_label)
-
-	left_pointer = ColorRect.new()
-	left_pointer.color = Color(1.0, 0.84, 0.18, 0.85)
-	stage_panel.add_child(left_pointer)
-	right_pointer = ColorRect.new()
-	right_pointer.color = Color(1.0, 0.84, 0.18, 0.85)
-	stage_panel.add_child(right_pointer)
-
-	_layout_stage()
 
 func _bind_scene_nodes() -> void:
 	if not has_node("StagePanel"):
@@ -182,17 +141,6 @@ func _layout_stage() -> void:
 
 	result_label.position = Vector2(18.0, stage_size.y - 48.0)
 	result_label.size = Vector2(stage_size.x - 36.0, 30.0)
-
-func _make_label(text_value: String, font_size: int, font_color: Color) -> Label:
-	var label: Label = Label.new()
-	label.text = text_value
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", font_color)
-	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", 3)
-	return label
 
 func _compute_effect_rounds() -> void:
 	_effect_round_starts.clear()
