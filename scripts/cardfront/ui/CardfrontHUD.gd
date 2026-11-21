@@ -1,6 +1,8 @@
 extends CanvasLayer
 class_name CardfrontHUD
 
+const SettingsPanelScene = preload("res://scenes/ui/SettingsPanel.tscn")
+
 @onready var top_panel: Panel = get_node("TopPanel")
 @onready var top_panel_bg: ColorRect = get_node("TopPanel/Bg")
 @onready var top_panel_accent: ColorRect = get_node("TopPanel/AccentLine")
@@ -104,7 +106,6 @@ func setup_static(controller_ref, view_size: Vector2, current_layout: Dictionary
 	winner_label.position = winner_label_rect.position
 	winner_label.size = winner_label_rect.size
 
-	_refresh_settings_panel_content(mobile_mode)
 	_connect_if_available(settings_button, controller_ref, "_toggle_settings_panel")
 	_connect_if_available(pause_button, controller_ref, "_toggle_pause")
 	_connect_if_available(exit_button, controller_ref, "_save_and_exit_to_menu")
@@ -257,41 +258,9 @@ func _apply_button_layout(button: Button, position_value: Vector2, size_value: V
 
 
 func _load_settings_panel() -> void:
-	var sp_path: String = "res://scenes/ui/SettingsPanel.tscn"
-	if ResourceLoader.exists(sp_path):
-		settings_panel = load(sp_path).instantiate()
-		settings_panel.name = "SettingsPanel"
-		add_child(settings_panel)
-		print("[CardfrontHUD] Loaded SettingsPanel.tscn")
-	else:
-		settings_panel = Panel.new()
-		settings_panel.name = "SettingsPanel"
-		settings_panel.visible = false
-		settings_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-		settings_panel.self_modulate = Color(0.94, 0.97, 1.0, 0.96)
-		settings_panel.size = Vector2(286.0, 96.0)
-		add_child(settings_panel)
-		print("[CardfrontHUD] SettingsPanel.tscn not found, fallback to code-generated")
-
-
-func _refresh_settings_panel_content(mobile_mode: bool) -> void:
-	if settings_panel == null or not is_instance_valid(settings_panel):
-		return
-
-	var layout_name: String = "mobile_landscape" if mobile_mode else "desktop"
-	if settings_panel.has_method("show_content"):
-		settings_panel.show_content(GameConfig.get_quality_name(), layout_name)
-		if settings_panel.has_method("hide_panel"):
-			settings_panel.hide_panel()
-		else:
-			settings_panel.visible = false
-		return
-
-	if settings_panel.has_node("ContentLabel"):
-		var content_label: Label = settings_panel.get_node("ContentLabel") as Label
-		content_label.text = "Quality: %s\nLayout: %s\nNote: mobile uses larger action buttons, desktop keeps more HUD info." % [GameConfig.get_quality_name(), layout_name]
-		settings_panel.visible = false
-
+	settings_panel = SettingsPanelScene.instantiate() as Control
+	settings_panel.name = "SettingsPanel"
+	add_child(settings_panel)
 
 func _connect_if_available(button: Button, controller_ref, method_name: String) -> void:
 	if button == null or controller_ref == null or not controller_ref.has_method(method_name):
