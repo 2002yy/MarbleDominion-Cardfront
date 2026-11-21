@@ -219,7 +219,7 @@ func _proxy_value_context(state: Dictionary) -> Dictionary:
 	return context
 
 
-func _resolve_volley(attacker_slot: String, target_slot: String, plan_data: Dictionary, states: Dictionary, territory: Dictionary, _defense_pool: Dictionary, profile: Dictionary, seed_value: int, round_number: int, simulation_mode: String) -> Dictionary:
+func _resolve_volley(attacker_slot: String, target_slot: String, plan_data: Dictionary, states: Dictionary, territory: Dictionary, _defense_pool: Dictionary, profile: Dictionary, seed_value: int, round_number: int, _simulation_mode: String) -> Dictionary:
 	var plan: Dictionary = plan_data["plan"] as Dictionary
 	var rng: RandomNumberGenerator = _rng_a if attacker_slot == SLOT_A else _rng_b
 	rng.seed = _b1_stream_seed(seed_value, round_number, attacker_slot, _b1_side_variant)
@@ -265,7 +265,6 @@ func _resolve_volley(attacker_slot: String, target_slot: String, plan_data: Dict
 	)
 	hit_chance *= pow(6.0 / float(maxi(1, shot_count)), 0.18)
 	hit_chance *= float(route_result.get("average_route_quality", 1.0))
-	hit_chance = adjust_hit_chance_for_mode(hit_chance, int((states[attacker_slot] as Dictionary).get("base_volley_count", 6)), simulation_mode)
 	var expected_hits: float = float(survivors.size()) * hit_chance
 	var chamber_contact_count: int = clampi(roundi(expected_hits + rng.randfn(0.0, sqrt(maxf(0.01, expected_hits * (1.0 - hit_chance))))), 0, survivors.size())
 	var chamber_indices: Dictionary = _sample_index_set(survivors.size(), chamber_contact_count, rng)
