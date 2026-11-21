@@ -9,11 +9,9 @@ const ValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontUpgradeV
 
 
 func run(
-	seeds_per_case: int = ConfigScript.FULL_SEEDS_PER_CASE,
-	simulation_mode: String = ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
+	seeds_per_case: int = ConfigScript.FULL_SEEDS_PER_CASE
 ) -> Dictionary:
 	var safe_seed_count: int = maxi(1, int(seeds_per_case))
-	var safe_simulation_mode: String = ConfigScript.sanitize_simulation_mode(simulation_mode)
 	var hero_ids: Array = HeroRegistryScript.get_hero_ids()
 	var map_ids: Array = MapRegistryScript.get_registered_map_ids()
 	var hero_stats: Dictionary = {}
@@ -51,8 +49,7 @@ func run(
 						str(hero_b),
 						str(map_id),
 						0,
-						seed_index + 1,
-						safe_simulation_mode
+						seed_index + 1
 					) as Dictionary
 					_accumulate_match(result, hero_stats, matchup_stats, mirror_stats, rounds, totals)
 					result["side_variant"] = 1
@@ -66,7 +63,7 @@ func run(
 
 	var expected_matches: int = hero_ids.size() * hero_ids.size() * map_ids.size() * 2 * safe_seed_count
 	var report: Dictionary = {
-		"simulation_mode": safe_simulation_mode,
+		"simulation_mode": ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED,
 		"upgrade_valuation_mode": ValuePolicyScript.MODE_MARGINAL,
 		"hidden_hit_compensation": false,
 		"resolved_attack_level_cap": ConfigScript.PARITY_RESOLVED_ATTACK_LEVEL_CAP,
