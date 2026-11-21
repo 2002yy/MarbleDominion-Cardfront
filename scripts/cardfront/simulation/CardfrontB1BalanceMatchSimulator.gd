@@ -38,8 +38,7 @@ func simulate(
 	hero_b: String,
 	map_id: String,
 	side_variant: int,
-	seed_value: int,
-	simulation_mode: String = B1ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
+	seed_value: int
 ) -> Dictionary:
 	_b1_map_definition = B1MapRegistryScript.get_map_definition(map_id, B1ConfigScript.GRID_SIZE)
 	_b1_side_variant = int(side_variant) % 2
@@ -50,8 +49,7 @@ func simulate(
 		hero_b,
 		map_id,
 		_b1_side_variant,
-		seed_value,
-		simulation_mode
+		seed_value
 	)
 	var metrics: Dictionary = result.get("metrics", {}) as Dictionary
 	metrics["gate_passes"] = _b1_gate_passes
