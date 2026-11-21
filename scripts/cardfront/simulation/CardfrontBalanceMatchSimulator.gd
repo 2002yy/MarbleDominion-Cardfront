@@ -129,11 +129,7 @@ func simulate(
 			var plan: Dictionary = _build_and_consume_volley_fast(state)
 			plans[slot] = {
 				"plan": plan,
-				"attack_level": resolve_attack_level_for_mode(
-					int(plan["attack_level"]),
-					0,
-					safe_simulation_mode
-				),
+				"attack_level": clampi(maxi(0, int(plan["attack_level"])), 0, ConfigScript.PARITY_RESOLVED_ATTACK_LEVEL_CAP),
 			}
 
 		var round_results: Dictionary = {}
@@ -218,8 +214,8 @@ func simulate(
 	return {
 		"success": true,
 		"simulation_mode": safe_simulation_mode,
-		"hidden_hit_compensation": ConfigScript.uses_hidden_hit_compensation(safe_simulation_mode),
-		"resolved_attack_level_cap": ConfigScript.resolved_attack_level_cap(safe_simulation_mode),
+		"hidden_hit_compensation": false,
+		"resolved_attack_level_cap": ConfigScript.PARITY_RESOLVED_ATTACK_LEVEL_CAP,
 		"hero_a": str(hero_a),
 		"hero_b": str(hero_b),
 		"map_id": str(map_id),
@@ -253,33 +249,6 @@ func _empty_slot_metrics() -> Dictionary:
 		"virtual_captures": 0,
 		"virtual_recaptures": 0,
 	}
-
-
-func resolve_attack_level_for_mode(
-	permanent_attack_level: int,
-	temporary_attack_level: int,
-	simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
-) -> int:
-	return clampi(
-		maxi(0, int(permanent_attack_level)) + maxi(0, int(temporary_attack_level)),
-		0,
-		ConfigScript.resolved_attack_level_cap(simulation_mode)
-	)
-
-
-func adjust_hit_chance_for_mode(
-	hit_chance: float,
-	base_volley_count: int,
-	simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
-) -> float:
-	var adjusted: float = float(hit_chance)
-	if not ConfigScript.uses_hidden_hit_compensation(simulation_mode):
-		return adjusted
-	if int(base_volley_count) < 6:
-		adjusted *= 1.22
-	elif int(base_volley_count) > 6:
-		adjusted *= 0.93
-	return adjusted
 
 
 func _make_state(hero_id: String, owner_id: int) -> Dictionary:
@@ -343,8 +312,6 @@ func _resolve_volley(
 		0.65
 	)
 	hit_chance *= pow(6.0 / float(maxi(1, shot_count)), 0.18)
-	var base_volley: int = int((states[attacker_slot] as Dictionary)["base_volley_count"])
-	hit_chance = adjust_hit_chance_for_mode(hit_chance, base_volley, simulation_mode)
 	var expected_contacts: float = float(shot_count) * defense_chance
 	var contact_sigma: float = sqrt(maxf(0.01, expected_contacts * (1.0 - defense_chance)))
 	var defense_contacts: int = clampi(
