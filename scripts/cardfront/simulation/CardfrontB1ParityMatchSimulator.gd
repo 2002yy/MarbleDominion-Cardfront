@@ -73,7 +73,7 @@ func _resolve_volley(
 	profile: Dictionary,
 	seed_value: int,
 	round_number: int,
-	simulation_mode: String
+	_simulation_mode: String
 ) -> Dictionary:
 	var adjusted_profile: Dictionary = profile.duplicate(true)
 	adjusted_profile["chamber_hit_chance"] = float(adjusted_profile.get("chamber_hit_chance", 0.17)) * _tail_stall_multiplier(
@@ -154,11 +154,6 @@ func _resolve_volley(
 	)
 	hit_chance *= pow(6.0 / float(maxi(1, shot_count)), 0.18)
 	hit_chance *= float(route_result.get("average_route_quality", 1.0))
-	hit_chance = adjust_hit_chance_for_mode(
-		hit_chance,
-		int((states[attacker_slot] as Dictionary).get("base_volley_count", 6)),
-		simulation_mode
-	)
 	var expected_hits: float = float(chamber_candidates.size()) * hit_chance
 	var chamber_contact_count: int = clampi(
 		roundi(expected_hits + rng.randfn(0.0, sqrt(maxf(0.01, expected_hits * (1.0 - hit_chance))))),
