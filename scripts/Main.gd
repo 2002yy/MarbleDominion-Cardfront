@@ -22,6 +22,7 @@ const MENU_PREF_PATH: String = "user://menu_preferences.json"
 const GameRuntimeContextScript = preload("res://scripts/GameRuntimeContext.gd")
 const GridExtentScript = preload("res://scripts/GridExtent.gd")
 const StartMenuUi = preload("res://scripts/StartMenu.gd")
+const StartMenuScene = preload("res://scenes/ui/StartMenu.tscn")
 const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
@@ -240,20 +241,12 @@ func _create_start_menu() -> void:
 	if menu_layer != null:
 		menu_layer.queue_free()
 
-	var menu_nodes: Dictionary
 	var menu_layout: Dictionary = _build_runtime_layout(LayoutProfiles.sanitize_grid_size(selected_grid_size))
-	var scene_path: String = "res://scenes/ui/StartMenu.tscn"
-	if ResourceLoader.exists(scene_path):
-		var scene: PackedScene = load(scene_path)
-		var instance: CanvasLayer = scene.instantiate()
-		add_child(instance)
-		instance.setup(self, Vector2(VIEW_W, VIEW_H), _get_save_slot_summaries(), menu_layout)
-		menu_nodes = instance.get_parts()
-		print("[StartMenu] Loaded scene StartMenu.tscn")
-	else:
-		menu_nodes = StartMenuView.create(self, Vector2(VIEW_W, VIEW_H), _get_save_slot_summaries(), menu_layout)
-		print("[StartMenu] Scene load failed, fallback to legacy StartMenuView.gd")
-
+	var instance: CanvasLayer = StartMenuScene.instantiate()
+	add_child(instance)
+	instance.setup(self, Vector2(VIEW_W, VIEW_H), _get_save_slot_summaries(), menu_layout)
+	var menu_nodes: Dictionary = instance.get_parts()
+	print("[StartMenu] Loaded scene StartMenu.tscn")
 	menu_layer = menu_nodes.get("menu_layer", null)
 	menu_title_label = menu_nodes.get("menu_title_label", null)
 	menu_start_button = menu_nodes.get("menu_start_button", null)
