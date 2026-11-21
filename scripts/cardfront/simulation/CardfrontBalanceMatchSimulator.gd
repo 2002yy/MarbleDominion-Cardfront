@@ -142,8 +142,7 @@ func simulate(
 			defense_pool,
 			profile,
 			seed_value,
-			round_number,
-			safe_simulation_mode
+			round_number
 		)
 		round_results[SLOT_B] = _resolve_volley(
 			SLOT_B,
@@ -154,8 +153,7 @@ func simulate(
 			defense_pool,
 			profile,
 			seed_value,
-			round_number,
-			safe_simulation_mode
+			round_number
 		)
 		for slot in [SLOT_A, SLOT_B]:
 			var volley_result: Dictionary = round_results[slot] as Dictionary
@@ -289,8 +287,7 @@ func _resolve_volley(
 	defense_pool: Dictionary,
 	profile: Dictionary,
 	seed_value: int,
-	round_number: int,
-	_simulation_mode: String
+	round_number: int
 ) -> Dictionary:
 	var plan = plan_data["plan"]
 	var rng: RandomNumberGenerator = _rng_a if attacker_slot == SLOT_A else _rng_b
