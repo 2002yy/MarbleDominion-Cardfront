@@ -1,6 +1,8 @@
 extends CanvasLayer
 class_name StartMenu
 
+const PreviewScene = preload("res://scenes/ui/PreviewScene.tscn")
+
 @onready var shade: ColorRect = get_node("Shade")
 @onready var root_panel: Panel = get_node("RootPanel")
 @onready var panel_bg: ColorRect = get_node("RootPanel/PanelBg")
@@ -307,13 +309,7 @@ func _init_decor() -> void:
 	for child in chamber_preview.get_children():
 		child.queue_free()
 
-	var decor
-	var preview_scene_path: String = "res://scenes/ui/PreviewScene.tscn"
-	if ResourceLoader.exists(preview_scene_path):
-		var preview_scene: PackedScene = load(preview_scene_path)
-		decor = preview_scene.instantiate()
-	else:
-		decor = preload("res://scripts/MenuDecor.gd").new()
+	var decor: Node2D = PreviewScene.instantiate() as Node2D
 	decor.position = Vector2.ZERO
 	decor.scale = Vector2.ONE
 	chamber_preview.add_child(decor)
