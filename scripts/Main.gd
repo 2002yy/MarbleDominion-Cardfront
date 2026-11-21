@@ -38,6 +38,7 @@ const CardfrontHUDScene = preload("res://scenes/ui/cardfront/CardfrontHUD.tscn")
 const CardfrontPrematchScene = preload("res://scenes/ui/cardfront/CardfrontPrematchScreen.tscn")
 const CardfrontBattleHeroHudScene = preload("res://scenes/ui/cardfront/CardfrontBattleHeroHud.tscn")
 const GameHUDScene = preload("res://scenes/ui/GameHUD.tscn")
+const EventRouletteScene = preload("res://scenes/ui/EventRouletteView.tscn")
 
 var runtime = GameRuntimeContextScript.new()
 var cardfront_runtime_builder = null
@@ -746,18 +747,8 @@ func _create_event_roulette_system() -> void:
 	if game_layer == null or ui_canvas == null:
 		return
 
-	var scene_path: String = "res://scenes/ui/EventRouletteView.tscn"
-	if ResourceLoader.exists(scene_path):
-		var scene: PackedScene = load(scene_path)
-		runtime.event_view = scene.instantiate()
-		runtime.event_view.setup(Vector2(VIEW_W, VIEW_H), runtime.current_layout, is_mobile_layout)
-		print("[EventRoulette] Loaded scene EventRouletteView.tscn")
-	else:
-		var event_view_script = load("res://scripts/EventRouletteView.gd")
-		runtime.event_view = event_view_script.new()
-		runtime.event_view.name = "EventRouletteView"
-		runtime.event_view.setup(Vector2(VIEW_W, VIEW_H), runtime.current_layout, is_mobile_layout)
-		print("[EventRoulette] Scene load failed, fallback to legacy EventRouletteView.gd")
+	runtime.event_view = EventRouletteScene.instantiate()
+	runtime.event_view.setup(Vector2(VIEW_W, VIEW_H), runtime.current_layout, is_mobile_layout)
 	ui_canvas.add_child(runtime.event_view)
 
 	var event_controller_script = load("res://scripts/EventRouletteController.gd")
