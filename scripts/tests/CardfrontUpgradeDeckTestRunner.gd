@@ -7,7 +7,7 @@ const DraftSystemScript = preload("res://scripts/cardfront/draft/CardfrontUpgrad
 const ManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
 const ResolverScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeResolver.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
-const AiPolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
+const TacticalValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontTacticalUpgradeValuePolicy.gd")
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 const DeckSimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontB1DeckMatchSimulator.gd")
@@ -37,7 +37,6 @@ func _run() -> void:
 func _test_deck_contracts() -> void:
 	_assert.eq(ManifestScript.validate_all(), [], "decks: all eighteen card definitions should validate")
 	_assert.eq(DeckRegistryScript.validate_all(), [], "decks: all three bounded decks should validate")
-	_assert.eq(ManifestScript.CORE_UPGRADE_IDS.size(), 8, "decks: historical audit baseline should contain eight cards")
 	_assert.eq(ManifestScript.get_upgrade_ids().size(), 18, "decks: formal live pool should contain eighteen cards")
 	_assert.eq(ManifestScript.get_all_upgrade_ids().size(), 18, "decks: catalog should contain only implemented cards")
 	for deck_id in DeckRegistryScript.get_deck_ids():
@@ -133,7 +132,6 @@ func _test_entity_upgrade_state() -> void:
 
 
 func _test_deck_aware_ai_values() -> void:
-	var policy = AiPolicyScript.new()
 	var engineer = _hero_state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
 	engineer.set_deck_id(DeckRegistryScript.DECK_FORTIFICATION_CORPS)
 
@@ -145,13 +143,13 @@ func _test_deck_aware_ai_values() -> void:
 	defended_route["expected_frontline_captures"] = 3.0
 	defended_route["repairable_frontline_cells"] = 6
 	defended_route["route_pressure"] = 2.5
-	var siege: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended_route)
+	var siege: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended_route)
 	defended_route["enemy_defense_tower_count"] = 2
-	var heavy_charge: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_HEAVY_CHARGE, engineer, defended_route)
-	var armored_guard: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_ARMORED_GUARD, engineer, defended_route)
-	var sapper: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SAPPER_UNIT, engineer, defended_route)
-	var colossus: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_GATE_COLOSSUS, engineer, defended_route)
-	var plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, defended_route)
+	var heavy_charge: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_HEAVY_CHARGE, engineer, defended_route)
+	var armored_guard: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_ARMORED_GUARD, engineer, defended_route)
+	var sapper: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_SAPPER_UNIT, engineer, defended_route)
+	var colossus: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_GATE_COLOSSUS, engineer, defended_route)
+	var plus_five: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, defended_route)
 	_assert.gt(float(siege.get("score", 0.0)), float(plus_five.get("score", 0.0)), "decks AI: targeted siege should beat flat shots at a high-confidence defended bottleneck")
 	_assert.gt(float(siege.get("expected_pierced_contacts", 0.0)), 0.0, "decks AI: siege conversion should expose expected pierced contacts")
 	_assert.gt(float(heavy_charge.get("score", 0.0)), 0.0, "decks AI: heavy charge should gain value against enemy towers")
@@ -164,27 +162,27 @@ func _test_deck_aware_ai_values() -> void:
 	var leading_context: Dictionary = defended_route.duplicate(true)
 	leading_context["own_health_ratio"] = 0.80
 	leading_context["enemy_health_ratio"] = 0.30
-	var trailing_colossus: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_GATE_COLOSSUS, engineer, trailing_context)
-	var leading_colossus: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_GATE_COLOSSUS, engineer, leading_context)
+	var trailing_colossus: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_GATE_COLOSSUS, engineer, trailing_context)
+	var leading_colossus: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_GATE_COLOSSUS, engineer, leading_context)
 	_assert.gt(float(trailing_colossus.get("score", 0.0)), float(leading_colossus.get("score", 0.0)), "decks AI: neutral colossus should be valued more as a comeback tool")
 
 	var dense_random_defense: Dictionary = defended_route.duplicate(true)
 	dense_random_defense["enemy_defense_contact_chance"] = 0.65
-	var armor: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_ARMOR_PIERCING, engineer, dense_random_defense)
-	var dense_plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, dense_random_defense)
+	var armor: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_ARMOR_PIERCING, engineer, dense_random_defense)
+	var dense_plus_five: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, dense_random_defense)
 	_assert.gt(float(armor.get("score", 0.0)), float(dense_plus_five.get("score", 0.0)), "decks AI: armor piercing should become rational only with dense generic defense contacts")
 
 	var saturated: Dictionary = defended_route.duplicate(true)
 	saturated["repairable_frontline_cells"] = 0
 	saturated["owned_cell_count"] = 18
 	saturated["defended_cell_count"] = 18
-	var defense_cap: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1, engineer, saturated)
-	var saturated_plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, saturated)
+	var defense_cap: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1, engineer, saturated)
+	var saturated_plus_five: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, saturated)
 	_assert.gt(float(defense_cap.get("score", 0.0)), float(saturated_plus_five.get("score", 0.0)), "decks AI: defense cap should become rational when a complete line is already saturated")
 
 	var no_towers: Dictionary = defended_route.duplicate(true)
 	no_towers["enemy_defense_tower_count"] = 0
-	var untargeted_heavy: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_HEAVY_CHARGE, engineer, no_towers)
+	var untargeted_heavy: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_HEAVY_CHARGE, engineer, no_towers)
 	_assert.that(float(heavy_charge.get("score", 0.0)) > float(untargeted_heavy.get("score", 0.0)), "decks AI: heavy charge should respond to enemy tower count")
 
 	var gunner = _hero_state(HeroRegistryScript.HERO_RAPID_GUNNER)
@@ -193,26 +191,26 @@ func _test_deck_aware_ai_values() -> void:
 	calm["route_pressure"] = 0.6
 	var pressured: Dictionary = _base_context()
 	pressured["route_pressure"] = 2.0
-	var suppression_calm: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SUPPRESSION_SCREEN, gunner, calm)
-	var suppression_pressured: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SUPPRESSION_SCREEN, gunner, pressured)
-	var gunner_plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, gunner, pressured)
+	var suppression_calm: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_SUPPRESSION_SCREEN, gunner, calm)
+	var suppression_pressured: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_SUPPRESSION_SCREEN, gunner, pressured)
+	var gunner_plus_five: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_VOLLEY_PLUS_5, gunner, pressured)
 	_assert.gt(float(suppression_pressured.get("score", 0.0)), float(suppression_calm.get("score", 0.0)), "decks AI: suppression should remain route-context sensitive")
 	_assert.gt(float(suppression_pressured.get("score", 0.0)), float(gunner_plus_five.get("score", 0.0)), "decks AI: suppression should beat flat shots under high route pressure")
 
 	var balanced = _hero_state(HeroRegistryScript.HERO_BALANCED_COMMANDER)
 	var early: Dictionary = _base_context()
 	early["rounds_remaining"] = 18
-	var rarity: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_RARITY_PLUS_1, balanced, early)
-	var balanced_plus_five: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_VOLLEY_PLUS_5, balanced, early)
+	var rarity: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_RARITY_PLUS_1, balanced, early)
+	var balanced_plus_five: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_VOLLEY_PLUS_5, balanced, early)
 	_assert.gt(float(rarity.get("score", 0.0)), float(balanced_plus_five.get("score", 0.0)), "decks AI: rarity growth should beat flat shots in a long early-game horizon")
 
 	engineer.record_upgrade(ManifestScript.UPGRADE_SIEGE_CALIBRATION, 2)
-	var repeated: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended_route)
+	var repeated: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_SIEGE_CALIBRATION, engineer, defended_route)
 	_assert.eq(float(repeated.get("build_repeat_multiplier", 0.0)), 0.8, "decks AI: repeated identical cards should receive a visible diversity penalty")
 	var synergistic = _hero_state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
 	synergistic.set_deck_id(DeckRegistryScript.DECK_FORTIFICATION_CORPS)
 	synergistic.record_upgrade(ManifestScript.UPGRADE_ARMOR_PIERCING)
-	var synergy: Dictionary = policy.evaluate_id(ManifestScript.UPGRADE_SIEGE_CALIBRATION, synergistic, defended_route)
+	var synergy: Dictionary = TacticalValuePolicyScript.evaluate(ManifestScript.UPGRADE_SIEGE_CALIBRATION, synergistic, defended_route)
 	_assert.gt(float(synergy.get("build_synergy_multiplier", 1.0)), 1.0, "decks AI: matching siege and anti-fortify tags should receive synergy value")
 
 
