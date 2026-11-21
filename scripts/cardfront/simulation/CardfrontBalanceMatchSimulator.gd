@@ -42,13 +42,11 @@ func simulate(
 	hero_b: String,
 	map_id: String,
 	side_variant: int,
-	seed_value: int,
-	simulation_mode: String = ConfigScript.DEFAULT_SIMULATION_MODE
+	seed_value: int
 ) -> Dictionary:
-	var safe_simulation_mode: String = ConfigScript.sanitize_simulation_mode(simulation_mode)
 	var map_definition: Dictionary = MapRegistryScript.get_map_definition(map_id, ConfigScript.GRID_SIZE)
 	if map_definition.is_empty():
-		return {"success": false, "reason": "unknown_map", "simulation_mode": safe_simulation_mode}
+		return {"success": false, "reason": "unknown_map", "simulation_mode": ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED}
 
 	var profile: Dictionary = ConfigScript.sanitize_map_profile(
 		map_definition.get("simulation_profile", {}) as Dictionary
@@ -211,7 +209,7 @@ func simulate(
 		winner_side = "blue" if winner_slot == blue_slot else "red"
 	return {
 		"success": true,
-		"simulation_mode": safe_simulation_mode,
+		"simulation_mode": ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED,
 		"hidden_hit_compensation": false,
 		"resolved_attack_level_cap": ConfigScript.PARITY_RESOLVED_ATTACK_LEVEL_CAP,
 		"hero_a": str(hero_a),
