@@ -39,6 +39,12 @@ func _test_live_edge_controls() -> void:
 	if settings_panel != null:
 		_assert.that(settings_panel.has_method("show_panel"), "live UI: settings scene exposes show_panel")
 		_assert.that(settings_panel.has_method("hide_panel"), "live UI: settings scene exposes hide_panel")
+		_assert.that(not settings_panel.visible, "live UI: settings panel initially hidden")
+		if settings_button != null:
+			settings_button.pressed.emit()
+			_assert.that(settings_panel.visible, "live UI: settings button opens scene panel")
+			settings_button.pressed.emit()
+			_assert.that(not settings_panel.visible, "live UI: settings button closes scene panel")
 	_assert.that(pause_button != null, "live UI: pause button should exist")
 	_assert.that(exit_button != null, "live UI: exit button should exist")
 	if main.runtime.region_info_panel != null:

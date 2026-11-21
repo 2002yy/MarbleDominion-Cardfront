@@ -217,16 +217,9 @@ func _toggle_settings_panel() -> void:
 	if settings_panel == null or not is_instance_valid(settings_panel):
 		return
 	if settings_panel.visible:
-		if settings_panel.has_method("hide_panel"):
-			settings_panel.hide_panel()
-		else:
-			settings_panel.visible = false
-		return
-
-	if settings_panel.has_method("show_content"):
-		settings_panel.show_content(GameConfig.get_quality_name(), "手机横屏" if is_mobile_layout else "电脑")
+		settings_panel.hide_panel()
 	else:
-		settings_panel.visible = true
+		settings_panel.show_panel()
 
 func _create_background() -> void:
 	var background = ColorRect.new()
