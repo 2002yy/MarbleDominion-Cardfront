@@ -99,18 +99,11 @@ static func build_mode_tip_text(mode_name: String, time_limit_minutes: int) -> S
 
 
 func get_parts() -> Dictionary:
-	var slot_buttons: Dictionary = {}
-	for i in range(5):
-		var slot: int = i + 1
-		var btn: Button = slot_grid.get_node_or_null("SlotButton_%d" % slot) as Button
-		if btn != null:
-			slot_buttons[slot] = btn
 	return {
 		"menu_layer": self,
 		"menu_title_label": title_label,
 		"menu_start_button": start_button,
 		"menu_continue_button": continue_button,
-		"menu_save_slot_buttons": slot_buttons,
 		"menu_status_label": menu_status_label,
 	}
 
@@ -150,10 +143,6 @@ func setup(p_owner, view_size: Vector2, save_summaries: Array, current_layout: D
 
 func refresh_slots(save_summaries: Array) -> void:
 	_refresh_slots(save_summaries)
-
-
-func refresh_save_slots(save_summaries: Array) -> void:
-	refresh_slots(save_summaries)
 
 
 func _apply_layout(view_size: Vector2) -> void:

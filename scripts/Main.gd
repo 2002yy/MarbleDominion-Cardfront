@@ -63,7 +63,6 @@ var is_game_over: bool = false
 var menu_title_label
 var menu_start_button
 var menu_continue_button
-var menu_save_slot_buttons: Dictionary = {}
 var menu_status_label
 var cardfront_prematch_screen = null
 var _command_point_label: Label = null
@@ -245,7 +244,6 @@ func _create_start_menu() -> void:
 	menu_title_label = menu_nodes.get("menu_title_label", null)
 	menu_start_button = menu_nodes.get("menu_start_button", null)
 	menu_continue_button = menu_nodes.get("menu_continue_button", null)
-	menu_save_slot_buttons = menu_nodes.get("menu_save_slot_buttons", {})
 	menu_status_label = menu_nodes.get("menu_status_label", null)
 	if pending_menu_status_message != "":
 		_show_menu_status(pending_menu_status_message)
@@ -1100,7 +1098,6 @@ func _cleanup_menu() -> void:
 	menu_title_label = null
 	menu_start_button = null
 	menu_continue_button = null
-	menu_save_slot_buttons.clear()
 	menu_status_label = null
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -1263,35 +1260,9 @@ func _select_save_slot(slot_index: int) -> void:
 	_refresh_menu_save_slots()
 
 func _refresh_menu_save_slots() -> void:
-	var summaries: Array = _get_save_slot_summaries()
-	if menu_layer != null and is_instance_valid(menu_layer) and menu_layer.has_method("refresh_slots"):
-		menu_layer.refresh_slots(summaries)
-		return
-	if menu_layer != null and is_instance_valid(menu_layer) and menu_layer.has_method("refresh_save_slots"):
-		menu_layer.refresh_save_slots(summaries)
-		return
-	_refresh_menu_slot_buttons_fallback(summaries)
+	if menu_layer != null and is_instance_valid(menu_layer):
+		menu_layer.refresh_slots(_get_save_slot_summaries())
 
-func _refresh_menu_slot_buttons_fallback(summaries: Array) -> void:
-	for summary in summaries:
-		if not (summary is Dictionary):
-			continue
-		var slot: int = int(summary.get("slot", 1))
-		if not menu_save_slot_buttons.has(slot):
-			continue
-		var button: Button = menu_save_slot_buttons[slot] as Button
-		if button == null or not is_instance_valid(button):
-			continue
-		button.text = StartMenuUi.build_slot_label(slot, summary, selected_save_slot)
-		button.tooltip_text = str(summary.get("detail", "点击选择此槽"))
-		button.self_modulate = Color(0.28, 0.54, 0.88) if slot == selected_save_slot else Color(0.16, 0.22, 0.32)
-
-	var has_selected_save: bool = _has_save_file(selected_save_slot)
-	if menu_continue_button != null and is_instance_valid(menu_continue_button):
-		menu_continue_button.disabled = not has_selected_save
-		menu_continue_button.text = StartMenuUi.build_continue_button_text(selected_save_slot)
-	if menu_start_button != null and is_instance_valid(menu_start_button):
-		menu_start_button.text = StartMenuUi.build_start_button_label(selected_save_slot, has_selected_save)
 
 func _show_menu_status(message: String) -> void:
 	if menu_status_label != null and is_instance_valid(menu_status_label):
