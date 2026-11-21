@@ -8,7 +8,6 @@ const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontPr
 const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVolleyResolver.gd")
 
 const MODE_MARGINAL: String = BaseValuePolicyScript.MODE_MARGINAL
-const MODE_HISTORICAL_FIXED: String = BaseValuePolicyScript.MODE_HISTORICAL_FIXED
 
 const SHOT_VALUE: float = 9.0
 const PIERCE_CONTACT_VALUE: float = 14.0
@@ -24,8 +23,6 @@ static func evaluate(
 	valuation_mode: String = MODE_MARGINAL
 ) -> Dictionary:
 	var safe_id: String = str(upgrade_id)
-	if valuation_mode == MODE_HISTORICAL_FIXED:
-		return BaseValuePolicyScript.evaluate(safe_id, state, context, valuation_mode)
 	if not UpgradeManifestScript.has_upgrade(safe_id):
 		return _empty_result(safe_id, "unknown_upgrade")
 

@@ -28,8 +28,7 @@ func _run() -> void:
 	_test_rarity_is_early_value()
 	_test_echo_contract()
 	_test_object_and_dictionary_states_match()
-	_test_historical_mode_is_frozen()
-	_test_shared_simulator_switches_valuation_modes()
+	_test_shared_simulator_uses_marginal_valuation()
 	await _test_live_director_emits_marginal_report()
 
 	GameConfig.reset_runtime_defaults()
@@ -150,41 +149,25 @@ func _test_object_and_dictionary_states_match() -> void:
 	_assert.eq(int(object_result.get("actual_added_shots", -1)), int(dictionary_result.get("actual_added_shots", -2)), "shared policy: both state adapters should report the same real shot gain")
 
 
-func _test_historical_mode_is_frozen() -> void:
-	var state = _hero_state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER)
-	var result: Dictionary = ValuePolicyScript.evaluate(
-		UpgradeManifestScript.UPGRADE_VOLLEY_X2,
-		state,
-		{},
-		ValuePolicyScript.MODE_HISTORICAL_FIXED
-	)
-	_assert.eq(float(result.get("score", 0.0)), 92.0, "historical policy: x2 score should remain exactly 92 for audit reproduction")
-	_assert.eq(str(result.get("valuation_mode", "")), ValuePolicyScript.MODE_HISTORICAL_FIXED, "historical policy: report should disclose the frozen valuation mode")
-
-
-func _test_shared_simulator_switches_valuation_modes() -> void:
+func _test_shared_simulator_uses_marginal_valuation() -> void:
 	var simulator = SharedSimulatorScript.new()
 	var state: Dictionary = _hero_state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER).snapshot()
 	var offer: Array = [
 		UpgradeManifestScript.UPGRADE_VOLLEY_X2,
 		UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5,
 	]
-	var historical_choice: String = str(simulator.call(
-		"choose_upgrade_id_for_test",
-		offer,
-		state,
-		_base_context(),
-		SimulationConfigScript.SIMULATION_MODE_HISTORICAL_COMPENSATED
-	))
-	var marginal_choice: String = str(simulator.call(
+	var chosen: String = str(simulator.call(
 		"choose_upgrade_id_for_test",
 		offer,
 		state,
 		_base_context(),
 		SimulationConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
 	))
-	_assert.eq(historical_choice, UpgradeManifestScript.UPGRADE_VOLLEY_X2, "shared simulator: historical mode should preserve fixed x2 priority")
-	_assert.eq(marginal_choice, UpgradeManifestScript.UPGRADE_VOLLEY_X2, "shared simulator: parity mode should duplicate the Engineer siege group")
+	_assert.eq(chosen, UpgradeManifestScript.UPGRADE_VOLLEY_X2, "shared simulator: marginal policy should favor the Engineer siege group")
+	var report: Array = simulator.get_last_choice_report()
+	_assert.that(not report.is_empty(), "shared simulator: marginal selection publishes ranked evidence")
+	for entry in report:
+		_assert.eq(str((entry as Dictionary).get("valuation_mode", "")), ValuePolicyScript.MODE_MARGINAL, "shared simulator: no historical valuation appears in ranked evidence")
 	var result: Dictionary = simulator.call(
 		"simulate",
 		HeroRegistryScript.HERO_BALANCED_COMMANDER,
@@ -194,7 +177,7 @@ func _test_shared_simulator_switches_valuation_modes() -> void:
 		19,
 		SimulationConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
 	) as Dictionary
-	_assert.eq(str(result.get("upgrade_valuation_mode", "")), ValuePolicyScript.MODE_MARGINAL, "shared simulator: parity match output should disclose marginal valuation")
+	_assert.eq(str(result.get("upgrade_valuation_mode", "")), ValuePolicyScript.MODE_MARGINAL, "shared simulator: match report uses marginal valuation")
 
 
 func _test_live_director_emits_marginal_report() -> void:
