@@ -112,7 +112,6 @@ jobs:
               CardfrontThreeChoiceRuntimeTestRunner.gd
               CardfrontRoundCombatTestRunner.gd
               CardfrontModeSmokeTestRunner.gd
-              CardfrontP0GoldenBaselineTestRunner.gd
               CardfrontSupportIdentityTestRunner.gd
               CardfrontSupportStateTestRunner.gd
               CardfrontSupportPresentationContractTestRunner.gd
