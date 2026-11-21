@@ -35,13 +35,7 @@ func _run() -> void:
 
 
 func _test_deck_contracts() -> void:
-	_assert.eq(ManifestScript.validate_all(), [], "decks: all eighteen card definitions should validate")
-	_assert.eq(DeckRegistryScript.validate_all(), [], "decks: all three bounded decks should validate")
-	_assert.eq(ManifestScript.get_upgrade_ids().size(), 18, "decks: formal live pool should contain eighteen cards")
-	_assert.eq(ManifestScript.get_all_upgrade_ids().size(), 18, "decks: catalog should contain only implemented cards")
-	for deck_id in DeckRegistryScript.get_deck_ids():
-		var deck_size: int = DeckRegistryScript.get_upgrade_ids(str(deck_id)).size()
-		_assert.that(deck_size >= DeckRegistryScript.MIN_DECK_SIZE and deck_size <= DeckRegistryScript.MAX_DECK_SIZE, "decks: every deck should stay inside the supported size range")
+	_assert.eq(DeckRegistryScript.validate_all(), [], "decks: all selectable decks and their sizes should validate")
 
 
 func _test_default_pool_exposes_formal_conversions() -> void:

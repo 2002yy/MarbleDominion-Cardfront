@@ -43,10 +43,6 @@ func draw_three(run_state = null, owner_id: int = RulesScript.PLAYER_FACTION) ->
 	return draw_offer_for_context(OfferContextScript.create(owner_id, run_state), DEFAULT_OFFER_SIZE)
 
 
-func draw_offer(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE, owner_id: int = RulesScript.PLAYER_FACTION) -> Array:
-	return draw_offer_for_context(OfferContextScript.create(owner_id, run_state), offer_size)
-
-
 func draw_offer_for_context(context, offer_size: int = DEFAULT_OFFER_SIZE) -> Array:
 	var result: Array = []
 	for upgrade_id in draw_offer_ids_for_context(context, offer_size):
@@ -55,10 +51,6 @@ func draw_offer_for_context(context, offer_size: int = DEFAULT_OFFER_SIZE) -> Ar
 			context.run_state if context != null else null
 		))
 	return result
-
-
-func draw_offer_ids(run_state = null, offer_size: int = DEFAULT_OFFER_SIZE, owner_id: int = RulesScript.PLAYER_FACTION) -> Array:
-	return draw_offer_ids_for_context(OfferContextScript.create(owner_id, run_state), offer_size)
 
 
 func draw_offer_ids_for_context(context, offer_size: int = DEFAULT_OFFER_SIZE) -> Array:

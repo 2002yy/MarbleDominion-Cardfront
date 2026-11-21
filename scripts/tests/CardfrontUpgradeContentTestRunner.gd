@@ -20,7 +20,6 @@ func _run() -> void:
 	_test_manifest_is_valid()
 	_test_cards_are_text_and_symbol_driven()
 	_test_seeded_offers_are_unique_and_deterministic()
-	_test_legacy_four_choice_request_is_capped_to_three()
 	_test_rarity_growth_changes_weights()
 	_test_mid_and_late_offer_quality_guarantees()
 	_test_capped_or_armed_upgrades_are_not_offered()
@@ -69,7 +68,6 @@ func _test_seeded_offers_are_unique_and_deterministic() -> void:
 	_assert.eq(unique_ids.size(), 3, "draft: offer upgrades should be unique")
 	for upgrade_id in first_ids:
 		_assert.that(upgrade_id in UpgradeManifestScript.get_upgrade_ids(), "draft: default state should only draw the formal live pool")
-	_test_formal_pool_exposes_typed_conversions()
 
 
 func _test_rarity_growth_changes_weights() -> void:
@@ -106,19 +104,6 @@ func _test_mid_and_late_offer_quality_guarantees() -> void:
 		_assert.eq(_highest_rarity_rank(draft.draw_three(state)), 2, "rarity growth: each level advances the Rare guarantee by one prior selection")
 
 
-func _test_legacy_four_choice_request_is_capped_to_three() -> void:
-	var state = RunStateScript.new()
-	state.setup(0)
-	var draft = DraftSystemScript.new()
-	draft.set_seed(3)
-	var offer: Array = draft.draw_offer(state, 4)
-	var unique_ids: Dictionary = {}
-	for definition in offer:
-		unique_ids[str((definition as Dictionary).get("id", ""))] = true
-	_assert.eq(offer.size(), 3, "draft: legacy four-choice requests should be capped to the formal three-choice contract")
-	_assert.eq(unique_ids.size(), 3, "draft: capped offer should remain unique")
-
-
 func _test_timeout_fallback_comes_from_offer() -> void:
 	var state = RunStateScript.new()
 	state.setup(0)
@@ -130,19 +115,6 @@ func _test_timeout_fallback_comes_from_offer() -> void:
 	_assert.that(not selected.is_empty(), "timeout: non-empty offer should produce a selection")
 	_assert.that(_offer_ids(offer).has(str(selected.get("id", ""))), "timeout: selection should come from the current offer")
 	_assert.eq(draft.choose_timeout_fallback([]), {}, "timeout: empty offer should fail safely")
-
-
-func _test_formal_pool_exposes_typed_conversions() -> void:
-	var state = RunStateScript.new()
-	state.setup(0)
-	var draft = DraftSystemScript.new()
-	var seen: Dictionary = {}
-	for seed_value in range(1, 161):
-		draft.set_seed(seed_value)
-		for upgrade_id in _offer_ids(draft.draw_three(state)):
-			seen[str(upgrade_id)] = true
-	_assert.that(seen.has(UpgradeManifestScript.UPGRADE_SIEGE_CALIBRATION), "draft: formal pool should expose siege formation")
-	_assert.that(seen.has(UpgradeManifestScript.UPGRADE_SUPPRESSION_SCREEN), "draft: formal pool should expose suppression formation")
 
 
 func _test_capped_or_armed_upgrades_are_not_offered() -> void:
