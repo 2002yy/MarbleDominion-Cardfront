@@ -6,16 +6,14 @@ const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUp
 const DeckRegistryScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeDeckRegistry.gd")
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 
-const MODE_MARGINAL: String = DeckValuePolicyScript.MODE_MARGINAL
 
 
 static func evaluate(
 	upgrade_id: String,
 	state = null,
-	context: Dictionary = {},
-	valuation_mode: String = MODE_MARGINAL
+	context: Dictionary = {}
 ) -> Dictionary:
-	var result: Dictionary = DeckValuePolicyScript.evaluate(upgrade_id, state, context, valuation_mode)
+	var result: Dictionary = DeckValuePolicyScript.evaluate(upgrade_id, state, context)
 	if not bool(result.get("eligible", false)):
 		return result
 
