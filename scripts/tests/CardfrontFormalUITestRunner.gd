@@ -34,6 +34,11 @@ func _test_live_edge_controls() -> void:
 	var pause_button = main.runtime.hud.get("pause_button", null)
 	var exit_button = main.runtime.hud.get("exit_button", null)
 	_assert.that(settings_button != null, "live UI: settings button should exist")
+	var settings_panel = main.runtime.hud.get("settings_panel", null)
+	_assert.that(settings_panel != null, "live UI: settings scene should exist")
+	if settings_panel != null:
+		_assert.that(settings_panel.has_method("show_panel"), "live UI: settings scene exposes show_panel")
+		_assert.that(settings_panel.has_method("hide_panel"), "live UI: settings scene exposes hide_panel")
 	_assert.that(pause_button != null, "live UI: pause button should exist")
 	_assert.that(exit_button != null, "live UI: exit button should exist")
 	if main.runtime.region_info_panel != null:

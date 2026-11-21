@@ -69,6 +69,8 @@ func _run() -> void:
 	t.that(parts.has("settings_panel"), "part: settings_panel")
 	t.that(parts["settings_panel"] != null, "settings_panel not null")
 	t.that(parts["settings_panel"] is Control, "settings_panel is Control")
+	t.that(parts["settings_panel"].has_method("show_panel"), "settings_panel exposes show_panel")
+	t.that(parts["settings_panel"].has_method("hide_panel"), "settings_panel exposes hide_panel")
 	t.that(parts.has("pause_overlay"), "part: pause_overlay")
 	t.that(parts.has("winner_label"), "part: winner_label")
 
