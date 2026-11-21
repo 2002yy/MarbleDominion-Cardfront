@@ -28,7 +28,7 @@ layout_mode = 0
 offset_left = 176.0
 offset_top = 116.0
 offset_right = 1120.0
-offset_bottom = 604.0
+offset_bottom = 666.0
 mouse_filter = 0
 
 [node name="InnerBg" type="ColorRect" parent="DraftRoot/ChoiceShell"]
@@ -36,7 +36,7 @@ layout_mode = 0
 offset_left = 4.0
 offset_top = 4.0
 offset_right = 940.0
-offset_bottom = 484.0
+offset_bottom = 546.0
 mouse_filter = 2
 color = Color(0.035, 0.055, 0.085, 0.99)
 
@@ -105,7 +105,7 @@ layout_mode = 0
 offset_left = 18.0
 offset_top = 124.0
 offset_right = 926.0
-offset_bottom = 390.0
+offset_bottom = 450.0
 mouse_filter = 1
 theme_override_constants/separation = 13
 alignment = 1
@@ -113,9 +113,9 @@ alignment = 1
 [node name="AiStatusLabel" type="Label" parent="DraftRoot/ChoiceShell"]
 layout_mode = 0
 offset_left = 48.0
-offset_top = 402.0
+offset_top = 462.0
 offset_right = 896.0
-offset_bottom = 426.0
+offset_bottom = 486.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.58, 0.62, 1)
 theme_override_font_sizes/font_size = 16
@@ -125,9 +125,9 @@ horizontal_alignment = 1
 [node name="ResultLabel" type="Label" parent="DraftRoot/ChoiceShell"]
 layout_mode = 0
 offset_left = 38.0
-offset_top = 431.0
+offset_top = 491.0
 offset_right = 906.0
-offset_bottom = 474.0
+offset_bottom = 534.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.88, 0.93, 0.98, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)

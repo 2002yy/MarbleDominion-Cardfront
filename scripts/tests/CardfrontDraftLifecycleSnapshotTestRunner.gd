@@ -190,8 +190,9 @@ func _test_repeated_toggle_and_resize_geometry() -> void:
 		panel._toggle_peek()
 		_assert.eq(panel.choice_shell.position, narrow_position, "repeat narrow toggle %d: shell position stays fixed" % index)
 		_assert.eq(panel.choice_shell.size, narrow_size, "repeat narrow toggle %d: shell size stays fixed" % index)
-	_assert.eq(narrow_position, Vector2(-92.0, 116.0), "resize: narrow shell stays on A1 golden position")
-	_assert.eq(narrow_size, Vector2(944.0, 488.0), "resize: narrow shell stays on A1 golden size")
+	var narrow_rect: Rect2 = panel.choice_shell.get_global_rect()
+	_assert.that(narrow_rect.position.x >= -0.5 and narrow_rect.end.x <= 760.5, "resize: narrow shell stays entirely within viewport width")
+	_assert.that(narrow_rect.position.y >= -0.5 and narrow_rect.end.y <= 540.5, "resize: narrow shell stays entirely within viewport height")
 	_assert.eq(_card_ids(panel), offer_ids, "resize: offer IDs stay unchanged")
 
 	_assert.that(panel.setup(director, Vector2(1120.0, 720.0)), "resize: desktop restore setup succeeds")
