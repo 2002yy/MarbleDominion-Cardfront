@@ -4,13 +4,8 @@ class_name CardfrontRuntimeSnapshot
 const SCHEMA_VERSION: String = "2.0"
 const SupportStateCodecScript = preload("res://scripts/cardfront/support/SupportStateSnapshotCodec.gd")
 
-# v0.2 legacy fields (kept for backward compatibility tests)
-var resource_states: Dictionary = {}
-var used_card_ids: Array = []
+# Fortification still belongs to the active territory-defense save contract.
 var fortify_stacks: Array = []
-var morale_effects: Array = []
-var target_bias_state: Dictionary = {}
-var devices: Array = []
 
 # v0.3 fields
 var faction_run_states: Dictionary = {}
@@ -28,12 +23,7 @@ var support_states: Dictionary = {}
 func to_dict() -> Dictionary:
 	return {
 		"schema_version": SCHEMA_VERSION,
-		"resource_states": resource_states,
-		"used_card_ids": used_card_ids,
 		"fortify_stacks": fortify_stacks,
-		"morale_effects": morale_effects,
-		"target_bias_state": target_bias_state,
-		"devices": devices,
 		"faction_run_states": faction_run_states,
 		"match_phase": match_phase,
 		"round_number": round_number,
@@ -49,12 +39,7 @@ func to_dict() -> Dictionary:
 
 static func from_dict(data: Dictionary):
 	var snap = load("res://scripts/cardfront/save/CardfrontRuntimeSnapshot.gd").new()
-	snap.resource_states = data.get("resource_states", {})
-	snap.used_card_ids = data.get("used_card_ids", [])
 	snap.fortify_stacks = data.get("fortify_stacks", [])
-	snap.morale_effects = data.get("morale_effects", [])
-	snap.target_bias_state = data.get("target_bias_state", {})
-	snap.devices = data.get("devices", [])
 	snap.faction_run_states = data.get("faction_run_states", {})
 	snap.match_phase = data.get("match_phase", {})
 	snap.round_number = int(data.get("round_number", 0))

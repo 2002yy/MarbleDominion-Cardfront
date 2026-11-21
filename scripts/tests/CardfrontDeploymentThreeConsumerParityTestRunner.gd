@@ -6,11 +6,8 @@ const DefaultMapScript = preload("res://scripts/cardfront/maps/maps/DefaultDuelM
 const Ids = preload("res://scripts/cardfront/support/CardfrontSupportIds.gd")
 const ContextScript = preload("res://scripts/cardfront/deployment/DeploymentSupportContext.gd")
 const ResolverScript = preload("res://scripts/cardfront/deployment/DeploymentPlacementResolver.gd")
-const FrontlineRuleScript = preload("res://scripts/cardfront/targets/target_rules/FrontlineDeploymentTargetRule.gd")
 const PreviewLayerScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
 const AiPlannerScript = preload("res://scripts/cardfront/ai/CardfrontAiDeploymentPlanner.gd")
-const CardDataScript = preload("res://scripts/cardfront/cards/CardData.gd")
-const CardPlayRequestScript = preload("res://scripts/cardfront/cards/CardPlayRequest.gd")
 const CardTargetTypeScript = preload("res://scripts/cardfront/cards/CardTargetType.gd")
 
 const CORE_CELL := Vector2i(0, 32)
@@ -29,7 +26,7 @@ func _initialize() -> void:
 func _run() -> void:
 	_assert = TestAssert.new()
 	await _setup_fixture()
-	print("[CardfrontDeploymentFourConsumerParityTest] Comparing Commit / Preview / AI / Auto on the same deployment facts")
+	print("[CardfrontDeploymentThreeConsumerParityTest] Comparing Preview / AI / Auto against current authority")
 
 	var core_context: Dictionary = ContextScript.core_only(
 		_map_definition,
@@ -92,7 +89,7 @@ func _run() -> void:
 		false
 	)
 
-	_assert.report("[CardfrontDeploymentFourConsumerParityTest]")
+	_assert.report("[CardfrontDeploymentThreeConsumerParityTest]")
 	TestFixtures.cleanup_node(_battlefield)
 	quit(0 if _assert.failures.is_empty() else 1)
 
@@ -124,26 +121,21 @@ func _assert_matrix(
 		requested_support_id,
 		profile_id
 	)
-	for consumer in ["commit", "preview", "ai", "auto_spawn"]:
+	for consumer in ["preview", "ai", "auto_spawn"]:
 		_assert.eq(
 			bool(results.get(consumer, not expected)),
 			expected,
-			"four-consumer parity: %s -> %s" % [label, consumer]
+			"three-consumer parity: %s -> %s" % [label, consumer]
 		)
 	_assert.eq(
-		bool(results.commit),
 		bool(results.preview),
-		"four-consumer parity: %s Commit equals Preview" % label
-	)
-	_assert.eq(
-		bool(results.commit),
 		bool(results.ai),
-		"four-consumer parity: %s Commit equals AI" % label
+		"three-consumer parity: %s Preview equals AI" % label
 	)
 	_assert.eq(
-		bool(results.commit),
+		bool(results.preview),
 		bool(results.auto_spawn),
-		"four-consumer parity: %s Commit equals Auto Spawn" % label
+		"three-consumer parity: %s Preview equals Auto Spawn" % label
 	)
 
 
@@ -156,29 +148,10 @@ func _consumer_results(
 	var provider := func(_owner_id: int):
 		return deployment_context.duplicate(true)
 
-	var card = CardDataScript.new()
-	card.id = 99104
-	card.card_name = "Parity Frontline Deployment"
-	card.target_type = CardTargetTypeScript.FRONTLINE_DEPLOYMENT
-	card.params = {
+	var params: Dictionary = {
 		"requested_support_id": requested_support_id,
 		"deployment_profile_id": profile_id,
 	}
-	var req = CardPlayRequestScript.make(
-		card.id,
-		Rules.PLAYER_FACTION,
-		cell,
-		-1
-	)
-	var commit_result = FrontlineRuleScript.new().validate(
-		req,
-		card,
-		{
-			"battlefield": _battlefield,
-			"region_map": null,
-			"deployment_context_provider": provider,
-		}
-	)
 
 	var preview = PreviewLayerScript.new()
 	get_root().add_child(preview)
@@ -186,10 +159,10 @@ func _consumer_results(
 	preview.region_map = null
 	preview.configure_deployment_authority(provider)
 	preview.show_for_card(
-		card.id,
+		99104,
 		{
 			"target_type": CardTargetTypeScript.FRONTLINE_DEPLOYMENT,
-			"params": card.params.duplicate(true),
+			"params": params.duplicate(true),
 		}
 	)
 	var preview_allowed: bool = preview.is_valid_target(cell)
@@ -222,7 +195,6 @@ func _consumer_results(
 	)
 
 	return {
-		"commit": bool(commit_result.success),
 		"preview": preview_allowed,
 		"ai": bool(ai_result.allowed),
 		"auto_spawn": bool(auto_result.get("allowed", false)),

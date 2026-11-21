@@ -16,7 +16,7 @@ func _run() -> void:
 
 	_test_default_schema_shape()
 	_test_partial_payload_uses_defaults()
-	_test_roundtrip_preserves_v02_fields()
+	_test_fortify_stacks_roundtrip()
 	_test_v03_field_defaults()
 	_test_v03_roundtrip()
 
@@ -36,29 +36,19 @@ func _test_default_schema_shape() -> void:
 	_assert.eq(keys, [
 		"current_gate_snapshot",
 		"current_offers",
-		"devices",
 		"entity_snapshot",
 		"faction_run_states",
 		"fortify_stacks",
 		"hero_assignments",
 		"match_phase",
-		"morale_effects",
-		"resource_states",
 		"round_active",
 		"round_number",
 		"schema_version",
 		"support_states",
-		"target_bias_state",
 		"territory_defense_state",
-		"used_card_ids",
 	], "snapshot schema: keys should stay explicit and stable")
 	_assert.that(payload.get("schema_version") is String, "snapshot schema: schema_version should be a string")
-	_assert.that(payload.get("resource_states") is Dictionary, "snapshot schema: resource_states should be a dictionary")
-	_assert.that(payload.get("used_card_ids") is Array, "snapshot schema: used_card_ids should be an array")
 	_assert.that(payload.get("fortify_stacks") is Array, "snapshot schema: fortify_stacks should be an array")
-	_assert.that(payload.get("morale_effects") is Array, "snapshot schema: morale_effects should be an array")
-	_assert.that(payload.get("target_bias_state") is Dictionary, "snapshot schema: target_bias_state should be a dictionary")
-	_assert.that(payload.get("devices") is Array, "snapshot schema: devices should be an array")
 	_assert.that(payload.get("faction_run_states") is Dictionary, "snapshot schema: faction_run_states should be a dictionary")
 	_assert.that(payload.get("match_phase") is Dictionary, "snapshot schema: match_phase should be a dictionary")
 	_assert.that(payload.get("round_number") is int, "snapshot schema: round_number should be an int")
@@ -72,46 +62,23 @@ func _test_default_schema_shape() -> void:
 
 
 func _test_partial_payload_uses_defaults() -> void:
-	var snap = CardfrontRuntimeSnapshotScript.from_dict({
-		"resource_states": {1: {"energy": 7, "parts": 3}},
-		"used_card_ids": [1001, 1004],
-	})
+	var snap = CardfrontRuntimeSnapshotScript.from_dict({})
 	var payload: Dictionary = snap.to_dict()
 
-	_assert.eq(payload.get("resource_states"), {1: {"energy": 7, "parts": 3}}, "snapshot defaults: resource_states should be preserved")
-	_assert.eq(payload.get("used_card_ids"), [1001, 1004], "snapshot defaults: used card ids should be preserved")
 	_assert.eq(payload.get("fortify_stacks"), [], "snapshot defaults: missing fortify_stacks should become empty array")
-	_assert.eq(payload.get("morale_effects"), [], "snapshot defaults: missing morale_effects should become empty array")
-	_assert.eq(payload.get("target_bias_state"), {}, "snapshot defaults: missing target_bias_state should become empty dictionary")
-	_assert.eq(payload.get("devices"), [], "snapshot defaults: missing devices should become empty array")
+	for retired_key in ["resource_states", "used_card_ids", "morale_effects", "target_bias_state", "devices"]:
+		_assert.that(not payload.has(retired_key), "snapshot defaults: retired data should not be serialized: %s" % retired_key)
 
 
-func _test_roundtrip_preserves_v02_fields() -> void:
-	var source: Dictionary = {
-		"schema_version": "2.0",
-		"resource_states": {
-			1: {"energy": 12, "parts": 4},
-			2: {"energy": 5, "parts": 9},
-		},
+func _test_fortify_stacks_roundtrip() -> void:
+	var fortify_stacks: Array = [{"cell": Vector2i(3, 4), "stacks": 2}]
+	var payload: Dictionary = CardfrontRuntimeSnapshotScript.from_dict({
+		"fortify_stacks": fortify_stacks,
+		"resource_states": {1: {"energy": 12}},
 		"used_card_ids": [1002],
-		"fortify_stacks": [{"cell": Vector2i(3, 4), "stacks": 2}],
-		"morale_effects": [{"region_id": 6, "owner_id": 1, "mode": "support_player"}],
-		"target_bias_state": {1: {6: 4.5}},
-		"devices": [{"type": "absorber_core", "cell": Vector2i(5, 6), "owner_id": 1}],
-		"faction_run_states": {},
-		"match_phase": {},
-		"round_number": 0,
-		"round_active": false,
-		"hero_assignments": {},
-		"current_offers": {},
-		"current_gate_snapshot": {},
-		"entity_snapshot": {},
-		"territory_defense_state": {},
-		"support_states": {},
-	}
-	var payload: Dictionary = CardfrontRuntimeSnapshotScript.from_dict(source).to_dict()
-
-	_assert.eq(payload, source, "snapshot roundtrip: v0.2 fields should remain unchanged")
+	}).to_dict()
+	_assert.eq(payload.get("fortify_stacks"), fortify_stacks, "snapshot: live territory fortification still roundtrips")
+	_assert.that(not payload.has("resource_states") and not payload.has("used_card_ids"), "snapshot: retired card economy is not re-emitted")
 
 
 func _test_v03_field_defaults() -> void:
@@ -132,12 +99,7 @@ func _test_v03_field_defaults() -> void:
 func _test_v03_roundtrip() -> void:
 	var source: Dictionary = {
 		"schema_version": "2.0",
-		"resource_states": {},
-		"used_card_ids": [],
 		"fortify_stacks": [],
-		"morale_effects": [],
-		"target_bias_state": {},
-		"devices": [],
 		"faction_run_states": {
 			1: {"owner_id": 1, "hero_id": "balanced_commander", "attack_level": 2},
 			2: {"owner_id": 2, "hero_id": "rapid_gunner", "attack_level": 1},

@@ -40,7 +40,6 @@ const GameHUDScene = preload("res://scenes/ui/GameHUD.tscn")
 
 var runtime = GameRuntimeContextScript.new()
 var cardfront_runtime_builder = null
-var cardfront_legacy_compatibility_enabled: bool = false
 var current_score_counts: Dictionary = {0: 0, 1: 0, 2: 0, 3: 0}
 var is_mobile_layout: bool = false
 
@@ -333,17 +332,9 @@ func _create_cardfront_runtime_core() -> void:
 	if not _is_cardfront_mode():
 		return
 	var builder = _ensure_cardfront_runtime_builder()
-	var result: Dictionary
-	if cardfront_legacy_compatibility_enabled:
-		result = builder.build_core_systems(game_layer, runtime, Callable(self, "_on_cardfront_yield_tick"))
-	else:
-		result = builder.build_live_core_systems(game_layer, runtime)
+	var result: Dictionary = builder.build_live_core_systems(game_layer, runtime)
 	if not bool(result.get("configured", false)):
 		push_warning("Cardfront runtime core setup failed: %s" % str(result.get("failures", [])))
-
-
-func _on_cardfront_yield_tick(owner_id: int, yield_data: Dictionary) -> void:
-	runtime.last_yield_snapshot[owner_id] = yield_data
 
 
 func _create_turrets() -> void:
@@ -356,11 +347,7 @@ func _create_cardfront_runtime_world_layers() -> void:
 	if not _is_cardfront_mode():
 		return
 	var builder = _ensure_cardfront_runtime_builder()
-	var result: Dictionary
-	if cardfront_legacy_compatibility_enabled:
-		result = builder.build_world_layers(game_layer, runtime)
-	else:
-		result = builder.build_live_world_layers(game_layer, runtime)
+	var result: Dictionary = builder.build_live_world_layers(game_layer, runtime)
 	if not bool(result.get("configured", false)):
 		push_warning("Cardfront runtime world-layer setup failed: %s" % str(result.get("failures", [])))
 
