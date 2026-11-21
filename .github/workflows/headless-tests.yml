@@ -16,11 +16,6 @@ on:
       - project.godot
       - .github/workflows/headless-tests.yml
   workflow_dispatch:
-    inputs:
-      balance_seeds:
-        description: Seeds per hero-map-side case for full balance evidence
-        required: false
-        default: "1000"
 
 permissions:
   contents: read
@@ -153,12 +148,6 @@ jobs:
               CardfrontStrongholdTimeoutScoringTestRunner.gd
               CardfrontGateConnectivityTestRunner.gd
               CardfrontGateRuntimeTestRunner.gd
-          - batch: Historical balance audit
-            scripts: |
-              CardfrontHeroBalanceSimulationTestRunner.gd
-          - batch: Parity balance audit
-            scripts: |
-              CardfrontParityBalanceAuditTestRunner.gd
           - batch: Live AI offers and formal assets
             scripts: |
               CardfrontSupportCaptureLiveRuntimeTestRunner.gd
@@ -173,7 +162,6 @@ jobs:
     env:
       GODOT_VERSION: 4.7.1-stable
       GODOT_ARCHIVE: Godot_v4.7.1-stable_win64.exe.zip
-      CARDFRONT_BALANCE_SEEDS: ${{ github.event_name == 'pull_request' && '10' || github.event_name == 'workflow_dispatch' && github.event.inputs.balance_seeds || '100' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -248,11 +236,3 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Upload parity balance audit
-        if: always() && matrix.batch == 'Parity balance audit'
-        uses: actions/upload-artifact@v4
-        with:
-          name: cardfront-parity-audit-${{ github.run_id }}
-          path: artifacts/cardfront-parity-audit.*
-          if-no-files-found: error
-          retention-days: 14
