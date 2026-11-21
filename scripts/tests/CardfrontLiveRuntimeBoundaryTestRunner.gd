@@ -43,10 +43,6 @@ func _test_default_cardfront_uses_live_runtime_only() -> void:
 		"fixed card system": runtime.card_system,
 		"target bias": runtime.target_bias_system,
 		"devices": runtime.device_layer,
-		"legacy target preview": runtime.target_preview_layer,
-		"fixed hand": runtime.hand_panel,
-		"resource minibar": runtime.top_resource_bar,
-		"legacy feedback bus": runtime.cardfront_feedback_bus,
 	}
 	for label in retired_refs.keys():
 		_assert.eq(retired_refs[label], null, "live: default path should not construct %s" % label)
@@ -65,8 +61,6 @@ func _test_legacy_compatibility_is_explicit() -> void:
 	_assert.that(runtime.card_system != null, "compatibility: fixed card system should be available when explicitly enabled")
 	_assert.that(runtime.target_bias_system != null, "compatibility: target bias should be available when explicitly enabled")
 	_assert.that(runtime.device_layer != null, "compatibility: devices should be available when explicitly enabled")
-	_assert.that(runtime.hand_panel != null, "compatibility: fixed hand should be available when explicitly enabled")
-	_assert.that(runtime.top_resource_bar != null, "compatibility: resource minibar should be available when explicitly enabled")
 	_assert.that(runtime.round_director != null, "compatibility: the current round director should still exist")
 
 	main._cleanup_game_layer()

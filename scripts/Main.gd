@@ -26,7 +26,6 @@ const CardfrontModeScript = preload("res://scripts/cardfront/CardfrontMode.gd")
 const CardfrontRulesScript = preload("res://scripts/cardfront/CardfrontRules.gd")
 const CardfrontRuntimeBuilderScript = preload("res://scripts/cardfront/runtime/CardfrontRuntimeBuilder.gd")
 const CardfrontRuntimeSnapshotScript = preload("res://scripts/cardfront/save/CardfrontRuntimeSnapshot.gd")
-const CardfrontMatchPhaseScript = preload("res://scripts/cardfront/run/CardfrontMatchPhase.gd")
 const NetworkManagerScript = preload("res://scripts/cardfront/network/CardfrontNetworkManager.gd")
 const PvpMatchScript = preload("res://scripts/cardfront/network/CardfrontPvpMatch.gd")
 const NetworkProtocolScript = preload("res://scripts/cardfront/network/CardfrontNetworkProtocol.gd")
@@ -366,32 +365,6 @@ func _create_cardfront_runtime_world_layers() -> void:
 		push_warning("Cardfront runtime world-layer setup failed: %s" % str(result.get("failures", [])))
 
 
-func _create_cardfront_feedback_bus() -> void:
-	runtime.cardfront_feedback_bus = null
-	if not _is_cardfront_mode():
-		return
-	var ui_canvas = _hud_ref("ui_canvas")
-	if ui_canvas == null:
-		return
-	var bus_setup: Dictionary = CardfrontModeScript.create_feedback_bus(ui_canvas)
-	if not bool(bus_setup.get("configured", false)):
-		return
-	runtime.cardfront_feedback_bus = bus_setup.get("feedback_bus", null)
-
-
-func _create_cardfront_top_resource_bar() -> void:
-	runtime.top_resource_bar = null
-	if not _is_cardfront_mode():
-		return
-	var ui_canvas = _hud_ref("ui_canvas")
-	if ui_canvas == null:
-		return
-	var bar_setup: Dictionary = CardfrontModeScript.create_top_resource_bar(ui_canvas, runtime.economy_system, runtime.resource_states)
-	if not bool(bar_setup.get("configured", false)):
-		return
-	runtime.top_resource_bar = bar_setup.get("top_resource_bar", null)
-
-
 func _create_cardfront_aim_control() -> void:
 	runtime.aim_control = null
 	if not _is_cardfront_mode():
@@ -441,76 +414,6 @@ func _create_cardfront_region_info_panel() -> void:
 	runtime.region_info_panel = panel_setup.get("region_info_panel", null)
 
 
-func _create_cardfront_tutorial_overlay() -> void:
-	runtime.tutorial_overlay = null
-	if not _is_cardfront_mode():
-		return
-	var ui_canvas = _hud_ref("ui_canvas")
-	if ui_canvas == null:
-		return
-	var overlay_setup: Dictionary = CardfrontModeScript.create_tutorial_overlay(ui_canvas, Vector2(VIEW_W, VIEW_H))
-	if bool(overlay_setup.get("configured", false)):
-		runtime.tutorial_overlay = overlay_setup.get("tutorial_overlay", null)
-		_wire_tutorial_settings_signals(overlay_setup.get("tutorial_overlay", null))
-
-
-func _wire_tutorial_settings_signals(overlay) -> void:
-	if overlay == null or not is_instance_valid(overlay):
-		return
-	var settings_panel = _hud_ref("settings_panel")
-	if settings_panel == null or not is_instance_valid(settings_panel):
-		return
-	if not settings_panel.has_signal("settings_changed"):
-		return
-	var callable := Callable(overlay, "on_settings_changed")
-	if not settings_panel.settings_changed.is_connected(callable):
-		settings_panel.settings_changed.connect(callable)
-
-
-func _create_cardfront_feedback_layers() -> void:
-	runtime.card_detail_popup = null
-	runtime.toast_layer = null
-	runtime.card_audio_feedback = null
-	if not _is_cardfront_mode():
-		return
-	var ui_canvas = _hud_ref("ui_canvas")
-	if ui_canvas == null:
-		return
-	var feedback_setup: Dictionary = CardfrontModeScript.create_feedback_layers(ui_canvas, runtime.cardfront_feedback_bus, runtime.resource_states, Vector2(VIEW_W, VIEW_H))
-	if not bool(feedback_setup.get("configured", false)):
-		return
-	runtime.card_detail_popup = feedback_setup.get("card_detail_popup", null)
-	runtime.toast_layer = feedback_setup.get("toast_layer", null)
-	runtime.card_audio_feedback = feedback_setup.get("card_audio_feedback", null)
-
-
-func _create_cardfront_effect_visual_bridge() -> void:
-	runtime.effect_visual_bridge = null
-	if not _is_cardfront_mode():
-		return
-	var bridge_setup: Dictionary = CardfrontModeScript.create_effect_visual_bridge(game_layer, runtime.cardfront_feedback_bus, runtime.cardfront_vfx_layer)
-	if not bool(bridge_setup.get("configured", false)):
-		return
-	runtime.effect_visual_bridge = bridge_setup.get("effect_visual_bridge", null)
-
-
-func _create_cardfront_hand_panel() -> void:
-	runtime.hand_panel = null
-	runtime.selection_controller = null
-	if not _is_cardfront_mode():
-		return
-	var ui_canvas = _hud_ref("ui_canvas")
-	if ui_canvas == null:
-		return
-	var hand_setup: Dictionary = CardfrontModeScript.create_hand_panel(ui_canvas, runtime.card_system, runtime.resource_states, runtime.economy_system, Vector2(VIEW_W, VIEW_H), runtime.cardfront_feedback_bus)
-	if not bool(hand_setup.get("configured", false)):
-		return
-	runtime.hand_panel = hand_setup.get("hand_panel", null)
-	var ctrl_setup: Dictionary = CardfrontModeScript.create_card_selection_controller(runtime.card_system, runtime.resource_states, runtime.hand_panel, runtime.top_resource_bar, runtime.target_preview_layer, runtime.cardfront_feedback_bus)
-	if bool(ctrl_setup.get("configured", false)):
-		runtime.selection_controller = ctrl_setup.get("selection_controller", null)
-
-
 func _create_control_chambers() -> void:
 	runtime.chambers = {}
 	if _is_cardfront_mode() and not CardfrontModeScript.uses_control_chambers():
@@ -553,13 +456,6 @@ func _create_ui() -> void:
 		_create_cardfront_aim_control()
 		_create_cardfront_battlefield_scale_control()
 		_create_cardfront_region_info_panel()
-		if cardfront_legacy_compatibility_enabled:
-			_create_cardfront_feedback_bus()
-			_create_cardfront_top_resource_bar()
-			_create_cardfront_hand_panel()
-			_create_cardfront_feedback_layers()
-			_create_cardfront_effect_visual_bridge()
-			_create_cardfront_tutorial_overlay()
 		_create_cardfront_three_choice_panel()
 		_configure_cardfront_three_choice_ui()
 		_create_cardfront_battle_hero_hud()
@@ -871,12 +767,6 @@ func _create_cardfront_battlefield_scale_control() -> void:
 func _configure_cardfront_three_choice_ui() -> void:
 	if runtime.three_choice_panel == null:
 		return
-	if runtime.hand_panel != null and is_instance_valid(runtime.hand_panel):
-		if runtime.selection_controller != null and runtime.selection_controller.has_method("clear_selection"):
-			runtime.selection_controller.clear_selection()
-		runtime.hand_panel.visible = false
-	if runtime.top_resource_bar != null and is_instance_valid(runtime.top_resource_bar):
-		runtime.top_resource_bar.visible = false
 	var event_label = _hud_ref("event_label")
 	if event_label != null and is_instance_valid(event_label):
 		event_label.visible = false
@@ -1258,40 +1148,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if game_layer == null or is_game_over or get_tree().paused:
 		return
 	_handle_region_info_pin_input(event)
-	if runtime.selection_controller == null:
-		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-		if runtime.selection_controller.get_selected_card_id() >= 0:
-			_cancel_cardfront_selection()
-			get_viewport().set_input_as_handled()
-			return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
-		if runtime.selection_controller.get_selected_card_id() >= 0:
-			_cancel_cardfront_selection()
-			get_viewport().set_input_as_handled()
-			return
-	if event is InputEventMouseMotion:
-		_update_cardfront_hover_hint()
-		return
-	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
-		return
-	if runtime.selection_controller.get_selected_card_id() < 0:
-		if not _handle_priority_target_click(event):
-			_handle_fortify_click(event)
-		return
-	if runtime.battlefield == null or not is_instance_valid(runtime.battlefield):
-		return
-	if not runtime.battlefield.has_method("world_to_cell"):
-		return
-
-	var canvas_transform: Transform2D = get_viewport().get_canvas_transform()
-	var world_position: Vector2 = canvas_transform.affine_inverse() * event.position
-	var cell: Vector2i = runtime.battlefield.world_to_cell(world_position)
-	if not runtime.battlefield.is_inside(cell):
-		return
-
-	runtime.selection_controller.on_battlefield_clicked(cell)
-	get_viewport().set_input_as_handled()
 
 
 func _handle_region_info_pin_input(event: InputEvent) -> void:
@@ -1316,89 +1172,6 @@ func _handle_region_info_pin_input(event: InputEvent) -> void:
 	var world_position: Vector2 = canvas_transform.affine_inverse() * screen_position
 	var cell: Vector2i = runtime.battlefield.world_to_cell(world_position)
 	runtime.region_info_panel.toggle_pinned_cell(cell)
-
-
-func _handle_priority_target_click(event: InputEvent) -> bool:
-	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
-		return false
-	if runtime.direction_controller == null or not is_instance_valid(runtime.direction_controller):
-		return false
-	if runtime.round_director == null or not is_instance_valid(runtime.round_director):
-		return false
-	if not runtime.round_director.active:
-		return false
-	if runtime.round_director.phase_controller.phase != CardfrontMatchPhaseScript.BATTLE_COUNTDOWN:
-		return false
-	if runtime.battlefield == null or not is_instance_valid(runtime.battlefield):
-		return false
-	if not runtime.battlefield.has_method("world_to_cell"):
-		return false
-	var canvas_transform: Transform2D = get_viewport().get_canvas_transform()
-	var world_position: Vector2 = canvas_transform.affine_inverse() * event.position
-	var cell: Vector2i = runtime.battlefield.world_to_cell(world_position)
-	if not runtime.battlefield.is_inside(cell):
-		return false
-	var owner_id: int = int(runtime.battlefield.get_cell_owner(cell))
-	if owner_id == CardfrontRulesScript.AI_FACTION or owner_id == CardfrontRulesScript.NEUTRAL_OWNER:
-		runtime.direction_controller.set_priority_target(cell)
-		get_viewport().set_input_as_handled()
-		return true
-	elif runtime.direction_controller.has_priority_target():
-		runtime.direction_controller.clear_priority_target()
-		get_viewport().set_input_as_handled()
-		return true
-	return false
-
-
-func _handle_fortify_click(event: InputEvent) -> void:
-	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
-		return
-	if runtime.round_director == null or not is_instance_valid(runtime.round_director):
-		return
-	if runtime.round_director.phase_controller.phase != CardfrontMatchPhaseScript.LAUNCH_VOLLEY:
-		return
-	if not runtime.round_director.command_points.has_points(CardfrontRulesScript.PLAYER_FACTION):
-		return
-	if runtime.battlefield == null or not is_instance_valid(runtime.battlefield):
-		return
-	if runtime.fortify_layer == null or not is_instance_valid(runtime.fortify_layer):
-		return
-	if not runtime.battlefield.has_method("world_to_cell"):
-		return
-	var canvas_transform: Transform2D = get_viewport().get_canvas_transform()
-	var world_position: Vector2 = canvas_transform.affine_inverse() * event.position
-	var cell: Vector2i = runtime.battlefield.world_to_cell(world_position)
-	if not runtime.battlefield.is_inside(cell):
-		return
-	var owner_id: int = int(runtime.battlefield.get_cell_owner(cell))
-	if owner_id != CardfrontRulesScript.PLAYER_FACTION:
-		return
-	if runtime.round_director.command_points.spend_point(CardfrontRulesScript.PLAYER_FACTION):
-		runtime.fortify_layer.add_fortify_stack(cell, 1)
-		get_viewport().set_input_as_handled()
-
-
-func _cancel_cardfront_selection() -> void:
-	if runtime.selection_controller != null and runtime.selection_controller.get_selected_card_id() >= 0:
-		runtime.selection_controller.clear_selection()
-
-
-func _update_cardfront_hover_hint() -> void:
-	if not _is_cardfront_mode():
-		return
-	if runtime.selection_controller == null:
-		return
-	if runtime.selection_controller.get_selected_card_id() < 0:
-		return
-	if runtime.battlefield == null or not is_instance_valid(runtime.battlefield):
-		return
-	if not runtime.battlefield.has_method("world_to_cell"):
-		return
-	var cell: Vector2i = runtime.battlefield.world_to_cell(get_global_mouse_position())
-	if not runtime.battlefield.is_inside(cell):
-		runtime.selection_controller.restore_action_hint()
-		return
-	runtime.selection_controller.update_hover_target_hint(cell)
 
 
 func _cleanup_game_layer() -> void:

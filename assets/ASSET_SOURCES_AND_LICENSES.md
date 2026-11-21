@@ -207,16 +207,16 @@ several curated runtime assets through registries and lightweight feedback
 systems. Some UI surfaces still use procedural `ColorRect` / `StyleBoxFlat`
 fallbacks, but assets are no longer disconnected from code.
 
-旧的“assets 零引用”结论已经过时。Cardfront 当前已经通过注册表和轻量反馈系统接入了多类运行时素材；部分 UI 仍保留程序样式 fallback，但代码和素材已经不再完全断开。
+旧的“assets 零引用”结论已经过时。当前场景、美术、实体及 UI 的共享素材注册表仍在使用；但 v0.2 固定手牌与卡牌反馈 UI 已退役，其插图与音频素材暂作授权可追溯的历史资源保留。
 
 ### Current wired paths / 当前已接入路径
 
 | Area | Runtime entry | Asset status |
 |---|---|---|
-| Card illustrations | `scripts/cardfront/ui/CardVisualRegistry.gd` and `CardfrontCardView.gd` | 1001-1004 load from `assets/cardfront_runtime/卡牌插图_cards/512/`; placeholder fallback remains. |
+| Historical card illustrations | Legacy v0.2 fixed-hand UI (retired) | 1001-1004 artwork retained as sourced assets; no longer loaded by the live or compatibility UI. |
 | Device sprites | `scripts/cardfront/devices/DeviceVisualRegistry.gd` and `CardfrontDeviceOverlayLayer.gd` | Absorber, Engineer, Pioneer Beacon, and Temporary Reflector sprites load from `assets/cardfront_runtime/装置精灵_devices/96/`. |
 | VFX textures | `scripts/cardfront/vfx/CardfrontVfxLayer.gd` | Energy ripple, shield crack/pulse, and region pulse load from `assets/cardfront_runtime/视觉特效_vfx/128/`, with draw-circle fallback. |
-| Card audio feedback | `scripts/cardfront/ui/CardfrontCardAudioFeedback.gd` | Hover, click, success, and fail feedback use curated `assets/音效_sfx/` files when present; missing assets fail silently. |
+| Historical card audio feedback | Legacy v0.2 card feedback (retired) | Audio files retain source/license records but the old card-feedback hook was removed. |
 | Battlefield entities | `scripts/cardfront/entities/CardfrontEntityVisualRegistry.gd` and `CardfrontEntityPresentationLayer.gd` | Gate Colossus plus four friendly entity animation sets are active; two defense towers use procedural hybrid actors and all assets retain runtime fallbacks. |
 | Cardfront environment | `scripts/cardfront/environment/CardfrontEnvironmentAssetRegistry.gd` and `CardfrontEnvironmentBuilder.gd` | Selected KayKit trees, rocks, wall rails, and gate foundations are active in the orthographic arena. Imported nodes are presentation-only and retain primitive fallback. |
 | UI art registry prep | `scripts/cardfront/ui/CardfrontUiAssetRegistry.gd` | Kenney font, Kenney/Wenrexa panels, and Game-Icons paths are centralized with `ResourceLoader.exists` fallback. |
@@ -240,7 +240,7 @@ fallbacks, but assets are no longer disconnected from code.
 
 The UI is in a **resource-prep / partial skin** state, not final art completion.
 
-- `CardfrontHandPanel`, `CardfrontCardView`, `CardfrontTopResourceBar`, `CardfrontCardDetailPopup`, `CardfrontToastLayer`, and `CardfrontRegionInfoPanel` now query `CardfrontUiAssetRegistry`.
+- `CardfrontRegionInfoPanel`, `CardfrontAimControl`, and other surviving UI components query the shared `CardfrontUiAssetRegistry`. The old fixed-hand/card-detail/toast UI was removed.
 - Missing textures or fonts keep the current deep-blue `ColorRect` / `StyleBoxFlat` fallback.
 - Do not scatter Kenney/Wenrexa/Game-Icons paths into gameplay scripts or `Main.gd`.
 - Game-Icons entries are `CC BY 3.0`; keep credits when these icons are used in shipped UI:
@@ -250,8 +250,8 @@ The UI is in a **resource-prep / partial skin** state, not final art completion.
 
 | Category | Status |
 |---|---|
-| Card thumbnails | Planned for `v0.2.4b-card-thumbnail-pass`; use `CardVisualRegistry.thumbnail` for hand cards and reserve 512 art for detail/full-card views. |
+| Historical card thumbnails | The v0.2 thumbnails are retained as assets, but the fixed-hand card view and its registry have been removed. |
 | Final UI art pass | Planned for `v0.2.4-ui-art-resource-pass`; replace remaining procedural panels with registry-backed assets. |
 | Full theme resource | Not yet created; no global `.tres` theme is canonical. |
-| Wider audio system | Card hover/click/success/fail exists; global music, menu SFX, and battle-state audio remain separate future work. |
+| Wider audio system | The old fixed-hand card-feedback hooks are retired; menu, battle-state audio and global music remain separate work. |
 | Asset credits polish | Keep this document and `generated_asset_manifest_v01.md` aligned whenever a new asset category becomes shipped UI. |

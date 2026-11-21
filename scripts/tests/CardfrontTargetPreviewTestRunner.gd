@@ -136,7 +136,6 @@ func _test_ballwar_no_preview_layer() -> void:
 	main._start_game(20, true, false)
 	await process_frame
 
-	_assert.eq(main.runtime.target_preview_layer, null, "preview: BallWar mode should not create target preview layer")
 
 	main._cleanup_game_layer()
 	TestFixtures.cleanup_node(main)
