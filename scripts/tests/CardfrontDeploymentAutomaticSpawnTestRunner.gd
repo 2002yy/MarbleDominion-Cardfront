@@ -207,6 +207,27 @@ func _test_upgrade_spawn_uses_online_support() -> void:
 	_assert.eq(creatures.size(), 1, "auto spawn runtime: creature registry contains exactly one player creature")
 	if not creatures.is_empty():
 		_assert.eq(creatures[0].cell, placement.cell, "auto spawn runtime: actual entity cell equals authoritative placement")
+	var targeted_preview: Dictionary = runtime.targeted_guard_preview(Rules.PLAYER_FACTION)
+	_assert.eq(int(targeted_preview.get("revision", -1)), 23, "targeted prototype: preview binds the live Support authority revision")
+	_assert.that((targeted_preview.get("cells", []) as Array).has(placement.cell), "targeted prototype: preview includes legal active Support cells")
+	var outside: Dictionary = runtime.deploy_targeted_guard(Rules.PLAYER_FACTION, Vector2i(-1, -1), 23)
+	_assert.eq(str(outside.get("reason", "")), DeploymentRulesScript.REASON_OUTSIDE_MAP, "targeted prototype: exact invalid click cannot fall back to an automatic spawn")
+	var stale: Dictionary = runtime.deploy_targeted_guard(Rules.PLAYER_FACTION, placement.cell, 22)
+	_assert.eq(str(stale.get("reason", "")), "stale_deployment_revision", "targeted prototype: stale preview cannot commit")
+	var sources: Array = context.get("support_sources", []) as Array
+	var core: Dictionary = context.get("core_source", {}) as Dictionary
+	var core_cells: Array = core.get("candidate_cells", []) as Array
+	# The selected Support cell can overlap the fallback Core area. Disable both
+	# candidate sources to prove a stale prevalidated cell is not trusted.
+	core["candidate_cells"] = []
+	context["core_source"] = core
+	context["support_sources"] = []
+	var disconnected: Dictionary = runtime.deploy_targeted_guard(Rules.PLAYER_FACTION, placement.cell, 23)
+	_assert.that(not bool(disconnected.get("allowed", false)), "targeted prototype: revoked source set cannot place even if revision was unchanged")
+	core["candidate_cells"] = core_cells
+	context["core_source"] = core
+	context["support_sources"] = sources
+	_assert.eq(_owner_creatures(runtime, Rules.PLAYER_FACTION).size(), 1, "targeted prototype: all rejected commits preserve entity count")
 
 
 func _test_runtime_default_is_authoritative_core() -> void:

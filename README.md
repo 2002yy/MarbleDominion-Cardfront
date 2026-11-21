@@ -13,6 +13,8 @@ Current version, active implementation slice, next step, and deferred scope are 
 
 The default Cardfront runtime is the lean 1v1 loop: manual aim, paused three-choice upgrade, simultaneous automatic volleys, visible per-cell territory defense, and 40-health command chambers. The former fixed four-card hand, Energy/Parts economy, morale, card/device effects, and dedicated compatibility runtime have been retired.
 
+**Isolated experiment (disabled by default):** A command-line-only targeted-deployment prototype can temporarily turn the existing Armored Guard three-choice upgrade into one click-to-place reinforcement. It uses the retained 3D deployment-zone layer and the live Core/Support legality authority, and never enables the retired card-hand preview. See [prototype instructions](docs/prototypes/TARGETED_DEPLOYMENT_PROTOTYPE.md). This is **not** an approved P1 gameplay feature; the independent P0 human playtest gate remains unchanged.
+
 当前默认 Cardfront 只装配“瞄准 -> 暂停三选一 -> 双方自动齐射 -> 领土护甲 -> 摧毁控制舱”主循环。旧四卡手牌、经济、士气、装置特效及其测试兼容装配均已退役。
 
 The current arena is still a transitional `Node2D` presentation. `ENERGY`, `FACTORY`, and `LAB` shapes remain visible but do not yet provide live bonuses; the committed next steps are an explicit tactical-stronghold contract followed by a real orthographic `Camera3D` 2.5D arena spike.
