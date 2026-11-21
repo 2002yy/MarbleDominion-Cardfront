@@ -219,7 +219,7 @@ func _proxy_value_context(state: Dictionary) -> Dictionary:
 	return context
 
 
-func _resolve_volley(attacker_slot: String, target_slot: String, plan_data: Dictionary, states: Dictionary, territory: Dictionary, _defense_pool: Dictionary, profile: Dictionary, seed_value: int, round_number: int, _simulation_mode: String) -> Dictionary:
+func _resolve_volley(attacker_slot: String, target_slot: String, plan_data: Dictionary, states: Dictionary, territory: Dictionary, _defense_pool: Dictionary, profile: Dictionary, seed_value: int, round_number: int) -> Dictionary:
 	var plan: Dictionary = plan_data["plan"] as Dictionary
 	var rng: RandomNumberGenerator = _rng_a if attacker_slot == SLOT_A else _rng_b
 	rng.seed = _b1_stream_seed(seed_value, round_number, attacker_slot, _b1_side_variant)
