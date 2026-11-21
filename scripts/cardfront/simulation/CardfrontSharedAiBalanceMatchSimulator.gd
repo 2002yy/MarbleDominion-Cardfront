@@ -45,8 +45,7 @@ func choose_upgrade_id_for_test(
 	var chosen_id: String = _shared_ai_policy.choose_id(
 		offer_ids,
 		state,
-		resolved_context,
-		UpgradeValuePolicyScript.MODE_MARGINAL
+		resolved_context
 	)
 	_last_choice_report = _shared_ai_policy.get_last_ranked_evaluations()
 	return chosen_id
@@ -61,8 +60,7 @@ func _choose_upgrade_id_fast(offer_ids: Array, state: Dictionary) -> String:
 	var chosen_id: String = _shared_ai_policy.choose_id(
 		offer_ids,
 		state,
-		_proxy_value_context(state),
-		UpgradeValuePolicyScript.MODE_MARGINAL
+		_proxy_value_context(state)
 	)
 	_last_choice_report = _shared_ai_policy.get_last_ranked_evaluations()
 	return chosen_id
