@@ -13,11 +13,10 @@ func simulate(
 	hero_b: String,
 	map_id: String,
 	side_variant: int,
-	seed_value: int,
-	simulation_mode: String = "parity_uncompensated"
+	seed_value: int
 ) -> Dictionary:
 	_parity_states_by_owner = {}
-	return super.simulate(hero_a, hero_b, map_id, side_variant, seed_value, simulation_mode)
+	return super.simulate(hero_a, hero_b, map_id, side_variant, seed_value)
 
 
 func tail_stall_multiplier_for_test(map_id: String, seed_value: int) -> float:

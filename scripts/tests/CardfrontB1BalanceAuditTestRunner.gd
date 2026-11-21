@@ -27,7 +27,7 @@ func _run() -> void:
 	var seeds_per_case: int = maxi(1, int(seed_override)) if seed_override.is_valid_int() else 3
 	print("[CardfrontB1BalanceAudit] Starting B1 audit with %d seeds per case" % seeds_per_case)
 	var audit = AuditScript.new()
-	var report: Dictionary = audit.run(seeds_per_case, ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED)
+	var report: Dictionary = audit.run(seeds_per_case)
 	var target_evaluation: Dictionary = MapTargetEvaluatorScript.evaluate(report.get("map_reports", {}) as Dictionary)
 	var numeric_diagnosis: Dictionary = NumericDiagnosisScript.analyze(report)
 	var archetype_growth: Dictionary = ArchetypeGrowthEvaluatorScript.evaluate(report)

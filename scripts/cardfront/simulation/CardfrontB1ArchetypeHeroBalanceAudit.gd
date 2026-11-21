@@ -9,11 +9,9 @@ const ArchetypeAuditValuePolicyScript = preload("res://scripts/cardfront/run/Car
 
 
 func run(
-	seeds_per_case: int = ArchetypeAuditConfigScript.FULL_SEEDS_PER_CASE,
-	simulation_mode: String = ArchetypeAuditConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
+	seeds_per_case: int = ArchetypeAuditConfigScript.FULL_SEEDS_PER_CASE
 ) -> Dictionary:
 	var safe_seed_count: int = maxi(1, int(seeds_per_case))
-	var safe_mode: String = ArchetypeAuditConfigScript.sanitize_simulation_mode(simulation_mode)
 	var hero_ids: Array = ArchetypeAuditHeroRegistryScript.get_hero_ids()
 	var map_ids: Array = ArchetypeAuditMapRegistryScript.get_registered_map_ids()
 	var hero_stats: Dictionary = {}
@@ -46,8 +44,7 @@ func run(
 							str(hero_b),
 							str(map_id),
 							side_variant,
-							seed_index + 1,
-							safe_mode
+							seed_index + 1
 						)
 						_accumulate_match(result, hero_stats, matchup_stats, mirror_stats, rounds, totals)
 						_accumulate_b1(result, b1_totals)
@@ -62,7 +59,7 @@ func run(
 		"audit_id": "b1_archetype_route_gate_virtual_defense",
 		"b1_model": true,
 		"archetype_composition_model": true,
-		"simulation_mode": safe_mode,
+		"simulation_mode": ArchetypeAuditConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED,
 		"upgrade_valuation_mode": ArchetypeAuditValuePolicyScript.MODE_MARGINAL,
 		"hidden_hit_compensation": false,
 		"resolved_attack_level_cap": ArchetypeAuditConfigScript.PARITY_RESOLVED_ATTACK_LEVEL_CAP,

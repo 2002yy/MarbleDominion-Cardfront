@@ -1,12 +1,10 @@
 extends CardfrontBalanceMatchSimulator
 class_name CardfrontSharedAiBalanceMatchSimulator
 
-const SharedSimulationConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
 const AiUpgradePolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
 const UpgradeValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontUpgradeValuePolicy.gd")
 
 var _shared_ai_policy = AiUpgradePolicyScript.new()
-var _active_simulation_mode: String = SharedSimulationConfigScript.DEFAULT_SIMULATION_MODE
 var _last_choice_report: Array = []
 var _shared_choice_count: int = 0
 
@@ -16,10 +14,8 @@ func simulate(
 	hero_b: String,
 	map_id: String,
 	side_variant: int,
-	seed_value: int,
-	simulation_mode: String = SharedSimulationConfigScript.DEFAULT_SIMULATION_MODE
+	seed_value: int
 ) -> Dictionary:
-	_active_simulation_mode = SharedSimulationConfigScript.sanitize_simulation_mode(simulation_mode)
 	_last_choice_report.clear()
 	_shared_choice_count = 0
 	var result: Dictionary = super.simulate(
@@ -27,8 +23,7 @@ func simulate(
 		hero_b,
 		map_id,
 		side_variant,
-		seed_value,
-		_active_simulation_mode
+		seed_value
 	)
 	result["upgrade_valuation_mode"] = UpgradeValuePolicyScript.MODE_MARGINAL
 	result["shared_upgrade_choice_count"] = _shared_choice_count

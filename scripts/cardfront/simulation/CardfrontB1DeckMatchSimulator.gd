@@ -15,14 +15,13 @@ func simulate_with_decks(
 	side_variant: int,
 	seed_value: int,
 	deck_a: String,
-	deck_b: String,
-	simulation_mode: String = "parity_uncompensated"
+	deck_b: String
 ) -> Dictionary:
 	_deck_by_owner = {
 		1: DeckRegistryScript.sanitize_deck_id(deck_a),
 		2: DeckRegistryScript.sanitize_deck_id(deck_b),
 	}
-	var result: Dictionary = super.simulate(hero_a, hero_b, map_id, side_variant, seed_value, simulation_mode)
+	var result: Dictionary = super.simulate(hero_a, hero_b, map_id, side_variant, seed_value)
 	result["deck_a"] = str(_deck_by_owner.get(1, DeckRegistryScript.DEFAULT_DECK_ID))
 	result["deck_b"] = str(_deck_by_owner.get(2, DeckRegistryScript.DEFAULT_DECK_ID))
 	result["deck_candidate_model"] = true

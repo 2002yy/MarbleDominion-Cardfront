@@ -25,10 +25,7 @@ func _run() -> void:
 	)
 	print("[CardfrontSharedAiParityAudit] Starting shared-AI parity proxy audit with %d seeds per case" % seeds_per_case)
 	var audit = AuditScript.new()
-	var report: Dictionary = audit.run(
-		seeds_per_case,
-		ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
-	)
+	var report: Dictionary = audit.run(seeds_per_case)
 	var summary: String = audit.format_summary(report)
 	print(summary)
 	_write_artifacts(report, summary)

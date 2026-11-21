@@ -6,7 +6,6 @@ const MAX_ROUNDS: int = 34
 const FULL_SEEDS_PER_CASE: int = 1000
 
 const SIMULATION_MODE_PARITY_UNCOMPENSATED: String = "parity_uncompensated"
-const DEFAULT_SIMULATION_MODE: String = SIMULATION_MODE_PARITY_UNCOMPENSATED
 const PARITY_RESOLVED_ATTACK_LEVEL_CAP: int = 4
 
 const AGGREGATE_WIN_RATE_MIN: float = 47.0
@@ -34,11 +33,6 @@ const DEFAULT_MAP_PROFILE: Dictionary = {
 	"territory_pressure": 1.0,
 	"stronghold_tempo": 0,
 }
-
-
-static func sanitize_simulation_mode(raw_mode: String) -> String:
-	assert(raw_mode == SIMULATION_MODE_PARITY_UNCOMPENSATED, "Unsupported Cardfront simulation mode")
-	return SIMULATION_MODE_PARITY_UNCOMPENSATED
 
 
 static func sanitize_map_profile(raw_profile: Dictionary) -> Dictionary:

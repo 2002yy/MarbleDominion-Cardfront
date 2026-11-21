@@ -7,7 +7,6 @@ const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUp
 const AiPolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
 const ValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontUpgradeValuePolicy.gd")
 const SharedSimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontSharedAiBalanceMatchSimulator.gd")
-const SimulationConfigScript = preload("res://scripts/cardfront/simulation/CardfrontBalanceSimulationConfig.gd")
 
 var _assert: TestAssert
 
@@ -173,8 +172,7 @@ func _test_shared_simulator_uses_marginal_valuation() -> void:
 		HeroRegistryScript.HERO_RAPID_GUNNER,
 		"default_duel",
 		0,
-		19,
-		SimulationConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
+		19
 	) as Dictionary
 	_assert.eq(str(result.get("upgrade_valuation_mode", "")), ValuePolicyScript.MODE_MARGINAL, "shared simulator: match report uses marginal valuation")
 
