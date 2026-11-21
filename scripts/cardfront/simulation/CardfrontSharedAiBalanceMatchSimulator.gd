@@ -30,7 +30,7 @@ func simulate(
 		seed_value,
 		_active_simulation_mode
 	)
-	result["upgrade_valuation_mode"] = _valuation_mode_for_simulation(_active_simulation_mode)
+	result["upgrade_valuation_mode"] = UpgradeValuePolicyScript.MODE_MARGINAL
 	result["shared_upgrade_choice_count"] = _shared_choice_count
 	return result
 
@@ -48,7 +48,7 @@ func choose_upgrade_id_for_test(
 		offer_ids,
 		state,
 		resolved_context,
-		_valuation_mode_for_simulation(_active_simulation_mode)
+		UpgradeValuePolicyScript.MODE_MARGINAL
 	)
 	_last_choice_report = _shared_ai_policy.get_last_ranked_evaluations()
 	return chosen_id
@@ -64,16 +64,10 @@ func _choose_upgrade_id_fast(offer_ids: Array, state: Dictionary) -> String:
 		offer_ids,
 		state,
 		_proxy_value_context(state),
-		_valuation_mode_for_simulation(_active_simulation_mode)
+		UpgradeValuePolicyScript.MODE_MARGINAL
 	)
 	_last_choice_report = _shared_ai_policy.get_last_ranked_evaluations()
 	return chosen_id
-
-
-func _valuation_mode_for_simulation(simulation_mode: String) -> String:
-	if SharedSimulationConfigScript.sanitize_simulation_mode(simulation_mode) == SharedSimulationConfigScript.SIMULATION_MODE_HISTORICAL_COMPENSATED:
-		return UpgradeValuePolicyScript.MODE_HISTORICAL_FIXED
-	return UpgradeValuePolicyScript.MODE_MARGINAL
 
 
 func _proxy_value_context(state: Dictionary) -> Dictionary:
