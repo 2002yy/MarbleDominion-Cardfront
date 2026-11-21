@@ -7,7 +7,6 @@ const DeckRegistryScript = preload("res://scripts/cardfront/draft/CardfrontUpgra
 const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunState.gd")
 
 const MODE_MARGINAL: String = DeckValuePolicyScript.MODE_MARGINAL
-const MODE_HISTORICAL_FIXED: String = DeckValuePolicyScript.MODE_HISTORICAL_FIXED
 
 
 static func evaluate(
@@ -17,7 +16,7 @@ static func evaluate(
 	valuation_mode: String = MODE_MARGINAL
 ) -> Dictionary:
 	var result: Dictionary = DeckValuePolicyScript.evaluate(upgrade_id, state, context, valuation_mode)
-	if valuation_mode == MODE_HISTORICAL_FIXED or not bool(result.get("eligible", false)):
+	if not bool(result.get("eligible", false)):
 		return result
 
 	var score: float = float(result.get("score", -INF))
