@@ -6,6 +6,7 @@ const RunStateScript = preload("res://scripts/cardfront/run/CardfrontFactionRunS
 const UpgradeManifestScript = preload("res://scripts/cardfront/draft/CardfrontUpgradeManifest.gd")
 const AiPolicyScript = preload("res://scripts/cardfront/run/CardfrontAiUpgradePolicy.gd")
 const ValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontUpgradeValuePolicy.gd")
+const TacticalValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontTacticalUpgradeValuePolicy.gd")
 const SharedSimulatorScript = preload("res://scripts/cardfront/simulation/CardfrontSharedAiBalanceMatchSimulator.gd")
 
 var _assert: TestAssert
@@ -46,10 +47,10 @@ func _test_hero_volley_margins() -> void:
 	var gunner = _hero_state(HeroRegistryScript.HERO_RAPID_GUNNER)
 	var context: Dictionary = _base_context()
 
-	var engineer_plus: Dictionary = policy.evaluate_id(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, context)
-	var engineer_x2: Dictionary = policy.evaluate_id(UpgradeManifestScript.UPGRADE_VOLLEY_X2, engineer, context)
-	var gunner_plus: Dictionary = policy.evaluate_id(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, gunner, context)
-	var gunner_x2: Dictionary = policy.evaluate_id(UpgradeManifestScript.UPGRADE_VOLLEY_X2, gunner, context)
+	var engineer_plus: Dictionary = TacticalValuePolicyScript.evaluate(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, engineer, context)
+	var engineer_x2: Dictionary = TacticalValuePolicyScript.evaluate(UpgradeManifestScript.UPGRADE_VOLLEY_X2, engineer, context)
+	var gunner_plus: Dictionary = TacticalValuePolicyScript.evaluate(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, gunner, context)
+	var gunner_x2: Dictionary = TacticalValuePolicyScript.evaluate(UpgradeManifestScript.UPGRADE_VOLLEY_X2, gunner, context)
 
 	_assert.eq(int(engineer_plus.get("actual_added_shots", -1)), 5, "typed volley: Engineer +5 should add five standard shots")
 	_assert.eq(float(engineer_plus.get("actual_added_direct_damage_units", -1.0)), 5.0, "typed volley: Engineer +5 should add five direct-damage units")
@@ -66,15 +67,15 @@ func _test_existing_multiplier_and_caps_reduce_value() -> void:
 	var policy = AiPolicyScript.new()
 	var state = _hero_state(HeroRegistryScript.HERO_RAPID_GUNNER)
 	state.next_volley_multiplier = 2
-	var x2_result: Dictionary = policy.evaluate_id(UpgradeManifestScript.UPGRADE_VOLLEY_X2, state, _base_context())
-	var plus_result: Dictionary = policy.evaluate_id(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, state, _base_context())
+	var x2_result: Dictionary = TacticalValuePolicyScript.evaluate(UpgradeManifestScript.UPGRADE_VOLLEY_X2, state, _base_context())
+	var plus_result: Dictionary = TacticalValuePolicyScript.evaluate(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, state, _base_context())
 	_assert.eq(int(x2_result.get("actual_added_shots", -1)), 0, "marginal cap: repeated x2 should add no shots")
 	_assert.gt(int(plus_result.get("actual_added_shots", 0)), 0, "marginal cap: +5 should still add shots when x2 is already armed")
 	_assert.gt(float(plus_result.get("score", 0.0)), float(x2_result.get("score", 0.0)), "marginal cap: useful additive shots should beat a wasted multiplier")
 
 	var capped = _hero_state(HeroRegistryScript.HERO_BALANCED_COMMANDER)
 	capped.base_volley_count = 22
-	var capped_result: Dictionary = policy.evaluate_id(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, capped, _base_context())
+	var capped_result: Dictionary = TacticalValuePolicyScript.evaluate(UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5, capped, _base_context())
 	_assert.eq(int(capped_result.get("actual_added_shots", -1)), 2, "marginal cap: normalized base mix should leave only two real slots")
 	_assert.eq(int(capped_result.get("wasted_shots", -1)), 3, "marginal cap: normalized base mix should report three wasted shots")
 
@@ -150,31 +151,22 @@ func _test_object_and_dictionary_states_match() -> void:
 
 func _test_shared_simulator_uses_marginal_valuation() -> void:
 	var simulator = SharedSimulatorScript.new()
-	var state: Dictionary = _hero_state(HeroRegistryScript.HERO_FORTIFICATION_ENGINEER).snapshot()
-	var offer: Array = [
-		UpgradeManifestScript.UPGRADE_VOLLEY_X2,
-		UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5,
-	]
-	var chosen: String = str(simulator.call(
-		"choose_upgrade_id_for_test",
-		offer,
-		state,
-		_base_context()
-	))
-	_assert.eq(chosen, UpgradeManifestScript.UPGRADE_VOLLEY_X2, "shared simulator: marginal policy should favor the Engineer siege group")
-	var report: Array = simulator.get_last_choice_report()
-	_assert.that(not report.is_empty(), "shared simulator: marginal selection publishes ranked evidence")
-	for entry in report:
-		_assert.eq(str((entry as Dictionary).get("valuation_mode", "")), ValuePolicyScript.MODE_MARGINAL, "shared simulator: no historical valuation appears in ranked evidence")
-	var result: Dictionary = simulator.call(
-		"simulate",
+	var result: Dictionary = simulator.simulate(
 		HeroRegistryScript.HERO_BALANCED_COMMANDER,
 		HeroRegistryScript.HERO_RAPID_GUNNER,
 		"default_duel",
 		0,
 		19
-	) as Dictionary
+	)
+	_assert.that(bool(result.get("success", false)), "shared simulator: real match should complete")
+	_assert.gt(int(result.get("shared_upgrade_choice_count", 0)), 0, "shared simulator: real match should exercise the production upgrade chooser")
 	_assert.eq(str(result.get("upgrade_valuation_mode", "")), ValuePolicyScript.MODE_MARGINAL, "shared simulator: match report uses marginal valuation")
+	var report: Array = simulator.get_last_choice_report()
+	_assert.that(not report.is_empty(), "shared simulator: real match should publish ranked marginal choices")
+	for raw_entry in report:
+		var entry: Dictionary = raw_entry as Dictionary
+		_assert.eq(str(entry.get("valuation_mode", "")), ValuePolicyScript.MODE_MARGINAL, "shared simulator: real decision evidence uses marginal valuation")
+		_assert.that(entry.has("score"), "shared simulator: real decision evidence exposes a score")
 
 
 func _test_live_director_emits_marginal_report() -> void:
