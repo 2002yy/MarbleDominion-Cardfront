@@ -84,9 +84,9 @@ func _run() -> void:
 	var paired_seed_b: int = int(simulator.call("_b1_stream_seed", 91, 4, "a", 1))
 	_assert.eq(paired_seed_a, paired_seed_b, "side reruns should share the same random stream")
 
-	var first: Dictionary = simulator.simulate("balanced_commander", "rapid_gunner", "cross_resource", 0, 91, ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED)
-	var repeat: Dictionary = simulator.simulate("balanced_commander", "rapid_gunner", "cross_resource", 0, 91, ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED)
-	var swapped: Dictionary = simulator.simulate("balanced_commander", "rapid_gunner", "cross_resource", 1, 91, ConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED)
+	var first: Dictionary = simulator.simulate("balanced_commander", "rapid_gunner", "cross_resource", 0, 91)
+	var repeat: Dictionary = simulator.simulate("balanced_commander", "rapid_gunner", "cross_resource", 0, 91)
+	var swapped: Dictionary = simulator.simulate("balanced_commander", "rapid_gunner", "cross_resource", 1, 91)
 	_assert.eq(first, repeat, "B1 simulation should remain deterministic")
 	_assert.neq(str(first["position_signature"]), str(swapped["position_signature"]), "side variants should be actual distinct simulation calls")
 	var metrics: Dictionary = first["metrics"] as Dictionary
