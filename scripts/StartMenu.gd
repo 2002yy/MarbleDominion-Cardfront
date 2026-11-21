@@ -152,10 +152,6 @@ func refresh_slots(save_summaries: Array) -> void:
 	_refresh_slots(save_summaries)
 
 
-func refresh_save_slots(save_summaries: Array) -> void:
-	refresh_slots(save_summaries)
-
-
 func _apply_layout(view_size: Vector2) -> void:
 	var default_panel_size := Vector2(840.0, 684.0)
 	var default_panel_pos := Vector2(
