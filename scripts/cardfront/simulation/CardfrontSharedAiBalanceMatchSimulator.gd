@@ -30,22 +30,6 @@ func simulate(
 	return result
 
 
-func choose_upgrade_id_for_test(
-	offer_ids: Array,
-	state: Dictionary,
-	context: Dictionary = {}
-) -> String:
-	var resolved_context: Dictionary = _proxy_value_context(state)
-	resolved_context.merge(context, true)
-	var chosen_id: String = _shared_ai_policy.choose_id(
-		offer_ids,
-		state,
-		resolved_context
-	)
-	_last_choice_report = _shared_ai_policy.get_last_ranked_evaluations()
-	return chosen_id
-
-
 func get_last_choice_report() -> Array:
 	return _last_choice_report.duplicate(true)
 
