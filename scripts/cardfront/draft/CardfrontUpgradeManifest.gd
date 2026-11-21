@@ -25,18 +25,6 @@ const UPGRADE_SAPPER_UNIT: String = "sapper_unit"
 const UPGRADE_GATE_COLOSSUS: String = "gate_colossus"
 const BUILDING_VOLLEY_SHOTS_BY_LEVEL: Array[int] = [0, 4, 6, 8]
 
-# Historical A/B0 baseline. Keep this list available for audit fixtures.
-const CORE_UPGRADE_IDS: Array[String] = [
-	UPGRADE_VOLLEY_PLUS_5,
-	UPGRADE_VOLLEY_X2,
-	UPGRADE_ATTACK_LEVEL_PLUS_1,
-	UPGRADE_DEFENSE_CAP_PLUS_1,
-	UPGRADE_FRONTLINE_REPAIR,
-	UPGRADE_ARMOR_PIERCING,
-	UPGRADE_RARITY_PLUS_1,
-	UPGRADE_ECHO_NEXT_CHOICE,
-]
-
 const FORMAL_UPGRADE_IDS: Array[String] = [
 	UPGRADE_VOLLEY_PLUS_5,
 	UPGRADE_VOLLEY_X2,
