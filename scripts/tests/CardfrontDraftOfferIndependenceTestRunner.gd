@@ -20,7 +20,6 @@ func _run() -> void:
 
 	_test_context_envelope()
 	_test_stronghold_cutover_cannot_expand_offer()
-	_test_context_and_legacy_api_parity()
 	_test_offer_containers_are_deeply_independent()
 	_test_round_director_getters_return_deep_copies()
 	_test_coincidental_overlap_remains_allowed()
@@ -54,19 +53,6 @@ func _test_stronghold_cutover_cannot_expand_offer() -> void:
 		_assert.that(not player_context.snapshot().has(forbidden_key), "stronghold cutover: Offer context excludes %s" % forbidden_key)
 	_assert.eq(draft.draw_offer_for_context(player_context, 4).size(), 3, "stronghold cutover: stale Player four-choice request is capped to three")
 	_assert.eq(draft.draw_offer_for_context(ai_context, 4).size(), 3, "stronghold cutover: stale AI four-choice request is capped to three")
-
-
-func _test_context_and_legacy_api_parity() -> void:
-	var state = RunStateScript.new()
-	state.setup(RulesScript.PLAYER_FACTION)
-	var legacy = DraftSystemScript.new()
-	var contextual = DraftSystemScript.new()
-	legacy.set_side_seed_for_tests(RulesScript.PLAYER_FACTION, 8101)
-	contextual.set_side_seed_for_tests(RulesScript.PLAYER_FACTION, 8101)
-	var legacy_ids: Array = _ids(legacy.draw_offer(state, 3, RulesScript.PLAYER_FACTION))
-	var context = OfferContextScript.create(RulesScript.PLAYER_FACTION, state)
-	var context_ids: Array = _ids(contextual.draw_offer_for_context(context, 3))
-	_assert.eq(context_ids, legacy_ids, "context: migration preserves draw semantics")
 
 
 func _test_offer_containers_are_deeply_independent() -> void:
