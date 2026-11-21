@@ -8,7 +8,6 @@ const RegionControlBlockLayerScript = preload("res://scripts/cardfront/regions/R
 const CardfrontStrongholdSystemScript = preload("res://scripts/cardfront/strongholds/CardfrontStrongholdSystem.gd")
 const CardfrontResourceStateScript = preload("res://scripts/cardfront/economy/CardfrontResourceState.gd")
 const EconomyTickSystemScript = preload("res://scripts/cardfront/economy/EconomyTickSystem.gd")
-const CardfrontEconomyDebugPanelScript = preload("res://scripts/cardfront/economy/CardfrontEconomyDebugPanel.gd")
 const RegionMoraleSystemScript = preload("res://scripts/cardfront/morale/RegionMoraleSystem.gd")
 const FortifyLayerScript = preload("res://scripts/cardfront/fortify/FortifyLayer.gd")
 const FortifyOverlayLayerScript = preload("res://scripts/cardfront/fortify/FortifyOverlayLayer.gd")
@@ -23,7 +22,6 @@ const EngineerBotEffectSystemScript = preload("res://scripts/cardfront/devices/e
 const DurablePioneerBeaconEffectSystemScript = preload("res://scripts/cardfront/devices/effects/DurablePioneerBeaconEffectSystem.gd")
 const CardfrontDeviceOverlayLayerScript = preload("res://scripts/cardfront/devices/CardfrontDeviceOverlayLayer.gd")
 const CardfrontVfxLayerScript = preload("res://scripts/cardfront/vfx/CardfrontVfxLayer.gd")
-const CardfrontDebugActionPanelScript = preload("res://scripts/cardfront/debug/CardfrontDebugActionPanel.gd")
 const CardfrontTargetPreviewLayerScript = preload("res://scripts/cardfront/ui/CardfrontTargetPreviewLayer.gd")
 const CardfrontArenaBuilderScript = preload("res://scripts/cardfront/arena/CardfrontArenaBuilder.gd")
 const CardfrontPresentationModeControllerScript = preload("res://scripts/cardfront/arena/CardfrontPresentationModeController.gd")
@@ -106,8 +104,6 @@ func build_world_layers(game_layer: Node, runtime) -> Dictionary:
 	if not _record_or_fail("target_preview", create_target_preview_layer(game_layer, runtime.battlefield, runtime.region_map), runtime):
 		return _build_result(false)
 	if not _record_or_fail("vfx_layer", create_vfx_layer(game_layer, runtime.battlefield, runtime.region_map), runtime):
-		return _build_result(false)
-	if not _record_or_fail("debug_action_panel", create_debug_action_panel(game_layer, runtime.device_layer, runtime.card_system, runtime.battlefield, runtime.region_map), runtime):
 		return _build_result(false)
 	if not _record_or_fail("absorber_core_effect", create_absorber_core_effect_system(game_layer, runtime.device_layer, runtime.bullet_pool, runtime.resource_states, runtime.battlefield, runtime.cardfront_vfx_layer), runtime):
 		return _build_result(false)
@@ -210,7 +206,6 @@ func _clear_core_refs(runtime) -> void:
 	runtime.region_control_block_layer = null
 	runtime.stronghold_system = null
 	runtime.economy_system = null
-	runtime.economy_debug_panel = null
 	runtime.resource_states.clear()
 	runtime.last_yield_snapshot.clear()
 	runtime.morale_system = null
@@ -233,7 +228,6 @@ func _clear_world_layer_refs(runtime) -> void:
 	runtime.device_overlay_layer = null
 	runtime.target_preview_layer = null
 	runtime.cardfront_vfx_layer = null
-	runtime.debug_action_panel = null
 	runtime.absorber_core_effect_system = null
 	runtime.engineer_bot_effect_system = null
 	runtime.durable_pioneer_beacon_effect_system = null
@@ -315,15 +309,10 @@ static func create_economy(game_layer: Node, battlefield, region_map) -> Diction
 	economy_system.setup(region_map, battlefield, resource_states)
 	game_layer.add_child(economy_system)
 
-	var debug_panel = CardfrontEconomyDebugPanelScript.new()
-	debug_panel.setup(region_map, battlefield, economy_system, resource_states, GameConfig.GAME_MODE_CARDFRONT)
-	game_layer.add_child(debug_panel)
-
 	return {
 		"configured": true,
 		"economy_system": economy_system,
 		"resource_states": resource_states,
-		"economy_debug_panel": debug_panel,
 	}
 
 
@@ -563,20 +552,6 @@ static func create_vfx_layer(game_layer: Node, battlefield, region_map) -> Dicti
 	return {
 		"configured": true,
 		"vfx_layer": vfx_layer,
-	}
-
-
-static func create_debug_action_panel(game_layer: Node, device_layer, card_system, battlefield, region_map) -> Dictionary:
-	if game_layer == null or not is_instance_valid(game_layer):
-		return {"configured": false, "reason": "missing_game_layer"}
-
-	var panel = CardfrontDebugActionPanelScript.new()
-	panel.setup(device_layer, card_system, battlefield, region_map, GameConfig.GAME_MODE_CARDFRONT)
-	game_layer.add_child(panel)
-
-	return {
-		"configured": true,
-		"debug_action_panel": panel,
 	}
 
 

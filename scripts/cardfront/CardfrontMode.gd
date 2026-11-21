@@ -115,10 +115,6 @@ static func create_vfx_layer(game_layer: Node, battlefield, region_map) -> Dicti
 	return CardfrontRuntimeBuilderScript.create_vfx_layer(game_layer, battlefield, region_map)
 
 
-static func create_debug_action_panel(game_layer: Node, device_layer, card_system, battlefield, region_map) -> Dictionary:
-	return CardfrontRuntimeBuilderScript.create_debug_action_panel(game_layer, device_layer, card_system, battlefield, region_map)
-
-
 static func create_feedback_bus(ui_layer: Node) -> Dictionary:
 	if ui_layer == null or not is_instance_valid(ui_layer):
 		return {"configured": false, "reason": "missing_ui_layer"}

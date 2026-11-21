@@ -29,7 +29,7 @@ Baseline subtotal: **1093 expected checks** across 10 runners.
 | CI batch | Runners |
 |---|---|
 | Baseline runtime | `SmokeTestRunner`, `IntegrationTestRunner`, `LayoutSanityTestRunner`, scene wiring, state, save, restore |
-| Cardfront map economy | `RegionMapTestRunner`, `NeutralOwnerCompatibilityTestRunner`, `DeploymentRulesTestRunner`, `RegionMoraleTestRunner`, `EconomyTickTestRunner`, `EconomyDebugPanelSceneTestRunner`, visual pressure policy tests |
+| Cardfront map economy (legacy unit contracts) | `RegionMapTestRunner`, `NeutralOwnerCompatibilityTestRunner`, `DeploymentRulesTestRunner`, `RegionMoraleTestRunner`, `EconomyTickTestRunner`, visual pressure policy tests |
 | Cardfront cards effects fire | `FortifyLayerTestRunner`, `CardEffectResolverTestRunner`, `CardCoreLiteTestRunner`, `CardFirstEffectsTestRunner`, `CardfrontTargetBiasTestRunner`, `PioneerBeaconLiteTestRunner`, FireDirector tests, control-chamber decoupling |
 | Cardfront devices visuals schema | device core/effect runners, device overlay, bottom HUD status, VFX bridge, `CardfrontRuntimeSnapshotTestRunner` |
 | Cardfront performance budget | `CardfrontPerformanceSmokeTestRunner` |

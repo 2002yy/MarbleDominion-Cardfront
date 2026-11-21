@@ -36,9 +36,7 @@ This file is not the current project-status source. Use [`docs/PROJECT_STATUS.md
   - `CardfrontToastLayer.gd` + `.tscn` — max-3 expiring feedback toasts.
   - `CardfrontEffectVisualBridge.gd` — listens to card success and reuses `CardfrontVfxLayer` for the 4 existing effects.
   - `CardfrontCardAudioFeedback.gd` — light hover/click/success/fail audio hook with silent missing-asset fallback.
-- Debug and UI art prep:
-  - `CardfrontDebugActionPanel.gd` — hidden by default; parsed F3 input toggles it only in Cardfront non-release builds.
-  - `CardfrontTopResourceBar.gd` — includes a tiny non-release `F3 Debug` hint; release builds hide the hint.
+- UI art prep (the old F3 debug action panel, economy debug overlay, and F3 hint were retired after v0.3 became the default runtime):
   - `CardfrontUiAssetRegistry.gd` — centralized Kenney/Wenrexa/Game-Icons/font path registry with ResourceLoader/fallback helpers.
   - v0.2.4a: TopResourceBar uses TextureRect icons (energy/parts) with registry-backed fallback (emoji text if texture missing).
   - v0.2.4a: CardView uses `card_frame` Panel style (CardBorder changed to Panel) and Bg alpha reduced to 0.40 when `card_bg` texture loads.
@@ -120,7 +118,6 @@ Cardfront formal UI + target preview:
 - `CardfrontDisabledCardFeedbackTestRunner.gd`
 - `CardfrontToastLayerTestRunner.gd`
 - `CardfrontEffectVisualBridgeTestRunner.gd`
-- `CardfrontDebugPanelToggleTestRunner.gd`
 - `CardfrontUiAssetRegistryTestRunner.gd`
 - `CardfrontUiArtSceneTestRunner.gd`
 - `CardfrontCardViewInteractionConfigTestRunner.gd`
