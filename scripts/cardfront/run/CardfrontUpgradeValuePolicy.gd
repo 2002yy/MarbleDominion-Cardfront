@@ -26,12 +26,11 @@ const RARITY_QUALITY_VALUE: float = 4.0
 static func evaluate(
 	upgrade_id: String,
 	state = null,
-	context: Dictionary = {},
-	valuation_mode: String = MODE_MARGINAL
+	context: Dictionary = {}
 ) -> Dictionary:
 	var safe_id: String = str(upgrade_id)
 	if not UpgradeManifestScript.has_upgrade(safe_id):
-		return _empty_result(safe_id, valuation_mode, "unknown_upgrade")
+		return _empty_result(safe_id, "unknown_upgrade")
 
 	var model: Dictionary = _state_model(state)
 	var value_context: Dictionary = _normalize_context(context)
@@ -62,9 +61,9 @@ static func evaluate(
 
 static func _score_once(upgrade_id: String, model: Dictionary, context: Dictionary) -> Dictionary:
 	if not _is_eligible(upgrade_id, model):
-		return _empty_result(upgrade_id, MODE_MARGINAL, "ineligible")
+		return _empty_result(upgrade_id, "ineligible")
 
-	var result: Dictionary = _empty_result(upgrade_id, MODE_MARGINAL, "")
+	var result: Dictionary = _empty_result(upgrade_id, "")
 	result["eligible"] = true
 	var definition: Dictionary = UpgradeManifestScript.get_definition(upgrade_id)
 	var effect_id: String = str(definition.get("effect_id", ""))
@@ -423,10 +422,10 @@ static func _rarity_quality(rarity_level: int) -> float:
 	return (uncommon_weight + rare_weight * 2.2) / total
 
 
-static func _empty_result(upgrade_id: String, valuation_mode: String, reason: String) -> Dictionary:
+static func _empty_result(upgrade_id: String, reason: String) -> Dictionary:
 	return {
 		"upgrade_id": str(upgrade_id),
-		"valuation_mode": str(valuation_mode),
+		"valuation_mode": MODE_MARGINAL,
 		"eligible": false,
 		"score": -INF,
 		"immediate_value": 0.0,
