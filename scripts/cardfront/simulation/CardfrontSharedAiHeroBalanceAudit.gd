@@ -67,11 +67,7 @@ func run(
 	var expected_matches: int = hero_ids.size() * hero_ids.size() * map_ids.size() * 2 * safe_seed_count
 	var report: Dictionary = {
 		"simulation_mode": safe_simulation_mode,
-		"upgrade_valuation_mode": (
-			ValuePolicyScript.MODE_HISTORICAL_FIXED
-			if safe_simulation_mode == ConfigScript.SIMULATION_MODE_HISTORICAL_COMPENSATED
-			else ValuePolicyScript.MODE_MARGINAL
-		),
+		"upgrade_valuation_mode": ValuePolicyScript.MODE_MARGINAL,
 		"hidden_hit_compensation": ConfigScript.uses_hidden_hit_compensation(safe_simulation_mode),
 		"resolved_attack_level_cap": ConfigScript.resolved_attack_level_cap(safe_simulation_mode),
 		"seeds_per_case": safe_seed_count,
