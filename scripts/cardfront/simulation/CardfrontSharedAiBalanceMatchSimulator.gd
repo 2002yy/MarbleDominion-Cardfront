@@ -38,10 +38,8 @@ func simulate(
 func choose_upgrade_id_for_test(
 	offer_ids: Array,
 	state: Dictionary,
-	context: Dictionary = {},
-	simulation_mode: String = SharedSimulationConfigScript.DEFAULT_SIMULATION_MODE
+	context: Dictionary = {}
 ) -> String:
-	_active_simulation_mode = SharedSimulationConfigScript.sanitize_simulation_mode(simulation_mode)
 	var resolved_context: Dictionary = _proxy_value_context(state)
 	resolved_context.merge(context, true)
 	var chosen_id: String = _shared_ai_policy.choose_id(

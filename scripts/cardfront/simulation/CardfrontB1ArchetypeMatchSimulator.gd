@@ -17,8 +17,7 @@ func _resolve_volley(
 	_defense_pool: Dictionary,
 	profile: Dictionary,
 	seed_value: int,
-	round_number: int,
-	simulation_mode: String
+	round_number: int
 ) -> Dictionary:
 	var adjusted_profile: Dictionary = profile.duplicate(true)
 	adjusted_profile["chamber_hit_chance"] = float(adjusted_profile.get("chamber_hit_chance", 0.17)) * _tail_stall_multiplier(
@@ -98,11 +97,6 @@ func _resolve_volley(
 	)
 	base_hit_chance *= pow(6.0 / float(maxi(1, shot_count)), 0.18)
 	base_hit_chance *= float(route_result.get("average_route_quality", 1.0))
-	base_hit_chance = adjust_hit_chance_for_mode(
-		base_hit_chance,
-		int((states[attacker_slot] as Dictionary).get("base_volley_count", 6)),
-		simulation_mode
-	)
 
 	var chamber_hits: int = 0
 	var damage_units: float = 0.0

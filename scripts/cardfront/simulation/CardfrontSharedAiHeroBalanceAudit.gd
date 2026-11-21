@@ -68,8 +68,8 @@ func run(
 	var report: Dictionary = {
 		"simulation_mode": safe_simulation_mode,
 		"upgrade_valuation_mode": ValuePolicyScript.MODE_MARGINAL,
-		"hidden_hit_compensation": ConfigScript.uses_hidden_hit_compensation(safe_simulation_mode),
-		"resolved_attack_level_cap": ConfigScript.resolved_attack_level_cap(safe_simulation_mode),
+		"hidden_hit_compensation": false,
+		"resolved_attack_level_cap": ConfigScript.PARITY_RESOLVED_ATTACK_LEVEL_CAP,
 		"seeds_per_case": safe_seed_count,
 		"expected_matches": expected_matches,
 		"matches": int(totals["matches"]),

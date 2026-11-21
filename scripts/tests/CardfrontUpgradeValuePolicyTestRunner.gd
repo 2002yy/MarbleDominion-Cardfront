@@ -160,8 +160,7 @@ func _test_shared_simulator_uses_marginal_valuation() -> void:
 		"choose_upgrade_id_for_test",
 		offer,
 		state,
-		_base_context(),
-		SimulationConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
+		_base_context()
 	))
 	_assert.eq(chosen, UpgradeManifestScript.UPGRADE_VOLLEY_X2, "shared simulator: marginal policy should favor the Engineer siege group")
 	var report: Array = simulator.get_last_choice_report()
