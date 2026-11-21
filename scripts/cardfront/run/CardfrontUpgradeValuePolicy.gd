@@ -8,7 +8,6 @@ const VolleyResolverScript = preload("res://scripts/cardfront/volley/CardfrontVo
 const ProjectileTypeScript = preload("res://scripts/cardfront/volley/CardfrontProjectileType.gd")
 
 const MODE_MARGINAL: String = "marginal"
-const MODE_HISTORICAL_FIXED: String = "historical_fixed"
 
 const DEFAULT_MAX_ROUNDS: int = 34
 const MAX_VALUE_HORIZON: int = 18
@@ -33,8 +32,6 @@ static func evaluate(
 	var safe_id: String = str(upgrade_id)
 	if not UpgradeManifestScript.has_upgrade(safe_id):
 		return _empty_result(safe_id, valuation_mode, "unknown_upgrade")
-	if valuation_mode == MODE_HISTORICAL_FIXED:
-		return _evaluate_historical(safe_id, state)
 
 	var model: Dictionary = _state_model(state)
 	var value_context: Dictionary = _normalize_context(context)
@@ -228,40 +225,6 @@ static func _best_future_replay_value(model: Dictionary, context: Dictionary) ->
 		if bool(replay_result.get("eligible", false)):
 			best_value = maxf(best_value, maxf(0.0, float(replay_result.get("score", 0.0))))
 	return best_value
-
-
-static func _evaluate_historical(upgrade_id: String, state) -> Dictionary:
-	var model: Dictionary = _state_model(state)
-	if upgrade_id == UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE and bool(model.get("echo_next_choice_armed", false)):
-		return _empty_result(upgrade_id, MODE_HISTORICAL_FIXED, "ineligible")
-	var base_volley: int = maxi(1, int(model.get("base_volley_count", 6)))
-	var attack_level: int = maxi(0, int(model.get("attack_level", 0)))
-	var defense_cap: int = maxi(1, int(model.get("territory_defense_cap", 1)))
-	var growth: int = 0
-	for count in (model.get("applied_upgrade_counts", {}) as Dictionary).values():
-		growth += int(count)
-	var score: float = 0.0
-	match upgrade_id:
-		UpgradeManifestScript.UPGRADE_ATTACK_LEVEL_PLUS_1:
-			score = 88.0 - float(attack_level) * 7.0
-		UpgradeManifestScript.UPGRADE_VOLLEY_X2:
-			score = 92.0
-		UpgradeManifestScript.UPGRADE_ARMOR_PIERCING:
-			score = 82.0
-		UpgradeManifestScript.UPGRADE_DEFENSE_CAP_PLUS_1:
-			score = 78.0
-		UpgradeManifestScript.UPGRADE_FRONTLINE_REPAIR:
-			score = 74.0 + float(maxi(0, defense_cap - 1)) * 16.0
-		UpgradeManifestScript.UPGRADE_VOLLEY_PLUS_5:
-			score = 64.0 + float(maxi(0, 10 - base_volley)) * 1.8
-		UpgradeManifestScript.UPGRADE_RARITY_PLUS_1:
-			score = 62.0 + maxf(0.0, 16.0 - float(growth) * 3.0)
-		UpgradeManifestScript.UPGRADE_ECHO_NEXT_CHOICE:
-			score = 68.0 + float(mini(growth, 5))
-	var result: Dictionary = _empty_result(upgrade_id, MODE_HISTORICAL_FIXED, "historical_fixed_replay")
-	result["eligible"] = true
-	result["score"] = score
-	return result
 
 
 static func _state_model(state) -> Dictionary:
