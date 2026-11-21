@@ -9,11 +9,9 @@ const B1AuditValuePolicyScript = preload("res://scripts/cardfront/run/CardfrontU
 
 
 func run(
-	seeds_per_case: int = B1AuditConfigScript.FULL_SEEDS_PER_CASE,
-	simulation_mode: String = B1AuditConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED
+	seeds_per_case: int = B1AuditConfigScript.FULL_SEEDS_PER_CASE
 ) -> Dictionary:
 	var safe_seed_count: int = maxi(1, int(seeds_per_case))
-	var safe_mode: String = B1AuditConfigScript.sanitize_simulation_mode(simulation_mode)
 	var hero_ids: Array = B1AuditHeroRegistryScript.get_hero_ids()
 	var map_ids: Array = B1AuditMapRegistryScript.get_registered_map_ids()
 	var hero_stats: Dictionary = {}
@@ -44,8 +42,7 @@ func run(
 							str(hero_b),
 							str(map_id),
 							side_variant,
-							seed_index + 1,
-							safe_mode
+							seed_index + 1
 						)
 						_accumulate_match(result, hero_stats, matchup_stats, mirror_stats, rounds, totals)
 						_accumulate_b1(result, b1_totals)
@@ -57,7 +54,7 @@ func run(
 	var report: Dictionary = {
 		"audit_id": "b1_route_gate_virtual_defense",
 		"b1_model": true,
-		"simulation_mode": safe_mode,
+		"simulation_mode": B1AuditConfigScript.SIMULATION_MODE_PARITY_UNCOMPENSATED,
 		"upgrade_valuation_mode": B1AuditValuePolicyScript.MODE_MARGINAL,
 		"hidden_hit_compensation": false,
 		"resolved_attack_level_cap": B1AuditConfigScript.PARITY_RESOLVED_ATTACK_LEVEL_CAP,
