@@ -274,6 +274,8 @@ func get_support_presentation_update_count_for_test() -> int:
 
 
 func set_deployment_zone_source(new_source) -> bool:
+	# Future targeting controllers can publish already-evaluated cells through
+	# this signal; the current three-choice runtime intentionally binds none.
 	_disconnect_deployment_zone_source()
 	deployment_zone_source = new_source
 	if deployment_zone_source == null or not deployment_zone_source.has_signal("deployment_zone_changed"):

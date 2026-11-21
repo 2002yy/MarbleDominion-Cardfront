@@ -1,5 +1,7 @@
 # P0-06B4 / P0-06C Deployment Zone and Region UI Separation
 
+> **Historical checkpoint / 后续清理说明（2026-11-20）:** This record documents the original B4 decision and its source-bound evidence. The later v0.3 cleanup removes the old targeted-card 2D Preview controller and its specialized tests, **but retains the independent result-only `CardfrontDeploymentZoneLayer3D` plus an optional signal binding in the 3D arena**, kept hidden and unbound in the formal three-choice runtime. The slim display/signal contract is covered by the existing orthographic-arena runner. `DeploymentRules`, Core/Support authority, AI legality, automatic spawn and live Support presentation remain unaffected. A future player-facing targeted-deployment mechanic still requires a product decision and a new controller; the historical B4 test results below are not current CI gates. The original result below is preserved verbatim.
+
 Source commit: `ca01511c1766dc801aa62d198e091a361e786026`
 
 Decision: **GO**
