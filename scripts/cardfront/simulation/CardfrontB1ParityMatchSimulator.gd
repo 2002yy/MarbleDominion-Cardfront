@@ -72,8 +72,7 @@ func _resolve_volley(
 	_defense_pool: Dictionary,
 	profile: Dictionary,
 	seed_value: int,
-	round_number: int,
-	_simulation_mode: String
+	round_number: int
 ) -> Dictionary:
 	var adjusted_profile: Dictionary = profile.duplicate(true)
 	adjusted_profile["chamber_hit_chance"] = float(adjusted_profile.get("chamber_hit_chance", 0.17)) * _tail_stall_multiplier(
