@@ -290,7 +290,7 @@ func _resolve_volley(
 	profile: Dictionary,
 	seed_value: int,
 	round_number: int,
-	simulation_mode: String
+	_simulation_mode: String
 ) -> Dictionary:
 	var plan = plan_data["plan"]
 	var rng: RandomNumberGenerator = _rng_a if attacker_slot == SLOT_A else _rng_b
