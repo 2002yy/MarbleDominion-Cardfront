@@ -418,16 +418,13 @@ func _create_ui() -> void:
 		cf_hud.setup_static(self, Vector2(VIEW_W, VIEW_H), runtime.current_layout, is_mobile_layout)
 		hud_nodes = cf_hud.get_static_parts()
 		print("[CardfrontHUD] Loaded CardfrontHUD.tscn")
-	elif ResourceLoader.exists("res://scenes/ui/GameHUD.tscn"):
+	else:
 		var game_hud: CanvasLayer = GameHUDScene.instantiate()
 		game_hud.name = "UICanvas"
 		game_layer.add_child(game_hud)
 		game_hud.setup_static(self, Vector2(VIEW_W, VIEW_H), runtime.current_layout, is_mobile_layout)
 		hud_nodes = game_hud.get_static_parts()
 		print("[GameHUD] Loaded scene GameHUD.tscn")
-	else:
-		hud_nodes = GameHudView.create_runtime_ui(self, game_layer, runtime.battlefield, runtime.current_layout, Vector2(VIEW_W, VIEW_H), is_mobile_layout)
-		print("[GameHUD] Scene load failed, fallback to legacy GameHudView.gd")
 
 	runtime.set_hud_parts(hud_nodes)
 	runtime.set_ui_runtime_parts({
